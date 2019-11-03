@@ -1,0 +1,13 @@
+FROM nimlang/nim:alpine
+
+RUN echo http://dl-cdn.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories
+RUN apk update && \
+    apk upgrade --no-cache && \
+    apk add --no-cache ca-certificates openssl pcre bsd-compat-headers lcov \
+    sqlite mariadb-dev libpq && \
+    rm /usr/lib/mysqld* -fr && rm /usr/bin/mysql* -fr && \
+    update-ca-certificates
+RUN git config --global http.sslVerify false
+RUN nimble install -y bcrypt cligen coco jester && \
+    nimble install https://github.com/itsumura-h/nim-allographer
+WORKDIR /home/www

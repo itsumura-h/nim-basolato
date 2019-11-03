@@ -1,0 +1,32 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: app_Dockerfile
+    tty: true
+    environment:
+      TZ: Asia/Tokyo
+    ports:
+      - "9000:5000"
+    volumes:
+      - .:/home/www
+  # mysql:
+  #   image: mariadb
+  #   tty: true
+  #   command: --default-authentication-plugin=mysql_native_password
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: root
+  #     MYSQL_DATABASE: allographer
+  #     MYSQL_USER: user
+  #     MYSQL_PASSWORD: Password!
+  #     TZ: Asia/Tokyo
+      # default_authentication_plugin: mysql_native_password
+  # postgres:
+  #   image: postgres:alpine
+  #   tty: true
+  #   environment:
+  #     POSTGRES_DB: allographer
+  #     POSTGRES_USER: user
+  #     POSTGRES_PASSWORD: Password!
+  #     TZ: Asia/Tokyo
