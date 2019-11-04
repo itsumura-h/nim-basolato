@@ -1,5 +1,6 @@
 import ../../src/shihotsuchi
 
+
 proc corsHeader*(request: Request): seq =
   var headers = @[
     ("Cache-Control", "no-cache"),

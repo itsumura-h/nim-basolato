@@ -1,10 +1,13 @@
 import asyncdispatch, httpcore, strutils, re, json, sugar, tables
-import ../src/shihotsuchi
-from config/middlewares import middleware
+import ../src/shihotsuchi/response
+import config/middlewares
 from config/customHeaders import corsHeader
 import controllers/ToppageController
 import controllers/SampleController
 import controllers/ManageUsersController
+
+proc testMiddleware() =
+  echo "==================== testMiddlewar ===================="
 
 
 router toppage:
@@ -12,6 +15,7 @@ router toppage:
     response(ToppageController().react())
   get "vue/":
     response(ToppageController().vue())
+
 
 router manageUsers:
   get "":
@@ -27,8 +31,10 @@ router manageUsers:
 
 router sample:
   get "":
+    checkLogin(request)
     response(SampleController.index(), corsHeader(request))
   get "fib/@num/":
+    checkLogin(request)
     response(SampleController.fib(@"num"), corsHeader(request))
 
 
@@ -42,14 +48,12 @@ routes:
   extend toppage, "/toppage/"
 
   # Sample
-  before re"/sample/.*":
-    middleware(request)
+  options re"/sample/.*":
+    checkLogin(request)
   extend sample, "/sample/"
   
   # ManageUsers
   extend manageUsers, "/ManageUsers/"
-
-
 
 
 runForever()

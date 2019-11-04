@@ -1,11 +1,14 @@
 # Package
 
 version       = "0.1.0"
-author        = "medy"
-description   = "Shihotsuchi Fullstack framework"
+author        = "Hidenobu Itsumura @dumblepytech1 as 'medy'"
+description   = "Shihotsuchi a Nim fullstack web framework"
 license       = "MIT"
 srcDir        = "src"
-
+bin           = @["commands/dbtool"] # ここはパッケージの名前によって変わる
+binDir        = "src/bin"
+installExt    = @["nim"]
+skipDirs      = @["commands"]
 
 
 # Dependencies
