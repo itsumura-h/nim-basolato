@@ -1,35 +1,54 @@
-import jester, strutils
+import jester, strutils, json
 
-# フレームワーク
-type
-  Response = ref object
-    status:HttpCode
-    body: string
-
-
-type
-  BaseController = ref object of RootObj
-
-proc httpResponse(this:BaseController, httpCode:HttpCode, body:string):Response =
-  return Response(status:httpCode, body:body)
-
-
-template response(response:Response) =
-  resp response.status, response.body
-
-
-# 実装
-type
-  RootController = ref object of BaseController
-
-proc root(this:RootController, idArg:string):Response =
-  let id = idArg.parseInt
-  if id mod 2 == 0:
-    return this.httpResponse(Http200, $id)
-  else:
-    return this.httpResponse(Http500, $id)
-
+import ../src/shihotsuchi/routing
+import controllers/test2Controller
+import config/customHeaders
 
 routes:
-  get "/@id":
-    response(RootController().root(@"id"))
+  # get "/":
+  #   route(RootController().root())
+  
+  # get "/500":
+  #   route(RootController().root500())
+
+  # get "/header":
+  #   route(RootController().root(), corsHeader(request))
+
+  # get "/header500":
+  #   route(RootController().root500(), corsHeader(request))
+
+  # get "/json":
+  #   route(RootController().json())
+
+  # get "/json500":
+  #   route(RootController().json500())
+
+  # get "/jsonHeader":
+  #   route(RootController().json(), corsHeader(request))
+  
+  # get "/json500Header":
+  #   route(RootController().json500(), corsHeader(request))
+
+  get "/":
+    route(test2Controller.root())
+  
+  get "/500":
+    route(test2Controller.root500())
+
+  get "/header":
+    route(test2Controller.root(), corsHeader(request))
+
+  get "/header500":
+    route(test2Controller.root500(), corsHeader(request))
+
+  get "/json":
+    route(test2Controller.json())
+
+  get "/json500":
+    route(test2Controller.json500())
+
+  get "/jsonHeader":
+    route(test2Controller.json(), corsHeader(request))
+  
+  get "/json500Header":
+    route(test2Controller.json500(), corsHeader(request))
