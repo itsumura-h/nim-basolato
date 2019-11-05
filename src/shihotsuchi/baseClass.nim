@@ -9,5 +9,6 @@ type
     responseType*: ResponseType
 
   ResponseType* = enum
+    Nil
     String
     Json

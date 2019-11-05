@@ -1,12 +1,20 @@
-import baseClass
+import
+  jester,
+  baseClass
+export jester
 
 template route*(r:Response) =
   case r.responseType
   of String:
     resp r.status, r.bodyString
   of Json:
-    let header = [("Content-Type", "application/json")]
-    resp r.status, header, $(r.bodyJson)
+    if r.status == Http200:
+      resp r.bodyJson
+    else:
+      let header = [("Content-Type", "application/json")]
+      resp r.status, header, $(r.bodyJson)
+  of Nil:
+    echo getCurrentExceptionMsg()
 
 
 template route*(r:Response, headers:openArray[tuple[key, value: string]]) =
@@ -19,3 +27,5 @@ template route*(r:Response, headers:openArray[tuple[key, value: string]]) =
       ("Content-Type", "application/json")
     )
     resp r.status, newHeaders, $(r.bodyJson)
+  of Nil:
+    echo getCurrentExceptionMsg()

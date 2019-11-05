@@ -1,9 +1,9 @@
-import jester
 import json
 from strutils import parseInt
+import jester
+import ../../src/shihotsuchi/controller
 
 # service
-# include ../services/domain_services/ManageUsersService
 import ../services/domain_services/ManageUsersService
 
 # html
@@ -12,7 +12,7 @@ include ../resources/templates/manage_users/index
 include ../resources/templates/manage_users/show
 include ../resources/templates/manage_users/create
 
-proc index*(): string =
+proc index*(): Response =
   let users = ManageUsersService().index()
   let str_users = $users
   let header = $[
@@ -25,29 +25,31 @@ proc index*(): string =
     %*{"text": "action", "value": "action"}
   ]
 
-  return base_html(index_html(header, str_users))
+  return render(
+    base_html(index_html(header, str_users))
+  )
 
 
-proc create*(): string =
-  return create_html()
+proc create*(): Response =
+  return render(create_html())
 
 
-proc store*(request: Request): string =
+proc store*(request: Request): Response =
   var params = request.params
   # echo params
   echo params["name"]
   echo params["email"]
   echo params["birth_date"]
-  return ""
+  return render("")
 
 
-proc show*(str_id: string): string =
+proc show*(str_id: string): Response =
   let id = str_id.parseInt
   let user = ManageUsersService().show(id)
-  return show_html(user)
+  return render(show_html(user))
 
 
-proc update*(str_id: string): JsonNode =
+proc update*(str_id: string): Response =
   let id = str_id.parseInt
   var data = %*{"id": id}
-  return data
+  return render(data)

@@ -1,5 +1,9 @@
 import asyncdispatch, httpcore, strutils, re, json, sugar, tables
-import ../src/shihotsuchi/response
+
+import ../src/shihotsuchi/routing
+import ../src/shihotsuchi/controller
+import ../src/shihotsuchi/middleware
+
 import config/middlewares
 from config/customHeaders import corsHeader
 import controllers/ToppageController
@@ -12,44 +16,44 @@ proc testMiddleware() =
 
 router toppage:
   get "react/":
-    response(ToppageController().react())
+    route(ToppageController.react())
   get "vue/":
-    response(ToppageController().vue())
+    route(ToppageController.vue())
 
 
 router manageUsers:
   get "":
-    response(ManageUsersController.index())
+    route(ManageUsersController.index())
   get "create/":
-    response(ManageUsersController.create())
+    route(ManageUsersController.create())
   post "":
-    response(ManageUsersController.store(request))
+    route(ManageUsersController.store(request))
   get "@id/":
-    response(ManageUsersController.show(@"id"))
+    route(ManageUsersController.show(@"id"))
   put "@id/":
-    response(ManageUsersController.update(@"id"))
+    route(ManageUsersController.update(@"id"))
 
 router sample:
   get "":
-    checkLogin(request)
-    response(SampleController.index(), corsHeader(request))
+    middleware([checkLogin(request)])
+    route(SampleController.index(), corsHeader(request))
   get "fib/@num/":
-    checkLogin(request)
-    response(SampleController.fib(@"num"), corsHeader(request))
+    middleware([check1(), check2()])
+    route(SampleController.fib(@"num"), corsHeader(request))
 
 
 routes:
   options re".*":
-    response("", corsHeader(request))
+    route(render(""), corsHeader(request))
   
   # Toppage
   get "/":
-    response(ToppageController().index())
+    route(ToppageController.index())
   extend toppage, "/toppage/"
 
   # Sample
   options re"/sample/.*":
-    checkLogin(request)
+    middleware([checkLogin(request)])
   extend sample, "/sample/"
   
   # ManageUsers

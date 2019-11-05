@@ -1,14 +1,15 @@
 from strutils import parseInt
 from json import `$`
+import ../../src/shihotsuchi/controller
 include ../services/domain_services/SampleService
 
 # html
 import  "../resources/templates/sample/index.tmpl"
 
 
-proc index*(): string =
-  return index_html()
+proc index*(): Response =
+  return render(index_html())
 
-proc fib*(num: string): JsonNode =
+proc fib*(num: string): Response =
   let new_num = num.parseInt
-  return SampleService().fib(new_num)
+  return render(SampleService().fib(new_num))

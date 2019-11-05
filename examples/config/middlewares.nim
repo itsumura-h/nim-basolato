@@ -1,16 +1,17 @@
 import jester
+import ../../src/shihotsuchi/controller
 
 
-template checkLogin*(request: Request) =
+proc checkLogin*(request: Request):Response =
   try:
     let loginId = request.headers["X-login-id"]
     echo loginId
     echo "========== " & loginId & " =========="
   except:
-    resp Http403, "Can't get login_id"
-    # echo "========== Can't get login_id =========="
+    return render(Http403, "========== Can't get login_id ==========")
 
+proc check1*():Response =
+  echo "========== check1 =========="
 
-template middleware*(request: Request) =
-  # discard
-  checkLogin(request)
+proc check2*():Response =
+  echo "========== check2 =========="

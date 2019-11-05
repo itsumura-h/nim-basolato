@@ -1,18 +1,17 @@
+import ../../src/shihotsuchi/controller
 # html
 include ../resources/templates/toppages/index
 include ../resources/templates/toppages/vue
 include ../resources/templates/toppages/react
 
-type ToppageController = ref object of RootObj
-export ToppageController
 
-proc index*(this: ToppageController): string =
-  return indexHtml()
+proc index*(): Response =
+  return render(indexHtml())
 
-proc react*(this: ToppageController): string =
+proc react*(): Response =
   let message = "React Installed"
-  return reactHtml(message)
+  return render(reactHtml(message))
 
-proc vue*(this: ToppageController): string =
+proc vue*(): Response =
   let message = "Vue Installed"
-  return vueHtml(message)
+  return render(vueHtml(message))
