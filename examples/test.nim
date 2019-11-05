@@ -1,6 +1,8 @@
 import options, asyncdispatch, strutils, httpbeast
 
 proc onRequest(req: Request): Future[void] =
+  echo req.httpMethod
+  echo req.path.get()
   if req.httpMethod == some(HttpGet):
     if req.path.get() == "/":
       req.send(Http200, "root")
