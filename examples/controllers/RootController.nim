@@ -1,7 +1,7 @@
 import json
 import jester
-import ../../src/shihotsuchi/controller
-
+import ../../src/shihotsuchi
+export jester, shihotsuchi
 
 proc root*(request:Request):Response =
   let params = request.params
@@ -29,11 +29,11 @@ proc json500*():Response =
 # type RootController* = ref object of BaseController
 
 
-# proc root*(this:RootController, request:Request):Response =
+# proc root*(this:RootController):Response =
 #   return this.render("root")
 
-# proc rootPost*(this:RootController, request:Request):Response =
-#   let params = request.body
+# proc rootPost*(this:RootController):Response =
+#   let params = this.getRequest().body
 #   return this.render(%*params)
 
 # proc root500*(this:RootController):Response =

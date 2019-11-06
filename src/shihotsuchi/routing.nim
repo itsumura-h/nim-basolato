@@ -1,6 +1,6 @@
-import
-  jester,
-  baseClass
+import jester
+import BaseClass
+
 export jester
 
 template route*(r:Response) =

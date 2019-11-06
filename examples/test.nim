@@ -1,18 +1,62 @@
-import options, asyncdispatch, strutils, httpbeast
+import strutils, json
 
-proc onRequest(req: Request): Future[void] =
-  echo req.httpMethod
-  echo req.path.get()
-  if req.httpMethod == some(HttpGet):
-    if req.path.get() == "/":
-      req.send(Http200, "root")
-    if req.path.get() == "/test":
-      req.send(Http200, "test")
-    if req.path.get().startsWith("/user/"):
-      let id = req.path.get()[6 .. ^1]
-      req.send(Http200, id)
-  if req.httpMethod == some(HttpPost):
-    if req.path.get() == "/user":
-      req.send(Http200, "")
+import ../src/shihotsuchi
+import controllers/RootController
+import config/customHeaders
 
-run(onRequest, Settings(port: Port(5000)))
+routes:
+  # get "/":
+  #   route(RootController.root(request))
+  
+  # post "/":
+  #   route(RootController.rootPost(request))
+  
+  # get "/500":
+  #   route(RootController.root500())
+
+  # get "/header":
+  #   route(RootController.root(request), corsHeader(request))
+
+  # get "/header500":
+  #   route(RootController.root500(), corsHeader(request))
+
+  # get "/json":
+  #   route(RootController.json())
+
+  # get "/json500":
+  #   route(RootController.json500())
+
+  # get "/jsonHeader":
+  #   route(RootController.json(), corsHeader(request))
+  
+  # get "/json500Header":
+  #   route(RootController.json500(), corsHeader(request))
+
+
+
+  get "/":
+    route(RootController().new(request).root())
+
+  # post "/":
+  #   route(RootController(request:request).rootPost())
+  
+  # get "/500":
+  #   route(RootController(request:request).root500())
+
+  # get "/header":
+  #   route(RootController(request:request).root(), corsHeader(request))
+
+  # get "/header500":
+  #   route(RootController(request:request).root500(), corsHeader(request))
+
+  # get "/json":
+  #   route(RootController(request:request).json())
+
+  # get "/json500":
+  #   route(RootController(request:request).json500())
+
+  # get "/jsonHeader":
+  #   route(RootController(request:request).json(), corsHeader(request))
+  
+  # get "/json500Header":
+  #   route(RootController(request:request).json500(), corsHeader(request))

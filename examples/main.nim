@@ -35,6 +35,8 @@ router manageUsers:
 
 router sample:
   get "":
+    route(SampleController.index(), corsHeader(request))
+  get "checkLogin/":
     middleware([checkLogin(request)])
     route(SampleController.index(), corsHeader(request))
   get "fib/@num/":

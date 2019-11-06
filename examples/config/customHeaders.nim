@@ -1,4 +1,4 @@
-import ../../src/shihotsuchi
+import jester
 
 
 proc corsHeader*(request: Request): seq =

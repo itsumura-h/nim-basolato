@@ -1,6 +1,5 @@
-import baseClass
+import BaseClass
 import routing
-
 
 template middleware*(procs:varargs[Response]) =
   for p in procs:
