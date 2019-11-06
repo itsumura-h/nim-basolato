@@ -5,6 +5,7 @@ type ManageUsersRepository* = ref object of RootObj
 
 proc index*(this: ManageUsersRepository): JsonNode =
   let users = RDB().table("users").get()
+  echo users
   var usersJson = %[]
   for user in users:
     usersJson.add(%*{
