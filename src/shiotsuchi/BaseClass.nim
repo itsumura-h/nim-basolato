@@ -11,6 +11,5 @@ type
     headers*: seq[tuple[key, value:string]]
 
   ResponseType* = enum
-    Nil
     String
     Json

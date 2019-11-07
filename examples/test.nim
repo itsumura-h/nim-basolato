@@ -1,62 +1,11 @@
-import strutils, json
+type A = ref object
+  name:string
 
-import ../src/shiotsuchi
-import controllers/RootController
-import config/customHeaders
+var a = A(name:"taro")
 
-routes:
-  # get "/":
-  #   route(RootController.root(request))
-  
-  # post "/":
-  #   route(RootController.rootPost(request))
-  
-  # get "/500":
-  #   route(RootController.root500())
+proc changeName(a:A, name:string):A =
+  var newA = a
+  newA.name = name
 
-  # get "/header":
-  #   route(RootController.root(request), corsHeader(request))
-
-  # get "/header500":
-  #   route(RootController.root500(), corsHeader(request))
-
-  # get "/json":
-  #   route(RootController.json())
-
-  # get "/json500":
-  #   route(RootController.json500())
-
-  # get "/jsonHeader":
-  #   route(RootController.json(), corsHeader(request))
-  
-  # get "/json500Header":
-  #   route(RootController.json500(), corsHeader(request))
-
-
-
-  get "/":
-    route(RootController().new(request).root())
-
-  # post "/":
-  #   route(RootController(request:request).rootPost())
-  
-  # get "/500":
-  #   route(RootController(request:request).root500())
-
-  # get "/header":
-  #   route(RootController(request:request).root(), corsHeader(request))
-
-  # get "/header500":
-  #   route(RootController(request:request).root500(), corsHeader(request))
-
-  # get "/json":
-  #   route(RootController(request:request).json())
-
-  # get "/json500":
-  #   route(RootController(request:request).json500())
-
-  # get "/jsonHeader":
-  #   route(RootController(request:request).json(), corsHeader(request))
-  
-  # get "/json500Header":
-  #   route(RootController(request:request).json500(), corsHeader(request))
+var b = a.changeName("jiro")
+echo b.name

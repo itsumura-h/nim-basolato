@@ -1,3 +1,4 @@
+import json
 import ../../src/shiotsuchi/controller
 
 proc middlewar_header*():Response =
@@ -17,3 +18,10 @@ proc withMiddleware*():Response =
 
 proc nothing*():Response =
   return render("ミドルウェアなしヘッダーなし")
+
+proc middlewar_header_json*():Response =
+  return render(%*{"message": "ミドルウェアありヘッダーありJson"})
+    .header("Header-Status", "ヘッダーあり")
+    .header("key1", "value1")
+    .header("key2", "value2")
+    .header("key3", ["a", "b", "c"])

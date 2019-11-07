@@ -24,3 +24,6 @@ proc corsHeader*(request: Request): seq =
     headers.add(("Access-Control-Allow-Headers", allowedHeaders.join(", ")))
 
   return headers
+
+proc middlewareHeader*():seq =
+  return @[("MiddlewareHeaderStatus", "ヘッダーあり")]

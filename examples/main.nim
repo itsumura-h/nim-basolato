@@ -5,7 +5,7 @@ import ../src/shiotsuchi/controller
 import ../src/shiotsuchi/middleware
 
 import config/middlewares
-from config/customHeaders import corsHeader
+from config/customHeaders import corsHeader, middlewareHeader
 import controllers/ToppageController
 import controllers/SampleController
 import controllers/ManageUsersController
@@ -46,14 +46,15 @@ router sample:
 
 router withHeaders:
   get "middlewar_header/":
-    route(WithHeaderController.middlewar_header(), corsHeader(request))
+    route(WithHeaderController.middlewar_header(), middlewareHeader())
   get "header/":
     route(WithHeaderController.withHeader())
   get "middleware/":
-    route(WithHeaderController.withMiddleware(), corsHeader(request))
+    route(WithHeaderController.withMiddleware(), middlewareHeader())
   get "nothing/":
     route(WithHeaderController.nothing())
-
+  get "middlewar_header_json/":
+    route(WithHeaderController.middlewar_header_json(), middlewareHeader())
 
 routes:
   options re".*":
