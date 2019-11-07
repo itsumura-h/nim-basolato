@@ -3,7 +3,7 @@ import ../../src/shiotsuchi/controller
 
 proc middlewar_header*():Response =
   return render("ミドルウェアありヘッダーあり").header("Header-Status", "ヘッダーあり")
-                                            .header("key1", "value1")
+                                            .header("key1", "value1++")
                                             .header("key2", "value2")
                                             .header("key3", ["a", "b", "c"])
 
@@ -22,6 +22,6 @@ proc nothing*():Response =
 proc middlewar_header_json*():Response =
   return render(%*{"message": "ミドルウェアありヘッダーありJson"})
     .header("Header-Status", "ヘッダーあり")
-    .header("key1", "value1")
+    .header("key1", "value1++")
     .header("key2", "value2")
     .header("key3", ["a", "b", "c"])

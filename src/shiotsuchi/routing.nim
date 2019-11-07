@@ -1,66 +1,56 @@
+import tables
 import jester
 import BaseClass
 
 export jester
 
-proc setContentType*(responseArg:Response):Response =
-  var newHeaders = responseArg.headers
-  case responseArg.responseType:
-  of String:
-    newHeaders.add(("Content-Type", "text/html;charset=utf-8"))
-  of Json:
-    newHeaders.add(("Content-Type", "application/json"))
-  
-  return Response(
-    status: responseArg.status,
-    bodyString: responseArg.bodyString,
-    bodyJson: responseArg.bodyJson,
-    responseType: responseArg.responseType,
-    headers: newHeaders 
-  )
 
 template route*(r:Response) =
-  let r2 = setContentType(r)
-  case r2.responseType:
+  var newHeaders = r.headers
+  case r.responseType:
   of String:
-    resp r2.status, r2.headers, r2.bodyString
+    newHeaders.add(("Content-Type", "text/html;charset=utf-8"))
+    resp r.status, newHeaders, r.bodyString
   of Json:
-    resp r2.status, r2.headers, $(r2.bodyJson)
+    newHeaders.add(("Content-Type", "application/json"))
+    resp r.status, newHeaders, $(r.bodyJson)
 
 # =============================================================================
 
-proc joinHeader*(responseArg:Response,
-                headers:openArray[tuple[key, value: string]]):Response =
-  var newHeaders = responseArg.headers
+proc joinHeader(t1, t2:openArray[tuple[key, value: string]]):seq[tuple[key, value: string]] =
+  ## join t1 and t2. t2 can override t1 if both have same key
+  ##
+  ## .. code-block:: nim
+  ##    var t1 = [("key1", "val1"),("key2", "val2")]
+  ##
+  ##    var t2 = [("key1", "val1++"),("key3", "val3")]
+  ##
+  ##    var t3 = [
+  ##      ("key1", "val1++"),
+  ##      ("key2", "val2"),
+  ##      ("key3", "val3"),
+  ##    ]
+  ##
+  var t1_1 = t1.toOrderedTable
+  let t2_1 = t2.toOrderedTable
+  for key, val in t2_1.pairs:
+    t1_1[key] = val
+  var t3: seq[tuple[key, value:string]]
+  for key, val in t1_1.pairs:
+    t3.add((key, val))
+  return t3
 
-  if newHeaders.len > 0:
-    for h in headers:
-      newHeaders.add(h)
-  else:
-    newHeaders = @headers
 
-  case responseArg.responseType:
+template route*(r:Response,
+                middleareHeaders:openArray[tuple[key, value: string]]) =
+  var newHeaders = joinHeader(middleareHeaders, r.headers)
+  case r.responseType:
   of String:
     newHeaders.add(("Content-Type", "text/html;charset=utf-8"))
+    resp r.status, newHeaders, r.bodyString
   of Json:
     newHeaders.add(("Content-Type", "application/json"))
-
-  return Response(
-    status: responseArg.status,
-    bodyString: responseArg.bodyString,
-    bodyJson: responseArg.bodyJson,
-    responseType: responseArg.responseType,
-    headers: newHeaders 
-  )
-
-template route*(responseArg:Response,
-                middleareHeaders:openArray[tuple[key, value: string]]) =
-  let r2 = joinHeader(responseArg, middleareHeaders)
-  case r2.responseType:
-  of String:
-    resp r2.status, r2.headers, r2.bodyString
-  of Json:
-    resp r2.status, r2.headers, $(r2.bodyJson)
+    resp r.status, newHeaders, $(r.bodyJson)
 
 
 

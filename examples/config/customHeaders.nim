@@ -26,4 +26,7 @@ proc corsHeader*(request: Request): seq =
   return headers
 
 proc middlewareHeader*():seq =
-  return @[("MiddlewareHeaderStatus", "ヘッダーあり")]
+  return @[
+    ("MiddlewareHeaderStatus", "ヘッダーあり"),
+    ("key1", "val1")
+  ]

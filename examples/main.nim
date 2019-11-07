@@ -1,4 +1,4 @@
-import asyncdispatch, httpcore, strutils, re, json, sugar, tables
+import asyncdispatch, httpcore, strutils, re, json, tables
 
 import ../src/shiotsuchi/routing
 import ../src/shiotsuchi/controller
