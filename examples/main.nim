@@ -1,14 +1,15 @@
 import asyncdispatch, httpcore, strutils, re, json, sugar, tables
 
-import ../src/shihotsuchi/routing
-import ../src/shihotsuchi/controller
-import ../src/shihotsuchi/middleware
+import ../src/shiotsuchi/routing
+import ../src/shiotsuchi/controller
+import ../src/shiotsuchi/middleware
 
 import config/middlewares
 from config/customHeaders import corsHeader
 import controllers/ToppageController
 import controllers/SampleController
 import controllers/ManageUsersController
+import controllers/WithHeaderController
 
 proc testMiddleware() =
   echo "==================== testMiddlewar ===================="
@@ -43,6 +44,16 @@ router sample:
     middleware([check1(), check2()])
     route(SampleController.fib(@"num"), corsHeader(request))
 
+router withHeaders:
+  get "middlewar_header/":
+    route(WithHeaderController.middlewar_header(), corsHeader(request))
+  get "header/":
+    route(WithHeaderController.withHeader())
+  get "middleware/":
+    route(WithHeaderController.withMiddleware(), corsHeader(request))
+  get "nothing/":
+    route(WithHeaderController.nothing())
+
 
 routes:
   options re".*":
@@ -60,6 +71,9 @@ routes:
   
   # ManageUsers
   extend manageUsers, "/ManageUsers/"
+
+  # ミドルウェア&ヘッダー
+  extend withHeaders, "/withHeader/"
 
 
 runForever()

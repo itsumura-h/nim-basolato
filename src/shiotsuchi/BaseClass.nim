@@ -1,4 +1,4 @@
-import json
+import json, tables
 import jester
 
 type
@@ -7,6 +7,8 @@ type
     bodyString*: string
     bodyJson*: JsonNode
     responseType*: ResponseType
+    # headers*: seq[Table[string, string]]
+    headers*: seq[tuple[key, value:string]]
 
   ResponseType* = enum
     Nil

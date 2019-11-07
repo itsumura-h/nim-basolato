@@ -1,7 +1,6 @@
 import json
 from strutils import parseInt
-import jester
-import ../../src/shihotsuchi/controller
+import ../../src/shiotsuchi/controller
 
 # service
 import ../services/domain_services/ManageUsersService

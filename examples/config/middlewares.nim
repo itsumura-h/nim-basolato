@@ -1,5 +1,4 @@
-import jester
-import ../../src/shihotsuchi/controller
+import ../../src/shiotsuchi/controller
 
 
 proc checkLogin*(request: Request):Response =

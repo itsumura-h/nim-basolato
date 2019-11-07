@@ -1,6 +1,6 @@
 import strutils, json
 
-import ../src/shihotsuchi
+import ../src/shiotsuchi
 import controllers/RootController
 import config/customHeaders
 

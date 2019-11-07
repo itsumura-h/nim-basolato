@@ -1,7 +1,7 @@
 import json
 import jester
-import ../../src/shihotsuchi
-export jester, shihotsuchi
+import ../../src/shiotsuchi
+export jester, shiotsuchi
 
 proc root*(request:Request):Response =
   let params = request.params

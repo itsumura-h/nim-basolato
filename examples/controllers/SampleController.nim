@@ -1,6 +1,6 @@
 from strutils import parseInt
 from json import `$`
-import ../../src/shihotsuchi/controller
+import ../../src/shiotsuchi/controller
 include ../services/domain_services/SampleService
 
 # html
