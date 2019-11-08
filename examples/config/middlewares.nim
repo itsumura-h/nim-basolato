@@ -1,8 +1,10 @@
-import ../../src/shiotsuchi/controller
+# import ../../src/shiotsuchi/controller
+import ../../src/shiotsuchi/middleware
 
 
 proc checkLogin*(request: Request):Response =
   try:
+    echo request.headers
     let loginId = request.headers["X-login-id"]
     echo loginId
     echo "========== " & loginId & " =========="

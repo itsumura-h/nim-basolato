@@ -1,7 +1,5 @@
 import json
-import jester
-import ../../src/shiotsuchi
-export jester, shiotsuchi
+import ../../src/shiotsuchi/controller
 
 proc root*(request:Request):Response =
   let params = request.params
