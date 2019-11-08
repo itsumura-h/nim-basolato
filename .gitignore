@@ -18,3 +18,4 @@ lcov.info
 
 *.sqlite3
 migration.json
+example2

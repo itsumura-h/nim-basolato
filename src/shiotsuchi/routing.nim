@@ -1,8 +1,8 @@
-import tables
+import json, tables
 import jester
 import BaseClass
 
-export jester
+export jester, BaseClass
 
 
 template route*(r:Response) =
