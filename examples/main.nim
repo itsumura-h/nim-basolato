@@ -43,6 +43,8 @@ router sample:
   get "fib/@num/":
     middleware([check1(), check2()])
     route(SampleController.fib(@"num"), corsHeader(request))
+  get "todo/":
+    route(SampleController.todo())
 
 router withHeaders:
   get "middlewar_header/":

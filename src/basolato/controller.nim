@@ -1,4 +1,4 @@
-import json
+import json, os
 import jester
 import BaseClass
 export
@@ -41,3 +41,11 @@ proc header*(r:Response, key:string, valuesArg:openArray[string]):Response =
 
   response.headers.add((key, value))
   return response
+
+# load html
+proc html*(r_path:string):string =
+  block:
+    let path = getCurrentDir() & r_path
+    let f = open(path, fmRead)
+    result = $(f.readAll)
+    defer: f.close()

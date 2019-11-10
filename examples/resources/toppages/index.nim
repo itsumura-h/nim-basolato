@@ -7,6 +7,7 @@ proc indexHtml*(): string = tmpli html"""
   <p><a href="/sample/">sample</a></p>
   <p><a href="/sample/checkLogin/">checkLogin</a></p>
   <p><a href="/sample/fib/30/">fib</a></p>
+  <p><a href="/sample/todo/">Karax TodoApp</a></p>
   <p><a href="/ManageUsers/">ManageUsers</a></p>
   <p><a href="/withHeader/middlewar_header/">ミドルウェアありヘッダーあり</a></p>
   <p><a href="/withHeader/header/">ミドルウェアなしヘッダーあり</a></p>

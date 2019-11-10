@@ -16,4 +16,4 @@ To references
 This framework depends on following libralies
 - [Jester](https://github.com/dom96/jester), Micro web framework
 - [nim-templates](https://github.com/onionhammer/nim-templates), A simple string templating library
-- [allographer](), query builder library
+- [allographer](https://github.com/itsumura-h/nim-allographer), query builder library
