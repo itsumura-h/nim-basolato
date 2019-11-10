@@ -1,4 +1,4 @@
-import ../../src/shiotsuchi/controller
+import ../../src/basolato/controller
 # html
 include ../resources/templates/toppages/index
 include ../resources/templates/toppages/vue

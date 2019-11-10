@@ -2,13 +2,14 @@
 
 version       = "0.1.0"
 author        = "Hidenobu Itsumura @dumblepytech1 as 'medy'"
-description   = "Shiotsuchi a Nim fullstack web framework"
+description   = "A fullstack web framework library for Nim"
 license       = "MIT"
 srcDir        = "src"
-bin           = @["cli/web"] # ここはパッケージの名前によって変わる
+backend       = "c"
+bin           = @["cli/ducere"]
 binDir        = "src/bin"
 installExt    = @["nim"]
-skipDirs      = @["cli/shiotsuchi"]
+skipDirs      = @["cli"]
 
 
 # Dependencies

@@ -1,6 +1,6 @@
-Shiotsuchi
+Basolato Framework
 ===
-A Fullstack Web Framework for Nim
+A Fullstack Web Framework for Nim based on Jester
 
 
 To references
@@ -12,3 +12,8 @@ To references
 |Python|Masonite|
 |Java/Scala|Play|
 |Go|Revel|
+
+This framework depends on following libralies
+- [Jester](https://github.com/dom96/jester), Micro web framework
+- [nim-templates](https://github.com/onionhammer/nim-templates), A simple string templating library
+- [allographer](), query builder library

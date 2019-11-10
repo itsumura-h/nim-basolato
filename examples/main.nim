@@ -1,8 +1,8 @@
 import asyncdispatch, httpcore, strutils, re, json, tables
 
-import ../src/shiotsuchi/routing
-import ../src/shiotsuchi/controller
-import ../src/shiotsuchi/middleware
+import ../src/basolato/routing
+import ../src/basolato/controller
+import ../src/basolato/middleware
 
 import config/middlewares
 from config/customHeaders import corsHeader, middlewareHeader

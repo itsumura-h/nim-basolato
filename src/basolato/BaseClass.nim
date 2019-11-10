@@ -1,5 +1,6 @@
 import json, tables
 import jester
+export jester
 
 type
   Response* = ref object
@@ -7,7 +8,6 @@ type
     bodyString*: string
     bodyJson*: JsonNode
     responseType*: ResponseType
-    # headers*: seq[Table[string, string]]
     headers*: seq[tuple[key, value:string]]
 
   ResponseType* = enum

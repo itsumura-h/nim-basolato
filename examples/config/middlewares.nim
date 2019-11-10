@@ -1,5 +1,5 @@
-# import ../../src/shiotsuchi/controller
-import ../../src/shiotsuchi/middleware
+# import ../../src/basolato/controller
+import ../../src/basolato/middleware
 
 
 proc checkLogin*(request: Request):Response =

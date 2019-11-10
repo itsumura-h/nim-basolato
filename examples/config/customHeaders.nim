@@ -1,4 +1,6 @@
-import jester
+from strutils import join
+
+import ../../src/basolato/BaseClass
 
 
 proc corsHeader*(request: Request): seq =
@@ -7,7 +9,7 @@ proc corsHeader*(request: Request): seq =
     ("Access-Control-Allow-Origin", "*")
   ]
 
-  var allowedMethods = [
+  var allowedMethods = @[
     "OPTIONS",
     "GET",
     "POST",
@@ -17,7 +19,7 @@ proc corsHeader*(request: Request): seq =
   if allowedMethods[0] != "":
     headers.add(("Access-Control-Allow-Methods", allowedMethods.join(", ")))
 
-  var allowedHeaders = [
+  var allowedHeaders = @[
     "X-login-id"
   ]
   if allowedHeaders[0] != "":

@@ -1,6 +1,6 @@
 import json
 from strutils import parseInt
-import ../../src/shiotsuchi/controller
+import ../../src/basolato/controller
 
 # service
 import ../services/domain_services/ManageUsersService

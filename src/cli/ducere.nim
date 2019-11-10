@@ -1,6 +1,6 @@
 import
-  shiotsuchi/createProject,
-  shiotsuchi/makeFile
+  functions/createProject,
+  functions/makeFile
 
 when isMainModule:
   import cligen

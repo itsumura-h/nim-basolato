@@ -1,5 +1,5 @@
 import json
-import ../../src/shiotsuchi/controller
+import ../../src/basolato/controller
 
 proc middlewar_header*():Response =
   return render("ミドルウェアありヘッダーあり").header("Header-Status", "ヘッダーあり")
