@@ -6,10 +6,10 @@ import ../src/basolato/middleware
 
 import config/middlewares
 from config/customHeaders import corsHeader, middlewareHeader
-import controllers/ToppageController
-import controllers/SampleController
-import controllers/ManageUsersController
-import controllers/WithHeaderController
+import app/controllers/ToppageController
+import app/controllers/SampleController
+import app/controllers/ManageUsersController
+import app/controllers/WithHeaderController
 
 proc testMiddleware() =
   echo "==================== testMiddlewar ===================="

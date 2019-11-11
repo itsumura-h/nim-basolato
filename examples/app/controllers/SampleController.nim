@@ -1,10 +1,10 @@
 from strutils import parseInt
 from json import `$`
-import ../../src/basolato/controller
+import ../../../src/basolato/controller
 include ../services/domain_services/SampleService
 
 # html
-import  "../resources/sample/index.tmpl"
+import  "../../resources/sample/index.tmpl"
 
 
 proc index*(): Response =

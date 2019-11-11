@@ -1,15 +1,15 @@
 import json
 from strutils import parseInt
-import ../../src/basolato/controller
+import ../../../src/basolato/controller
 
 # service
 import ../services/domain_services/ManageUsersService
 
 # html
-include ../resources/base
-include ../resources/manage_users/index
-include ../resources/manage_users/show
-include ../resources/manage_users/create
+include ../../resources/base
+include ../../resources/manage_users/index
+include ../../resources/manage_users/show
+include ../../resources/manage_users/create
 
 proc index*(): Response =
   let users = ManageUsersService().index()

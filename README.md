@@ -90,17 +90,17 @@ Following HTTP Verbs are valid.
 
 |verb|explanation|
 |---|---|
-|get|Getting list of resources.|
-|post|Creating new resource.|
-|put|Updating single resource.|
-|patch|Update single resource.|
-|delete|Deleting single resource.|
-|head|Getting the same response without response body.|
-|options|Getting list of response headers before post/put/patch/delete/ access by client API software such as [Axios/JavaScript](https://github.com/axios/axios) and [Curl/sh](https://curl.haxx.se/).|
+|get|Gets list of resources.|
+|post|Creates new resource.|
+|put|Updates single resource.|
+|patch|Updates single resource.|
+|delete|Deletes single resource.|
+|head|Gets the same response but without response body.|
+|options|Gets list of response headers before post/put/patch/delete/ access by client API software such as [Axios/JavaScript](https://github.com/axios/axios) and [Curl/sh](https://curl.haxx.se/).|
 |trace|Performs a message loop-back test along the path to the target resource, providing a useful debugging mechanism.|
 |connect|Starts two-way communications with the requested resource. It can be used to open a tunnel.|
 |error||
-|before|Run before get/post/put/patch/delete access.
+|before|Run before get/post/put/patch/delete access.|
 |after|Run after get/post/put/patch/delete access.|
 
 ## Routing group

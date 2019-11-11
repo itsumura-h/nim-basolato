@@ -1,8 +1,8 @@
-import ../../src/basolato/controller
+import ../../../src/basolato/controller
 # html
-include ../resources/toppages/index
-include ../resources/toppages/vue
-include ../resources/toppages/react
+include ../../resources/toppages/index
+include ../../resources/toppages/vue
+include ../../resources/toppages/react
 
 
 proc index*(): Response =

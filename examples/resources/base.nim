@@ -1,5 +1,4 @@
 import templates
-import json
 
 proc base_html*(context: string): string = tmpli html"""
 <html>

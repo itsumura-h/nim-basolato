@@ -1,9 +1,7 @@
 import json
 import allographer/QueryBuilder
 
-type ManageUsersRepository* = ref object of RootObj
-
-proc index*(this: ManageUsersRepository): JsonNode =
+proc index*(): JsonNode =
   let users = RDB().table("users").get()
   echo users
   var usersJson = %[]
@@ -21,7 +19,7 @@ proc index*(this: ManageUsersRepository): JsonNode =
   return usersJson
 
 
-proc show*(this: ManageUsersRepository, id: int): JsonNode =
+proc show*(id: int): JsonNode =
   let user = RDB().table("users").find(id)
   return %*{
     "id": user[0],
