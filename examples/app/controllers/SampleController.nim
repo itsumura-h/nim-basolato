@@ -15,5 +15,9 @@ proc fib*(num: string): Response =
   return render(SampleService().fib(new_num))
 
 proc todo*():Response =
-  let path = "/resources/karax/todoapp.html"
+  let path = "resources/karax/todoapp.html"
+  return render(html(path))
+
+proc karax*():Response =
+  let path = "resources/sample/karax.html"
   return render(html(path))

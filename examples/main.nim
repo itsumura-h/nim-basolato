@@ -45,6 +45,8 @@ router sample:
     route(SampleController.fib(@"num"), corsHeader(request))
   get "todo/":
     route(SampleController.todo())
+  get "karax/":
+    route(SampleController.karax())
 
 router withHeaders:
   get "middlewar_header/":

@@ -125,7 +125,7 @@ In following example, `loginCheck(request)` and `someMiddleware()` definded in `
 import basolato/routing
 import basolato/middleware
 
-from config/middlewares import someMiddleware
+from config/middlewares import loginCheck, someMiddleware
 import app/controllers/SomeController
 
 routes:
@@ -140,7 +140,7 @@ routes:
 
 ## Coustom Headers
 You can set custom headers by setting 2nd arg or `route()`  
-Procs which define custom headers have to return `varges[(key, value: string)]`
+Procs which define custom headers have to return `@[(key, value: string)]` or `[(key, value: string)]`
 ```
 import basolato/routing
 from config/CustomHeaders import corsHeader
