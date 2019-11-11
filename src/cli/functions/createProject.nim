@@ -60,7 +60,7 @@ Schema().create([
 proc createMVC(packageDir:string):int =
   let dirPath = getCurrentDir() & "/" & packageDir
   let mainPath = dirPath & "/main.nim"
-  let costomHeadersPath = dirPath & "/config/customHeaders.nim"
+  let costomHeadersPath = dirPath & "/config/CustomHeaders.nim"
   let migrationPath = dirPath & "/migrations/0001migration.nim"
 
   try:

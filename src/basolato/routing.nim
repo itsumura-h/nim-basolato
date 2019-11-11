@@ -25,7 +25,10 @@ proc joinHeader(t1, t2:openArray[tuple[key, value: string]]):seq[tuple[key, valu
   ##
   ##    var t2 = [("key1", "val1++"),("key3", "val3")]
   ##
-  ##    var t3 = [
+  ##    var t3 = joinHeader(t1, t2)
+  ##
+  ##    echo t3
+  ##    >> [
   ##      ("key1", "val1++"),
   ##      ("key2", "val2"),
   ##      ("key3", "val3"),
