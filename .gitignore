@@ -21,3 +21,4 @@ migration.json
 example2
 *.out
 karax
+*.js
