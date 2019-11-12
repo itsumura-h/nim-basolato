@@ -1,28 +1,41 @@
+import json
 include karax / prelude
 from sugar import `=>`
 
-var text1, text2 = ""
-var list:seq[tuple[key, value:string]] = @[]
+# var text1, text2 = ""
+# var list:seq[tuple[key, value:string]] = @[]
+
+var state = %*{
+  "text1": "",
+  "text2": "",
+  "list": @[]
+}
+
 
 # =========================================================================
-proc init() =
-  echo "コンストラクタ"
+proc mounted() =
+  echo "コンストラクタ1"
 
-proc getText(id:string, target:var string) =
-  target = $(getVNodeById(id).text)
+proc getText(id:string) =
+  echo "Page1 getText"
+  state[id] = %*($(getVNodeById(id).text))
 
 proc addList() =
-  if text1.len() > 0 and text2.len() > 0:
-    list.add(
-      (text1, text2)
+  echo "Page1 addList"
+  if state["text1"].getStr.len() > 0 and state["text2"].getStr.len() > 0:
+    state["list"].add(
+      %*{"key": state["text1"].getStr, "value": state["text2"].getStr}
     )
 
 proc resetList() =
-  list = @[]
+  echo "Page1 resetList"
+  state["list"] = %* @[]
 
 # =========================================================================
-init()
-proc createDom*(): VNode =
+mounted()
+proc render*(): VNode =
+  echo "render page1"
+  echo state
   result = buildHtml(tdiv):
     p:
       a(href="/sample/karax/#page2"):
@@ -31,19 +44,23 @@ proc createDom*(): VNode =
       a(href="/"):
         text "トップページへ"
     h1(class="uk-heading-divider"): text "Page 1"
-    input(`type`="text", id="input1",
-      onchange = () => getText("input1", text1)
+    input(`type`="text", id="text1", 
+      onchange = () => (getText("text1"))
     )
-    input(`type`="text", id="input2",
-      onchange = () => getText("input2", text2)
+    input(`type`="text", id="text2",
+      onchange = () => (getText("text2"))
     )
     tdiv(class="uk-button-group"):
-      button(class="uk-button uk-button-default", onclick=addList):
+      button(class="uk-button uk-button-default",
+        onclick = () => (addList())
+      ):
         text "送信"
-      button(class="uk-button uk-button-default", onclick=resetList):
+      button(class="uk-button uk-button-default",
+        onclick = () => (resetList())
+      ):
         text "リセット"
     table(class="uk-table uk-table-hover"):
-      for v in list:
+      for v in state["list"]:
         tr:
-          td: text(v.key)
-          td: text(v.value)
+          td: text(v["key"].getStr)
+          td: text(v["value"].getStr)
