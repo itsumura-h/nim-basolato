@@ -44,9 +44,9 @@ proc header*(r:Response, key:string, valuesArg:openArray[string]):Response =
 
 # load html
 proc html*(r_path:string):string =
-  ## arg r_path is relative path from main.nim
+  ## arg r_path is relative path in /resources
   block:
-    let path = getCurrentDir() & "/" & r_path
+    let path = getCurrentDir() & "/resources/" & r_path
     let f = open(path, fmRead)
     result = $(f.readAll)
     defer: f.close()

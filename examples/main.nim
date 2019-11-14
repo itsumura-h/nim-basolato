@@ -34,6 +34,7 @@ router manageUsers:
   put "@id/":
     route(ManageUsersController.update(@"id"))
 
+
 router sample:
   get "":
     route(SampleController.index(), corsHeader(request))
@@ -43,10 +44,7 @@ router sample:
   get "fib/@num/":
     middleware([check1(), check2()])
     route(SampleController.fib(@"num"), corsHeader(request))
-  get "todo/":
-    route(SampleController.todo())
-  get re"karax/.*":
-    route(SampleController.karax())
+
 
 router withHeaders:
   get "middlewar_header/":
@@ -60,10 +58,11 @@ router withHeaders:
   get "middlewar_header_json/":
     route(WithHeaderController.middlewar_header_json(), middlewareHeader())
 
+
 routes:
   options re".*":
     route(render(""), corsHeader(request))
-  
+
   # Toppage
   get "/":
     route(ToppageController.index())

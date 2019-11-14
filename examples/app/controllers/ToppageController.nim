@@ -1,12 +1,11 @@
 import ../../../src/basolato/controller
 # html
-include ../../resources/toppages/index
-include ../../resources/toppages/vue
-include ../../resources/toppages/react
+import ../../resources/toppages/vue
+import ../../resources/toppages/react
 
 
 proc index*(): Response =
-  return render(indexHtml())
+  return render(html("toppages/index.html"))
 
 proc react*(): Response =
   let message = "React Installed"
