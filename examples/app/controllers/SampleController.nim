@@ -11,5 +11,6 @@ proc index*(): Response =
   return render(index_html())
 
 proc fib*(num: string): Response =
+  echo "call controller ==================="
   let new_num = num.parseInt
   return render(SampleService().fib(new_num))

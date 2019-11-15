@@ -1,14 +1,23 @@
 type User* = ref object
   name:string
 
-proc setName(this:User, name:string):User =
+proc add1(s: var string) =
+  s.add("1")
+
+proc setName(this:var User, name:string) =
   this.name = name
-  return this
+  # return this
 
 proc getName(this:User):string =
   this.name
 
-var taro = User().setName("taro")
-echo taro.getName()
-var jiro = taro.setName("jiro")
-echo jiro.getName()
+var user = User()
+user.setName("taro")
+echo user.getName()
+user.setName("jiro")
+echo user.getName()
+
+# var jiro = taro.setName("jiro")
+# echo jiro.getName()
+
+

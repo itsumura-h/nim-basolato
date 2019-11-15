@@ -1,19 +1,27 @@
-import json, tables
+import json, tables, macros
 import jester
 import BaseClass
 
 export jester, BaseClass
 
 
-template route*(r:Response) =
-  var newHeaders = r.headers
-  case r.responseType:
-  of String:
-    newHeaders.add(("Content-Type", "text/html;charset=utf-8"))
-    resp r.status, newHeaders, r.bodyString
-  of Json:
-    newHeaders.add(("Content-Type", "application/json"))
-    resp r.status, newHeaders, $(r.bodyJson)
+template route*(rArg: Response) =
+  block:
+    let r = rArg
+    echo "template 1 ===================="
+    var newHeaders = r.headers
+    echo "template 2 ===================="
+    case r.responseType:
+    of String:
+      echo "template 3 string ===================="
+      newHeaders.add(("Content-Type", "text/html;charset=utf-8"))
+      echo "template 4 string ===================="
+      resp r.status, newHeaders, r.bodyString
+    of Json:
+      echo "template 3 json ===================="
+      newHeaders.add(("Content-Type", "application/json"))
+      echo "template 4 json ===================="
+      resp r.status, newHeaders, $(r.bodyJson)
 
 # =============================================================================
 
@@ -46,14 +54,15 @@ proc joinHeader(t1, t2:openArray[tuple[key, value: string]]):seq[tuple[key, valu
 
 template route*(r:Response,
                 middleareHeaders:openArray[tuple[key, value: string]]) =
-  var newHeaders = joinHeader(middleareHeaders, r.headers)
-  case r.responseType:
-  of String:
-    newHeaders.add(("Content-Type", "text/html;charset=utf-8"))
-    resp r.status, newHeaders, r.bodyString
-  of Json:
-    newHeaders.add(("Content-Type", "application/json"))
-    resp r.status, newHeaders, $(r.bodyJson)
+  block:
+    var newHeaders = joinHeader(middleareHeaders, r.headers)
+    case r.responseType:
+    of String:
+      newHeaders.add(("Content-Type", "text/html;charset=utf-8"))
+      resp r.status, newHeaders, r.bodyString
+    of Json:
+      newHeaders.add(("Content-Type", "application/json"))
+      resp r.status, newHeaders, $(r.bodyJson)
 
 
 
