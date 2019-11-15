@@ -81,8 +81,10 @@ import app/controllers/SomeController
 routes:
   get "/":
     route(SomeController.index())
+  post "/":
+    route(SomeController.create(request))
   get "/@id":
-    route(SomeController.index(@"id"))
+    route(SomeController.show(@"id"))
 ```
 
 ## HTTP_Verbs
@@ -132,9 +134,12 @@ routes:
   get "/":
     middlware([loginCheck(request), someMiddleware()])
     route(SomeController.index())
+  post "/":
+    middlware([loginCheck(request), someMiddleware()])
+    route(SomeController.create(request))
   get "/@id":
     middlware([loginCheck(request), someMiddleware()])
-    route(SomeController.index(@"id"))
+    route(SomeController.show(@"id"))
 ```
 
 
@@ -143,19 +148,134 @@ You can set custom headers by setting 2nd arg or `route()`
 Procs which define custom headers have to return `@[(key, value: string)]` or `[(key, value: string)]`
 ```
 import basolato/routing
+
 from config/CustomHeaders import corsHeader
 import app/controllers/SomeController
 
 routes:
   get "/":
     route(SomeController.index(), corsHeader(request))
+  post "/":
+    route(SomeController.create(request), corsHeader(request))
   get "/@id":
-    route(SomeController.index(@"id"), corsHeader(request))
+    route(SomeController.show(@"id"), corsHeader(request))
 ```
 
 
 # Controller
 [to index](#index)
+
+## Creating a Controller
+`ducere make controller` command can create controller.
+
+```
+ducere make controller User
+>> app/controllers/UserController.nim
+
+ducere make controller sample/User
+>> app/controllers/sample/UserController.nim
+
+ducere make controller sample/sample2/User
+>> app/controllers/sample/sample2/UserController.nim
+```
+
+Resource controllers are controllers that have basic CRUD / resource style methods to them.  
+Generated controller is resource controller.
+
+```
+proc index*(): Response =
+  return render("index")
+
+proc show*(idArg: string): Response =
+  let id = idArg.parseInt
+  return render("show")
+
+proc create*(): Response =
+  return render("create")
+
+proc store*(request: Request): Response =
+  return render("store")
+
+proc edit*(idArg: string): Response =
+  let id = idArg.parseInt
+  return render("edit")
+
+proc update*(request: Request): Response =
+  return render("update")
+
+proc destroy*(idArg: string): Response =
+  let id = idArg.parseInt
+  return render("destroy")
+```
+
+## Returning string
+If you set string in `render` proc, controller returns string.
+```
+proc index*(): Response =
+  return render("index")
+```
+
+## Returning HTML file
+If you set html file path in `html` proc, controller returns HTML.  
+This file path should be relative path from `resources` dir
+
+```
+proc index*(): Response =
+  return render(html("sample/index.html"))
+
+>> display /resources/sample/index.html
+```
+
+## Returning template
+Call template proc with args in `render` will return template
+
+```
+# resources/sample/index.nim
+
+import tampleates
+
+proc indexHtml(name:string):string = tmpli html"""
+<h1>index</h1>
+<p>$name</p>
+"""
+```
+
+```
+import resources/sample/index
+
+proc index*(): Response =
+  return render(indexHtml("John"))
+```
+
+## Returning JSON
+If you set JsonNode in `render` proc, controller returns JSON.
+
+```
+proc index*(): Response =
+  return render(
+    %*{"key": "value"}
+  )
+```
+
+## Response status
+Put response status code arge1 and response body arge2
+```
+proc index*(): Response =
+  return render(HTTP500 "It is a response body")
+```
+
+[Here](https://nim-lang.org/docs/httpcore.html#10) is the list of response status code available.  
+[Here](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) is a experiment of HTTP status code
+
+## Coustom Headers
+`headers` proc with method chain with `render` will set custom response header. If same key of header set in `main.nim`, it will be overwitten.
+```
+proc index*(): Response =
+  return render("with headers")
+    .header("key1", "value1")
+    .header("key2", "value2")
+    .header("key3", ["a", "b", "c"])
+```
 
 # Model
 [to index](#index)
