@@ -4,10 +4,12 @@ include ../ApplicationService
 type SampleService* = ref object of RootObj
 
 proc fib*(this: SampleService, num: int): JsonNode =
+  echo "access service ================================"
   var results: seq[int]
   
   let start_time = getTime()
   for i in 0..<num:
+    echo i
     results.add(ApplicationService().fib(i))
   let end_time = getTime() - start_time # Duration型
 

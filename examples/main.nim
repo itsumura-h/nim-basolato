@@ -1,4 +1,4 @@
-import asyncdispatch, httpcore, strutils, re, json, tables
+import asyncdispatch, httpcore, strutils, re, json, tables, macros
 
 import ../src/basolato/routing
 import ../src/basolato/controller
@@ -42,8 +42,11 @@ router sample:
     middleware([checkLogin(request)])
     route(SampleController.index(), corsHeader(request))
   get "fib/@num/":
+    echo "access route ====================="
     middleware([check1(), check2()])
-    route(SampleController.fib(@"num"), corsHeader(request))
+    # route(SampleController.fib(@"num"), corsHeader(request))
+    let r  = SampleController.fib(@"num")
+    resp r.bodyJson
 
 
 router withHeaders:
@@ -80,7 +83,7 @@ routes:
   extend withHeaders, "/withHeader/"
 
 
-runForever()
+# runForever()
 
 # proc main() =
 #   let port = 8000.Port

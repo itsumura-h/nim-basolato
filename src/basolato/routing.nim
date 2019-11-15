@@ -5,13 +5,12 @@ import BaseClass
 export jester, BaseClass
 
 
-template route*(r:Response) =
+template route*(r) =
   var newHeaders = r.headers
-  case r.responseType:
-  of String:
+  if r.responseType == String:
     newHeaders.add(("Content-Type", "text/html;charset=utf-8"))
     resp r.status, newHeaders, r.bodyString
-  of Json:
+  elif r.responseType == Json:
     newHeaders.add(("Content-Type", "application/json"))
     resp r.status, newHeaders, $(r.bodyJson)
 
@@ -44,14 +43,14 @@ proc joinHeader(t1, t2:openArray[tuple[key, value: string]]):seq[tuple[key, valu
   return t3
 
 
-template route*(r:Response,
-                middleareHeaders:openArray[tuple[key, value: string]]) =
+# template route*(r:Response,
+#                 middleareHeaders:openArray[tuple[key, value: string]]) =
+template route*(r, middleareHeaders) =
   var newHeaders = joinHeader(middleareHeaders, r.headers)
-  case r.responseType:
-  of String:
+  if r.responseType == String:
     newHeaders.add(("Content-Type", "text/html;charset=utf-8"))
     resp r.status, newHeaders, r.bodyString
-  of Json:
+  elif r.responseType == Json:
     newHeaders.add(("Content-Type", "application/json"))
     resp r.status, newHeaders, $(r.bodyJson)
 
