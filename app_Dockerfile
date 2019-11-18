@@ -10,4 +10,5 @@ RUN apk update && \
 RUN git config --global http.sslVerify false
 RUN nimble install -y bcrypt cligen coco jester && \
     nimble install https://github.com/itsumura-h/nim-allographer
+ENV PATH $PATH:/root/.nimble/bin
 WORKDIR /home/www

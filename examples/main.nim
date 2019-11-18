@@ -36,23 +36,14 @@ router manageUsers:
 
 
 router sample:
-  # get "":
-  #   route(SampleController.index(), corsHeader(request))
-  # get "checkLogin/":
-  #   middleware([checkLogin(request)])
-  #   route(SampleController.index(), corsHeader(request))
+  get "":
+    route(SampleController.index(), corsHeader(request))
+  get "checkLogin/":
+    middleware([checkLogin(request)])
+    route(SampleController.index(), corsHeader(request))
   get "fib/@num/":
     middleware([check1(), check2()])
-    # route(SampleController.fib(@"num"), corsHeader(request))
-    let r = SampleController.fib(@"num")
-    resp r.bodyJson
-  get "fib2/@num/":
-    # let r = SampleController.fib(@"num")
-    # route(r)
-    route(SampleController.fib(@"num"))
-    # route:
-    #   # r
-    #   SampleController.fib(@"num")
+    route(SampleController.fib(@"num"), corsHeader(request))
 
 router withHeaders:
   get "middlewar_header/":
