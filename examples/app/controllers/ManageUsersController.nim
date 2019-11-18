@@ -6,10 +6,10 @@ import ../../../src/basolato/controller
 import ../services/domain_services/ManageUsersService
 
 # html
-include ../../resources/base
-include ../../resources/manage_users/index
-include ../../resources/manage_users/show
-include ../../resources/manage_users/create
+import ../../resources/base
+import ../../resources/manage_users/index
+import ../../resources/manage_users/show
+import ../../resources/manage_users/create
 
 proc index*(): Response =
   let users = ManageUsersService().index()

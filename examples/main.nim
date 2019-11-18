@@ -1,4 +1,4 @@
-import asyncdispatch, httpcore, strutils, re, json, tables
+import asyncdispatch, httpcore, strutils, re, json, tables, macros
 
 import ../src/basolato/routing
 import ../src/basolato/controller
@@ -16,45 +16,45 @@ proc testMiddleware() =
 
 
 router toppage:
-  get "react/":
+  get "/react":
     route(ToppageController.react())
-  get "vue/":
+  get "/vue":
     route(ToppageController.vue())
 
 
 router manageUsers:
   get "":
     route(ManageUsersController.index())
-  get "create/":
+  get "/create":
     route(ManageUsersController.create())
   post "":
     route(ManageUsersController.store(request))
-  get "@id/":
+  get "/@id":
     route(ManageUsersController.show(@"id"))
-  put "@id/":
+  put "/@id":
     route(ManageUsersController.update(@"id"))
 
 
 router sample:
   get "":
     route(SampleController.index(), corsHeader(request))
-  get "checkLogin/":
+  get "/checkLogin":
     middleware([checkLogin(request)])
     route(SampleController.index(), corsHeader(request))
-  get "fib/@num/":
+  get "/fib/@num":
     middleware([check1(), check2()])
     route(SampleController.fib(@"num"), corsHeader(request))
 
 router withHeaders:
-  get "middlewar_header/":
+  get "/middlewar_header":
     route(WithHeaderController.middlewar_header(), middlewareHeader())
-  get "header/":
+  get "/header":
     route(WithHeaderController.withHeader())
-  get "middleware/":
+  get "/middleware":
     route(WithHeaderController.withMiddleware(), middlewareHeader())
-  get "nothing/":
+  get "/nothing":
     route(WithHeaderController.nothing())
-  get "middlewar_header_json/":
+  get "/middlewar_header_json":
     route(WithHeaderController.middlewar_header_json(), middlewareHeader())
 
 
@@ -65,21 +65,21 @@ routes:
   # Toppage
   get "/":
     route(ToppageController.index())
-  extend toppage, "/toppage/"
+  extend toppage, "/toppage"
 
   # Sample
-  # options re"/sample/.*":
-  #   middleware([checkLogin(request)])
-  extend sample, "/sample/"
+  options re"/sample.*":
+    middleware([checkLogin(request)])
+  extend sample, "/sample"
   
   # ManageUsers
-  extend manageUsers, "/ManageUsers/"
+  extend manageUsers, "/ManageUsers"
 
   # ミドルウェア&ヘッダー
-  extend withHeaders, "/withHeader/"
+  extend withHeaders, "/withHeader"
 
 
-runForever()
+# runForever()
 
 # proc main() =
 #   let port = 8000.Port

@@ -52,18 +52,18 @@ proc make*(args:seq[string]):int =
     todo:string
     target:string
 
+  # check whether you are in dir includes main.nim
+  let mainPath = getCurrentDir() & "/main.nim"
+  if existsFile(mainPath) == false:
+    message = "Wrong directory. You should be in project root directory"
+    styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)
+    return 0
+
   try:
     todo = args[0]
     target = args[1]
   except:
     message = "Missing args"
-    styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)
-    return 0
-
-  # check whether you are in dir includes main.nim
-  let mainPath = getCurrentDir() & "/main.nim"
-  if existsFile(mainPath) == false:
-    message = "Wrong directory. You should be in the dir which includes main.nim"
     styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)
     return 0
 
