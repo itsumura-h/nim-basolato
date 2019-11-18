@@ -44,7 +44,7 @@ proc header*(r:Response, key:string, valuesArg:openArray[string]):Response =
 
 # load html
 proc html*(r_path:string):string =
-  ## arg r_path is relative path in /resources
+  ## arg r_path is relative path from /resources/
   block:
     let path = getCurrentDir() & "/resources/" & r_path
     let f = open(path, fmRead)
