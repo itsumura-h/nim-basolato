@@ -13,7 +13,7 @@ import ../../resources/manage_users/create
 
 proc index*(): Response =
   let users = ManageUsersService().index()
-  let str_users = $users
+  let str_users = $(%users)
   let header = $[
     %*{"text": "id", "value": "id"},
     %*{"text": "name", "value": "name"},

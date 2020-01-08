@@ -30,19 +30,19 @@ Following libralies are not installed by automatically, but I have highly recomm
 
 # Introduction
 ## Install
-```
+```sh
 nimble install https://github.com/itsumura-h/nim-basolato
 ```
 
 ## Set up
 First of all, add nim binary path
-```
+```sh
 export PATH=$PATH:~/.nimble/bin
 ```
 After install basolato, "ducere" command is going to be available.
 
 ## Create project
-```
+```sh
 cd /your/project/dir
 ducere new
 ```
@@ -55,6 +55,7 @@ project directory will be created!
 |--config
 |  |--CustomHeaders.nim
 |  |--database.ini
+|  |--logging.ini
 |--main.nim
 |--migrations
 |  |--0001migration.nim
@@ -63,7 +64,7 @@ project directory will be created!
 ```
 
 You can specify project direcotry name
-```
+```sh
 cd /your/project/dir
 ducere new project_name
 >> create project to /your/project/dir/project_name
@@ -74,7 +75,7 @@ ducere new project_name
 
 Routing is written in `main.nim`. it is the entrypoint file of Basolato.  
 Routing of Basolato is exactory the same as `Jester`, although you can call controller method by `route()`
-```
+```nim
 import basolato/routing
 import app/controllers/SomeController
 
@@ -107,7 +108,7 @@ Following HTTP Verbs are valid.
 
 ## Routing group
 This functions is definded in `jester`
-```
+```nim
 router dashboard:
   get "/url1":
     route(DashboardController.url1())
@@ -123,7 +124,7 @@ routes:
 ## Middlware
 You can run middlware methods before calling controller.  
 In following example, `loginCheck(request)` and `someMiddleware()` definded in `config/middlewares` are called
-```
+```nim
 import basolato/routing
 import basolato/middleware
 
@@ -146,7 +147,7 @@ routes:
 ## Coustom Headers
 You can set custom headers by setting 2nd arg or `route()`  
 Procs which define custom headers have to return `@[(key, value: string)]` or `[(key, value: string)]`
-```
+```nim
 import basolato/routing
 
 from config/CustomHeaders import corsHeader
@@ -168,7 +169,7 @@ routes:
 ## Creating a Controller
 `ducere make controller` command can create controller.
 
-```
+```nim
 ducere make controller User
 >> app/controllers/UserController.nim
 
@@ -182,7 +183,7 @@ ducere make controller sample/sample2/User
 Resource controllers are controllers that have basic CRUD / resource style methods to them.  
 Generated controller is resource controller.
 
-```
+```nim
 proc index*(): Response =
   return render("index")
 
@@ -210,7 +211,7 @@ proc destroy*(idArg: string): Response =
 
 ## Returning string
 If you set string in `render` proc, controller returns string.
-```
+```nim
 proc index*(): Response =
   return render("index")
 ```
@@ -219,7 +220,7 @@ proc index*(): Response =
 If you set html file path in `html` proc, controller returns HTML.  
 This file path should be relative path from `resources` dir
 
-```
+```nim
 proc index*(): Response =
   return render(html("sample/index.html"))
 
@@ -229,7 +230,7 @@ proc index*(): Response =
 ## Returning template
 Call template proc with args in `render` will return template
 
-```
+```nim
 # resources/sample/index.nim
 
 import tampleates
@@ -240,7 +241,7 @@ proc indexHtml(name:string):string = tmpli html"""
 """
 ```
 
-```
+```nim
 import resources/sample/index
 
 proc index*(): Response =
@@ -250,7 +251,7 @@ proc index*(): Response =
 ## Returning JSON
 If you set JsonNode in `render` proc, controller returns JSON.
 
-```
+```nim
 proc index*(): Response =
   return render(
     %*{"key": "value"}
@@ -259,7 +260,7 @@ proc index*(): Response =
 
 ## Response status
 Put response status code arge1 and response body arge2
-```
+```nim
 proc index*(): Response =
   return render(HTTP500 "It is a response body")
 ```
@@ -269,7 +270,7 @@ proc index*(): Response =
 
 ## Coustom Headers
 `headers` proc with method chain with `render` will set custom response header. If same key of header set in `main.nim`, it will be overwitten.
-```
+```nim
 proc index*(): Response =
   return render("with headers")
     .header("key1", "value1")

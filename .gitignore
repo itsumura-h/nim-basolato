@@ -18,7 +18,8 @@ lcov.info
 
 *.sqlite3
 migration.json
-example2
+examples2
 *.out
 karax
 *.js
+*.log

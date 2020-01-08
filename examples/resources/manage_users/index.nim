@@ -1,5 +1,4 @@
 import templates
-import json
 
 proc index_html*(header: string, users: string): string = tmpli html"""
 <h1>ManageUsers index</h1>
@@ -37,7 +36,7 @@ proc index_html*(header: string, users: string): string = tmpli html"""
     },
     methods: {
       showItem: function (item) {
-        location.href = '/ManageUsers/' + item.id + '/'
+        location.href = '/ManageUsers/' + item.id
       }
     }
   })
