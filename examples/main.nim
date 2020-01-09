@@ -1,4 +1,4 @@
-import asyncdispatch, httpcore, strutils, re, json, tables, macros
+import asyncdispatch, httpcore, strutils, re, json, tables
 
 import ../src/basolato/routing
 import ../src/basolato/controller

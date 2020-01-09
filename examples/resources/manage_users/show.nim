@@ -1,5 +1,6 @@
 import templates
 import json
+import ../../../src/basolato/view
 
 proc show_html*(user: JsonNode): string = tmpli html"""
 <h1>ManageUsers show</h1>
@@ -8,7 +9,7 @@ proc show_html*(user: JsonNode): string = tmpli html"""
   $for key, value in user.pairs {
     <tr>
       <td>$(key)</td>
-      <td>$(value)</td>
+      <td>$(value.get)</td>
     </tr>
   }
 </table>

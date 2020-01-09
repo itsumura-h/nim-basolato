@@ -12,20 +12,19 @@ import ../../resources/manage_users/show
 import ../../resources/manage_users/create
 
 proc index*(): Response =
-  let users = ManageUsersService().index()
-  let str_users = $(%users)
-  let header = $[
-    %*{"text": "id", "value": "id"},
-    %*{"text": "name", "value": "name"},
-    %*{"text": "email", "value": "email"},
-    %*{"text": "birth_date", "value": "birth_date"},
-    %*{"text": "created_at", "value": "created_at"},
-    %*{"text": "updated_at", "value": "updated_at"},
-    %*{"text": "action", "value": "action"}
+  let users = %ManageUsersService.index()
+  let header = %*[
+    {"text": "id", "value": "id"},
+    {"text": "name", "value": "name"},
+    {"text": "email", "value": "email"},
+    {"text": "birth_date", "value": "birth_date"},
+    {"text": "created_at", "value": "created_at"},
+    {"text": "updated_at", "value": "updated_at"},
+    {"text": "action", "value": "action"}
   ]
 
   return render(
-    base_html(index_html(header, str_users))
+    base_html(index_html($header, $users))
   )
 
 
@@ -42,13 +41,13 @@ proc store*(request: Request): Response =
   return render("")
 
 
-proc show*(str_id: string): Response =
-  let id = str_id.parseInt
-  let user = ManageUsersService().show(id)
+proc show*(idArg:string): Response =
+  let id = idArg.parseInt
+  let user = ManageUsersService.show(id)
   return render(show_html(user))
 
 
-proc update*(str_id: string): Response =
-  let id = str_id.parseInt
+proc update*(idArg:string): Response =
+  let id = idArg.parseInt
   var data = %*{"id": id}
   return render(data)
