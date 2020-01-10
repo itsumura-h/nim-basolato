@@ -11,8 +11,17 @@ import ../../resources/manage_users/index
 import ../../resources/manage_users/show
 import ../../resources/manage_users/create
 
-proc index*(): Response =
-  let users = %ManageUsersService.index()
+type ManageUserController* = ref object of Controller
+  service: ManageUsersService
+
+
+proc newManageUserController*(): ManageUserController =
+  return ManageUserController(
+    service: newManageUsersService()
+  )
+
+proc index*(this:ManageUserController): Response =
+  let users = %this.service.index()
   let header = %*[
     {"text": "id", "value": "id"},
     {"text": "name", "value": "name"},
@@ -27,12 +36,10 @@ proc index*(): Response =
     base_html(index_html($header, $users))
   )
 
-
-proc create*(): Response =
+proc create*(this:ManageUserController): Response =
   return render(create_html())
 
-
-proc store*(request: Request): Response =
+proc store*(this:ManageUserController, request: Request): Response =
   var params = request.params
   # echo params
   echo params["name"]
@@ -40,14 +47,12 @@ proc store*(request: Request): Response =
   echo params["birth_date"]
   return render("")
 
-
-proc show*(idArg:string): Response =
+proc show*(this:ManageUserController, idArg:string): Response =
   let id = idArg.parseInt
-  let user = ManageUsersService.show(id)
+  let user = this.service.show(id)
   return render(show_html(user))
 
-
-proc update*(idArg:string): Response =
+proc update*(this:ManageUserController, idArg:string): Response =
   let id = idArg.parseInt
   var data = %*{"id": id}
   return render(data)

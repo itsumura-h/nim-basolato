@@ -24,15 +24,15 @@ router toppage:
 
 router manageUsers:
   get "":
-    route(ManageUsersController.index())
+    route(newManageUserController().index())
   get "/create":
-    route(ManageUsersController.create())
+    route(newManageUserController().create())
   post "":
-    route(ManageUsersController.store(request))
+    route(newManageUserController().store(request))
   get "/@id":
-    route(ManageUsersController.show(@"id"))
+    route(newManageUserController().show(@"id"))
   put "/@id":
-    route(ManageUsersController.update(@"id"))
+    route(newManageUserController().update(@"id"))
 
 
 router sample:
@@ -78,8 +78,7 @@ routes:
   # ミドルウェア&ヘッダー
   extend withHeaders, "/withHeader"
 
-
-# runForever()
+runForever()
 
 # proc main() =
 #   let port = 8000.Port
