@@ -14,3 +14,5 @@ type
   ResponseType* = enum
     String
     Json
+
+const basolatoVersion* = "v0.0.1"
