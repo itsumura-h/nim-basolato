@@ -1,8 +1,8 @@
 import json, os
 import jester
-import BaseClass
+import base
 
-export jester, BaseClass
+export jester, base
 
 type Controller* = ref object of RootObj
 

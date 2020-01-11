@@ -1,5 +1,5 @@
 import jester
-import BaseClass
+import base
 import routing
 from controller import render
 

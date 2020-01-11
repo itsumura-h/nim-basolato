@@ -1,8 +1,9 @@
-import json, tables, macros
+import json, tables, macros, strformat, httpcore
 import jester
-import BaseClass
+import htmlgen
+import base, logger
 
-export jester, BaseClass
+export jester, base
 
 
 template route*(rArg: Response) =
@@ -12,10 +13,17 @@ template route*(rArg: Response) =
     case r.responseType:
     of String:
       newHeaders.add(("Content-Type", "text/html;charset=utf-8"))
-      resp r.status, newHeaders, r.bodyString
     of Json:
       newHeaders.add(("Content-Type", "application/json"))
-      resp r.status, newHeaders, $(r.bodyJson)
+      r.bodyString = $(r.bodyJson)
+
+    if r.status == Http200:
+      logger($r.status & "  " & request.path)
+      logger($newHeaders)
+    elif r.status.is4xx() or r.status.is5xx():
+      echoErrorMsg($r.status &  &"  {request.ip}  {request.path}")
+      echoErrorMsg($newHeaders)
+    resp r.status, newHeaders, r.bodyString
 
 # =============================================================================
 
@@ -54,11 +62,55 @@ template route*(rArg:Response,
     case r.responseType:
     of String:
       newHeaders.add(("Content-Type", "text/html;charset=utf-8"))
-      resp r.status, newHeaders, r.bodyString
     of Json:
       newHeaders.add(("Content-Type", "application/json"))
-      resp r.status, newHeaders, $(r.bodyJson)
+      r.bodyString = $(r.bodyJson)
 
+    if r.status == Http200:
+      logger($r.status & "  " & request.path)
+      logger($newHeaders)
+    elif r.status.is4xx() or r.status.is5xx():
+      echoErrorMsg($r.status &  &"  {request.ip}  {request.path}")
+      echoErrorMsg($newHeaders)
+    resp r.status, newHeaders, r.bodyString
+
+
+# =============================================================================
+
+proc prodErrorPage(status:HttpCode): string =
+  return html(head(title($status)),
+            body(h1($status),
+                "<hr/>",
+                p("Nim Basolato v0.0.1"),
+                style = "text-align: center;"
+            ),
+            xmlns="http://www.w3.org/1999/xhtml")
+
+proc devErrorPage(status:HttpCode, error: string): string =
+  return html(
+          head(title("Basolato Dev Error Page")),
+          body(
+            h1($status),
+            h2("An error has occured in one of your routes."),
+            p(b("Detail: ")),
+            code(pre(error)),
+            "<hr/>",
+            p("Nim Basolato v0.0.1", style = "text-align: center;"),
+          ),
+          xmlns="http://www.w3.org/1999/xhtml"
+        )
+
+
+template http404Route*() =
+  echoErrorMsg(&"{$Http404}  {request.ip}  {request.path}")
+  resp prodErrorPage(Http404)
+
+template exceptionRoute*() =
+  echoErrorMsg(&"{$Http500}  {request.ip}  {request.path}  {exception.msg}")
+  when not defined(release):
+    resp devErrorPage(Http500, exception.msg)
+  else:
+    resp prodErrorPage(Http500)
 
 #[
 

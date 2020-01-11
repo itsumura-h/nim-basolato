@@ -3,10 +3,16 @@ import os, strformat, terminal
 const MAIN = """
 import basolato/routing
 
-import config/customHeaders
+import config/custom_headers
 import basolato/sample/controllers/SampleController
 
 routes:
+  error Http404:
+    http404Route
+
+  error Exception:
+    exceptionRoute
+
   get "/":
     route(SampleController.index())
 
@@ -16,7 +22,7 @@ runForever()
 const CUSTOM_HEADERS = """
 from strutils import join
 
-import basolato/BaseClass
+import basolato/base
 
 
 proc corsHeader*(request: Request): seq =
@@ -60,7 +66,7 @@ Schema().create([
 proc createMVC(packageDir:string):int =
   let dirPath = getCurrentDir() & "/" & packageDir
   let mainPath = dirPath & "/main.nim"
-  let costomHeadersPath = dirPath & "/config/CustomHeaders.nim"
+  let costomHeadersPath = dirPath & "/config/custom_headers.nim"
   let migrationPath = dirPath & "/migrations/0001migration.nim"
 
   try:
@@ -79,7 +85,7 @@ proc createMVC(packageDir:string):int =
       var f = open(mainPath, fmWrite)
       f.write(MAIN)
 
-      # customHeaders
+      # custom_headers
       f = open(costomHeadersPath, fmWrite)
       f.write(CUSTOM_HEADERS)
 

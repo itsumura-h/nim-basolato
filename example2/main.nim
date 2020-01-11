@@ -1,6 +1,6 @@
 import basolato/routing
 
-import config/customHeaders
+import config/custom_headers
 import basolato/sample/controllers/SampleController
 
 routes:

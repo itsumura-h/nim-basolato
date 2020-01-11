@@ -53,7 +53,7 @@ project directory will be created!
 |  |--controllers
 |  |--models
 |--config
-|  |--CustomHeaders.nim
+|  |--custom_headers.nim
 |  |--database.ini
 |  |--logging.ini
 |--main.nim
@@ -150,7 +150,7 @@ Procs which define custom headers have to return `@[(key, value: string)]` or `[
 ```nim
 import basolato/routing
 
-from config/CustomHeaders import corsHeader
+from config/custom_headers import corsHeader
 import app/controllers/SomeController
 
 routes:

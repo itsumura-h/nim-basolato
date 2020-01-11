@@ -1,18 +1,16 @@
-import asyncdispatch, httpcore, strutils, re, json, tables
+import asyncdispatch, httpcore, strutils, strformat, re, json, tables
 
 import ../src/basolato/routing
 import ../src/basolato/controller
 import ../src/basolato/middleware
+import ../src/basolato/logger
 
 import config/middlewares
-from config/customHeaders import corsHeader, middlewareHeader
+from config/custom_headers import corsHeader, middlewareHeader
 import app/controllers/ToppageController
 import app/controllers/SampleController
 import app/controllers/ManageUsersController
 import app/controllers/WithHeaderController
-
-proc testMiddleware() =
-  echo "==================== testMiddlewar ===================="
 
 
 router toppage:
@@ -59,6 +57,12 @@ router withHeaders:
 
 
 routes:
+  error Http404:
+    http404Route
+
+  error Exception:
+    exceptionRoute
+
   options re".*":
     route(render(""), corsHeader(request))
 
