@@ -8,8 +8,7 @@ import ../src/basolato/middleware
 import config/middlewares
 from config/custom_headers import corsHeader, middlewareHeader
 import app/controllers/sample_controller
-import app/controllers/PostsController
-import app/controllers/WithHeaderController
+import app/controllers/web_posts_controller
 
 
 router sample:
@@ -23,39 +22,33 @@ router sample:
     route(sample_controller.react())
   get "/vue":
     route(sample_controller.vue())
-  get "/middlewar_header":
-    route(WithHeaderController.middlewar_header(), middlewareHeader())
-  get "/header":
-    route(WithHeaderController.withHeader())
-  get "/middleware":
-    route(WithHeaderController.withMiddleware(), middlewareHeader())
-  get "/nothing":
-    route(WithHeaderController.nothing())
-  get "/middlewar_header_json":
-    route(WithHeaderController.middlewar_header_json(), middlewareHeader())
+  get "/custom_headers":
+    route(sample_controller.customHeaders(), middlewareHeader())
 
 
 router webPagePosts:
   get "":
-    route(newPostsController().index())
+    route(newWebPostsController().index())
   get "/@id":
-    route(newPostsController().show(@"id"))
+    route(newWebPostsController().show(@"id"))
   # get "/create":
-  #   route(newPostsController().create())
+  #   route(newWebPostsController().create())
   # post "/create":
-  #   route(newPostsController().createConfirm(request))
+  #   route(newWebPostsController().createConfirm(request))
   # post "":
-  #   route(newPostsController().store(request))
+  #   route(newWebPostsController().store(request))
   get "/@id/edit":
-    route(newPostsController().edit(@"id"))
+    route(newWebPostsController().edit(@"id"))
   post "/@id/edit":
-    route(newPostsController().update(@"id", request))
+    route(newWebPostsController().update(@"id", request))
   # get "/@id/delete":
-  #   route(newPostsController().destroyConfirm(@"id"))
+  #   route(newWebPostsController().destroyConfirm(@"id"))
   # post "/@id/delete":
-  #   route(newPostsController().destroy(@"id"))
+  #   route(newWebPostsController().destroy(@"id"))
 
-
+router spaPosts:
+  get "":
+    route(Response())
 
 routes:
   error Http404:
@@ -76,8 +69,11 @@ routes:
     middleware([checkLogin(request)])
   extend sample, "/sample"
 
-  # MVCUsers
+  # WebPagePosts
   extend webPagePosts, "/WebPagePosts"
+
+  # SpaPosts
+  extend spaPosts, "/SpaPosts"
 
 runForever()
 

@@ -1,7 +1,5 @@
 from strutils import join
 
-import ../../src/basolato/base
-
 
 proc corsHeader*(): seq =
   var headers = @[
@@ -27,8 +25,9 @@ proc corsHeader*(): seq =
 
   return headers
 
+
 proc middlewareHeader*():seq =
   return @[
-    ("MiddlewareHeaderStatus", "ヘッダーあり"),
-    ("key1", "val1")
+    ("Middleware-Header-Key1", "Middleware-Header-Val1"),
+    ("Middleware-Header-Key2", ["val1", "val2", "val3"].join(", "))
   ]

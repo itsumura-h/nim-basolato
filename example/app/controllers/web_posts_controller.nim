@@ -9,27 +9,27 @@ import ../../resources/posts/index
 import ../../resources/posts/show
 import ../../resources/posts/edit
 
-type PostsController = ref object of Controller
+type WebPostsController = ref object of Controller
   post: Post
   user: User
 
-proc newPostsController*(): PostsController =
-  return PostsController(
+proc newWebPostsController*(): WebPostsController =
+  return WebPostsController(
     post: newPost(),
     user: newUser()
   )
 
 
-proc index*(this:PostsController): Response =
+proc index*(this:WebPostsController): Response =
   let posts = this.post.getPosts()
   return render(indexHtml(posts))
 
-proc show*(this:PostsController, idArg:string): Response =
+proc show*(this:WebPostsController, idArg:string): Response =
   let id = idArg.parseInt
   let post = this.post.getPost(id)
   return render(showHtml(post))
 
-proc edit*(this:PostsController, idArg:string): Response =
+proc edit*(this:WebPostsController, idArg:string): Response =
   let id = idArg.parseInt
   let post = this.post.getPost(id)
   let title = post["title"].getStr
@@ -40,7 +40,7 @@ proc edit*(this:PostsController, idArg:string): Response =
     id, title, body, user, error
   ))
 
-proc update*(this:PostsController, idArg:string, request:Request): Response =
+proc update*(this:WebPostsController, idArg:string, request:Request): Response =
   let id = idArg.parseInt
   let params = request.params
   let title = params["title"]

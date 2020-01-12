@@ -278,5 +278,16 @@ proc index*(): Response =
     .header("key3", ["a", "b", "c"])
 ```
 
+# Migration
+[to index](#index)
+
+## Creating a Migration File
+`ducere make migration` command can create controller.
+
+```nim
+ducere make migration createUser
+>> migrations/migration20200219134020createUser.nim
+```
+
 # Model
 [to index](#index)
