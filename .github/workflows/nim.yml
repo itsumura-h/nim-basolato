@@ -39,8 +39,8 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Test
-      run: docker-compose run allographer nimble test
+      run: docker-compose run app nimble test
     - name: Test multi-thread
       run: |
         echo 'switch("threads", "on")' >> tests/config.nims
-        docker-compose run allographer nimble test
+        docker-compose run app nimble test
