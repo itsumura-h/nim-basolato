@@ -3,7 +3,7 @@ from strutils import join
 import ../../src/basolato/base
 
 
-proc corsHeader*(request: Request): seq =
+proc corsHeader*(): seq =
   var headers = @[
     ("Cache-Control", "no-cache"),
     ("Access-Control-Allow-Origin", "*")

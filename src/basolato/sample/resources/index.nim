@@ -145,28 +145,40 @@ routes:
         <code class="nimrod">
 import basolato/controller
  
-import ../../models/user
-import ../../resources/users/index
+import ../models/users
+import ../models/auth
  
-type PostsController = ref object of Controller
+import ../../resources/users/index
+import ../../resources/users/show
+import ../../resources/users/edit
+ 
+type UsersController = ref object of Controller
   # DI
   user: User
+  auth: Auth
  
-proc newPostsController*(): PostsController =
+proc newUsersController*(): UsersController =
   # constructor
-  return PostsController(
-    user: newUser()
+  return UsersController(
+    user: newUser(),
+    auth: newAuth()
   )
  
   
-proc index*(this:PostsController): Response =
+proc index*(this:UsersController): Response =
   let users = this.user.getUsers()
   return render(indexHtml(users))
  
-proc show*(this:PostsController, idArg:string): Response =
+proc show*(this:UsersController, idArg:string): Response =
   let id = idArg.parseInt
   let user = this.user.getUser(id)
   return render(showHtml(user))
+ 
+proc edit*(this:UsersController, idArg:string): Response =
+  let id = idArg.parseInt
+  let user = this.user.getUser(id)
+  let auth = this.auth.getAuth()
+  return render(editHtml(user, auth))
         </code>
       </pre>
       </div>

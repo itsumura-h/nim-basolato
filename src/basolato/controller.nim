@@ -1,8 +1,9 @@
-import json, os
-import jester
+import json, os, httpcore
+import jester/request
 import base
 
-export jester, base
+# export jester, base
+export base, request, Request
 
 type Controller* = ref object of RootObj
 
@@ -21,6 +22,12 @@ proc render*(body:JsonNode):Response =
 
 proc render*(status:HttpCode, body:JsonNode):Response =
   return Response(status:status, bodyJson:body, responseType:Json)
+
+
+proc redirect*(url:string): Response =
+  return Response(
+    status:Http303, url:url, responseType: Redirect
+  )
 
 
 # with header

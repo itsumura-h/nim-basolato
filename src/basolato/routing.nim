@@ -16,6 +16,9 @@ template route*(rArg: Response) =
     of Json:
       newHeaders.add(("Content-Type", "application/json"))
       r.bodyString = $(r.bodyJson)
+    of Redirect:
+      newHeaders.add(("Location", r.url))
+      resp r.status, newHeaders, ""
 
     if r.status == Http200:
       logger($r.status & "  " & request.path)
@@ -65,6 +68,11 @@ template route*(rArg:Response,
     of Json:
       newHeaders.add(("Content-Type", "application/json"))
       r.bodyString = $(r.bodyJson)
+    of Redirect:
+      newHeaders.add(("Location", r.url))
+      echo newHeaders
+      echo $r.status
+      resp r.status, newHeaders, ""
 
     if r.status == Http200:
       logger($r.status & "  " & request.path)

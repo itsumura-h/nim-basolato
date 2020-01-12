@@ -1,7 +1,7 @@
-import json, tables
-import jester
+import json, httpcore
+# from jester import HttpCode
 
-export jester
+# export HttpCode
 
 type
   Response* = ref object
@@ -10,9 +10,11 @@ type
     bodyJson*: JsonNode
     responseType*: ResponseType
     headers*: seq[tuple[key, value:string]]
+    url*: string
 
   ResponseType* = enum
     String
     Json
+    Redirect
 
 const basolatoVersion* = "v0.0.1"

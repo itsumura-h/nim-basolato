@@ -1,49 +1,28 @@
-import asyncdispatch, httpcore, strutils, strformat, re, json, tables
+import asyncdispatch, httpcore, re, tables
 
 import ../src/basolato/routing
 import ../src/basolato/controller
 import ../src/basolato/middleware
-import ../src/basolato/logger
+# import ../src/basolato/logger
 
 import config/middlewares
 from config/custom_headers import corsHeader, middlewareHeader
-import app/controllers/ToppageController
-import app/controllers/SampleController
-import app/controllers/ManageUsersController
+import app/controllers/sample_controller
+import app/controllers/PostsController
 import app/controllers/WithHeaderController
 
 
-router toppage:
-  get "/react":
-    route(ToppageController.react())
-  get "/vue":
-    route(ToppageController.vue())
-
-
-router manageUsers:
-  get "":
-    route(newManageUserController().index())
-  get "/create":
-    route(newManageUserController().create())
-  post "":
-    route(newManageUserController().store(request))
-  get "/@id":
-    route(newManageUserController().show(@"id"))
-  put "/@id":
-    route(newManageUserController().update(@"id"))
-
-
 router sample:
-  get "":
-    route(SampleController.index(), corsHeader(request))
   get "/checkLogin":
     middleware([checkLogin(request)])
-    route(SampleController.index(), corsHeader(request))
+    route(sample_controller.index(), corsHeader())
   get "/fib/@num":
     middleware([check1(), check2()])
-    route(SampleController.fib(@"num"), corsHeader(request))
-
-router withHeaders:
+    route(sample_controller.fib(@"num"), corsHeader())
+  get "/react":
+    route(sample_controller.react())
+  get "/vue":
+    route(sample_controller.vue())
   get "/middlewar_header":
     route(WithHeaderController.middlewar_header(), middlewareHeader())
   get "/header":
@@ -56,6 +35,28 @@ router withHeaders:
     route(WithHeaderController.middlewar_header_json(), middlewareHeader())
 
 
+router webPagePosts:
+  get "":
+    route(newPostsController().index())
+  get "/@id":
+    route(newPostsController().show(@"id"))
+  # get "/create":
+  #   route(newPostsController().create())
+  # post "/create":
+  #   route(newPostsController().createConfirm(request))
+  # post "":
+  #   route(newPostsController().store(request))
+  get "/@id/edit":
+    route(newPostsController().edit(@"id"))
+  post "/@id/edit":
+    route(newPostsController().update(@"id", request))
+  # get "/@id/delete":
+  #   route(newPostsController().destroyConfirm(@"id"))
+  # post "/@id/delete":
+  #   route(newPostsController().destroy(@"id"))
+
+
+
 routes:
   error Http404:
     http404Route
@@ -64,23 +65,19 @@ routes:
     exceptionRoute
 
   options re".*":
-    route(render(""), corsHeader(request))
+    route(render(""), corsHeader())
 
   # Toppage
   get "/":
-    route(ToppageController.index())
-  extend toppage, "/toppage"
+    route(sample_controller.index())
 
   # Sample
   options re"/sample.*":
     middleware([checkLogin(request)])
   extend sample, "/sample"
-  
-  # ManageUsers
-  extend manageUsers, "/ManageUsers"
 
-  # ミドルウェア&ヘッダー
-  extend withHeaders, "/withHeader"
+  # MVCUsers
+  extend webPagePosts, "/WebPagePosts"
 
 runForever()
 
