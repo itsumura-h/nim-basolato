@@ -1,6 +1,4 @@
-# import ../../src/basolato/controller
 import ../../src/basolato/middleware
-
 
 proc checkLogin*(request: Request):Response =
   try:

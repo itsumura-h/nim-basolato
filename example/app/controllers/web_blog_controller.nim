@@ -1,38 +1,52 @@
-import strutils, json, strformat, tables
-
+import strutils, json, strformat, tables, times
+# 3rd party
 import ../../../src/basolato/controller
-import allographer/query_builder
-
+# model
 import ../models/posts
-import ../models/users
-
+# view
+import ../../resources/posts/base
 import ../../resources/posts/index
 import ../../resources/posts/show
+import ../../resources/posts/create
 import ../../resources/posts/edit
 
-type WebBlogController = ref object of Controller
+# DI
+type WebBlogController = object of Controller
   post: Post
-  user: User
 
+# constructor
 proc newWebBlogController*(): WebBlogController =
   return WebBlogController(
-    post: newPost(),
-    user: newUser()
+    post: newPost()
   )
 
 
 proc index*(this:WebBlogController): Response =
-  # let posts = this.post.getPosts()
-  let posts = RDB().table("posts")
-                .select("posts.id", "posts.title", "posts.text", "users.name as auther")
-                .join("users", "users.id", "=", "posts.auther_id")
-                .get()
-  return render(indexHtml(posts))
+  let posts = this.post.getPosts()
+  return render(baseHtml(indexHtml(posts)))
+
 
 proc show*(this:WebBlogController, idArg:string): Response =
   let id = idArg.parseInt
   let post = this.post.getPost(id)
-  return render(showHtml(post))
+  echo post
+  if post.kind == JNull:
+    return render(Http404, "")
+  return render(baseHtml(showHtml(post)))
+
+
+proc create*(this:WebBlogController): Response =
+  return render(baseHtml(createHtml()))
+
+proc store*(this:WebBlogController, request:Request): Response =
+  let params = request.params
+  let title = params["title"]
+  let text = params["text"]
+  let publishedDate = now().format("yyyy-MM-dd")
+  let autherId = 1
+  let postId = this.post.store(title, text, publishedDate, autherId)
+  return redirect(&"/WebBlog/{postId}")
+
 
 proc edit*(this:WebBlogController, idArg:string): Response =
   let id = idArg.parseInt

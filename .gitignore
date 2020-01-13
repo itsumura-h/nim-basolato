@@ -22,4 +22,5 @@ examples2
 *.out
 karax
 *.js
+*logs/*
 *.log

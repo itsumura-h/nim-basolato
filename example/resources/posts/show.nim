@@ -1,14 +1,14 @@
 import templates, json
+import ../../../src/basolato/view
 
 proc showHtml*(post:JsonNode):string = tmpli html"""
-<p><a href="/MVCPosts">Back</a></p>
-<h1>show</h1>
-<h2>$(post["id"].getInt) | $(post["title"].getStr)</h2>
-<p>By $(post["user"].getStr)</p>
-
-<div>
-  $(post["post"].getStr)
+<div class="post">
+    $if post["published_date"].get().len > 0 {
+      <div class="date">
+        $(post["published_date"].get)
+      </div>
+    }
+    <h2>$(post["title"].get)</h2>
+    <p>$(post["text"].get)</p>
 </div>
-<hr>
-<a href="/MVCPosts/$(post["id"].getInt)/edit">Edit</a>
 """

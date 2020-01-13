@@ -1,4 +1,4 @@
-import json, tables, macros, strformat, strutils, httpcore
+import json, tables, macros, strformat, strutils, httpcore, flatdb, times, os
 import jester
 import htmlgen
 import base, logger
@@ -89,7 +89,7 @@ proc prodErrorPage(status:HttpCode): string =
   return html(head(title($status)),
             body(h1($status),
                 "<hr/>",
-                p(&"Nim Basolato {basolatoVersion}"),
+                p(&"👑Nim Basolato {basolatoVersion}"),
                 style = "text-align: center;"
             ),
             xmlns="http://www.w3.org/1999/xhtml")
@@ -103,7 +103,7 @@ proc devErrorPage(status:HttpCode, error: string): string =
             p(b("Detail: ")),
             code(pre(error)),
             "<hr/>",
-            p(&"Nim Basolato {basolatoVersion}", style = "text-align: center;"),
+            p(&"👑Nim Basolato {basolatoVersion}", style = "text-align: center;"),
           ),
           xmlns="http://www.w3.org/1999/xhtml"
         )
@@ -120,6 +120,16 @@ template exceptionRoute*() =
     resp Http500, devErrorPage(Http500, exception.msg)
   else:
     resp Http500, prodErrorPage(Http500)
+
+# =============================================================================
+
+template middleware*(procs:varargs[Response]) =
+  for p in procs:
+    if p == nil:
+      echo getCurrentExceptionMsg()
+    else:
+      route(p)
+      break
 
 #[
 

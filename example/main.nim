@@ -3,7 +3,6 @@ import asyncdispatch, httpcore, re, tables
 import ../src/basolato/routing
 import ../src/basolato/controller
 import ../src/basolato/middleware
-# import ../src/basolato/logger
 
 import middleware/middlewares
 from middleware/custom_headers import corsHeader, middlewareHeader
@@ -28,12 +27,12 @@ router sample:
 router webBlog:
   get "":
     route(newWebBlogController().index())
+  get "/create":
+    route(newWebBlogController().create())
+  post "/create":
+    route(newWebBlogController().store(request))
   get "/@id":
     route(newWebBlogController().show(@"id"))
-  # get "/create":
-  #   route(newWebBlogController().create())
-  # post "/create":
-  #   route(newWebBlogController().createConfirm(request))
   # post "":
   #   route(newWebBlogController().store(request))
   get "/@id/edit":
@@ -49,15 +48,23 @@ router spaBlog:
   get "":
     route(Response())
 
+# =============================================================================
 routes:
   error Http404:
     http404Route
+
+  error CsrfError:
+    resp Http403, getCurrentExceptionMsg()
+  before re".*":
+    checkCsrfToken(request)
 
   error Exception:
     exceptionRoute
 
   options re".*":
     route(render(""), corsHeader())
+
+# =============================================================================
 
   # Toppage
   get "/":

@@ -1,9 +1,9 @@
-import json, os, httpcore
-import jester/request
+import json, os, httpcore, httpcore
+import jester
 import base
 
-# export jester, base
-export base, request, Request
+
+export httpcore, base, jester.request, Request
 
 type Controller* = ref object of RootObj
 

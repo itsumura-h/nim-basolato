@@ -17,6 +17,7 @@ This framework depends on following libralies
 - [Jester](https://github.com/dom96/jester), Micro web framework
 - [nim-templates](https://github.com/onionhammer/nim-templates), A simple string templating library
 - [allographer](https://github.com/itsumura-h/nim-allographer), Query builder library
+- [flatdb](https://github.com/enthus1ast/flatdb), a small flatfile, inprocess database for nim-lang. as session DB
 
 Following libralies are not installed by automatically, but I have highly recommandation to you to install and use them for creating modern web app.
 - [Karax](https://github.com/pragmagic/karax), Single page applications for Nim.
@@ -266,7 +267,7 @@ proc index*(): Response =
 Put response status code arge1 and response body arge2
 ```nim
 proc index*(): Response =
-  return render(HTTP500 "It is a response body")
+  return render(HTTP500, "It is a response body")
 ```
 
 [Here](https://nim-lang.org/docs/httpcore.html#10) is the list of response status code available.  
@@ -278,20 +279,23 @@ proc index*(): Response =
 proc index*(): Response =
   return render("with headers")
     .header("key1", "value1")
-    .header("key2", "value2")
-    .header("key3", ["a", "b", "c"])
+    .header("key2", ["a", "b", "c"])
 ```
 
 # Migration
 [to index](#index)
 
 ## Creating a Migration File
-`ducere make migration` command can create controller.
+`ducere make migration` command can create migration file.
 
 ```nim
 ducere make migration createUser
 >> migrations/migration20200219134020createUser.nim
 ```
+
+To create table schema, read `allographer` documents.  
+[allographer](https://github.com/itsumura-h/nim-allographer/blob/master/documents/schema_builder.md)
+
 
 # Model
 [to index](#index)

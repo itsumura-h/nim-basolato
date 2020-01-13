@@ -1,4 +1,4 @@
-import templates, json
+import templates
 
 proc editHtml*(id:int, title:string, post:string, user:string, error:string):string = tmpli html"""
 <p><a href="/MVCPosts/$(id)">Back</a></p>
