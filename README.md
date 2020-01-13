@@ -1,5 +1,8 @@
 Basolato Framework
 ===
+
+![Build Status](https://github.com/itsumura-h/nim-basolato/workflows/Build%20and%20test%20Nim/badge.svg)
+
 A Fullstack Web Framework for Nim based on Jester
 
 
