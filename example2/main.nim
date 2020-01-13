@@ -1,8 +1,7 @@
 import basolato/routing
 
-import config/custom_headers
-# import basolato/sample/controllers/SampleController
-import ../src/basolato/sample/controllers/SampleController
+import middleware/custom_headers
+import basolato/sample/controllers/SampleController
 
 routes:
   error Http404:

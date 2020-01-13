@@ -12,20 +12,20 @@ proc newPost*(): Post =
 
 proc getPosts*(this:Post): seq[JsonNode] =
   this.db
-    .select("posts.id", "posts.title", "posts.post", "users.name as user")
-    .join("users", "users.id", "=", "posts.user_id")
+    .select("posts.id", "posts.title", "posts.text", "users.name as auther")
+    .join("users", "users.id", "=", "posts.auther_id")
     .get()
 
 proc getPost*(this:Post, id:int): JsonNode =
   this.db
-    .select("posts.id", "posts.title", "posts.post", "users.name as user")
-    .join("users", "users.id", "=", "posts.user_id")
+    .select("posts.id", "posts.title", "posts.text", "users.name as auther")
+    .join("users", "users.id", "=", "posts.auther_id")
     .find(id, key="posts.id")
 
-proc updatePost*(this:Post, id:int, title:string, post:string) =
+proc updatePost*(this:Post, id:int, title:string, text:string) =
   this.db
     .where("id", "=", id)
     .update(%*{
       "title": title,
-      "post": post
+      "text": text
     })

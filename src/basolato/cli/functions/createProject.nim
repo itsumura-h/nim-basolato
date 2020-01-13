@@ -3,7 +3,7 @@ import os, strformat, terminal
 const MAIN = """
 import basolato/routing
 
-import config/custom_headers
+import middleware/custom_headers
 import basolato/sample/controllers/SampleController
 
 routes:
@@ -22,7 +22,7 @@ runForever()
 const CUSTOM_HEADERS = """
 from strutils import join
 
-import basolato/base
+import basolato/middleware
 
 
 proc corsHeader*(request: Request): seq =
@@ -66,36 +66,37 @@ Schema().create([
 proc createMVC(packageDir:string):int =
   let dirPath = getCurrentDir() & "/" & packageDir
   let mainPath = dirPath & "/main.nim"
-  let costomHeadersPath = dirPath & "/config/custom_headers.nim"
+  let costomHeadersPath = dirPath & "/middleware/custom_headers.nim"
   let migrationPath = dirPath & "/migrations/0001migration.nim"
 
   try:
-    block:
-      createDir(dirPath & "/app")
-      createDir(dirPath & "/app/controllers")
-      createDir(dirPath & "/app/models")
-      createDir(dirPath & "/config")
-      createDir(dirPath & "/resources")
-      createDir(dirPath & "/migrations")
-      createDir(dirPath & "/public")
-      discard execShellCmd("dbtool makeConf")
-      discard execShellCmd("dbtool loadConf")
+    createDir(dirPath)
+    # main
+    var f = open(mainPath, fmWrite)
+    f.write(MAIN)
 
-      # main
-      var f = open(mainPath, fmWrite)
-      f.write(MAIN)
+    createDir(dirPath & "/app")
+    createDir(dirPath & "/app/controllers")
+    createDir(dirPath & "/app/models")
+    createDir(dirPath & "/middleware")
+    createDir(dirPath & "/resources")
+    createDir(dirPath & "/migrations")
+    createDir(dirPath & "/public")
+    discard execShellCmd(&"""
+cd {packageDir}
+dbtool makeConf
+ducere make migration Init
+""")
 
-      # custom_headers
-      f = open(costomHeadersPath, fmWrite)
-      f.write(CUSTOM_HEADERS)
+    # discard execShellCmd("ducere make migration Init")
 
-      # migrations
-      f = open(migrationPath, fmWrite)
-      f.write(MIGRATION)
+    # custom_headers
+    f = open(costomHeadersPath, fmWrite)
+    f.write(CUSTOM_HEADERS)
 
-      defer:
-        f.close()
-      return 0
+    defer:
+      f.close()
+    return 0
   except:
     echo getCurrentExceptionMsg()
     return 1

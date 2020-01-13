@@ -1,6 +1,6 @@
 from strutils import join
 
-import basolato/base
+import basolato/middleware
 
 
 proc corsHeader*(request: Request): seq =

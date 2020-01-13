@@ -3,7 +3,8 @@ import base
 import routing
 from controller import render
 
-export jester, Response, render
+export
+  jester, Response, render
 
 
 template middleware*(procs:varargs[Response]) =

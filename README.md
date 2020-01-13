@@ -49,18 +49,22 @@ ducere new
 
 project directory will be created!
 ```
-|--app
-|  |--controllers
-|  |--models
-|--config
-|  |--custom_headers.nim
-|  |--database.ini
-|  |--logging.ini
-|--main.nim
-|--migrations
-|  |--0001migration.nim
-|--public
-|--resources
+├── app
+│   ├── controllers
+│   └── models
+├── config.nims
+├── logs
+│   ├── error.log
+│   └── log.log
+├── main
+├── main.nim
+├── middleware
+│   └── custom_headers.nim
+├── migrations
+│   ├── migrate.nim
+│   └── migration20200113054007Init.nim
+├── public
+└── resources
 ```
 
 You can specify project direcotry name

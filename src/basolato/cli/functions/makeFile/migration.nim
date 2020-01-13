@@ -3,7 +3,7 @@ import utils
 
 proc makeMigration*(target:string, message:var string):int =
   let now = now().format("yyyyMMddHHmmss")
-  let targetPath = &"{getCurrentDir()}/migrations/migration{now}{target}.nim"
+  var targetPath = &"{getCurrentDir()}/migrations/migration{now}{target}.nim"
 
   if isFileExists(targetPath): return 0
   if isTargetContainSlash(target): return 0
@@ -26,4 +26,27 @@ proc migration{now}{target}*() =
 
   message = &"create migration {now}{target}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
+  # ===========================================================================
+
+  targetPath = &"{getCurrentDir()}/migrations/migrate.nim"
+  let MIGRATE = &"""
+import migration{now}{target}
+
+proc main() =
+  migration{now}{target}()
+
+main()
+"""
+  if not existsFile(targetPath):
+    # create new file
+    f = open(targetPath, fmWrite)
+    f.write(MIGRATE)
+    defer: f.close()
+
+    message = &"create migrate.nim"
+    styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
+  else:
+    # update file
+    discard
+  
   return 1

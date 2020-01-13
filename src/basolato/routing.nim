@@ -1,4 +1,4 @@
-import json, tables, macros, strformat, httpcore
+import json, tables, macros, strformat, strutils, httpcore
 import jester
 import htmlgen
 import base, logger
@@ -24,7 +24,7 @@ template route*(rArg: Response) =
       logger($r.status & "  " & request.path)
       logger($newHeaders)
     elif r.status.is4xx() or r.status.is5xx():
-      echoErrorMsg($r.status &  &"  {request.ip}  {request.path}")
+      echoErrorMsg($r.status & "  " & request.ip & "  " & request.path)
       echoErrorMsg($newHeaders)
     resp r.status, newHeaders, r.bodyString
 
@@ -110,15 +110,16 @@ proc devErrorPage(status:HttpCode, error: string): string =
 
 
 template http404Route*() =
-  echoErrorMsg(&"{$Http404}  {request.ip}  {request.path}")
-  resp prodErrorPage(Http404)
+  if not request.path.contains("favicon"):
+    echoErrorMsg(&"{$Http404}  {request.ip}  {request.path}")
+  resp Http404, prodErrorPage(Http404)
 
 template exceptionRoute*() =
   echoErrorMsg(&"{$Http500}  {request.ip}  {request.path}  {exception.msg}")
   when not defined(release):
-    resp devErrorPage(Http500, exception.msg)
+    resp Http500, devErrorPage(Http500, exception.msg)
   else:
-    resp prodErrorPage(Http500)
+    resp Http500, prodErrorPage(Http500)
 
 #[
 

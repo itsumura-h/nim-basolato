@@ -5,10 +5,10 @@ import ../src/basolato/controller
 import ../src/basolato/middleware
 # import ../src/basolato/logger
 
-import config/middlewares
-from config/custom_headers import corsHeader, middlewareHeader
+import middleware/middlewares
+from middleware/custom_headers import corsHeader, middlewareHeader
 import app/controllers/sample_controller
-import app/controllers/web_posts_controller
+import app/controllers/web_blog_controller
 
 
 router sample:
@@ -25,28 +25,27 @@ router sample:
   get "/custom_headers":
     route(sample_controller.customHeaders(), middlewareHeader())
 
-
-router webPagePosts:
+router webBlog:
   get "":
-    route(newWebPostsController().index())
+    route(newWebBlogController().index())
   get "/@id":
-    route(newWebPostsController().show(@"id"))
+    route(newWebBlogController().show(@"id"))
   # get "/create":
-  #   route(newWebPostsController().create())
+  #   route(newWebBlogController().create())
   # post "/create":
-  #   route(newWebPostsController().createConfirm(request))
+  #   route(newWebBlogController().createConfirm(request))
   # post "":
-  #   route(newWebPostsController().store(request))
+  #   route(newWebBlogController().store(request))
   get "/@id/edit":
-    route(newWebPostsController().edit(@"id"))
+    route(newWebBlogController().edit(@"id"))
   post "/@id/edit":
-    route(newWebPostsController().update(@"id", request))
+    route(newWebBlogController().update(@"id", request))
   # get "/@id/delete":
-  #   route(newWebPostsController().destroyConfirm(@"id"))
+  #   route(newWebBlogController().destroyConfirm(@"id"))
   # post "/@id/delete":
-  #   route(newWebPostsController().destroy(@"id"))
+  #   route(newWebBlogController().destroy(@"id"))
 
-router spaPosts:
+router spaBlog:
   get "":
     route(Response())
 
@@ -70,10 +69,10 @@ routes:
   extend sample, "/sample"
 
   # WebPagePosts
-  extend webPagePosts, "/WebPagePosts"
+  extend webBlog, "/WebBlog"
 
   # SpaPosts
-  extend spaPosts, "/SpaPosts"
+  extend spaBlog, "/SpaBlog"
 
 runForever()
 
