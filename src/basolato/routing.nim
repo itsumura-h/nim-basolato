@@ -24,7 +24,7 @@ template route*(rArg: Response) =
       logger($r.status & "  " & request.path)
       logger($newHeaders)
     elif r.status.is4xx() or r.status.is5xx():
-      echoErrorMsg($r.status & "  " & request.ip & "  " & request.path)
+      echoErrorMsg($r.status & &"  {request.ip}  {request.path}")
       echoErrorMsg($newHeaders)
     resp r.status, newHeaders, r.bodyString
 
@@ -70,12 +70,10 @@ template route*(rArg:Response,
       r.bodyString = $(r.bodyJson)
     of Redirect:
       newHeaders.add(("Location", r.url))
-      echo newHeaders
-      echo $r.status
       resp r.status, newHeaders, ""
 
     if r.status == Http200:
-      logger($r.status & "  " & request.path)
+      logger($r.status & &"  {request.path}")
       logger($newHeaders)
     elif r.status.is4xx() or r.status.is5xx():
       echoErrorMsg($r.status &  &"  {request.ip}  {request.path}")
@@ -115,11 +113,17 @@ template http404Route*() =
   resp Http404, prodErrorPage(Http404)
 
 template exceptionRoute*() =
-  echoErrorMsg(&"{$Http500}  {request.ip}  {request.path}  {exception.msg}")
+  var status = Http500
+  if exception.name == "CsrfError":
+    status = Http403
+  elif exception.name == "Error404":
+    status = Http404
+
+  echoErrorMsg($status & &"  {request.ip}  {request.path}  {exception.msg}")
   when not defined(release):
-    resp Http500, devErrorPage(Http500, exception.msg)
+    resp status, devErrorPage(status, exception.msg)
   else:
-    resp Http500, prodErrorPage(Http500)
+    resp status, prodErrorPage(status)
 
 # =============================================================================
 

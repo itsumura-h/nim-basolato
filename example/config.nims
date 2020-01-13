@@ -10,7 +10,7 @@ putEnv("db.database", "")
 # Logging
 putEnv("log.isDisplay", "true")
 putEnv("log.isFile", "true")
-putEnv("log.dir", "/home/www/logs")
+putEnv("log.dir", "/home/www/example/logs")
 
 # Session timeout
 putEnv("session.time", $(60*60*1)) # secound*minutes*day

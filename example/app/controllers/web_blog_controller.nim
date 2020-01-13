@@ -29,9 +29,9 @@ proc index*(this:WebBlogController): Response =
 proc show*(this:WebBlogController, idArg:string): Response =
   let id = idArg.parseInt
   let post = this.post.getPost(id)
-  echo post
   if post.kind == JNull:
-    return render(Http404, "")
+    # return render(Http404, "")
+    raise newException(Error404, "")
   return render(baseHtml(showHtml(post)))
 
 

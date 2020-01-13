@@ -17,4 +17,7 @@ type
     Json
     Redirect
 
+  CsrfError* = object of Exception
+  Error404* = object of Exception
+
 const basolatoVersion* = "v0.0.1"
