@@ -23,9 +23,10 @@ proc getPosts*(this:Post): seq[JsonNode] =
       "published_date"
     )
     .join("users", "users.id", "=", "posts.auther_id")
-    .where("published_date", "is not", "")
+    .where("published_date", "!=", "")
     .where("published_date", "<=", now().format("yyyy-MM-dd"))
     .orderBy("published_date", Desc)
+    .orderBy("posts.id", Desc)
     .get()
 
 proc getPost*(this:Post, id:int): JsonNode =
