@@ -1,21 +1,19 @@
-import os, parsecfg, terminal, logging
+import os, parsecfg, terminal, logging, macros, strformat, strutils
 
-let logConfigFile = getCurrentDir() & "/config/logging.ini"
+const
+  IS_DISPLAY = getEnv("log.isDisplay").parseBool
+  IS_FILE = getEnv("log.isFile").parseBool
+  LOG_DIR = getEnv("log.dir")
 
 proc logger*(output: any, args:varargs[string]) =
-  # get Config file
-  {.gcsafe.}:
-    let conf = loadConfig(logConfigFile)
   # console log
-  let isDisplayString = conf.getSectionValue("Log", "display")
-  if isDisplayString == "true":
+  if IS_DISPLAY:
     let logger = newConsoleLogger()
     logger.log(lvlInfo, $output & $args)
   # file log
-  let isFileOutString = conf.getSectionValue("Log", "file")
-  if isFileOutString == "true":
+  if IS_FILE:
     # info $output & $args
-    let path = conf.getSectionValue("Log", "logDir") & "/log.log"
+    let path = LOG_DIR & "/log.log"
     createDir(parentDir(path))
     let logger = newRollingFileLogger(path, mode=fmAppend, fmtStr=verboseFmtStr)
     logger.log(lvlInfo, $output & $args)
@@ -24,13 +22,11 @@ proc logger*(output: any, args:varargs[string]) =
 
 proc echoErrorMsg*(msg:string) =
   # console log
-  styledWriteLine(stdout, fgRed, bgDefault, msg, resetStyle)
+  if IS_DISPLAY:
+    styledWriteLine(stdout, fgRed, bgDefault, msg, resetStyle)
   # file log
-  {.gcsafe.}:
-    let conf = loadConfig(logConfigFile)
-  let isFileOutString = conf.getSectionValue("Log", "file")
-  if isFileOutString == "true":
-    let path = conf.getSectionValue("Log", "logDir") & "/error.log"
+  if IS_FILE:
+    let path = LOG_DIR & "/error.log"
     createDir(parentDir(path))
     let logger = newRollingFileLogger(path, mode=fmAppend, fmtStr=verboseFmtStr)
     logger.log(lvlError, msg)

@@ -1,0 +1,46 @@
+name: Build and test Nim
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          # - macOS-latest
+          # Need sqlite3_64.dll
+          # - windows-latest
+    env:
+      NIM_VERSION: 1.0.4
+    steps:
+    - uses: actions/checkout@v1
+    - name: Cache choosenim
+      id: cache-choosenim
+      uses: actions/cache@v1
+      with:
+        path: ~/.choosenim
+        key: ${{ runner.os }}-choosenim-${{ env.NIM_VERSION }}
+    - name: Cache nimble
+      id: cache-nimble
+      uses: actions/cache@v1
+      with:
+        path: ~/.nimble
+        key: ${{ runner.os }}-nimble-${{ env.NIM_VERSION }}
+    - uses: jiro4989/setup-nim-action@v1.0.1
+      with:
+        nim-version: ${{ env.NIM_VERSION }}
+    - name: Build
+      run: nimble build -Y
+
+  test-on-docker:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Test
+      run: docker-compose run app nimble test
+    - name: Test multi-thread
+      run: |
+        echo 'switch("threads", "on")' >> tests/config.nims
+        docker-compose run app nimble test
