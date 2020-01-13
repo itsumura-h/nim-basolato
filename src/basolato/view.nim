@@ -22,9 +22,8 @@ proc rundStr():string =
     add(result, char(rand(int('A')..int('z'))))
 
 
-proc csrf_token*():string =
+proc csrfToken*():string =
   let token = rundStr().secureHash()
-  echo token
   # insert db
   var db = newFlatDb("session.db", false)
   discard db.load()

@@ -4,7 +4,7 @@ import ../../../src/basolato/view
 proc createHtml*(): string = tmpli html"""
 <h2>New Post</h2>
 <form method="post">
-  $(csrf_token())
+  $(csrfToken())
   <div>
     <p>Title</p>
     <p><input type="text" name="title"></p>

@@ -53,13 +53,11 @@ routes:
   error Http404:
     http404Route
 
-  error CsrfError:
-    resp Http403, getCurrentExceptionMsg()
-  before re".*":
-    checkCsrfToken(request)
-
   error Exception:
     exceptionRoute
+
+  before re".*":
+    checkCsrfToken(request)
 
   options re".*":
     route(render(""), corsHeader())
