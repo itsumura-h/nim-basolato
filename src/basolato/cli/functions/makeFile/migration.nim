@@ -1,4 +1,4 @@
-import os, strformat, strutils, terminal, times
+import os, strformat, terminal, times
 import utils
 
 proc makeMigration*(target:string, message:var string):int =
@@ -24,7 +24,7 @@ proc migration{now}{target}*() =
   f.write(MIGRATION)
   defer: f.close()
 
-  message = &"create migration {now}{target}"
+  message = &"created migration {now}{target}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
   # ===========================================================================
 
@@ -43,10 +43,10 @@ main()
     f.write(MIGRATE)
     defer: f.close()
 
-    message = &"create migrate.nim"
+    message = &"created migrate.nim"
     styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
   else:
-    # update file
+    # TODO update file
     discard
   
   return 1
