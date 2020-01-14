@@ -26,12 +26,6 @@ Following libralies are not installed by automatically, but I have highly recomm
 - [Karax](https://github.com/pragmagic/karax), Single page applications for Nim.
 
 
-# index
-- [Introduction and Installation](#Introduction)
-- [Routing](#Routing)
-- [Controller](#Controller)
-- [Model](#Model)
-
 # Introduction
 ## Install
 ```sh
@@ -60,7 +54,6 @@ project directory will be created!
 ├── logs
 │   ├── error.log
 │   └── log.log
-├── main
 ├── main.nim
 ├── middleware
 │   └── custom_headers.nim
@@ -78,115 +71,19 @@ ducere new project_name
 >> create project to /your/project/dir/project_name
 ```
 
-# Routing
-[to index](#index)
-
-Routing is written in `main.nim`. it is the entrypoint file of Basolato.  
-Routing of Basolato is exactory the same as `Jester`, although you can call controller method by `route()`
-```nim
-import basolato/routing
-import app/controllers/SomeController
-
-routes:
-  get "/":
-    route(SomeController.index())
-  post "/":
-    route(SomeController.create(request))
-  get "/@id":
-    route(SomeController.show(@"id"))
-```
-
-## HTTP_Verbs
-Following HTTP Verbs are valid.
-
-|verb|explanation|
-|---|---|
-|get|Gets list of resources.|
-|post|Creates new resource.|
-|put|Updates single resource.|
-|patch|Updates single resource.|
-|delete|Deletes single resource.|
-|head|Gets the same response but without response body.|
-|options|Gets list of response headers before post/put/patch/delete/ access by client API software such as [Axios/JavaScript](https://github.com/axios/axios) and [Curl/sh](https://curl.haxx.se/).|
-|trace|Performs a message loop-back test along the path to the target resource, providing a useful debugging mechanism.|
-|connect|Starts two-way communications with the requested resource. It can be used to open a tunnel.|
-|error||
-|before|Run before get/post/put/patch/delete access.|
-|after|Run after get/post/put/patch/delete access.|
-
-## Routing group
-This functions is definded in `jester`
-```nim
-router dashboard:
-  get "/url1":
-    route(DashboardController.url1())
-  get "/url2":
-    route(DashboardController.url2())
-
-routes:
-  extend dashboard, "/dashboard"
-```
-`/dashboard/url1` and `/dashboard/url2` are available.
-
-
-## Middlware
-You can run middlware methods before calling controller.  
-In following example, `loginCheck(request)` and `someMiddleware()` definded in `config/middlewares` are called
-```nim
-import basolato/routing
-import basolato/middleware
-
-from config/middlewares import loginCheck, someMiddleware
-import app/controllers/SomeController
-
-routes:
-  get "/":
-    middlware([loginCheck(request), someMiddleware()])
-    route(SomeController.index())
-  post "/":
-    middlware([loginCheck(request), someMiddleware()])
-    route(SomeController.create(request))
-  get "/@id":
-    middlware([loginCheck(request), someMiddleware()])
-    route(SomeController.show(@"id"))
-```
-
-
-## Coustom Headers
-You can set custom headers by setting 2nd arg or `route()`  
-Procs which define custom headers have to return `@[(key, value: string)]` or `[(key, value: string)]`
-```nim
-import basolato/routing
-
-from config/custom_headers import corsHeader
-import app/controllers/SomeController
-
-routes:
-  get "/":
-    route(SomeController.index(), corsHeader(request))
-  post "/":
-    route(SomeController.create(request), corsHeader(request))
-  get "/@id":
-    route(SomeController.show(@"id"), corsHeader(request))
-```
-
+# index
+- [decere command](./documents/ducere.md)
+- [Routing](./documents/routing.md)
+- [Controller](#Controller)
+- [Middleware](./documents/middleware.md)
+- [Model](#Model)
 
 # Controller
 [to index](#index)
 
 ## Creating a Controller
-`ducere make controller` command can create controller.
-
-```nim
-ducere make controller User
->> app/controllers/UserController.nim
-
-ducere make controller sample/User
->> app/controllers/sample/UserController.nim
-
-ducere make controller sample/sample2/User
->> app/controllers/sample/sample2/UserController.nim
-```
+Use `ducere` command  
+[`ducere make controller`](./documents/ducere.md#controller)
 
 Resource controllers are controllers that have basic CRUD / resource style methods to them.  
 Generated controller is resource controller.
@@ -289,12 +186,8 @@ proc index*(): Response =
 [to index](#index)
 
 ## Creating a Migration File
-`ducere make migration` command can create migration file.
-
-```nim
-ducere make migration createUser
->> migrations/migration20200219134020createUser.nim
-```
+Use `ducere` command  
+[`ducere make migration`](./documents/ducere.md#migration)
 
 To create table schema, read `allographer` documents.  
 [allographer](https://github.com/itsumura-h/nim-allographer/blob/master/documents/schema_builder.md)

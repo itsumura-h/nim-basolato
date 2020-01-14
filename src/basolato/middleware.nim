@@ -4,7 +4,7 @@ import base, routing
 from controller import render
 
 export
-  jester, Response, render
+  base, jester, Response, render
 
 proc checkCsrfToken*(request:Request) =
   if request.reqMethod == HttpPost:

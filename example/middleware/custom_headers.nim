@@ -18,7 +18,8 @@ proc corsHeader*(): seq =
     headers.add(("Access-Control-Allow-Methods", allowedMethods.join(", ")))
 
   var allowedHeaders = @[
-    "X-login-id"
+    "X-login-id",
+    "X-login-token"
   ]
   if allowedHeaders[0] != "":
     headers.add(("Access-Control-Allow-Headers", allowedHeaders.join(", ")))

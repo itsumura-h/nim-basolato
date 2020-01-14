@@ -12,10 +12,9 @@ import app/controllers/web_blog_controller
 
 router sample:
   get "/checkLogin":
-    middleware([checkLogin(request)])
+    middleware([hasLoginId(request), hasLoginToken(request)])
     route(sample_controller.index(), corsHeader())
   get "/fib/@num":
-    middleware([check1(), check2()])
     route(sample_controller.fib(@"num"), corsHeader())
   get "/react":
     route(sample_controller.react())
@@ -48,6 +47,12 @@ router spaBlog:
   get "":
     route(Response())
 
+router api:
+  get "/api1":
+    route(render("api1"))
+  get "/api2":
+    route(render("api2"))
+
 # =============================================================================
 routes:
   # Framework
@@ -67,8 +72,6 @@ routes:
     route(sample_controller.index())
 
   # Sample
-  options re"/sample.*":
-    middleware([checkLogin(request)])
   extend sample, "/sample"
 
   # WebPagePosts
@@ -76,6 +79,10 @@ routes:
 
   # SpaPosts
   extend spaBlog, "/SpaBlog"
+
+  before re"/api.*":
+    middleware([hasLoginId(request), hasLoginToken(request)])
+  extend api, "/api"
 
 runForever()
 

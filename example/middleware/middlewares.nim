@@ -1,14 +1,15 @@
 import ../../src/basolato/middleware
 
-proc checkLogin*(request: Request):Response =
+proc hasLoginId*(request: Request):Response =
   try:
     let loginId = request.headers["X-login-id"]
-    echo "========== " & loginId & " =========="
+    echo "loginId ==========" & loginId
   except:
-    return render(Http403, "========== Can't get login_id ==========")
+    raise newException(Error403, "Can't get login id")
 
-proc check1*():Response =
-  echo "========== check1 =========="
-
-proc check2*():Response =
-  echo "========== check2 =========="
+proc hasLoginToken*(request: Request):Response =
+  try:
+    let loginToken = request.headers["X-login-token"]
+    echo "loginToken =======" & loginToken
+  except:
+    raise newException(Error403, "Can't get login token")
