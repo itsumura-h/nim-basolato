@@ -5,7 +5,9 @@ import ../src/basolato/controller
 import ../src/basolato/middleware
 
 import middleware/middlewares
-from middleware/custom_headers import corsHeader, middlewareHeader
+from middleware/cors_header_middleware import corsHeader
+from middleware/sequre_header_middleware import secureHeader
+import middleware/middlewares
 import app/controllers/sample_controller
 import app/controllers/web_blog_controller
 
@@ -13,15 +15,15 @@ import app/controllers/web_blog_controller
 router sample:
   get "/checkLogin":
     middleware([hasLoginId(request), hasLoginToken(request)])
-    route(sample_controller.index(), corsHeader())
+    route(sample_controller.index(), [corsHeader()])
   get "/fib/@num":
-    route(sample_controller.fib(@"num"), corsHeader())
+    route(sample_controller.fib(@"num"), [corsHeader()])
   get "/react":
     route(sample_controller.react())
   get "/vue":
     route(sample_controller.vue())
   get "/custom_headers":
-    route(sample_controller.customHeaders(), middlewareHeader())
+    route(sample_controller.customHeaders(), [secureHeader(), corsHeader()])
 
 router webBlog:
   get "":
@@ -63,7 +65,7 @@ routes:
   before:
     checkCsrfToken(request)
   options re".*":
-    route(render(""), corsHeader())
+    route(render(""), [corsHeader()])
 
 # =============================================================================
 

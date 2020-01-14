@@ -57,11 +57,15 @@ proc joinHeader(t1, t2:openArray[tuple[key, value: string]]):seq[tuple[key, valu
   return t3
 
 
+# template route*(rArg:Response,
+#                 middleareHeaders:openArray[tuple[key, value: string]]) =
 template route*(rArg:Response,
-                middleareHeaders:openArray[tuple[key, value: string]]) =
+                headers:openArray[seq]) =
   block:
     let r = rArg
-    var newHeaders = joinHeader(middleareHeaders, r.headers)
+    var newHeaders: seq[tuple[key, value:string]]
+    for header in headers:
+      newHeaders.add(joinHeader(middleareHeaders, r.headers))
     case r.responseType:
     of String:
       newHeaders.add(("Content-Type", "text/html;charset=utf-8"))
