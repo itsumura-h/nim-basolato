@@ -6,7 +6,8 @@ import ../src/basolato/middleware
 
 import middleware/middlewares
 from middleware/cors_header_middleware import corsHeader
-from middleware/sequre_header_middleware import secureHeader
+from middleware/custom_headers import customHeader
+from middleware/secure_header_middleware import secureHeader
 import middleware/middlewares
 import app/controllers/sample_controller
 import app/controllers/web_blog_controller
@@ -23,7 +24,7 @@ router sample:
   get "/vue":
     route(sample_controller.vue())
   get "/custom_headers":
-    route(sample_controller.customHeaders(), [secureHeader(), corsHeader()])
+    route(sample_controller.customHeaders(), [secureHeader(), corsHeader(), customHeader()])
 
 router webBlog:
   get "":

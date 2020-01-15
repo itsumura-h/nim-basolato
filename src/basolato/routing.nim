@@ -30,42 +30,42 @@ template route*(rArg: Response) =
 
 # =============================================================================
 
-proc joinHeader(t1, t2:openArray[tuple[key, value: string]]):seq[tuple[key, value: string]] =
-  ## join t1 and t2. t2 can override t1 if both have same key
+proc joinHeader*(headers:openArray[seq[tuple]]): seq[tuple[key,value:string]] =
+  ## join seq and children tuple if each headers have same key in child tuple
   ##
   ## .. code-block:: nim
-  ##    var t1 = [("key1", "val1"),("key2", "val2")]
-  ##
-  ##    var t2 = [("key1", "val1++"),("key3", "val3")]
-  ##
-  ##    var t3 = joinHeader(t1, t2)
+  ##    let t1 = @[("key1", "val1"),("key2", "val2")]
+  ##    let t2 = @[("key1", "val1++"),("key3", "val3")]
+  ##    let t3 = joinHeader([t1, t2])
   ##
   ##    echo t3
-  ##    >> [
-  ##      ("key1", "val1++"),
+  ##    >> @[
+  ##      ("key1", "val1, val1++"),
   ##      ("key2", "val2"),
   ##      ("key3", "val3"),
   ##    ]
   ##
-  var t1_1 = t1.toOrderedTable
-  let t2_1 = t2.toOrderedTable
-  for key, val in t2_1.pairs:
-    t1_1[key] = val
-  var t3: seq[tuple[key, value:string]]
-  for key, val in t1_1.pairs:
-    t3.add((key, val))
-  return t3
+  var tmp:seq[tuple[key,value:string]]
+  var tmp_tbl = tmp.toOrderedTable
+  for header in headers:
+    let header_tbl = header.toOrderedTable
+    for key, val in header_tbl.pairs:
+      if tmp_tbl.hasKey(key):
+        tmp_tbl[key] = [tmp_tbl[key], header_tbl[key]].join(", ")
+      else:
+        tmp_tbl[key] = header_tbl[key]
+  var result: seq[tuple[key,value:string]]
+  for key, val in tmp_tbl.pairs:
+    result.add((key:key, value:val))
+  return result
 
 
-# template route*(rArg:Response,
-#                 middleareHeaders:openArray[tuple[key, value: string]]) =
 template route*(rArg:Response,
-                headers:openArray[seq]) =
+                headers:openArray[seq[tuple]]) =
   block:
     let r = rArg
-    var newHeaders: seq[tuple[key, value:string]]
-    for header in headers:
-      newHeaders.add(joinHeader(middleareHeaders, r.headers))
+    var newHeaders: seq[tuple[key,value:string]]
+    newHeaders = joinHeader(headers)
     case r.responseType:
     of String:
       newHeaders.add(("Content-Type", "text/html;charset=utf-8"))

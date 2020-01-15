@@ -1,3 +1,5 @@
+import strutils
+
 proc customHeader*():seq =
   return @[
     ("Middleware-Header-Key1", "Middleware-Header-Val1"),
