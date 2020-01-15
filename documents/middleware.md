@@ -5,6 +5,27 @@ Middleware
 ## Routing middleware
 You can run middleware methods before calling controller.  
 In following example, `hasLoginId(request)` and `hasLoginToken()` definded in `middleware/middlewares.nim` are called
+
+middleware/checkLoginMiddleware.nim
+```nim
+import basolato/middleware
+
+proc hasLoginId*(request: Request):Response =
+  try:
+    let loginId = request.headers["X-login-id"]
+    echo "loginId ==========" & loginId
+  except:
+    raise newException(Error403, "Can't get login id")
+
+proc hasLoginToken*(request: Request):Response =
+  try:
+    let loginToken = request.headers["X-login-token"]
+    echo "loginToken =======" & loginToken
+  except:
+    raise newException(Error403, "Can't get login token")
+```
+
+main.nim
 ```nim
 import basolato/routing
 import basolato/middleware
@@ -24,10 +45,14 @@ routes:
   extend api, "/api"
 ```
 
-middleware/middlewares.nim
-```nim
-import basolato/middleware
+If `X-login-id` or `X-login-token` are missing in request header, return 403 otherwise 200.
 
+---
+
+Moreover, If you want to redirect to login page when login check is fail, you can use `errorRidirect()`. It call `302 redirect`.
+
+middleware/checkLoginMiddleware.nim
+```nim
 proc hasLoginId*(request: Request):Response =
   try:
     let loginId = request.headers["X-login-id"]
@@ -41,6 +66,18 @@ proc hasLoginToken*(request: Request):Response =
     echo "loginToken =======" & loginToken
   except:
     raise newException(Error403, "Can't get login token")
+    
+proc isLogin*(request: Request):Response =
+  try:
+    discard hasLoginId(request)
+    discard hasLoginToken(request)
+  except:
+    return errorRedirect("/login")
 ```
-
-If `X-login-id` or `X-login-token` are missing in request header, return 403 otherwise 200.
+main.nim
+```nim
+routes:
+  get "/index":
+    middleware([isLogin(request)])
+    route(sample_controller.index())
+```

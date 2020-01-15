@@ -1,4 +1,4 @@
-import json, tables, macros, strformat, strutils, httpcore, flatdb, times, os
+import json, tables, macros, strformat, strutils, httpcore, flatdb, times, os, options
 import jester
 import htmlgen
 import base, logger
@@ -88,7 +88,7 @@ template route*(rArg:Response,
       echoErrorMsg($newHeaders)
     resp r.status, newHeaders, r.bodyString
 
-import options
+
 proc response*(arg:ResponseData):Response =
   if not arg[4]: raise newException(Error404, "")
   # ↓ TODO DELETE after pull request mergeed https://github.com/dom96/jester/pull/234
@@ -179,8 +179,8 @@ template exceptionRoute*() =
 template middleware*(procs:varargs[Response]) =
   for p in procs:
     if p == nil:
-      echo getCurrentExceptionMsg()
+      # echo getCurrentExceptionMsg()
+      discard
     else:
       route(p)
       break
-

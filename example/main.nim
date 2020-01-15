@@ -15,8 +15,10 @@ import app/controllers/web_blog_controller
 
 
 router sample:
+  get "/welcome":
+    route(sample_controller.welcome())
   get "/checkLogin":
-    middleware([hasLoginId(request), hasLoginToken(request)])
+    middleware([isLogin(request)])
     route(sample_controller.index(), [corsHeader()])
   get "/fib/@num":
     route(sample_controller.fib(@"num"), [corsHeader()])
@@ -87,9 +89,6 @@ routes:
   before re"/api.*":
     middleware([hasLoginId(request), hasLoginToken(request)])
   after re"/api.*":
-    echo response(result).body
-    echo response(result).headers
-    echo response(result).status
     route(response(result), [secureHeader(), corsHeader(), customHeader()])
   extend api, "/api"
 
