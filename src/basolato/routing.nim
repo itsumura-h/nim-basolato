@@ -30,7 +30,9 @@ template route*(rArg: Response) =
 
 # =============================================================================
 
-proc joinHeader*(headers:openArray[seq[tuple]]): seq[tuple[key,value:string]] =
+# TODO after pull request mergeed https://github.com/dom96/jester/pull/234
+# proc joinHeader(headers:openArray[seq[tuple]]): seq[tuple[key,val:string]] =
+proc joinHeader(headers:openArray[seq[tuple]]): seq[tuple[key,value:string]] =
   ## join seq and children tuple if each headers have same key in child tuple
   ##
   ## .. code-block:: nim
@@ -49,7 +51,7 @@ proc joinHeader*(headers:openArray[seq[tuple]]): seq[tuple[key,value:string]] =
   var tmp_tbl = tmp.toOrderedTable
   for header in headers:
     let header_tbl = header.toOrderedTable
-    for key, val in header_tbl.pairs:
+    for key, value in header_tbl.pairs:
       if tmp_tbl.hasKey(key):
         tmp_tbl[key] = [tmp_tbl[key], header_tbl[key]].join(", ")
       else:
@@ -64,6 +66,8 @@ template route*(rArg:Response,
                 headers:openArray[seq[tuple]]) =
   block:
     let r = rArg
+    # TODO after pull request mergeed https://github.com/dom96/jester/pull/234
+    # var newHeaders: seq[tuple[key,val:string]]
     var newHeaders: seq[tuple[key,value:string]]
     newHeaders = joinHeader(headers)
     case r.responseType:
@@ -84,6 +88,20 @@ template route*(rArg:Response,
       echoErrorMsg($newHeaders)
     resp r.status, newHeaders, r.bodyString
 
+import options
+proc response*(arg:ResponseData):Response =
+  if not arg[4]: raise newException(Error404, "")
+  # ↓ TODO DELETE after pull request mergeed https://github.com/dom96/jester/pull/234
+  var newHeader:seq[tuple[key, value:string]]
+  for header in arg[2].get:
+    newHeader.add((key:header.key , value:header.val))
+  # ↑
+  return Response(
+    status: arg[1],
+    headers: newHeader,
+    # headers: arg[2].get, # TODO after pull request mergeed https://github.com/dom96/jester/pull/234
+    body: arg[3]
+  )
 
 # =============================================================================
 

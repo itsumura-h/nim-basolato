@@ -51,20 +51,13 @@ routes:
 `/dashboard/url1` and `/dashboard/url2` are available.
 
 
-## Coustom Headers
-You can set custom headers by setting 2nd arg or `route()`  
-Procs which define custom headers have to return `@[(key, value: string)]` or `[(key, value: string)]`
+## Getting response in sepecific URL groups
+`response(result)` return a instance of `Response`. This has some fields.
 ```nim
-import basolato/routing
+after re"/api.*":
+  echo response(result).body
+  echo response(result).headers
+  echo response(result).status
 
-from config/custom_headers import corsHeader
-import app/controllers/SomeController
-
-routes:
-  get "/":
-    route(SomeController.index(), corsHeader(request))
-  post "/":
-    route(SomeController.create(request), corsHeader(request))
-  get "/@id":
-    route(SomeController.show(@"id"), corsHeader(request))
+extend api, "/api"
 ```

@@ -19,10 +19,12 @@ macro createHttpException():untyped =
 type
   Response* = ref object
     status*:HttpCode
+    body*: string
     bodyString*: string
     bodyJson*: JsonNode
     responseType*: ResponseType
     headers*: seq[tuple[key, value:string]]
+    # headers*: seq[tuple[key, val:string]] # TODO after pull request mergeed https://github.com/dom96/jester/pull/234
     url*: string
 
   ResponseType* = enum

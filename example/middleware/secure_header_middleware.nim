@@ -1,6 +1,5 @@
 from strutils import join
 
-
 proc secureHeader*(): seq =
   return @[
     ("Strict-Transport-Security", ["max-age=63072000", "includeSubdomains"].join(", ")),

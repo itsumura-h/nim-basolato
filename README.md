@@ -173,14 +173,6 @@ proc index*(): Response =
 [Here](https://nim-lang.org/docs/httpcore.html#10) is the list of response status code available.  
 [Here](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) is a experiment of HTTP status code
 
-## Coustom Headers
-`headers` proc with method chain with `render` will set custom response header. If same key of header set in `main.nim`, it will be overwitten.
-```nim
-proc index*(): Response =
-  return render("with headers")
-    .header("key1", "value1")
-    .header("key2", ["a", "b", "c"])
-```
 
 # Migration
 [to index](#index)
