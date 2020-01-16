@@ -3,6 +3,8 @@ import json, httpcore, strformat, macros
 
 # export HttpCode
 
+const basolatoVersion* = "v0.1.0"
+
 type
   Response* = ref object
     status*:HttpCode
@@ -35,5 +37,3 @@ macro createHttpException():untyped =
 """)
   return parseStmt(strBody)
 createHttpException
-
-const basolatoVersion* = "v0.0.1"

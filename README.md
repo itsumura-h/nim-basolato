@@ -52,14 +52,13 @@ project directory will be created!
 │   └── models
 ├── config.nims
 ├── logs
-│   ├── error.log
-│   └── log.log
 ├── main.nim
 ├── middleware
-│   └── custom_headers.nim
+│   ├── custom_headers_middleware.nim
+│   └── framework_middleware.nim
 ├── migrations
 │   ├── migrate.nim
-│   └── migration20200113054007Init.nim
+│   └── migration0001.nim
 ├── public
 └── resources
 ```

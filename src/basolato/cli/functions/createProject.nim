@@ -2,17 +2,22 @@ import os, strformat, terminal
 import makeFile/utils
 
 const MAIN = """
+# framework
 import basolato/routing
-
+# middleware
 import middleware/custom_headers_middleware
+import middleware/framework_middleware
+# controller
 import basolato/sample/controllers/SampleController
 
 routes:
+  # Framework
   error Http404:
     http404Route
-
   error Exception:
     exceptionRoute
+  before:
+    framework
 
   get "/":
     route(SampleController.index(), [corsHeader(), secureHeader()])
@@ -59,6 +64,18 @@ proc secureHeader*(): seq =
   ]
 """
 
+const FRAMEWORK_MIDDLEWARE = """
+import basolato/middleware
+import basolato/routing
+# from custom_headers_middleware import corsHeader
+
+template framework*() =
+  checkCsrfToken(request)
+
+  # if request.reqMethod == HttpOptions:
+  #   route(render(""), [corsHeader()])
+"""
+
 const MIGRATION = """
 import json, strformat
 import allographer/schema_builder
@@ -88,6 +105,7 @@ proc createMVC(packageDir:string):int =
   let dirPath = getCurrentDir() & "/" & packageDir
   let mainPath = dirPath & "/main.nim"
   let costomHeadersPath = dirPath & "/middleware/custom_headers_middleware.nim"
+  let frameworkMiddlewarePath = dirPath & "/middleware/framework_middleware.nim"
   let migrationPath = dirPath & "/migrations/migration0001.nim"
   let migratePath = dirPath & "/migrations/migrate.nim"
 
@@ -114,6 +132,10 @@ ducere make config
     # custom_headers
     f = open(costomHeadersPath, fmWrite)
     f.write(CUSTOM_HEADERS_MIDDLEWARE)
+
+    # framework middleware
+    f = open(frameworkMiddlewarePath, fmWrite)
+    f.write(FRAMEWORK_MIDDLEWARE)
 
     # migration
     f = open(migrationPath, fmWrite)
