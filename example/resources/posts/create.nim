@@ -1,4 +1,3 @@
-import templates
 import ../../../src/basolato/view
 import base
 

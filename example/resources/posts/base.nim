@@ -1,4 +1,4 @@
-import templates
+import ../../../src/basolato/view
 
 
 proc header(): string = """

@@ -1,4 +1,4 @@
-import templates, json
+import json
 import ../../../src/basolato/view
 import base
 

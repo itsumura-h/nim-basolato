@@ -26,6 +26,7 @@ proc rundStr():string =
 
 
 proc csrfToken*():string =
+  randomize()
   let token = rundStr().secureHash()
   # insert db
   var db = newFlatDb("session.db", false)

@@ -2,6 +2,7 @@ import json, tables, macros, strformat, strutils, httpcore, flatdb, times, os, o
 import jester
 import htmlgen
 import base, logger
+from middleware import checkCsrfToken
 
 export jester, base
 

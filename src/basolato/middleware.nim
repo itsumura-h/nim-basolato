@@ -13,10 +13,15 @@ export render, controller.redirect, errorRedirect
 
 
 proc checkCsrfToken*(request:Request) =
-  if request.reqMethod == HttpPost:
-    let params = request.params
-    let token = params["_token"]
+  if request.reqMethod == HttpPost or
+        request.reqMethod == HttpPut or
+        request.reqMethod == HttpPatch or
+        request.reqMethod == HttpDelete:
+    # key not found
+    if not request.params.contains("_token"):
+      raise newException(CsrfError, "CSRF verification failed.")
     # check token is valid
+    let token = request.params["_token"]
     var db = newFlatDb("session.db", false)
     discard db.load()
     let session = db.queryOne(equal("token", token))

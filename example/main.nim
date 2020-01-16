@@ -1,9 +1,10 @@
 import asyncdispatch, httpcore, re, tables
 # framework
 import ../src/basolato/routing
-import ../src/basolato/controller
+# import ../src/basolato/controller
 import ../src/basolato/middleware
 # middleware
+import middleware/framework_middleware
 import middleware/custom_headers_middleware
 import middleware/check_login_middleware
 # controller
@@ -64,9 +65,7 @@ routes:
   error Exception:
     exceptionRoute
   before:
-    checkCsrfToken(request)
-  options re".*":
-    route(render(""), [corsHeader()])
+    framework
 
 # =============================================================================
 
