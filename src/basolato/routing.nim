@@ -170,11 +170,12 @@ proc checkHttpCode(exception:ref Exception):HttpCode =
 template exceptionRoute*() =
   defer: GCunref exception
   let status = checkHttpCode(exception)
-  echoErrorMsg($r.status & &"  {request.reqMethod}  {request.ip}  {request.path}  {exception.msg}")
-  when not defined(release):
-    resp status, devErrorPage(status, exception.msg)
-  else:
-    resp status, prodErrorPage(status)
+  echoErrorMsg($status & &"  {request.reqMethod}  {request.ip}  {request.path}  {exception.msg}")
+  resp status, devErrorPage(status, exception.msg)
+  # when not defined(release):
+  #   resp status, devErrorPage(status, exception.msg)
+  # else:
+  #   resp status, prodErrorPage(status)
 
 # =============================================================================
 

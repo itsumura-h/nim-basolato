@@ -39,11 +39,15 @@ proc create*(this:WebBlogController): Response =
   return render(createHtml())
 
 proc store*(this:WebBlogController, request:Request): Response =
+  echo "=== store"
   let params = request.params
   let title = params["title"]
   let text = params["text"]
   let publishedDate = now().format("yyyy-MM-dd")
   let autherId = 1
+  echo title
+  echo text
+  echo publishedDate
   let postId = this.post.store(title, text, publishedDate, autherId)
   return redirect(&"/WebBlog/{postId}")
 
