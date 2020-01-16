@@ -11,3 +11,6 @@ putEnv("db.database", "")
 putEnv("log.isDisplay", "true")
 putEnv("log.isFile", "true")
 putEnv("log.dir", "/home/www/example2/logs")
+
+# Session timeout
+putEnv("session.time", $(60*60*1*1)) # secound*minutes*hours*days

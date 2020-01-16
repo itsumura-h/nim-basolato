@@ -4,8 +4,13 @@ import flatdb
 import base, routing
 from controller import render, redirect, errorRedirect
 
+# from jester
 export jester except redirect
-export base, Response, render, controller.redirect, errorRedirect
+# from base
+export base, Response
+# from controller
+export render, controller.redirect, errorRedirect
+
 
 proc checkCsrfToken*(request:Request) =
   if request.reqMethod == HttpPost:

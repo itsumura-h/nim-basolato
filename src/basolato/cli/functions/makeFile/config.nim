@@ -22,7 +22,7 @@ putEnv("log.isFile", "true")
 putEnv("log.dir", "{getCurrentDir()}/logs")
 
 # Session timeout
-putEnv("session.time", $(60*60*1)) # secound*minutes*day
+putEnv("session.time", $(60*60*1*1)) # secound*minutes*hours*days
 """
 
   var f = open(targetPath, fmWrite)

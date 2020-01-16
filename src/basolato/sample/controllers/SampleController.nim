@@ -1,5 +1,4 @@
 import basolato/controller
-import basolato/base
 
 import ../resources/welcome
 

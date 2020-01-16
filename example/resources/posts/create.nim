@@ -1,7 +1,8 @@
 import templates
 import ../../../src/basolato/view
+import base
 
-proc createHtml*(): string = tmpli html"""
+proc implCreateHtml(): string = tmpli html"""
 <h2>New Post</h2>
 <form method="post">
   $(csrfToken())
@@ -16,3 +17,6 @@ proc createHtml*(): string = tmpli html"""
   <button type="submit">create</button>
 </form>
 """
+
+proc createHtml*(): string =
+  baseHtml(implCreateHtml())

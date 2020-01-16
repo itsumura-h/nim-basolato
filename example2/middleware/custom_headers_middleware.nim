@@ -1,4 +1,28 @@
 from strutils import join
+import basolato/middleware
+
+
+proc corsHeader*(): seq =
+  var allowedMethods = @[
+    "OPTIONS",
+    "GET",
+    "POST",
+    "PUT",
+    "DELETE"
+  ]
+
+  var allowedHeaders = @[
+    "X-login-id",
+    "X-login-token"
+  ]
+
+  return @[
+    ("Cache-Control", "no-cache"),
+    ("Access-Control-Allow-Origin", "*"),
+    ("Access-Control-Allow-Methods", allowedMethods.join(", ")),
+    ("Access-Control-Allow-Headers", allowedHeaders.join(", "))
+  ]
+
 
 proc secureHeader*(): seq =
   return @[

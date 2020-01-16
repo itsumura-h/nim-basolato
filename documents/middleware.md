@@ -4,9 +4,9 @@ Middleware
 
 ## Routing middleware
 You can run middleware methods before calling controller.  
-In following example, `hasLoginId(request)` and `hasLoginToken()` definded in `middleware/middlewares.nim` are called
+In following example, `hasLoginId(request)` and `hasLoginToken()` definded in `middleware/check_login_middleware.nim` are called
 
-middleware/checkLoginMiddleware.nim
+middleware/check_login_middleware.nim
 ```nim
 import basolato/middleware
 

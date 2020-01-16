@@ -1,6 +1,6 @@
 import basolato/routing
 
-import middleware/custom_headers
+import middleware/custom_headers_middleware
 import basolato/sample/controllers/SampleController
 
 routes:
@@ -11,6 +11,6 @@ routes:
     exceptionRoute
 
   get "/":
-    route(SampleController.index())
+    route(SampleController.index(), [corsHeader(), secureHeader()])
 
 runForever()

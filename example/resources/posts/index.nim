@@ -1,7 +1,8 @@
 import templates, json
 import ../../../src/basolato/view
+import base
 
-proc indexHtml*(posts:seq[JsonNode]):string = tmpli html"""
+proc implIndexHtml(posts:seq[JsonNode]):string = tmpli html"""
 $for post in posts {
   <div class="post">
       <div class="date">
@@ -12,3 +13,6 @@ $for post in posts {
   </div>  
 }
 """
+
+proc indexHtml*(posts:seq[JsonNode]): string =
+  baseHtml(implIndexHtml(posts))

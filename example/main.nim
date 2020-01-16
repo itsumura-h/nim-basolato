@@ -4,11 +4,8 @@ import ../src/basolato/routing
 import ../src/basolato/controller
 import ../src/basolato/middleware
 # middleware
-import middleware/middlewares
-from middleware/cors_header_middleware import corsHeader
-from middleware/custom_headers import customHeader
-from middleware/secure_header_middleware import secureHeader
-import middleware/middlewares
+import middleware/custom_headers_middleware
+import middleware/check_login_middleware
 # controller
 import app/controllers/sample_controller
 import app/controllers/web_blog_controller

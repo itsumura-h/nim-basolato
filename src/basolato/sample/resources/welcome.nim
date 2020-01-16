@@ -80,7 +80,7 @@ proc welcomeHtml*(name:string): string = tmpli html"""
     Fullstack Web Framewrok for Nim
   </h2>
   <p class="whiteFont">
-    <i>—utilitas, firmitas and venustas (utility, strength and beauty)—</i> by De architectura / Marcus Vitruvius Pollio
+    <i>—utilitas, firmitas et venustas (utility, strength and beauty)—</i> by De architectura / Marcus Vitruvius Pollio
   </p>
   <p class="whiteFont">
     Basolate is compatible multiple Architecture
