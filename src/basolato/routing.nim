@@ -18,14 +18,15 @@ template route*(rArg: Response) =
       newHeaders.add(("Content-Type", "application/json"))
       r.bodyString = $(r.bodyJson)
     of Redirect:
+      logger($r.status & &"  {request.reqMethod}  {request.ip}  {request.path}")
       newHeaders.add(("Location", r.url))
       resp r.status, newHeaders, ""
 
     if r.status == Http200:
-      logger($r.status & "  " & request.path)
+      logger($r.status & &"  {request.reqMethod}  {request.ip}  {request.path}")
       logger($newHeaders)
     elif r.status.is4xx() or r.status.is5xx():
-      echoErrorMsg($r.status & &"  {request.ip}  {request.path}")
+      echoErrorMsg($r.status & &"  {request.reqMethod}  {request.ip}  {request.path}")
       echoErrorMsg($newHeaders)
     resp r.status, newHeaders, r.bodyString
 
@@ -78,14 +79,15 @@ template route*(rArg:Response,
       newHeaders.add(("Content-Type", "application/json"))
       r.bodyString = $(r.bodyJson)
     of Redirect:
+      logger($r.status & &"  {request.reqMethod}  {request.ip}  {request.path}")
       newHeaders.add(("Location", r.url))
       resp r.status, newHeaders, ""
 
     if r.status == Http200:
-      logger($r.status & &"  {request.path}")
+      logger($r.status & &"  {request.reqMethod}  {request.ip}  {request.path}")
       logger($newHeaders)
     elif r.status.is4xx() or r.status.is5xx():
-      echoErrorMsg($r.status &  &"  {request.ip}  {request.path}")
+      echoErrorMsg($r.status & &"  {request.reqMethod}  {request.ip}  {request.path}")
       echoErrorMsg($newHeaders)
     resp r.status, newHeaders, r.bodyString
 
@@ -145,8 +147,6 @@ of "Error{num.repr}":
 """)
   return parseStmt(fmt"""
 case $exception.name
-of "CsrfError":
-  return Http403
 {strBody}
 else:
   return Http500
@@ -170,7 +170,7 @@ proc checkHttpCode(exception:ref Exception):HttpCode =
 template exceptionRoute*() =
   defer: GCunref exception
   let status = checkHttpCode(exception)
-  echoErrorMsg($status & &"  {request.ip}  {request.path}  {exception.msg}")
+  echoErrorMsg($r.status & &"  {request.reqMethod}  {request.ip}  {request.path}  {exception.msg}")
   when not defined(release):
     resp status, devErrorPage(status, exception.msg)
   else:

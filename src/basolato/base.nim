@@ -21,8 +21,6 @@ type
     String
     Json
     Redirect
-
-  CsrfError* = object of Exception
   
 const httpCodeArray* = [505, 504, 503, 502, 501, 500, 451, 431, 429, 428, 426,
   422, 421, 418, 417, 416, 415, 414, 413, 412, 411, 410, 409, 408, 407, 406,
@@ -35,5 +33,5 @@ macro createHttpException():untyped =
   for num in httpCodeArray:
     strBody.add(fmt"""  Error{num}* = object of Exception
 """)
-  return parseStmt(strBody)
+  parseStmt(strBody)
 createHttpException
