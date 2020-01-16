@@ -94,14 +94,15 @@ proc response*(arg:ResponseData):Response =
   if not arg[4]: raise newException(Error404, "")
   # ↓ TODO DELETE after pull request mergeed https://github.com/dom96/jester/pull/234
   var newHeader:seq[tuple[key, value:string]]
-  for header in arg[2].get:
+  for header in arg[2].get(@[("", "")]):
     newHeader.add((key:header.key , value:header.val))
   # ↑
   return Response(
     status: arg[1],
     headers: newHeader,
     # headers: arg[2].get, # TODO after pull request mergeed https://github.com/dom96/jester/pull/234
-    body: arg[3]
+    body: arg[3],
+    match: arg[4]
   )
 
 # =============================================================================

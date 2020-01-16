@@ -1,4 +1,6 @@
+import options
 import ../../src/basolato/middleware
+import ../../src/basolato/routing
 from custom_headers_middleware import corsHeader
 
 template framework*() =
