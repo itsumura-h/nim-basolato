@@ -13,4 +13,4 @@ putEnv("log.isFile", "true")
 putEnv("log.dir", "/home/www/example/logs")
 
 # Session timeout
-putEnv("session.time", $(60*60*1)) # secound*minutes*day
+putEnv("session.time", "3600") # secounds

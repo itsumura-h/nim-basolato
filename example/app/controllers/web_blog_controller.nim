@@ -39,7 +39,6 @@ proc create*(this:WebBlogController): Response =
   return render(createHtml())
 
 proc store*(this:WebBlogController, request:Request): Response =
-  echo "=== store"
   let params = request.params
   let title = params["title"]
   let text = params["text"]
