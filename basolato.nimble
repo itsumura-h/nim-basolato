@@ -18,21 +18,21 @@ requires "cligen >= 0.9.41"
 requires "jester >= 0.4.3"
 requires "templates >= 0.5"
 requires "https://github.com/enthus1ast/flatdb >= 0.2.4"
-requires "https://github.com/itsumura-h/nim-allographer >= 0.7.0"
+requires "https://github.com/itsumura-h/nim-allographer >= 0.7.2"
 
-import strformat
-from os import `/`
+# import strformat
+# from os import `/`
 
-task docs, "Generate API documents":
-  let
-    deployDir = "deploy" / "docs"
-    pkgDir = srcDir / "basolato"
-    srcFiles = @[
-      "base","controller","logger","middleware","routing","view"
-    ]
+# task docs, "Generate API documents":
+#   let
+#     deployDir = "deploy" / "docs"
+#     pkgDir = srcDir / "basolato"
+#     srcFiles = @[
+#       "base","controller","logger","middleware","routing","view"
+#     ]
 
-  if existsDir(deployDir):
-    rmDir deployDir
-  for f in srcFiles:
-    let srcFile = pkgDir / f & ".nim"
-    exec &"nim doc --hints:off --project --out:{deployDir} --index:on {srcFile}"
+#   if existsDir(deployDir):
+#     rmDir deployDir
+#   for f in srcFiles:
+#     let srcFile = pkgDir / f & ".nim"
+#     exec &"nim doc --hints:off --project --out:{deployDir} --index:on {srcFile}"

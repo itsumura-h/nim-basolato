@@ -1,9 +1,8 @@
 import basolato/controller
-import basolato/base
 
-import ../resources/index
+import ../resources/welcome
 
 
 proc index*():Response =
   let name = "Basolato " & basolatoVersion
-  return render(indexHtml(name))
+  return render(welcomeHtml(name))

@@ -1,6 +1,6 @@
 import templates
 
-proc indexHtml*(name:string): string = tmpli html"""
+proc welcomeHtml*(name:string): string = tmpli html"""
 
 <head>
   <link rel="stylesheet" href="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/styles/dracula.min.css">
@@ -79,6 +79,9 @@ proc indexHtml*(name:string): string = tmpli html"""
   <h2 class="goldFont">
     Fullstack Web Framewrok for Nim
   </h2>
+  <p class="whiteFont">
+    <i>—utilitas, firmitas et venustas (utility, strength and beauty)—</i> by De architectura / Marcus Vitruvius Pollio
+  </p>
   <p class="whiteFont">
     Basolate is compatible multiple Architecture
     <ul class="ulLink">

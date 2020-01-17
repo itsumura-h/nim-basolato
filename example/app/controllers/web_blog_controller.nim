@@ -4,7 +4,7 @@ import ../../../src/basolato/controller
 # model
 import ../models/posts
 # view
-import ../../resources/posts/base
+# import ../../resources/posts/base
 import ../../resources/posts/index
 import ../../resources/posts/show
 import ../../resources/posts/create
@@ -23,7 +23,7 @@ proc newWebBlogController*(): WebBlogController =
 
 proc index*(this:WebBlogController): Response =
   let posts = this.post.getPosts()
-  return render(baseHtml(indexHtml(posts)))
+  return render(indexHtml(posts))
 
 
 proc show*(this:WebBlogController, idArg:string): Response =
@@ -32,11 +32,11 @@ proc show*(this:WebBlogController, idArg:string): Response =
   if post.kind == JNull:
     # return render(Http404, "")
     raise newException(Error404, "")
-  return render(baseHtml(showHtml(post)))
+  return render(showHtml(post))
 
 
 proc create*(this:WebBlogController): Response =
-  return render(baseHtml(createHtml()))
+  return render(createHtml())
 
 proc store*(this:WebBlogController, request:Request): Response =
   let params = request.params
@@ -44,6 +44,9 @@ proc store*(this:WebBlogController, request:Request): Response =
   let text = params["text"]
   let publishedDate = now().format("yyyy-MM-dd")
   let autherId = 1
+  echo title
+  echo text
+  echo publishedDate
   let postId = this.post.store(title, text, publishedDate, autherId)
   return redirect(&"/WebBlog/{postId}")
 

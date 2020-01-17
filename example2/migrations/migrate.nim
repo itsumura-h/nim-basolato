@@ -1,6 +1,6 @@
-import migration20200113054007Init
+import migration0001
 
 proc main() =
-  migration20200113054007Init()
+  migration0001()
 
 main()

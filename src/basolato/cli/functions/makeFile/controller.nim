@@ -28,7 +28,7 @@ proc destroy*(idArg: string): Response =
   return render("destroy")
 """
 
-import os, strformat, strutils, terminal
+import os, strformat, terminal
 import utils
 
 proc makeController*(target:string, message:var string):int =
@@ -42,6 +42,6 @@ proc makeController*(target:string, message:var string):int =
   f.write(CONTROLLER)
   defer: f.close()
 
-  message = &"create controller {target}Controller"
+  message = &"created controller {target}Controller"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
   return 1

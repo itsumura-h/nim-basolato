@@ -1,28 +1,31 @@
 import asyncdispatch, httpcore, re, tables
-
+# framework
 import ../src/basolato/routing
-import ../src/basolato/controller
+# import ../src/basolato/controller
 import ../src/basolato/middleware
-
-import middleware/middlewares
-from middleware/custom_headers import corsHeader, middlewareHeader
+# middleware
+import middleware/framework_middleware
+import middleware/custom_headers_middleware
+import middleware/check_login_middleware
+# controller
 import app/controllers/sample_controller
 import app/controllers/web_blog_controller
 
 
 router sample:
+  get "/welcome":
+    route(sample_controller.welcome())
   get "/checkLogin":
-    middleware([checkLogin(request)])
-    route(sample_controller.index(), corsHeader())
+    middleware([isLogin(request)])
+    route(sample_controller.index(), [corsHeader()])
   get "/fib/@num":
-    middleware([check1(), check2()])
-    route(sample_controller.fib(@"num"), corsHeader())
+    route(sample_controller.fib(@"num"), [corsHeader()])
   get "/react":
     route(sample_controller.react())
   get "/vue":
     route(sample_controller.vue())
   get "/custom_headers":
-    route(sample_controller.customHeaders(), middlewareHeader())
+    route(sample_controller.customHeaders(), [secureHeader(), corsHeader(), customHeader()])
 
 router webBlog:
   get "":
@@ -48,19 +51,21 @@ router spaBlog:
   get "":
     route(Response())
 
+router api:
+  get "/api1":
+    route(render("api1"))
+  get "/api2":
+    route(render("api2"))
+
 # =============================================================================
 routes:
+  # Framework
   error Http404:
     http404Route
-
   error Exception:
     exceptionRoute
-
-  before re".*":
-    checkCsrfToken(request)
-
-  options re".*":
-    route(render(""), corsHeader())
+  before:
+    framework
 
 # =============================================================================
 
@@ -69,8 +74,6 @@ routes:
     route(sample_controller.index())
 
   # Sample
-  options re"/sample.*":
-    middleware([checkLogin(request)])
   extend sample, "/sample"
 
   # WebPagePosts
@@ -78,6 +81,12 @@ routes:
 
   # SpaPosts
   extend spaBlog, "/SpaBlog"
+
+  before re"/api.*":
+    middleware([hasLoginId(request), hasLoginToken(request)])
+  after re"/api.*":
+    route(response(result), [secureHeader(), corsHeader(), customHeader()])
+  extend api, "/api"
 
 runForever()
 

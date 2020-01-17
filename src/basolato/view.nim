@@ -1,5 +1,8 @@
+import templates
 import json, random, strformat,  std/sha1, times
 import flatdb
+
+export templates
 
 proc get*(val:JsonNode):string =
   case val.kind
@@ -23,6 +26,7 @@ proc rundStr():string =
 
 
 proc csrfToken*():string =
+  randomize()
   let token = rundStr().secureHash()
   # insert db
   var db = newFlatDb("session.db", false)
