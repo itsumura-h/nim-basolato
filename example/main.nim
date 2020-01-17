@@ -63,7 +63,7 @@ routes:
   error Http404:
     http404Route
   error Exception:
-    exceptionRoute("framework/error.html")
+    exceptionRoute
   before:
     framework
 

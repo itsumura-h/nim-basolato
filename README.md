@@ -51,7 +51,6 @@ project directory will be created!
 │   ├── controllers
 │   └── models
 ├── config.nims
-├── logs
 ├── main.nim
 ├── middleware
 │   ├── custom_headers_middleware.nim
@@ -61,6 +60,8 @@ project directory will be created!
 │   └── migration0001.nim
 ├── public
 └── resources
+    └── framework
+        └── error.nim
 ```
 
 You can specify project direcotry name
