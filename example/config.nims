@@ -3,9 +3,13 @@ import os
 # DB Connection
 putEnv("db.driver", "sqlite")
 putEnv("db.connection", "/home/www/example/db.sqlite3")
-putEnv("db.user", "")
-putEnv("db.password", "")
-putEnv("db.database", "")
+#putEnv("db.driver", "mysql")
+#putEnv("db.connection", "mysql:3306")
+# putEnv("db.driver", "postgres")
+# putEnv("db.connection", "postgres:5432")
+putEnv("db.user", "user")
+putEnv("db.password", "Password!")
+putEnv("db.database", "allographer")
 
 # Logging
 putEnv("log.isDisplay", "true")
@@ -13,4 +17,4 @@ putEnv("log.isFile", "true")
 putEnv("log.dir", "/home/www/example/logs")
 
 # Session timeout
-putEnv("session.time", "3600") # secounds
+putEnv("SESSION_TIME", "3600")

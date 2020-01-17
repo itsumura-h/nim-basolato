@@ -113,7 +113,7 @@ proc prodErrorPage(status:HttpCode): string =
   return html(head(title($status)),
             body(h1($status),
                 "<hr/>",
-                p(&"👑Nim Basolato {basolatoVersion}"),
+                p(&"👑Nim &#x2B1F Basolato {basolatoVersion}"),
                 style = "text-align: center;"
             ),
             xmlns="http://www.w3.org/1999/xhtml")
@@ -127,7 +127,7 @@ proc devErrorPage(status:HttpCode, error: string): string =
             p(b("Detail: ")),
             code(pre(error)),
             "<hr/>",
-            p(&"👑Nim Basolato {basolatoVersion}", style = "text-align: center;"),
+            p(&"👑Nim &#x2B1F Basolato {basolatoVersion}", style = "text-align: center;"),
           ),
           xmlns="http://www.w3.org/1999/xhtml"
         )

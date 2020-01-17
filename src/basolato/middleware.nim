@@ -1,6 +1,8 @@
 import os, json, times, strutils
+# 3rd party
 import jester except redirect
 import flatdb
+# self
 import base, routing
 from controller import render, redirect, errorRedirect
 
@@ -11,6 +13,7 @@ export base, Response
 # from controller
 export render, controller.redirect, errorRedirect
 
+const SESSION_TIME = getEnv("SESSION_TIME").string.parseInt
 
 proc checkCsrfToken*(request:Request) =
   if request.reqMethod == HttpPost or
@@ -28,9 +31,8 @@ proc checkCsrfToken*(request:Request) =
     if isNil(session):
       raise newException(Error403, "CSRF verification failed.")
     # check timeout
-    let timeoutSecound = getEnv("session.time").parseInt
     let generatedAt = session["generated_at"].getStr.parseInt
-    if getTime().toUnix() > generatedAt + timeoutSecound:
+    if getTime().toUnix() > generatedAt + SESSION_TIME:
       raise newException(Error403, "Session Timeout.")
     # delete token from session
     let id = session["_id"].getStr
