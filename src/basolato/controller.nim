@@ -33,7 +33,7 @@ proc errorRedirect*(url:string): Response =
   return Response(
     status:Http302, url:url, responseType: Redirect
   )
-
+  
 
 # with header
 proc header*(r:Response, key:string, value:string):Response =
