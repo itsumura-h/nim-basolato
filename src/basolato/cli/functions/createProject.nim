@@ -1,73 +1,113 @@
 import os, strformat, terminal
+import makeFile/utils
 
 const MAIN = """
+# framework
 import basolato/routing
-
-import middleware/custom_headers
+# middleware
+import middleware/custom_headers_middleware
+import middleware/framework_middleware
+# controller
 import basolato/sample/controllers/SampleController
 
 routes:
+  # Framework
   error Http404:
     http404Route
-
   error Exception:
     exceptionRoute
+  before:
+    framework
 
   get "/":
-    route(SampleController.index())
+    route(SampleController.index(), [corsHeader(), secureHeader()])
 
 runForever()
 """
 
-const CUSTOM_HEADERS = """
+const CUSTOM_HEADERS_MIDDLEWARE = """
 from strutils import join
-
 import basolato/middleware
 
 
-proc corsHeader*(request: Request): seq =
-  var headers = @[
-    ("Cache-Control", "no-cache"),
-    ("Access-Control-Allow-Origin", "*")
-  ]
-
-  var allowedMethods = [
+proc corsHeader*(): seq =
+  var allowedMethods = @[
     "OPTIONS",
     "GET",
     "POST",
     "PUT",
     "DELETE"
   ]
-  if allowedMethods[0] != "":
-    headers.add(("Access-Control-Allow-Methods", allowedMethods.join(", ")))
 
-  var allowedHeaders = [
-    "X-login-id"
+  var allowedHeaders = @[
+    "X-login-id",
+    "X-login-token"
   ]
-  if allowedHeaders[0] != "":
-    headers.add(("Access-Control-Allow-Headers", allowedHeaders.join(", ")))
 
-  return headers
+  return @[
+    ("Cache-Control", "no-cache"),
+    ("Access-Control-Allow-Origin", "*"),
+    ("Access-Control-Allow-Methods", allowedMethods.join(", ")),
+    ("Access-Control-Allow-Headers", allowedHeaders.join(", "))
+  ]
+
+
+proc secureHeader*(): seq =
+  return @[
+    ("Strict-Transport-Security", ["max-age=63072000", "includeSubdomains"].join(", ")),
+    ("X-Frame-Options", "SAMEORIGIN"),
+    ("X-XSS-Protection", ["1", "mode=block"].join(", ")),
+    ("X-Content-Type-Options", "nosniff"),
+    ("Referrer-Policy", ["no-referrer", "strict-origin-when-cross-origin"].join(", ")),
+    ("Cache-control", ["no-cache", "no-store", "must-revalidate"].join(", ")),
+    ("Pragma", "no-cache"),
+  ]
+"""
+
+const FRAMEWORK_MIDDLEWARE = """
+import basolato/middleware
+import basolato/routing
+# from custom_headers_middleware import corsHeader
+
+template framework*() =
+  checkCsrfToken(request)
+
+  # if request.reqMethod == HttpOptions:
+  #   route(render(""), [corsHeader()])
 """
 
 const MIGRATION = """
-import allographer/SchemaBuilder
+import json, strformat
+import allographer/schema_builder
+import allographer/query_builder
 
-Schema().create([
-  Table().create("sample_users", [
-    Column().increments("id"),
-    Column().string("name"),
-    Column().string("email")
+proc migration0001*() =
+  Schema().create([
+    Table().create("sample_users", [
+      Column().increments("id"),
+      Column().string("name"),
+      Column().string("email")
+    ])
   ])
-])
+
+  var users: seq[JsonNode]
+  for i in 1..10:
+    users.add(%*{
+      "id": i,
+      "name": &"user{i}",
+      "email": &"user{i}@nim.com"
+    })
+  RDB().table("sample_users").insert(users)
 """
 
 
 proc createMVC(packageDir:string):int =
   let dirPath = getCurrentDir() & "/" & packageDir
   let mainPath = dirPath & "/main.nim"
-  let costomHeadersPath = dirPath & "/middleware/custom_headers.nim"
-  let migrationPath = dirPath & "/migrations/0001migration.nim"
+  let costomHeadersPath = dirPath & "/middleware/custom_headers_middleware.nim"
+  let frameworkMiddlewarePath = dirPath & "/middleware/framework_middleware.nim"
+  let migrationPath = dirPath & "/migrations/migration0001.nim"
+  let migratePath = dirPath & "/migrations/migrate.nim"
 
   try:
     createDir(dirPath)
@@ -84,15 +124,34 @@ proc createMVC(packageDir:string):int =
     createDir(dirPath & "/public")
     discard execShellCmd(&"""
 cd {packageDir}
-dbtool makeConf
-ducere make migration Init
+ducere make config
 """)
 
     # discard execShellCmd("ducere make migration Init")
 
     # custom_headers
     f = open(costomHeadersPath, fmWrite)
-    f.write(CUSTOM_HEADERS)
+    f.write(CUSTOM_HEADERS_MIDDLEWARE)
+
+    # framework middleware
+    f = open(frameworkMiddlewarePath, fmWrite)
+    f.write(FRAMEWORK_MIDDLEWARE)
+
+    # migration
+    f = open(migrationPath, fmWrite)
+    f.write(MIGRATION)
+
+    # migrate
+    let MIGRATE = """
+import migration0001
+
+proc main() =
+  migration0001()
+
+main()
+"""
+    f = open(migratePath, fmWrite)
+    f.write(MIGRATE)
 
     defer:
       f.close()
@@ -101,8 +160,8 @@ ducere make migration Init
     echo getCurrentExceptionMsg()
     return 1
 
-proc createDDD() =
-  echo ""
+proc createDDD():int =
+  return 0
 
 proc new*(args:seq[string], architecture="MVC"):int =
   ## create new project
@@ -113,6 +172,7 @@ proc new*(args:seq[string], architecture="MVC"):int =
   if args.len > 0 and args[0].len > 0:
     packageDir = args[0]
     let dirPath = getCurrentDir() & "/" & packageDir
+    if isDirExists(dirPath): return 0
     message = &"create project {dirPath}"
   else:
     message = &"create project {getCurrentDir()}"
@@ -126,6 +186,7 @@ proc new*(args:seq[string], architecture="MVC"):int =
   of "DDD":
     message.add("\ncreate as DDD")
     styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
+    return createDDD()
   else:
     message = """
 invalid architecture.

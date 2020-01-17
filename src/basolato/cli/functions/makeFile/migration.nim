@@ -1,4 +1,4 @@
-import os, strformat, strutils, terminal, times
+import os, strformat, terminal, times, strutils
 import utils
 
 proc makeMigration*(target:string, message:var string):int =
@@ -19,34 +19,30 @@ import allographer/query_builder
 proc migration{now}{target}*() =
   discard
 """
-
   var f = open(targetPath, fmWrite)
   f.write(MIGRATION)
-  defer: f.close()
+  f.close()
 
-  message = &"create migration {now}{target}"
+  message = &"created migration {now}{target}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
-  # ===========================================================================
 
+  # update migrate.nim
   targetPath = &"{getCurrentDir()}/migrations/migrate.nim"
-  let MIGRATE = &"""
-import migration{now}{target}
-
-proc main() =
-  migration{now}{target}()
-
-main()
-"""
-  if not existsFile(targetPath):
-    # create new file
-    f = open(targetPath, fmWrite)
-    f.write(MIGRATE)
-    defer: f.close()
-
-    message = &"create migrate.nim"
-    styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
-  else:
-    # update file
-    discard
-  
-  return 1
+  f = open(targetPath, fmRead)
+  let text = f.readAll()
+  var textArr = text.splitLines()
+  # get offset where column is empty string
+  var offsets:seq[int]
+  for i, row in textArr:
+    if row == "":
+      offsets.add(i)
+  # insert array
+  textArr.insert(&"import migration{now}{target}", offsets[0])
+  textArr.insert(&"  migration{now}{target}()", offsets[1]+1)
+  # write in file
+  f = open(targetPath, fmWrite)
+  for i in 0..textArr.len-2:
+    f.writeLine(textArr[i])
+  f.close()
+  message = &"updated migrate.nim"
+  styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)

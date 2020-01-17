@@ -6,11 +6,15 @@ import allographer/query_builder
 # html
 import ../../resources/sample/vue
 import ../../resources/sample/react
-
+import ../../../src/basolato/sample/resources/welcome
 
 proc index*(): Response =
   return render(html("sample/index.html"))
 
+
+proc welcome*(): Response =
+  let name = "Basolato " & basolatoVersion
+  return render(welcomeHtml(name))
 
 proc fib_logic(n: int): int =
     if n < 2:

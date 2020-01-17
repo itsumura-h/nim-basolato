@@ -42,5 +42,6 @@ jobs:
       run: docker-compose run app nimble test
     - name: Test multi-thread
       run: |
+        echo '' >> tests/config.nims
         echo 'switch("threads", "on")' >> tests/config.nims
         docker-compose run app nimble test
