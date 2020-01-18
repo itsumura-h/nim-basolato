@@ -1,9 +1,9 @@
 import os, parsecfg, terminal, logging, macros, strformat, strutils
 
 const
-  IS_DISPLAY = getEnv("log.isDisplay").string.parseBool
-  IS_FILE = getEnv("log.isFile").string.parseBool
-  LOG_DIR = getEnv("log.dir").string
+  IS_DISPLAY = getEnv("LOG_IS_DISPLAY").string.parseBool
+  IS_FILE = getEnv("LOG_IS_FILE").string.parseBool
+  LOG_DIR = getEnv("LOG_DIR").string
 
 
 proc logger*(output: any, args:varargs[string]) =
