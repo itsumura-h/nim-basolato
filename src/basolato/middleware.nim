@@ -1,4 +1,4 @@
-import os, json, times, strutils
+import os, json, times, strutils, strformat, macros
 # 3rd party
 import jester except redirect
 import flatdb
@@ -13,7 +13,7 @@ export base, Response
 # from controller
 export render, controller.redirect, errorRedirect
 
-const SESSION_TIME = getEnv("SESSION_TIME").string.parseInt
+const SESSION_TIME = getEnv("session.time").string.parseInt
 
 proc checkCsrfToken*(request:Request) =
   if request.reqMethod == HttpPost or
@@ -37,3 +37,4 @@ proc checkCsrfToken*(request:Request) =
     # delete token from session
     let id = session["_id"].getStr
     db.delete(id)
+

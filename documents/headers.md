@@ -2,15 +2,9 @@ Headers
 ===
 # Request Header
 To get request header, use `request.headers`
+
+middleware/check_login.nim
 ```nim
-# main.nim
-from middleware/check_login import hasLoginId
-
-get "/checkLogin":
-  middleware([hasLoginId(request)])
-  route(sample_controller.index())
-
-# middleware/check_login.nim
 import basolato/middleware
 
 proc hasLoginId*(request: Request):Response =
@@ -18,6 +12,15 @@ proc hasLoginId*(request: Request):Response =
     let loginId = request.headers["X-login-id"]
   except:
     raise newException(Error403, "Can't get login id")
+```
+
+main.nim
+```nim
+from middleware/check_login import hasLoginId
+
+get "/checkLogin":
+  middleware([hasLoginId(request)])
+  route(sample_controller.index())
 ```
 
 # Response header
