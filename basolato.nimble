@@ -18,7 +18,7 @@ requires "cligen >= 0.9.41"
 requires "jester >= 0.4.3"
 requires "templates >= 0.5"
 requires "https://github.com/enthus1ast/flatdb >= 0.2.4"
-requires "https://github.com/itsumura-h/nim-allographer >= 0.7.2"
+requires "https://github.com/itsumura-h/nim-allographer >= 0.8.0"
 
 # import strformat
 # from os import `/`
