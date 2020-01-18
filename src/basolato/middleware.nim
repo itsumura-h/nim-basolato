@@ -13,7 +13,7 @@ export base, Response
 # from controller
 export render, controller.redirect, errorRedirect
 
-const SESSION_TIME = getEnv("session.time").string.parseInt
+const SESSION_TIME = getEnv("SESSION_TIME").string.parseInt
 
 proc checkCsrfToken*(request:Request) =
   if request.reqMethod == HttpPost or
