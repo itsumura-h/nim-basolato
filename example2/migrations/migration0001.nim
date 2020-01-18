@@ -3,6 +3,7 @@ import allographer/schema_builder
 import allographer/query_builder
 
 proc migration0001*() =
+  # Create table schema
   Schema().create([
     Table().create("sample_users", [
       Column().increments("id"),
@@ -11,6 +12,7 @@ proc migration0001*() =
     ])
   ])
 
+  # Seeder
   var users: seq[JsonNode]
   for i in 1..10:
     users.add(%*{

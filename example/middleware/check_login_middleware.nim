@@ -13,7 +13,7 @@ proc hasLoginToken*(request: Request):Response =
     echo "loginToken =======" & loginToken
   except:
     raise newException(Error403, "Can't get login token")
-    
+
 proc isLogin*(request: Request):Response =
   try:
     discard hasLoginId(request)

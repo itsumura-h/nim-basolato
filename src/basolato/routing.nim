@@ -1,8 +1,8 @@
 import json, tables, macros, strformat, strutils, httpcore, flatdb, times, os, options
+# 3rd party
 import jester
-import htmlgen
-import base, logger
-from middleware import checkCsrfToken
+# framework
+import base, logger, controller
 
 export jester, base
 
@@ -106,37 +106,41 @@ proc response*(arg:ResponseData):Response =
     body: arg[3],
     match: arg[4]
   )
+  
+proc response*(status:HttpCode, body:string): Response =
+  return Response(
+    status:status,
+    bodyString: body,
+    responseType: String
+  )
 
 # =============================================================================
 
-proc prodErrorPage(status:HttpCode): string =
-  return html(head(title($status)),
-            body(h1($status),
-                "<hr/>",
-                p(&"👑Nim &#x2B1F Basolato {basolatoVersion}"),
-                style = "text-align: center;"
-            ),
-            xmlns="http://www.w3.org/1999/xhtml")
+template middleware*(procs:varargs[Response]) =
+  for p in procs:
+    if p == nil:
+      # echo getCurrentExceptionMsg()
+      discard
+    else:
+      route(p)
+      break
 
-proc devErrorPage(status:HttpCode, error: string): string =
-  return html(
-          head(title("Basolato Dev Error Page")),
-          body(
-            h1($status),
-            h2("An error has occured in one of your routes."),
-            p(b("Detail: ")),
-            code(pre(error)),
-            "<hr/>",
-            p(&"👑Nim &#x2B1F Basolato {basolatoVersion}", style = "text-align: center;"),
-          ),
-          xmlns="http://www.w3.org/1999/xhtml"
-        )
+# =============================================================================
 
+macro dynamicImportErrorPage() =
+  let path = getProjectPath()
+  parseStmt(fmt"""
+import {path}/resources/framework/error
+""")
+dynamicImportErrorPage
 
-template http404Route*() =
+template http404Route*(pagePath="") =
   if not request.path.contains("favicon"):
     echoErrorMsg(&"{$Http404}  {request.ip}  {request.path}")
-  resp Http404, prodErrorPage(Http404)
+  if pagePath == "":
+    route(render(errorPage(Http404, "route not match")))
+  else:
+    route(render(html(pagePath)))
 
 macro createHttpCodeError():untyped =
   var strBody = ""
@@ -167,23 +171,11 @@ proc checkHttpCode(exception:ref Exception):HttpCode =
   ##   .
   createHttpCodeError
 
-template exceptionRoute*() =
+template exceptionRoute*(pagePath="") =
   defer: GCunref exception
   let status = checkHttpCode(exception)
   echoErrorMsg($status & &"  {request.reqMethod}  {request.ip}  {request.path}  {exception.msg}")
-  resp status, devErrorPage(status, exception.msg)
-  # when not defined(release):
-  #   resp status, devErrorPage(status, exception.msg)
-  # else:
-  #   resp status, prodErrorPage(status)
-
-# =============================================================================
-
-template middleware*(procs:varargs[Response]) =
-  for p in procs:
-    if p == nil:
-      # echo getCurrentExceptionMsg()
-      discard
-    else:
-      route(p)
-      break
+  if pagePath == "":
+    route(render(errorPage(status, exception.msg)))
+  else:
+    route(render(html(pagePath)))

@@ -1,6 +1,6 @@
-import templates
 import json, random, strformat,  std/sha1, times
-import flatdb
+# 3rd party
+import templates, flatdb
 
 export templates
 

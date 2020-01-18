@@ -1,160 +1,33 @@
 import os, strformat, terminal
 import makeFile/utils
 
-const MAIN = """
-# framework
-import basolato/routing
-# middleware
-import middleware/custom_headers_middleware
-import middleware/framework_middleware
-# controller
-import basolato/sample/controllers/SampleController
 
-routes:
-  # Framework
-  error Http404:
-    http404Route
-  error Exception:
-    exceptionRoute
-  before:
-    framework
-
-  get "/":
-    route(SampleController.index(), [corsHeader(), secureHeader()])
-
-runForever()
-"""
-
-const CUSTOM_HEADERS_MIDDLEWARE = """
-from strutils import join
-import basolato/middleware
-
-
-proc corsHeader*(): seq =
-  var allowedMethods = @[
-    "OPTIONS",
-    "GET",
-    "POST",
-    "PUT",
-    "DELETE"
-  ]
-
-  var allowedHeaders = @[
-    "X-login-id",
-    "X-login-token"
-  ]
-
-  return @[
-    ("Cache-Control", "no-cache"),
-    ("Access-Control-Allow-Origin", "*"),
-    ("Access-Control-Allow-Methods", allowedMethods.join(", ")),
-    ("Access-Control-Allow-Headers", allowedHeaders.join(", "))
-  ]
-
-
-proc secureHeader*(): seq =
-  return @[
-    ("Strict-Transport-Security", ["max-age=63072000", "includeSubdomains"].join(", ")),
-    ("X-Frame-Options", "SAMEORIGIN"),
-    ("X-XSS-Protection", ["1", "mode=block"].join(", ")),
-    ("X-Content-Type-Options", "nosniff"),
-    ("Referrer-Policy", ["no-referrer", "strict-origin-when-cross-origin"].join(", ")),
-    ("Cache-control", ["no-cache", "no-store", "must-revalidate"].join(", ")),
-    ("Pragma", "no-cache"),
-  ]
-"""
-
-const FRAMEWORK_MIDDLEWARE = """
-import basolato/middleware
-import basolato/routing
-# from custom_headers_middleware import corsHeader
-
-template framework*() =
-  checkCsrfToken(request)
-
-  # if request.reqMethod == HttpOptions:
-  #   route(render(""), [corsHeader()])
-"""
-
-const MIGRATION = """
-import json, strformat
-import allographer/schema_builder
-import allographer/query_builder
-
-proc migration0001*() =
-  Schema().create([
-    Table().create("sample_users", [
-      Column().increments("id"),
-      Column().string("name"),
-      Column().string("email")
-    ])
-  ])
-
-  var users: seq[JsonNode]
-  for i in 1..10:
-    users.add(%*{
-      "id": i,
-      "name": &"user{i}",
-      "email": &"user{i}@nim.com"
-    })
-  RDB().table("sample_users").insert(users)
-"""
-
-
-proc createMVC(packageDir:string):int =
-  let dirPath = getCurrentDir() & "/" & packageDir
-  let mainPath = dirPath & "/main.nim"
-  let costomHeadersPath = dirPath & "/middleware/custom_headers_middleware.nim"
-  let frameworkMiddlewarePath = dirPath & "/middleware/framework_middleware.nim"
-  let migrationPath = dirPath & "/migrations/migration0001.nim"
-  let migratePath = dirPath & "/migrations/migrate.nim"
-
+proc createMVC(dirPath:string):int =
   try:
     createDir(dirPath)
-    # main
-    var f = open(mainPath, fmWrite)
-    f.write(MAIN)
-
-    createDir(dirPath & "/app")
-    createDir(dirPath & "/app/controllers")
-    createDir(dirPath & "/app/models")
-    createDir(dirPath & "/middleware")
-    createDir(dirPath & "/resources")
-    createDir(dirPath & "/migrations")
-    createDir(dirPath & "/public")
+    # download from github as dir name tmp
+    let tmplateGitUrl = "https://github.com/itsumura-h/nim-basolato-templates"
     discard execShellCmd(&"""
-cd {packageDir}
-ducere make config
-""")
-
-    # discard execShellCmd("ducere make migration Init")
-
-    # custom_headers
-    f = open(costomHeadersPath, fmWrite)
-    f.write(CUSTOM_HEADERS_MIDDLEWARE)
-
-    # framework middleware
-    f = open(frameworkMiddlewarePath, fmWrite)
-    f.write(FRAMEWORK_MIDDLEWARE)
-
-    # migration
-    f = open(migrationPath, fmWrite)
-    f.write(MIGRATION)
-
-    # migrate
-    let MIGRATE = """
-import migration0001
-
-proc main() =
-  migration0001()
-
-main()
-"""
-    f = open(migratePath, fmWrite)
-    f.write(MIGRATE)
-
-    defer:
-      f.close()
+  cd {dirPath}
+  git clone {tmplateGitUrl} tmp
+  """)
+    # get from tmp/MVC
+    moveDir(&"{dirpath}/tmp/MVC/middleware", &"{dirpath}/middleware")
+    moveDir(&"{dirpath}/tmp/MVC/migrations", &"{dirpath}/migrations")
+    moveDir(&"{dirpath}/tmp/MVC/resources", &"{dirpath}/resources")
+    moveFile(&"{dirpath}/tmp/MVC/main.nim", &"{dirpath}/main.nim")
+    # remove tmp
+    removeDir(&"{dirpath}/tmp")
+    # create config.nims
+    discard execShellCmd(&"""
+  cd {dirPath}
+  ducere make config
+  """)
+    # create empty dirs
+    createDir(&"{dirPath}/app")
+    createDir(&"{dirPath}/app/controllers")
+    createDir(&"{dirPath}/app/models")
+    createDir(&"{dirPath}/public")
     return 0
   except:
     echo getCurrentExceptionMsg()
@@ -168,29 +41,30 @@ proc new*(args:seq[string], architecture="MVC"):int =
   var
     message:string
     packageDir:string
+    dirPath:string
 
   if args.len > 0 and args[0].len > 0:
     packageDir = args[0]
-    let dirPath = getCurrentDir() & "/" & packageDir
+    dirPath = getCurrentDir() & "/" & packageDir
     if isDirExists(dirPath): return 0
     message = &"create project {dirPath}"
   else:
+    dirPath = getCurrentDir()
     message = &"create project {getCurrentDir()}"
-
 
   case architecture:
   of "MVC":
     message.add("\ncreate as MVC")
     styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
-    return createMVC(packageDir)
-  of "DDD":
-    message.add("\ncreate as DDD")
-    styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
-    return createDDD()
+    return createMVC(dirPath)
+  # of "DDD":
+  #   message.add("\ncreate as DDD")
+  #   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
+  #   return createDDD()
   else:
     message = """
 invalid architecture.
-MVC or DDD is only available.
+MVC is only available.
 MVC is set by default."""
     styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)
     return 1

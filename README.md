@@ -51,7 +51,6 @@ project directory will be created!
 │   ├── controllers
 │   └── models
 ├── config.nims
-├── logs
 ├── main.nim
 ├── middleware
 │   ├── custom_headers_middleware.nim
@@ -61,6 +60,8 @@ project directory will be created!
 │   └── migration0001.nim
 ├── public
 └── resources
+    └── framework
+        └── error.nim
 ```
 
 You can specify project direcotry name
@@ -71,24 +72,12 @@ ducere new project_name
 ```
 
 # index
-- [decere command](./documents/ducere.md)
+- [decere CLI tool](./documents/ducere.md)
 - [Routing](./documents/routing.md)
 - [Controller](./documents/controller.md)
 - [Middleware](./documents/middleware.md)
 - [Headers](./documents/headers.md)
+- [Model](./documents/model.md)
+- [Migration](./documents/migration.md)
 - [View](./documents/view.md)
-
-
-# Migration
-[to index](#index)
-
-## Creating a Migration File
-Use `ducere` command  
-[`ducere make migration`](./documents/ducere.md#migration)
-
-To create table schema, read `allographer` documents.  
-[allographer](https://github.com/itsumura-h/nim-allographer/blob/master/documents/schema_builder.md)
-
-
-# Model
-[to index](#index)
+- [Error](./documents/error.md)
