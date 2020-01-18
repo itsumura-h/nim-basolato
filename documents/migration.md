@@ -28,8 +28,8 @@ import allographer/query_builder
 
 proc migration0001*() =
   # Create table schema
-  Schema().create([
-    Table().create("sample_users", [
+  schema([
+    table("sample_users", [
       Column().increments("id"),
       Column().string("name"),
       Column().string("email")

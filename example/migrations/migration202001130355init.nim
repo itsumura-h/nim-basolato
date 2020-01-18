@@ -4,18 +4,18 @@ import allographer/schema_builder
 import allographer/query_builder
 
 proc migration202001130355init*() =
-  Schema().create([
-    Table().create("auth", [
+  schema([
+    table("auth", [
       Column().increments("id"),
       Column().string("auth")
     ], reset=true),
-    Table().create("users", [
+    table("users", [
       Column().increments("id"),
       Column().string("name").nullable(),
       Column().string("email").nullable(),
       Column().foreign("auth_id").reference("id").on("auth").onDelete(SET_NULL)
     ], reset=true),
-    Table().create("posts", [
+    table("posts", [
       Column().increments("id"),
       Column().string("title").nullable(),
       Column().text("text").nullable(),
