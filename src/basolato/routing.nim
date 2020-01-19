@@ -18,15 +18,15 @@ template route*(rArg: Response) =
       newHeaders.add(("Content-Type", "application/json"))
       r.bodyString = $(r.bodyJson)
     of Redirect:
-      logger($r.status & &"  {request.reqMethod}  {request.ip}  {request.path}")
+      logger($r.status & &"  {request.ip}  {request.reqMethod}  {request.path}")
       newHeaders.add(("Location", r.url))
       resp r.status, newHeaders, ""
 
     if r.status == Http200:
-      logger($r.status & &"  {request.reqMethod}  {request.ip}  {request.path}")
+      logger($r.status & &"  {request.ip}  {request.reqMethod}  {request.path}")
       logger($newHeaders)
     elif r.status.is4xx() or r.status.is5xx():
-      echoErrorMsg($r.status & &"  {request.reqMethod}  {request.ip}  {request.path}")
+      echoErrorMsg($r.status & &"  {request.ip}  {request.reqMethod}  {request.path}")
       echoErrorMsg($newHeaders)
     resp r.status, newHeaders, r.bodyString
 
@@ -79,15 +79,15 @@ template route*(rArg:Response,
       newHeaders.add(("Content-Type", "application/json"))
       r.bodyString = $(r.bodyJson)
     of Redirect:
-      logger($r.status & &"  {request.reqMethod}  {request.ip}  {request.path}")
+      logger($r.status & &"  {request.ip}  {request.reqMethod}  {request.path}")
       newHeaders.add(("Location", r.url))
       resp r.status, newHeaders, ""
 
     if r.status == Http200:
-      logger($r.status & &"  {request.reqMethod}  {request.ip}  {request.path}")
+      logger($r.status & &"  {request.ip}  {request.reqMethod}  {request.path}")
       logger($newHeaders)
     elif r.status.is4xx() or r.status.is5xx():
-      echoErrorMsg($r.status & &"  {request.reqMethod}  {request.ip}  {request.path}")
+      echoErrorMsg($r.status & &"  {request.ip}  {request.reqMethod}  {request.path}")
       echoErrorMsg($newHeaders)
     resp r.status, newHeaders, r.bodyString
 

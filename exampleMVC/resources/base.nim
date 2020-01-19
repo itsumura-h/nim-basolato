@@ -1,4 +1,4 @@
-import ../../../src/basolato/view
+import ../../src/basolato/view
 
 
 proc header(): string = """
@@ -6,18 +6,24 @@ proc header(): string = """
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
 <link href="//fonts.googleapis.com/css?family=Lobster&subset=latin,latin-ext" rel="stylesheet" type="text/css">
-<link rel="stylesheet" href="/blog.css">
+<link rel="stylesheet" href="/css/blog.css">
 """
 
-proc baseHtml*(content:string): string = tmpli html"""
+proc baseHtml*(content:string, loginUser=""): string = tmpli html"""
 <html>
   <head>
     $(header())
   </head>
   <body>
     <div class="page-header">
-      <a href="/WebBlog/create" class="top-menu"><span class="glyphicon glyphicon-plus"></span></a>
-      <h1><a href="/WebBlog">Basolato Webpage sample blog</a></h1>
+      $if loginUser.len > 0 {
+        <p class="top-menu">Login: $loginUser</p>
+        <a href="/posts/create" class="top-menu"><span class="glyphicon glyphicon-plus"></span></a>
+      }
+      $else {
+        <a href="/signUp" class="top-menu"><span class="glyphicon glyphicon-user"></span></a>
+      }
+      <h1><a href="/posts">Basolato sample blog</a></h1>
     </div>
     <div class="content container">
       <div class="row">
