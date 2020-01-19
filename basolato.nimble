@@ -17,6 +17,7 @@ requires "nim >= 1.0.0"
 requires "cligen >= 0.9.41"
 requires "jester >= 0.4.3"
 requires "templates >= 0.5"
+requires "bcrypt >= 0.2.1"
 requires "https://github.com/enthus1ast/flatdb >= 0.2.4"
 requires "https://github.com/itsumura-h/nim-allographer >= 0.8.0"
 

@@ -1,5 +1,4 @@
-# 3rd party
-import templates, httpcore
+import httpcore
 # framework
 import basolato/base
 import basolato/view
