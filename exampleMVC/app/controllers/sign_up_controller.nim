@@ -1,25 +1,30 @@
 import tables, json, re
 # framework
-import ../../../src/basolato/controller
+# import ../../../src/basolato/controller
+import ../../../src/basolato/private
 # model
 import ../models/users
 # view
 import ../../resources/sign_up/create
 
 type SignUpController = ref object
+  request:Request
+  login: Login
   user:User
 
-proc newSignUpController*(): SignUpController =
+proc newSignUpController*(request:Request): SignUpController =
   return SignUpController(
+    request: request,
+    login: initLogin(request),
     user: newUser()
   )
 
 
 proc create*(this:SignUpController): Response =
-  return render(createHtml())
+  return render(createHtml(this.login))
 
-proc store*(this:SignUpController, request:Request): Response =
-  let params = request.params
+proc store*(this:SignUpController): Response =
+  let params = this.request.params
   let name = params["name"]
   let email = params["email"]
   let password = params["password"]
@@ -35,17 +40,17 @@ proc store*(this:SignUpController, request:Request): Response =
   if not password.match(re"^(?=.*?[a-z])(?=.*?[A-Z])(?=.*?\d)[a-zA-Z\d]{8,100}$"):
     errors.add("password", %"A minimum 8 characters password contains a combination of uppercase and lowercase letter and number are required.")
   if errors.len > 0:
-    return render(createHtml(name, email, errors))
+    return render(createHtml(this.login, name, email, errors))
 
   # insert
   let uid = this.user.createUser(name, email, password)
   if uid < 0:
     errors.add("general", %getCurrentExceptionMsg())
-    return render(createHtml(name, email, errors))
+    return render(createHtml(this.login, name, email, errors))
 
   # session
   let token = sessionStart(uid)
-  addSession(token, "uid", $uid)
-  addSession(token, "name", name)
+  addSession(token, "login_id", $uid)
+  addSession(token, "login_name", name)
   let cookie = genCookie("token", token, daysForward(5))
   return redirect("/posts").setCookie(cookie)

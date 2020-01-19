@@ -1,6 +1,7 @@
 import json
 # framework
-import ../../../src/basolato/view
+# import ../../../src/basolato/view
+import ../../../src/basolato/private
 import ../base
 
 proc createHtmlImpl(title:string, text:string, errors:JsonNode): string = tmpli html"""
@@ -25,5 +26,5 @@ proc createHtmlImpl(title:string, text:string, errors:JsonNode): string = tmpli 
 </form>
 """
 
-proc createHtml*(title="", text="", errors=newJObject()): string =
-  baseHtml(createHtmlImpl(title, text, errors))
+proc createHtml*(login:Login, title="", text="", errors=newJObject()): string =
+  baseHtml(login, createHtmlImpl(title, text, errors))

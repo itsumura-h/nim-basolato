@@ -1,5 +1,6 @@
 import json
-import ../../../src/basolato/view
+# import ../../../src/basolato/view
+import ../../../src/basolato/private
 import ../base
 
 proc indexHtmlImpl(posts:seq[JsonNode]):string = tmpli html"""
@@ -14,5 +15,5 @@ $for post in posts {
 }
 """
 
-proc indexHtml*(posts:seq[JsonNode], loginUser=""): string =
-  baseHtml(indexHtmlImpl(posts), loginUser)
+proc indexHtml*(login:Login, posts:seq[JsonNode]): string =
+  baseHtml(login, indexHtmlImpl(posts))
