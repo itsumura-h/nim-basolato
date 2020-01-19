@@ -2,10 +2,12 @@ import json, os, httpcore, httpcore, random, std/sha1, times, strutils, options,
 import jester except setCookie
 import jester/private/utils
 import flatdb
-import base
+# import base
+import private
 
 
-export httpcore, base
+# export httpcore, base
+export private
 export jester except redirect, setCookie
 
 type Controller* = ref object of RootObj

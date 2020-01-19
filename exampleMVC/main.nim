@@ -1,5 +1,6 @@
 # framework
-import ../src/basolato/routing
+# import ../src/basolato/routing
+import ../src/basolato/private
 # middleware
 # import middleware/custom_headers_middleware
 import middleware/framework_middleware
@@ -10,12 +11,12 @@ import app/controllers/posts_controller
 
 
 router post:
-  get "": route(newPostsController().index(request))
-  get "/create": route(newPostsController().create())
-  post "/create": route(newPostsController().store(request))
-  get "/@id": route(newPostsController().show(@"id"))
-  get "/@id/edit": route(newPostsController().edit(@"id"))
-  post "/@id/edit": route(newPostsController().update(@"id", request))
+  get "": route(newPostsController(request).index())
+  get "/create": route(newPostsController(request).create())
+  post "/create": route(newPostsController(request).store())
+  get "/@id": route(newPostsController(request).show(@"id"))
+  get "/@id/edit": route(newPostsController(request).edit(@"id"))
+  post "/@id/edit": route(newPostsController(request).update(@"id"))
   # post "/@id/delete": route(newPostsController().destroy(@"id"))
 
 routes:
@@ -27,10 +28,10 @@ routes:
   before:
     framework
 
-  get "/": redirect("/posts")
+  get "/": route(redirect("/posts"))
 
-  get "/signUp": route(newSignUpController().create())
-  post "/signUp": route(newSignUpController().store(request))
+  get "/signUp": route(newSignUpController(request).create())
+  post "/signUp": route(newSignUpController(request).store())
 
   get "/login": route(newLoginController().create())
   post "/login": route(newLoginController().store())

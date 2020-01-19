@@ -1,5 +1,6 @@
-import basolato/middleware
-import basolato/routing
+# import basolato/middleware
+# import basolato/routing
+import ../../src/basolato/private
 # from custom_headers_middleware import corsHeader
 
 template framework*() =

@@ -1,7 +1,4 @@
 import json, httpcore, strformat, macros
-# from jester import HttpCode
-
-# export HttpCode
 
 const basolatoVersion* = "v0.1.0"
 

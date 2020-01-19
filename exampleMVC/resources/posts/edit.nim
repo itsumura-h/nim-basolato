@@ -1,5 +1,6 @@
 import json
-import ../../../src/basolato/view
+# import ../../../src/basolato/view
+import ../../../src/basolato/private
 import ../base
 
 
@@ -25,5 +26,5 @@ proc editHtmlImpl*(id:int, title:string, text:string, errors:JsonNode):string = 
 </form>
 """
 
-proc editHtml*(id:int, title="", text="", errors=newJObject()):string =
-  baseHtml(editHtmlImpl(id, title, text, errors))
+proc editHtml*(login:Login, id:int, title="", text="", errors=newJObject()):string =
+  baseHtml(login, editHtmlImpl(id, title, text, errors))

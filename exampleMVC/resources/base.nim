@@ -1,4 +1,5 @@
-import ../../src/basolato/view
+# import ../../src/basolato/view
+import ../../src/basolato/private
 
 
 proc header(): string = """
@@ -9,15 +10,16 @@ proc header(): string = """
 <link rel="stylesheet" href="/css/blog.css">
 """
 
-proc baseHtml*(content:string, loginUser=""): string = tmpli html"""
+proc baseHtml*(login:Login, content:string): string =
+  tmpli html"""
 <html>
   <head>
     $(header())
   </head>
   <body>
     <div class="page-header">
-      $if loginUser.len > 0 {
-        <p class="top-menu">Login: $loginUser</p>
+      $if login.isLogin {
+        <p class="top-menu">Login: $(login.info["login_name"])</p>
         <a href="/posts/create" class="top-menu"><span class="glyphicon glyphicon-plus"></span></a>
       }
       $else {

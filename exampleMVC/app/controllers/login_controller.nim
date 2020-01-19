@@ -1,4 +1,5 @@
-import ../../../src/basolato/controller
+# import ../../../src/basolato/controller
+import ../../../src/basolato/private
 import ../models/users
 
 type LoginController = ref object

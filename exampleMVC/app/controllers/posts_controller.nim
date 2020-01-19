@@ -1,6 +1,7 @@
 import strutils, json, strformat, tables, times
 # framework
-import ../../../src/basolato/controller
+# import ../../../src/basolato/controller
+import ../../../src/basolato/private
 # model
 import ../models/posts
 # view
@@ -10,37 +11,40 @@ import ../../resources/posts/create
 import ../../resources/posts/edit
 
 # DI
-type PostsController = object of Controller
+type PostsController* = ref object
+  request*: Request
+  login*: Login
   post: Post
+  
 
 # constructor
-proc newPostsController*(): PostsController =
+proc newPostsController*(request:Request): PostsController =
   return PostsController(
+    request: request,
+    login: initLogin(request),
     post: newPost()
   )
 
 
-proc index*(this:PostsController, request:Request): Response =
+proc index*(this:PostsController): Response =
   let posts = this.post.getPosts()
-  let token = request.getCookie("token")
-  let name = token.getSession("name")
-  return render(indexHtml(posts, name))
+  echo this.login.info
+  return render(indexHtml(this.login, posts))
 
 
 proc show*(this:PostsController, idArg:string): Response =
   let id = idArg.parseInt
   let post = this.post.getPost(id)
   if post.kind == JNull:
-    # return render(Http404, "")
     raise newException(Error404, "")
-  return render(showHtml(post))
+  return render(showHtml(this.login, post))
 
 
 proc create*(this:PostsController): Response =
-  return render(createHtml())
+  return render(createHtml(this.login))
 
-proc store*(this:PostsController, request:Request): Response =
-  let params = request.params
+proc store*(this:PostsController): Response =
+  let params = this.request.params
   let title = params["title"]
   let text = params["text"]
 
@@ -51,7 +55,7 @@ proc store*(this:PostsController, request:Request): Response =
   if text.len == 0:
     errors.add("text", %"This field is required")
   if errors.len > 0:
-    return render(createHtml(title, text, errors))
+    return render(createHtml(this.login, title, text, errors))
 
   let publishedDate = now().format("yyyy-MM-dd")
   let autherId = 1
@@ -64,11 +68,11 @@ proc edit*(this:PostsController, idArg:string): Response =
   let post = this.post.getPost(id)
   let title = post["title"].getStr
   let text = post["text"].getStr
-  return render(editHtml(id, title, text))
+  return render(editHtml(this.login, id, title, text))
 
-proc update*(this:PostsController, idArg:string, request:Request): Response =
+proc update*(this:PostsController, idArg:string): Response =
   let id = idArg.parseInt
-  let params = request.params
+  let params = this.request.params
   let title = params["title"]
   let text = params["text"]
 
@@ -79,7 +83,7 @@ proc update*(this:PostsController, idArg:string, request:Request): Response =
   if text.len == 0:
     errors.add("text", %"This field is required")
   if errors.len > 0:
-    return render(editHtml(id, title, text, errors))
+    return render(editHtml(this.login, id, title, text, errors))
 
   this.post.updatePost(id, title, text)
   return redirect(&"/posts/{id}")
