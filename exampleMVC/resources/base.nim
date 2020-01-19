@@ -1,5 +1,6 @@
 # import ../../src/basolato/view
 import ../../src/basolato/private
+import ../../src/basolato/session
 
 
 proc header(): string = """
@@ -20,6 +21,7 @@ proc baseHtml*(login:Login, content:string): string =
     <div class="page-header">
       $if login.isLogin {
         <p class="top-menu">Login: $(login.info["login_name"])</p>
+        <a href="/logout" class="top-menu"><span class="glyphicon glyphicon-log-out"></span></a>
         <a href="/posts/create" class="top-menu"><span class="glyphicon glyphicon-plus"></span></a>
       }
       $else {

@@ -33,9 +33,10 @@ routes:
   get "/signUp": route(newSignUpController(request).create())
   post "/signUp": route(newSignUpController(request).store())
 
-  get "/login": route(newLoginController().create())
-  post "/login": route(newLoginController().store())
-  get "/logout": route(newLoginController().destroy())
+  get "/login": route(newLoginController(request).create())
+  post "/login": route(newLoginController(request).store())
+  get "/logout": route(newLoginController(request).destroy())
+
   extend post, "/posts"
 
 runForever()

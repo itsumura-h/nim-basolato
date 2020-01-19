@@ -1,15 +1,16 @@
 import json
 # import ../../../src/basolato/view
 import ../../../src/basolato/private
+import ../../../src/basolato/session
 import ../base
 
-proc createHtmlImpl(name:string, email:string, errors:JsonNode): string = tmpli html"""
+proc createHtmlImpl(login:Login, name:string, email:string, errors:JsonNode): string = tmpli html"""
 <h2>Sign Up</h2>
 $if errors.hasKey("general") {
   <p style="background-color: deeppink">$(errors["general"].getStr)</p>
 }
 <form method="post">
-  $(csrfToken())
+  $(csrfToken(login))
   <div>
     <p>name</p>
     $if errors.hasKey("name") {
@@ -36,4 +37,4 @@ $if errors.hasKey("general") {
 """
 
 proc createHtml*(login:Login, name="", email="", errors=newJObject()): string =
-  baseHtml(login, createHtmlImpl(name, email, errors))
+  baseHtml(login, createHtmlImpl(login, name, email, errors))
