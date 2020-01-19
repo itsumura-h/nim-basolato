@@ -1,13 +1,14 @@
 import json
 # import ../../../src/basolato/view
 import ../../../src/basolato/private
+import ../../../src/basolato/session
 import ../base
 
 
-proc editHtmlImpl*(id:int, title:string, text:string, errors:JsonNode):string = tmpli html"""
+proc editHtmlImpl*(login:Login, id:int, title:string, text:string, errors:JsonNode):string = tmpli html"""
 <h2>Edit Post</h2>
 <form method="post">
-  $(csrfToken())
+  $(csrfToken(login))
   <div>
     <p>Title</p>
     $if errors.hasKey("title") {
@@ -27,4 +28,4 @@ proc editHtmlImpl*(id:int, title:string, text:string, errors:JsonNode):string = 
 """
 
 proc editHtml*(login:Login, id:int, title="", text="", errors=newJObject()):string =
-  baseHtml(login, editHtmlImpl(id, title, text, errors))
+  baseHtml(login, editHtmlImpl(login, id, title, text, errors))
