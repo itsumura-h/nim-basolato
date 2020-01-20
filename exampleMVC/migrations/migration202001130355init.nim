@@ -21,11 +21,6 @@ proc migration202001130355init*() =
     ], reset=true)
   ])
 
-  RDB().table("auth").insert([
-    %*{"auth": "admin"},
-    %*{"auth": "user"}
-  ])
-
   var users: seq[JsonNode]
   for i in 1..20:
     let password = &"Password{i}"

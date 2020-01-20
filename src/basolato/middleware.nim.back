@@ -31,7 +31,7 @@ proc checkCsrfToken*(request:Request) =
     if isNil(session):
       raise newException(Error403, "CSRF verification failed.")
     # check timeout
-    let generatedAt = session["generated_at"].getStr.parseInt
+    let generatedAt = session["login_at"].getStr.parseInt
     if getTime().toUnix() > generatedAt + SESSION_TIME:
       raise newException(Error403, "Session Timeout.")
     # delete token from session
