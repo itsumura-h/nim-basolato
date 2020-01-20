@@ -25,11 +25,9 @@ proc create*(this:SignUpController): Response =
   return render(createHtml(this.login))
 
 proc store*(this:SignUpController): Response =
-  let params = this.request.params
-  let name = params["name"]
-  let email = params["email"]
-  let password = params["password"]
-
+  let name = this.request.params["name"]
+  let email = this.request.params["email"]
+  let password = this.request.params["password"]
   # validation
   var errors = newJObject()
   if name.len == 0:
@@ -44,13 +42,11 @@ proc store*(this:SignUpController): Response =
     errors.add("password", %"A minimum 8 characters password contains a combination of uppercase and lowercase letter and number are required.")
   if errors.len > 0:
     return render(createHtml(this.login, name, email, errors))
-
   # insert
   let uid = this.user.createUser(name, email, password)
   if uid < 0:
     errors.add("general", %getCurrentExceptionMsg())
     return render(createHtml(this.login, name, email, errors))
-
   # session
   let token = sessionStart(uid)
   addSession(token, "login_name", name)

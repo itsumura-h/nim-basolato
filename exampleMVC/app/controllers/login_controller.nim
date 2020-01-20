@@ -1,4 +1,4 @@
-import times, json, re, os
+import times, json, re, os, strutils
 # 3rd party
 import bcrypt
 # import ../../../src/basolato/controller
@@ -27,10 +27,8 @@ proc create*(this: LoginController): Response =
   return render(createHtml(this.login))
 
 proc store*(this: LoginController): Response =
-  let params = this.request.params
-  let email = params["email"]
-  let password = params["password"]
-
+  let email = this.request.params["email"]
+  let password = this.request.params["password"]
   # validation
   var errors = newJObject()
   if email.len == 0:
@@ -40,17 +38,24 @@ proc store*(this: LoginController): Response =
   if not password.match(re"^[a-zA-Z\d]{8,100}$"):
     errors.add("password", %"A minimum 8 characters password contains a combination of uppercase and lowercase letter and number are required.")
   # get passsword
-  let db_password = this.user.getPasswordByEmail(email)
-  if db_password == "":
+  let user = this.user.getUserByEmail(email)
+  let db_password = user["password"].getStr
+  if db_password.len == 0:
     errors.add("email", %"email is not match")
   # password check
   let hashed = hash(password, SALT)
   if not compare(hashed, db_password):
     errors.add("password", %"password is not match")
-
+  # check error
   if errors.len > 0:
     return render(createHtml(this.login, email, errors))
-  return redirect("/posts")
+  # create sesstion
+  let uid = user["id"].getInt
+  let token = sessionStart(uid)
+  let name = user["name"].getStr
+  addSession(token, "login_name", name)
+  let cookie = genCookie("token", token, daysForward(5))
+  return redirect("/posts").setCookie(cookie)
 
 proc destroy*(this: LoginController): Response =
   this.login.sessionDestroy()
