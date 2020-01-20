@@ -28,6 +28,8 @@ proc createMVC(dirPath:string):int =
     createDir(&"{dirPath}/app/controllers")
     createDir(&"{dirPath}/app/models")
     createDir(&"{dirPath}/public")
+    createDir(&"{dirPath}/public/js")
+    createDir(&"{dirPath}/public/css")
     return 0
   except:
     echo getCurrentExceptionMsg()
