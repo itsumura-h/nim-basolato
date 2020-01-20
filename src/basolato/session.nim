@@ -8,9 +8,9 @@ import flatdb
 import private
 
 type Login* = ref object
-  db*: FlatDb
   isLogin*: bool
   token*: string
+  uid*: string
   info*: Table[string, string]
 
 const
@@ -199,11 +199,11 @@ proc initLogin*(request:Request): Login =
   if session == nil:
     return Login(isLogin: false)
   for key, val in session.pairs:
-    if key.contains("login_"):
-      info[key] = val.get
+    info[key] = val.get
   return Login(
     isLogin: true,
+    token: token,
+    uid: $session["uid"].getInt,
     info: info,
-    token: token
   )
 

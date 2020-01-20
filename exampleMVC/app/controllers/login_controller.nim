@@ -39,6 +39,7 @@ proc store*(this: LoginController): Response =
     errors.add("password", %"A minimum 8 characters password contains a combination of uppercase and lowercase letter and number are required.")
   # get passsword
   let user = this.user.getUserByEmail(email)
+  echo user
   let db_password = user["password"].getStr
   if db_password.len == 0:
     errors.add("email", %"email is not match")
