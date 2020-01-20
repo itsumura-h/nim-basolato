@@ -7,6 +7,5 @@
 
 import unittest
 
-import ../src/basolato/base
 test "true":
   check true

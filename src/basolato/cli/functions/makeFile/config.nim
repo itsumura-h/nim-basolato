@@ -1,4 +1,5 @@
 import os, strformat, terminal
+import bcrypt
 import utils
 
 proc makeConfig*():int =
@@ -23,6 +24,11 @@ putEnv("LOG_DIR", "{getCurrentDir()}/logs")
 
 # Session timeout
 putEnv("SESSION_TIME", "3600") # secounds
+putEnv("SESSION_DB", "{getCurrentDir()}/session.db")
+putEnv("IS_SESSION_MEMORY", "false")
+
+# password
+putEnv("SALT", "{genSalt(10)}")
 """
 
   var f = open(targetPath, fmWrite)
