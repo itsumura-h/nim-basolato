@@ -1,7 +1,9 @@
-import json, strformat, random, std/sha1
-
+import os, json, strformat, random
+import bcrypt
 import allographer/schema_builder
 import allographer/query_builder
+
+const SALT = $(getEnv("SALT"))
 
 proc migration202001130355init*() =
   schema([
@@ -28,7 +30,7 @@ proc migration202001130355init*() =
       %*{
         "name": &"user{i}",
         "email": &"user{i}@gmail.com",
-        "password": $password.secureHash()
+        "password": password.hash(SALT)
       }
     )
   RDB().table("users").insert(users)

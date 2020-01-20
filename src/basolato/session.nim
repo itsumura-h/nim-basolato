@@ -89,7 +89,7 @@ proc checkCsrfToken*(request:Request) =
     db.flush()
 
 proc checkCookieToken*(request:Request) =
-  if request.reqMethod == HttpGet:
+  if request.reqMethod == HttpGet and not request.path.contains("."):
     let token = request.getCookie("token")
     if token.len > 0:
       var db = initFlatDb()

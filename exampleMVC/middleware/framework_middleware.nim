@@ -10,7 +10,7 @@ template framework*() =
   except Exception:
     # raise newException(Error403, getCurrentExceptionMsg())
     echo getCurrentExceptionMsg()
-    raise newException(Error302, "/signUp")
+    raise newException(Error302, "/login")
 
   try:
     checkCookieToken(request)

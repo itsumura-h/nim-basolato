@@ -26,6 +26,7 @@ proc baseHtml*(login:Login, content:string): string =
       }
       $else {
         <a href="/signUp" class="top-menu"><span class="glyphicon glyphicon-user"></span></a>
+        <a href="/login" class="top-menu"><span class="glyphicon glyphicon-log-in"></span></a>
       }
       <h1><a href="/posts">Basolato sample blog</a></h1>
     </div>
