@@ -45,10 +45,8 @@ proc create*(this:PostsController): Response =
   return render(createHtml(this.login))
 
 proc store*(this:PostsController): Response =
-  let params = this.request.params
-  let title = params["title"]
-  let text = params["text"]
-
+  let title = this.request.params["title"]
+  let text = this.request.params["text"]
   # varidation check
   var errors = newJObject()
   if title.len == 0:

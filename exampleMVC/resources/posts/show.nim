@@ -12,7 +12,7 @@ proc showHtmlImpl(login:Login, post:JsonNode):string = tmpli html"""
         $(post["published_date"].get)
       </div>
     }
-    $if login.isLogin {
+    $if login.isLogin and login.uid == post["auther_id"].get {
       <a class="btn btn-default" href="/posts/$(post["id"].get)/edit"><span class="glyphicon glyphicon-pencil"></span></a>
     }
   </div>
