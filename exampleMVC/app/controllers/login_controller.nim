@@ -1,3 +1,4 @@
+import times
 # import ../../../src/basolato/controller
 import ../../../src/basolato/private
 import ../../../src/basolato/session
@@ -23,4 +24,4 @@ proc store*(this: LoginController): Response =
 
 proc destroy*(this: LoginController): Response =
   this.login.sessionDestroy()
-  return redirect("/posts")
+  return redirect("/posts").deleteCookie("token")

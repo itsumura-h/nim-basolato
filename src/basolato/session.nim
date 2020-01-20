@@ -8,6 +8,7 @@ import flatdb
 import private
 
 type Login* = ref object
+  db*: FlatDb
   isLogin*: bool
   token*: string
   info*: Table[string, string]
@@ -37,6 +38,10 @@ proc setCookie*(r:Response, c:string): Response =
   ## maybe c would be token
   r.header("Set-cookie", c)
 
+proc deleteCookie*(r:Response, key:string): Response =
+  var cookie = genCookie(key, "", daysForward(-1))
+  r.header("Set-cookie", cookie)
+
 proc checkCsrfToken*(request:Request) =
   if request.reqMethod == HttpPost or
         request.reqMethod == HttpPut or
@@ -53,12 +58,18 @@ proc checkCsrfToken*(request:Request) =
     if isNil(session):
       raise newException(Error403, "CSRF verification failed.")
     # check timeout
-    let generatedAt = session["generated_at"].getStr.parseInt
+    let generatedAt = session["login_at"].getStr.parseInt
     if getTime().toUnix() > generatedAt + SESSION_TIME:
+      # delete token from session
+      let id = session["_id"].getStr
+      db.delete(id)
       raise newException(Error403, "Session Timeout.")
-    # delete token from session
-    let id = session["_id"].getStr
-    db.delete(id)
+    # update login time
+    session["login_at"] = %($(getTime().toUnix()))
+    # delete onetime session
+    if not session.hasKey("uid"):
+      let id = session["_id"].getStr
+      db.delete(id)
 
 proc rundStr():string =
   randomize()
@@ -72,7 +83,7 @@ proc sessionStart*(uid:int):string =
   var db = newFlatDb("session.db", false)
   discard db.load()
   db.append(%*{
-    "token": $token, "generated_at": $(getTime().toUnix()), "uid": uid
+    "token": $token, "login_at": $(getTime().toUnix()), "uid": uid
   })
   return $token
 
@@ -89,7 +100,7 @@ proc newSession*(): string =
   var db = newFlatDb("session.db", false)
   discard db.load()
   db.append(%*{
-    "token": $token, "generated_at": $(getTime().toUnix())
+    "token": $token, "login_at": $(getTime().toUnix())
   })
   return $token
 
@@ -100,7 +111,7 @@ proc addSession*(token:string, key:string, val:string) =
   if isNil(session):
     raise newException(Error403, "CSRF verification failed.")
   # check timeout
-  let generatedAt = session["generated_at"].getStr.parseInt
+  let generatedAt = session["login_at"].getStr.parseInt
   if getTime().toUnix() > generatedAt + SESSION_TIME:
     raise newException(Error403, "Session Timeout.")
   # add
@@ -137,24 +148,26 @@ proc getSession*(request:Request, key:string): string =
 proc csrfToken*(login:Login):string =
   # insert db
   if login.isLogin:
+    echo "ログインしてる"
     var db = newFlatDb("session.db", false)
     discard db.load()
     let session = db.queryOne(equal("token", login.token))
-    session["generated_at"] = %($(getTime().toUnix()))
+    echo session
+    session["login_at"] = %($(getTime().toUnix()))
     return &"""<input type="hidden" name="_token" value="{login.token}">"""
   else:
+    echo "ログインしてない"
     randomize()
     let token = rundStr().secureHash()
     var db = newFlatDb("session.db", false)
     discard db.load()
     db.append(%*{
-      "token": $token, "generated_at": $(getTime().toUnix())
+      "token": $token, "login_at": $(getTime().toUnix())
     })
     return &"""<input type="hidden" name="_token" value="{token}">"""
 
 proc initLogin*(request:Request): Login =
   let token = request.getCookie("token")
-  echo token
   var db = newFlatDb("session.db", false)
   discard db.load()
   var info = initTable[string, string]()

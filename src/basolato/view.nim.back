@@ -32,6 +32,6 @@ proc csrfToken*():string =
   var db = newFlatDb("session.db", false)
   discard db.load()
   db.append(%*{
-    "token": $token, "generated_at": $(getTime().toUnix())
+    "token": $token, "login_at": $(getTime().toUnix())
   })
   return &"""<input type="hidden" name="_token" value="{token}">"""
