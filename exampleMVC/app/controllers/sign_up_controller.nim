@@ -38,7 +38,9 @@ proc store*(this:SignUpController): Response =
     errors.add("email", %"This is required field")
   elif not email.match(re"^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$"):
     errors.add("email", %"Invalid form of email")
-  if not password.match(re"^(?=.*?[a-z])(?=.*?[A-Z])(?=.*?\d)[a-zA-Z\d]{8,100}$"):
+  elif this.user.isEmailDuplication(email):
+    errors.add("email", %"email should be unique")
+  if not password.match(re"^[a-zA-Z\d]{8,100}$"):
     errors.add("password", %"A minimum 8 characters password contains a combination of uppercase and lowercase letter and number are required.")
   if errors.len > 0:
     return render(createHtml(this.login, name, email, errors))
