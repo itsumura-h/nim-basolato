@@ -6,6 +6,7 @@ import ../base
 
 proc showHtmlImpl(login:Login, post:JsonNode):string = tmpli html"""
 <div class="post">
+  <div class="post-header">
     $if post["published_date"].get().len > 0 {
       <div class="date">
         $(post["published_date"].get)
@@ -14,8 +15,9 @@ proc showHtmlImpl(login:Login, post:JsonNode):string = tmpli html"""
     $if login.isLogin {
       <a class="btn btn-default" href="/posts/$(post["id"].get)/edit"><span class="glyphicon glyphicon-pencil"></span></a>
     }
-    <h2>$(post["title"].get)</h2>
-    <p>$(post["text"].get)</p>
+  </div>
+  <h2>$(post["title"].get)</h2>
+  <p>$(post["text"].get)</p>
 </div>
 """
 
