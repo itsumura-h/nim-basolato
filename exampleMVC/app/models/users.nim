@@ -23,12 +23,8 @@ proc isEmailDuplication*(this:User, email:string): bool =
   let num = this.db.where("email", "=", email).count()
   return if num > 0: false else: true
 
-proc getPasswordByEmail*(this:User, email:string): string =
-  let response = this.db.
-    select("password")
+proc getUserByEmail*(this:User, email:string): JsonNode =
+  this.db
+    .select("id", "name", "password")
     .where("email", "=", email)
     .first()
-  if response.len > 0:
-    return response["password"].getStr
-  else:
-    return ""
