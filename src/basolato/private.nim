@@ -35,7 +35,7 @@ type
   
 const errorStatusArray* = [505, 504, 503, 502, 501, 500, 451, 431, 429, 428, 426,
   422, 421, 418, 417, 416, 415, 414, 413, 412, 411, 410, 409, 408, 407, 406,
-  405, 404, 403, 401, 400]
+  405, 404, 403, 401, 400, 307, 305, 304, 303, 302, 301, 300]
 
 macro createHttpException():untyped =
   var strBody = """type
@@ -239,12 +239,15 @@ proc checkHttpCode(exception:ref Exception):HttpCode =
 template exceptionRoute*(pagePath="") =
   defer: GCunref exception
   let status = checkHttpCode(exception)
-  echoErrorMsg($request.params)
-  echoErrorMsg($status & &"  {request.reqMethod}  {request.ip}  {request.path}  {exception.msg}")
-  if pagePath == "":
-    route(render(errorPage(status, exception.msg)))
+  if status.is4xx() or status.is5xx():
+    echoErrorMsg($request.params)
+    echoErrorMsg($status & &"  {request.reqMethod}  {request.ip}  {request.path}  {exception.msg}")
+    if pagePath == "":
+      route(render(errorPage(status, exception.msg)))
+    else:
+      route(render(html(pagePath)))
   else:
-    route(render(html(pagePath)))
+    route(errorRedirect(exception.msg))
 
 
 # ==================== controller =============================================

@@ -23,6 +23,8 @@ putEnv("LOG_DIR", "{getCurrentDir()}/logs")
 
 # Session timeout
 putEnv("SESSION_TIME", "3600") # secounds
+putEnv("SESSION_DB", "{getCurrentDir()}/session.db")
+putEnv("IS_SESSION_MEMORY", "false")
 """
 
   var f = open(targetPath, fmWrite)

@@ -17,10 +17,10 @@ proc newLoginController*(request:Request): LoginController =
   )
 
 proc create*(this: LoginController): Response =
-  discard
+  return render("")
 
 proc store*(this: LoginController): Response =
-  discard
+  return render("")
 
 proc destroy*(this: LoginController): Response =
   this.login.sessionDestroy()

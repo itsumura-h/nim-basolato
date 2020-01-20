@@ -53,5 +53,4 @@ proc store*(this:SignUpController): Response =
   let token = sessionStart(uid)
   addSession(token, "login_name", name)
   let cookie = genCookie("token", token, daysForward(5))
-  echo cookie
   return redirect("/posts").setCookie(cookie)

@@ -13,6 +13,13 @@ type Login* = ref object
   token*: string
   info*: Table[string, string]
 
+const
+  SESSION_DB = getEnv("SESSION_DB").string
+  IS_SESSION_MEMORY = getEnv("IS_SESSION_MEMORY").string.parseBool
+
+proc initFlatDb(): FlatDb =
+  newFlatDb(SESSION_DB, IS_SESSION_MEMORY)
+
 
 proc genCookie*(name, value: string, expires="",
                     sameSite: SameSite=Lax, secure = false,
@@ -34,6 +41,15 @@ proc genCookie*(name, value: string, expires: DateTime,
             format(expires.utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"),
             sameSite, secure, httpOnly, domain, path)
 
+proc getCookie*(request:Request, key:string): string =
+  if not request.headers.hasKey("Cookie"):
+    return ""
+  let cookiesStrArr = request.headers["Cookie"].split(";")
+  for row in cookiesStrArr:
+    let rowArr = row.split("=")
+    if rowArr[0] == key:
+      return rowArr[1]
+
 proc setCookie*(r:Response, c:string): Response =
   ## maybe c would be token
   r.header("Set-cookie", c)
@@ -49,27 +65,48 @@ proc checkCsrfToken*(request:Request) =
         request.reqMethod == HttpDelete:
     # key not found
     if not request.params.contains("_token"):
-      raise newException(Error403, "CSRF verification failed.")
+      raise newException(Exception, "CSRF verification failed.")
     # check token is valid
     let token = request.params["_token"]
-    var db = newFlatDb("session.db", false)
+    var db = initFlatDb()
     discard db.load()
     let session = db.queryOne(equal("token", token))
     if isNil(session):
-      raise newException(Error403, "CSRF verification failed.")
+      raise newException(Exception, "CSRF verification failed.")
     # check timeout
-    let generatedAt = session["login_at"].getStr.parseInt
-    if getTime().toUnix() > generatedAt + SESSION_TIME:
+    let loginAt = session["login_at"].getStr.parseInt
+    if getTime().toUnix() > loginAt + SESSION_TIME:
       # delete token from session
       let id = session["_id"].getStr
       db.delete(id)
-      raise newException(Error403, "Session Timeout.")
+      raise newException(Exception, "Session Timeout.")
     # update login time
     session["login_at"] = %($(getTime().toUnix()))
     # delete onetime session
     if not session.hasKey("uid"):
       let id = session["_id"].getStr
       db.delete(id)
+    db.flush()
+
+proc checkCookieToken*(request:Request) =
+  if request.reqMethod == HttpGet:
+    let token = request.getCookie("token")
+    if token.len > 0:
+      var db = initFlatDb()
+      discard db.load()
+      let session = db.queryOne(equal("token", token))
+      if isNil(session):
+        raise newException(Exception, "CSRF verification failed.")
+      # check timeout
+      let loginAt = session["login_at"].getStr.parseInt
+      if getTime().toUnix() > loginAt + SESSION_TIME:
+        # delete token from session
+        let id = session["_id"].getStr
+        db.delete(id)
+        raise newException(Exception, "Session Timeout.")
+      # uppdate last login
+      session["login_at"] = %($(getTime().toUnix()))
+      db.flush()
 
 proc rundStr():string =
   randomize()
@@ -80,7 +117,7 @@ proc sessionStart*(uid:int):string =
   randomize()
   let token = rundStr().secureHash()
   # insert db
-  var db = newFlatDb("session.db", false)
+  var db = initFlatDb()
   discard db.load()
   db.append(%*{
     "token": $token, "login_at": $(getTime().toUnix()), "uid": uid
@@ -88,7 +125,7 @@ proc sessionStart*(uid:int):string =
   return $token
 
 proc sessionDestroy*(login:Login) =
-  var db = newFlatDb("session.db", false)
+  var db = initFlatDb()
   discard db.load()
   let session = db.queryOne(equal("token", login.token))
   let id = session["_id"].getStr
@@ -97,7 +134,7 @@ proc sessionDestroy*(login:Login) =
 proc newSession*(): string =
   randomize()
   let token = rundStr().secureHash()
-  var db = newFlatDb("session.db", false)
+  var db = initFlatDb()
   discard db.load()
   db.append(%*{
     "token": $token, "login_at": $(getTime().toUnix())
@@ -105,7 +142,7 @@ proc newSession*(): string =
   return $token
 
 proc addSession*(token:string, key:string, val:string) =
-  var db = newFlatDb("session.db", false)
+  var db = initFlatDb()
   discard db.load()
   let session = db.queryOne(equal("token", token))
   if isNil(session):
@@ -119,25 +156,15 @@ proc addSession*(token:string, key:string, val:string) =
   db.flush()
 
 proc removeSession*(token:string) =
-  var db = newFlatDb("session.db", false)
+  var db = initFlatDb()
   discard db.load()
   let session = db.queryOne(equal("token", token))
   let id = session["_id"].getStr
   db.delete id
 
-proc getCookie*(request:Request, key:string): string =
-  if not request.headers.hasKey("Cookie"):
-    return ""
-  let cookiesStrArr = request.headers["Cookie"].split(";")
-  for row in cookiesStrArr:
-    let rowArr = row.split("=")
-    if rowArr[0] == key:
-      return rowArr[1]
-
-
 proc getSession*(request:Request, key:string): string =
   let token = request.getCookie("token")
-  var db = newFlatDb("session.db", false)
+  var db = initFlatDb()
   discard db.load()
   let session = db.queryOne(equal("token", token))
   result = ""
@@ -148,18 +175,15 @@ proc getSession*(request:Request, key:string): string =
 proc csrfToken*(login:Login):string =
   # insert db
   if login.isLogin:
-    echo "ログインしてる"
-    var db = newFlatDb("session.db", false)
+    var db = initFlatDb()
     discard db.load()
     let session = db.queryOne(equal("token", login.token))
-    echo session
     session["login_at"] = %($(getTime().toUnix()))
     return &"""<input type="hidden" name="_token" value="{login.token}">"""
   else:
-    echo "ログインしてない"
     randomize()
     let token = rundStr().secureHash()
-    var db = newFlatDb("session.db", false)
+    var db = initFlatDb()
     discard db.load()
     db.append(%*{
       "token": $token, "login_at": $(getTime().toUnix())
@@ -168,7 +192,7 @@ proc csrfToken*(login:Login):string =
 
 proc initLogin*(request:Request): Login =
   let token = request.getCookie("token")
-  var db = newFlatDb("session.db", false)
+  var db = initFlatDb()
   discard db.load()
   var info = initTable[string, string]()
   let session = db.queryOne(equal("token", token))
