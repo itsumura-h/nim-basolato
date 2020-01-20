@@ -12,5 +12,7 @@ putEnv("LOG_IS_DISPLAY", "true")
 putEnv("LOG_IS_FILE", "true")
 putEnv("LOG_DIR", "/home/www/exampleMVC/logs")
 
-# Session timeout
+# Session
 putEnv("SESSION_TIME", "3600") # secounds
+putEnv("SESSION_DB", "/home/www/exampleMVC/session.db")
+putEnv("IS_SESSION_MEMORY", "false")
