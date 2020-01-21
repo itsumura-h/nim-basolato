@@ -1,14 +1,14 @@
-import json, re, tables
+import json, re, tables, strformat
 
 type 
   Validation* = ref object
     params*: Table[string, string]
-    errors*: JsonNode
+    errors*: JsonNode # JObject
 
   Request = ref object
     params*: Table[string, string]
 
-proc varidate*(request:Request): Validation =
+proc validate*(request:Request): Validation =
   Validation(
     params: request.params,
     errors: newJObject()
@@ -23,7 +23,7 @@ proc putError(this:Validation, key:string, error:JsonNode) =
 
 
 proc password*(this:Validation, key="password"): Validation =
-  var error = newseq[JsonNode]()
+  var error = newJArray()
   
   if this.params[key].len == 0:
     error.add(%"this field is required.")
@@ -39,39 +39,37 @@ proc password*(this:Validation, key="password"): Validation =
   
   return this
 
-proc email*(this:Validation, val:string, key="email"): Validation =
-  var error = %*{"val": val, "errors": []}
+proc email*(this:Validation, key="email"): Validation =
+  var error = newJArray()
 
-  if val.len == 0:
-    error["isError"] = %true
-    error["errors"].add(%"this field is required.")
+  if this.params[key].len == 0:
+    error.add(%"this field is required.")
 
-  if not val.match(re"^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$"):
-    error["isError"] = %true
-    error["errors"].add(%"invalid form of email")
+  if not this.params[key].match(re"^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$"):
+    error.add(%"invalid form of email")
   
-  if error["isError"].getBool:
+  if error.len > 0:
     this.putError(key, error)
 
   return this
 
-proc required*(this:Validation, vals:openArray[string]): Validation =
-  for val in vals:
-    var error = %*{"val": val, "errors": []}
-    echo val.repr
-    # if val.len == 0:
-    #   error["errors"].add(%(&"{val} is required"))
-    #   this.putError(val)
-
+proc required*(this:Validation, keys:openArray[string]): Validation =
+  for key in keys:
+    if this.params[key].len == 0:
+      if isNil(this.errors):
+        this.errors = %*{key: [&"{key} is required"]}
+      elif this.errors.hasKey(key):
+        this.errors[key].add(%(&"{key} is required"))
+      else:
+        this.errors[key] = %[(&"{key} is required")]
+  return this
 
 when isMainModule:
-  
-
-  var params = {"password": "asdas", "email": "user1gmai", "name": ""}.toTable
+  var params = {"password": "", "email": "user1gmai"}.toTable
   let request = Request(params:params)
   
-  let v = validate()
-            .password("password", "asdasda9")
-            .email("email", "user1@gmail.com")
-            .required([aaa, bbb, ""])
+  let v = request.validate()
+            .password()
+            .email()
+            .required(["password"])
   echo v.errors
