@@ -4,6 +4,9 @@ import bcrypt
 # import ../../../src/basolato/controller
 import ../../../src/basolato/private
 import ../../../src/basolato/session
+import ../../../src/basolato/validation
+# middleware
+import ../../middleware/custom_validation_middleware
 # model
 import ../models/users
 # view
@@ -38,15 +41,18 @@ proc store*(this: LoginController): Response =
   if not password.match(re"^[a-zA-Z\d]{8,100}$"):
     errors.add("password", %"A minimum 8 characters password contains a combination of uppercase and lowercase letter and number are required.")
   # get passsword
-  let user = this.user.getUserByEmail(email)
-  echo user
-  let db_password = user["password"].getStr
-  if db_password.len == 0:
-    errors.add("email", %"email is not match")
-  # password check
-  let hashed = hash(password, SALT)
-  if not compare(hashed, db_password):
-    errors.add("password", %"password is not match")
+  # let user = this.user.getUserByEmail(email)
+  # echo user
+  # let db_password = user["password"].getStr
+  # if db_password.len == 0:
+  #   errors.add("email", %"email is not match")
+  # # password check
+  # let hashed = hash(password, SALT)
+  # if not compare(hashed, db_password):
+  #   errors.add("password", %"password is not match")
+  let v = this.request.validate().checkPassword("password")
+  if v.errors.len > 0:
+    errors.add("password", v.errors["password"][0].getStr)
   # check error
   if errors.len > 0:
     return render(createHtml(this.login, email, errors))

@@ -1,12 +1,13 @@
 import json, re, tables, strformat, strutils
+from jester import Request, params
+import allographer/query_builder
+
 
 type 
   Validation* = ref object
     params*: Table[string, string]
     errors*: JsonNode # JObject
 
-  Request = ref object
-    params*: Table[string, string]
 
 proc validate*(request:Request): Validation =
   Validation(
@@ -15,13 +16,13 @@ proc validate*(request:Request): Validation =
   )
 
 
-proc putError(this:Validation, key:string, error:JsonNode) =
+proc putValidate*(this:Validation, key:string, error:JsonNode) =
   if isNil(this.errors):
     this.errors = %{key: error}
   else:
     this.errors[key] = error
     
-proc putError(this:Validation, key:string, msg:string) =
+proc putValidate*(this:Validation, key:string, msg:string) =
   if isNil(this.errors):
     this.errors = %*{key: [msg]}
   elif this.errors.hasKey(key):
@@ -42,7 +43,7 @@ proc password*(this:Validation, key="password"): Validation =
     error.add(%"invalid form of password")
   
   if error.len > 0:
-    this.putError(key, error)
+    this.putValidate(key, error)
   
   return this
 
@@ -56,56 +57,56 @@ proc email*(this:Validation, key="email"): Validation =
     error.add(%"invalid form of email")
   
   if error.len > 0:
-    this.putError(key, error)
+    this.putValidate(key, error)
 
   return this
 
 proc required*(this:Validation, keys:openArray[string]): Validation =
   for key in keys:
     if this.params[key].len == 0:
-      this.putError(key, &"{key} is required")
+      this.putValidate(key, &"{key} is required")
   return this
 
 proc accepted*(this:Validation, key:string, val="on"): Validation =
   if this.params.hasKey(key):
     if this.params[key] != val:
-      this.putError(key, &"{key} should be accespted")
+      this.putValidate(key, &"{key} should be accespted")
   return this
 
 proc contains*(this:Validation, key:string, val:string): Validation =
   if this.params.hasKey(key):
     if not this.params[key].contains(val):
-      this.putError(key, &"{key} should contain {val}")
+      this.putValidate(key, &"{key} should contain {val}")
   return this
 
 proc equals*(this:Validation, key:string, val:string): Validation =
   if this.params.hasKey(key):
     if this.params[key] != val:
-      this.putError(key, &"{key} should be {val}")
+      this.putValidate(key, &"{key} should be {val}")
   return this
 
 proc exists*(this:Validation, key:string): Validation =
   if not this.params.hasKey(key):
-    this.putError(key, &"{key} should exists in request params")
+    this.putValidate(key, &"{key} should exists in request params")
   return this
 
 proc gratorThan*(this:Validation, key:string, val:float): Validation =
   if this.params.hasKey(key):
     if this.params[key].parseFloat <= val:
-      this.putError(key, &"{key} should be grator than {val}")
+      this.putValidate(key, &"{key} should be grator than {val}")
   return this
 
 proc inRange*(this:Validation, key:string, min:float, max:float): Validation =
   if this.params.hasKey(key):
     let val = this.params[key].parseFloat
     if val < min or max < val:
-      this.putError(key, &"{key} should be in range between {min} and {max}")
+      this.putValidate(key, &"{key} should be in range between {min} and {max}")
   return this
 
 proc ip*(this:Validation, key:string): Validation =
   if this.params.hasKey(key):
     if not this.params[key].match(re"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}"):
-      this.putError(key, &"{key} should be a form of IP address")
+      this.putValidate(key, &"{key} should be a form of IP address")
   return this
 
 proc isIn*(this:Validation, key:string, vals:openArray[int|float|string]): Validation =
@@ -115,13 +116,13 @@ proc isIn*(this:Validation, key:string, vals:openArray[int|float|string]): Valid
       if this.params[key] == $val:
         count.inc
     if count == 0:
-      this.putError(key, &"{key} should be in {vals}")
+      this.putValidate(key, &"{key} should be in {vals}")
   return this
 
 proc lessThan*(this:Validation, key:string, val:float): Validation =
   if this.params.hasKey(key):
     if this.params[key].parseFloat >= val:
-      this.putError(key, &"{key} should be less than {val}")
+      this.putValidate(key, &"{key} should be less than {val}")
   return this
 
 proc numeric*(this:Validation, key:string): Validation =
@@ -129,7 +130,7 @@ proc numeric*(this:Validation, key:string): Validation =
     try:
       let _ = this.params[key].parseFloat
     except:
-      this.putError(key, &"{key} should be numeric")
+      this.putValidate(key, &"{key} should be numeric")
   return this
 
 proc oneOf*(this:Validation, keys:openArray[string]): Validation =
@@ -138,10 +139,21 @@ proc oneOf*(this:Validation, keys:openArray[string]): Validation =
     if keys.contains(key):
       count.inc
   if count == 0:
-    this.putError("oneOf", &"at least one of {keys} is required")
+    this.putValidate("oneOf", &"at least one of {keys} is required")
+  return this
+
+proc unique*(this:Validation, key:string, table:string, column:string): Validation =
+  if this.params.hasKey(key):
+    let val = this.params[key]
+    let num = RDB().table(table).where(column, "=", val).count()
+    if num != 0:
+      this.putValidate(key, &"{key} should be unique")
   return this
 
 when isMainModule:
+  type Request = ref object
+    params: Table[string, string]
+
   var params = {
     "password": "asdwe",
     "email": "user1@gmail.com",
@@ -159,6 +171,7 @@ when isMainModule:
     "numeric": "a",
     "oneOf": "a",
   }.toTable
+
   let request = Request(params:params)
   
   let v = request.validate()
@@ -178,4 +191,5 @@ when isMainModule:
             .lessThan("lessThan", 25)
             .numeric("numeric")
             .oneOf(["oneOf1", "oneOf2"])
+            .unique("email", "users", "email")
   echo v.errors
