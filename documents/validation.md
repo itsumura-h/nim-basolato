@@ -186,6 +186,18 @@ This will add errors if value is not match for one of expected values.
 validate().isIn("name", ["John", "Paul", "George", "Ringo")
 ```
 
+## lessThan
+This will add errors if value is not less/smaller than expected value.
+
+```json
+{"age": "25"}
+```
+
+```nim
+validate().gratorThan("age", 24)
+```
+
+
 ## numeric
 This will add errors if value is not number.
 
