@@ -5,10 +5,11 @@ import ../../src/basolato/validation
 
 proc checkPassword*(this:Validation, key:string): Validation =
   let password = this.params["password"]
-  let dbPass = RDB().table("users")
+  let response = RDB().table("users")
                   .select("password")
                   .where("email", "=", this.params["email"])
-                  .first()["password"].getStr
+                  .first()
+  let dbPass = if response.kind != JNull: response["password"].getStr else: ""
   let hash = dbPass.substr(0, 28)
   let hashed = hash(password, hash)
   let isMatch = compare(hashed, dbPass)

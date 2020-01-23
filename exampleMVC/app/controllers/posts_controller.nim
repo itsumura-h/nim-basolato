@@ -29,7 +29,6 @@ proc newPostsController*(request:Request): PostsController =
 
 proc index*(this:PostsController): Response =
   let posts = this.post.getPosts()
-  echo this.login.info
   return render(indexHtml(this.login, posts))
 
 
