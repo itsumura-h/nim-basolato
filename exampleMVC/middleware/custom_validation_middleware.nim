@@ -9,7 +9,9 @@ proc checkPassword*(this:Validation, key:string): Validation =
                   .select("password")
                   .where("email", "=", this.params["email"])
                   .first()["password"].getStr
-  let isMatch = compare(password, dbPass)
+  let hash = dbPass.substr(0, 28)
+  let hashed = hash(password, hash)
+  let isMatch = compare(hashed, dbPass)
   if not isMatch:
     this.putValidate(key, "password is not match")
   return this

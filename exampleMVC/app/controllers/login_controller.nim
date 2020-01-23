@@ -52,11 +52,12 @@ proc store*(this: LoginController): Response =
   #   errors.add("password", %"password is not match")
   let v = this.request.validate().checkPassword("password")
   if v.errors.len > 0:
-    errors.add("password", v.errors["password"][0].getStr)
+    errors.add("password", %v.errors["password"][0].getStr)
   # check error
   if errors.len > 0:
     return render(createHtml(this.login, email, errors))
   # create sesstion
+  let user = this.user.getUserByEmail(email)
   let uid = user["id"].getInt
   let token = sessionStart(uid)
   let name = user["name"].getStr
