@@ -81,3 +81,4 @@ ducere new project_name
 - [Migration](./documents/migration.md)
 - [View](./documents/view.md)
 - [Error](./documents/error.md)
+- [Validation](./documents/validation.md)
