@@ -30,42 +30,7 @@ proc putValidate*(this:Validation, key:string, msg:string) =
   else:
     this.errors[key] = %[(msg)]
 
-proc password*(this:Validation, key="password"): Validation =
-  var error = newJArray()
-  
-  if this.params[key].len == 0:
-    error.add(%"this field is required.")
-
-  if this.params[key].len < 8:
-    error.add(%"password needs at least 8 chars")
-  
-  if not this.params[key].match(re"^(?=.*?[a-z])(?=.*?\d)[a-z\d]*$"):
-    error.add(%"invalid form of password")
-  
-  if error.len > 0:
-    this.putValidate(key, error)
-  
-  return this
-
-proc email*(this:Validation, key="email"): Validation =
-  var error = newJArray()
-
-  if this.params[key].len == 0:
-    error.add(%"this field is required.")
-
-  if not this.params[key].match(re"^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9]+\.[?:\.a-zA-Z0-9]*$"):
-    error.add(%"invalid form of email")
-  
-  if error.len > 0:
-    this.putValidate(key, error)
-
-  return this
-
-proc required*(this:Validation, keys:openArray[string]): Validation =
-  for key in keys:
-    if this.params[key].len == 0:
-      this.putValidate(key, &"{key} is required")
-  return this
+# =============================================================================
 
 proc accepted*(this:Validation, key:string, val="on"): Validation =
   if this.params.hasKey(key):
@@ -77,6 +42,19 @@ proc contains*(this:Validation, key:string, val:string): Validation =
   if this.params.hasKey(key):
     if not this.params[key].contains(val):
       this.putValidate(key, &"{key} should contain {val}")
+  return this
+
+proc email*(this:Validation, key="email"): Validation =
+  var error = newJArray()
+  if this.params[key].len == 0:
+    error.add(%"this field is required")
+
+  if not this.params[key].match(re"^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9]+\.[?:\.a-zA-Z0-9]*$"):
+    error.add(%"invalid form of email")
+  
+  if error.len > 0:
+    this.putValidate(key, error)
+
   return this
 
 proc equals*(this:Validation, key:string, val:string): Validation =
@@ -140,6 +118,28 @@ proc oneOf*(this:Validation, keys:openArray[string]): Validation =
       count.inc
   if count == 0:
     this.putValidate("oneOf", &"at least one of {keys} is required")
+  return this
+
+proc password*(this:Validation, key="password"): Validation =
+  var error = newJArray()
+  if this.params[key].len == 0:
+    error.add(%"this field is required")
+
+  if this.params[key].len < 8:
+    error.add(%"password needs at least 8 chars")
+  
+  if not this.params[key].match(re"(?=.*?[a-z])(?=.*?[A-Z])(?=.*?\d)[!-~a-zA-Z\d]*"):
+    error.add(%"invalid form of password")
+  
+  if error.len > 0:
+    this.putValidate(key, error)
+  
+  return this
+
+proc required*(this:Validation, keys:openArray[string]): Validation =
+  for key in keys:
+    if this.params[key].len == 0:
+      this.putValidate(key, &"{key} is required")
   return this
 
 proc unique*(this:Validation, key:string, table:string, column:string): Validation =
