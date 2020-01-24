@@ -34,7 +34,7 @@ proc getPost*(this:Post, id:int): JsonNode =
     .select("id", "title", "text", "published_date", "auther_id")
     .find(id)
 
-proc store*(this:Post, title:string, text:string, publishedDate:string, autherId:int): int =
+proc store*(this:Post, title:string, text:string, publishedDate:string, autherId:string): int =
   this.db
     .insertId(%*{
       "title": title,

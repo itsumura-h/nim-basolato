@@ -1,10 +1,11 @@
 import
-  httpcore, json, logging, macros, options, os, parsecfg, random, std/sha1,
-  strformat, strutils, tables, terminal, times
+  httpcore, json, os, random, std/sha1,
+  strformat, strutils, tables, times
 # 3rd party
 import jester/private/utils
 import flatdb
 # framework
+import base
 import private
 
 type Login* = ref object

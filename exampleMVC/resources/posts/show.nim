@@ -1,7 +1,5 @@
 import json
-# import ../../../src/basolato/view
-import ../../../src/basolato/private
-import ../../../src/basolato/session
+import ../../../src/basolato/view
 import ../base
 
 proc showHtmlImpl(login:Login, post:JsonNode):string = tmpli html"""

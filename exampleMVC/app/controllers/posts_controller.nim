@@ -1,8 +1,6 @@
 import strutils, json, strformat, tables, times
 # framework
-# import ../../../src/basolato/controller
-import ../../../src/basolato/private
-import ../../../src/basolato/session
+import ../../../src/basolato/controller
 # model
 import ../models/posts
 # view
@@ -56,7 +54,7 @@ proc store*(this:PostsController): Response =
     return render(createHtml(this.login, title, text, errors))
 
   let publishedDate = now().format("yyyy-MM-dd")
-  let autherId = 1
+  let autherId = this.login.uid
   let postId = this.post.store(title, text, publishedDate, autherId)
   return redirect(&"/posts/{postId}")
 

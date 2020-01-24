@@ -1,11 +1,7 @@
-import tables, json, re
+import tables, json
 # framework
-# import ../../../src/basolato/controller
-import ../../../src/basolato/private
-import ../../../src/basolato/session
+import ../../../src/basolato/controller
 import ../../../src/basolato/validation
-# middleware
-import ../../middleware/custom_validation_middleware
 # model
 import ../models/users
 # view
