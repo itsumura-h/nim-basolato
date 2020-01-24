@@ -1,16 +1,17 @@
 import
-  httpcore, json, logging, macros, options, os, parsecfg, random, std/sha1,
-  strformat, strutils, tables, terminal, times
+  httpcore, json, os, random, std/sha1,
+  strformat, strutils, tables, times
 # 3rd party
 import jester/private/utils
 import flatdb
 # framework
+import base
 import private
 
 type Login* = ref object
-  db*: FlatDb
   isLogin*: bool
   token*: string
+  uid*: string
   info*: Table[string, string]
 
 const
@@ -199,11 +200,11 @@ proc initLogin*(request:Request): Login =
   if session == nil:
     return Login(isLogin: false)
   for key, val in session.pairs:
-    if key.contains("login_"):
-      info[key] = val.get
+    info[key] = val.get
   return Login(
     isLogin: true,
+    token: token,
+    uid: $session["uid"].getInt,
     info: info,
-    token: token
   )
 

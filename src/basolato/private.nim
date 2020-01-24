@@ -1,51 +1,15 @@
 import
-  httpcore, json, logging, macros, options, os, parsecfg, random, std/sha1,
+  httpcore, json, logging, macros, options, os, parsecfg, std/sha1,
   strformat, strutils, tables, terminal, times
+# framework
+import base
 # 3rd party
 import jester except redirect, setCookie
-import jester/private/utils
 import bcrypt, flatdb, templates
 
+export base
 export jester except redirect, setCookie
 export bcrypt, flatdb, templates
-
-const
-  basolatoVersion* = "v0.1.0"
-  IS_DISPLAY* = getEnv("LOG_IS_DISPLAY").string.parseBool
-  IS_FILE* = getEnv("LOG_IS_FILE").string.parseBool
-  LOG_DIR* = getEnv("LOG_DIR").string
-  SESSION_TIME* = getEnv("SESSION_TIME").string.parseInt
-
-type
-  Response* = ref object
-    status*:HttpCode
-    body*: string
-    bodyString*: string
-    bodyJson*: JsonNode
-    responseType*: ResponseType
-    headers*: seq[tuple[key, value:string]]
-    # headers*: seq[tuple[key, val:string]] # TODO after pull request mergeed https://github.com/dom96/jester/pull/234
-    url*: string
-    match*: bool
-
-  ResponseType* = enum
-    String
-    Json
-    Redirect
-  
-const errorStatusArray* = [505, 504, 503, 502, 501, 500, 451, 431, 429, 428, 426,
-  422, 421, 418, 417, 416, 415, 414, 413, 412, 411, 410, 409, 408, 407, 406,
-  405, 404, 403, 401, 400, 307, 305, 304, 303, 302, 301, 300]
-
-macro createHttpException():untyped =
-  var strBody = """type
-"""
-  for num in errorStatusArray:
-    strBody.add(fmt"""  Error{num}* = object of Exception
-""")
-  parseStmt(strBody)
-createHttpException
-
 
 # ==================== logger =================================================
 
@@ -192,12 +156,8 @@ template middleware*(procs:varargs[Response]) =
       route(p)
       break
 
-macro dynamicImportErrorPage() =
-  let path = getProjectPath()
-  parseStmt(fmt"""
-import {path}/resources/framework/error
-""")
-dynamicImportErrorPage
+
+import errorPage
 
 template http404Route*(pagePath="") =
   if not request.path.contains("favicon"):

@@ -1,7 +1,4 @@
-# import basolato/middleware
-# import basolato/routing
-import ../../src/basolato/private
-import ../../src/basolato/session
+import ../../src/basolato/middleware
 # from custom_headers_middleware import corsHeader
 
 template framework*() =
