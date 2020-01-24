@@ -1,9 +1,8 @@
-import times, json, re, os, strutils
+import json
 # 3rd party
 import bcrypt
-# import ../../../src/basolato/controller
-import ../../../src/basolato/private
-import ../../../src/basolato/session
+# framework
+import ../../../src/basolato/controller
 import ../../../src/basolato/validation
 # middleware
 import ../../middleware/custom_validation_middleware
@@ -12,7 +11,6 @@ import ../models/users
 # view
 import ../../resources/login/create
 
-const SALT = getEnv("SALT").string
 
 type LoginController = ref object
   request: Request

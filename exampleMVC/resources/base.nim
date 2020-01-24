@@ -1,7 +1,5 @@
-# import ../../src/basolato/view
-import ../../src/basolato/private
-import ../../src/basolato/session
-
+import tables
+import ../../src/basolato/view
 
 proc header(): string = """
 <title>Basolato Webpage sample blog</title>
@@ -12,7 +10,7 @@ proc header(): string = """
 """
 
 proc baseHtml*(login:Login, content:string): string =
-  tmpli html"""
+  tmpli html("""
 <html>
   <head>
     $(header())
@@ -41,4 +39,4 @@ proc baseHtml*(login:Login, content:string): string =
     </div>
   </body>
 </html>
-"""
+""")

@@ -26,7 +26,7 @@ routes:
     exceptionRoute
 ```
 
-Basolate have it's own error page of `resources/framework/error.nim`. If you set arg which is path to HTML file in `http404Route` and `exceptionRoute`, you can display custom error page.
+Basolate have it's own error page. If you set arg which is path to HTML file in `http404Route` and `exceptionRoute`, you can display custom error page.
 
 main.nim
 ```nim
@@ -41,8 +41,6 @@ This path should be related path from `resources` dir.
 
 ```sh
 └── resources
-    ├── framework
-    │   └── error.nim # original error
     └── errors
         ├── original404.html # user custom error
         └── originalError.html # user custom error
