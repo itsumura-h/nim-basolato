@@ -10,14 +10,22 @@ proc createHtmlImpl(login:Login, title:string, text:string, errors:JsonNode): st
   <div>
     <p>Title</p>
     $if errors.hasKey("title") {
-      <p><li>$(errors["title"].getStr)</li></p>
+      <ul>
+        $for row in errors["title"] {
+          <li>$row</li>
+        }
+      </ul>
     }
     <p><input type="text" value="$title" name="title"></p>
   </div>
   <div>
     <p>Text</p> 
     $if errors.hasKey("text") {
-      <p><li>$(errors["text"].getStr)</li></p>
+      <ul>
+        $for row in errors["text"] {
+          <li>$row</li>
+        }
+      </ul>
     }
     <textarea name="text">$text</textarea>
   </div>

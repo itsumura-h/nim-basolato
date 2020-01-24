@@ -1,6 +1,7 @@
 import strutils, json, strformat, tables, times
 # framework
 import ../../../src/basolato/controller
+import ../../../src/basolato/validation
 # model
 import ../models/posts
 # view
@@ -45,13 +46,10 @@ proc store*(this:PostsController): Response =
   let title = this.request.params["title"]
   let text = this.request.params["text"]
   # varidation check
-  var errors = newJObject()
-  if title.len == 0:
-    errors.add("title", %"This field is required")
-  if text.len == 0:
-    errors.add("text", %"This field is required")
-  if errors.len > 0:
-    return render(createHtml(this.login, title, text, errors))
+  let v = this.request.validate()
+            .required(["title", "text"])
+  if v.errors.len > 0:
+    return render(createHtml(this.login, title, text, v.errors))
 
   let publishedDate = now().format("yyyy-MM-dd")
   let autherId = this.login.uid
@@ -68,18 +66,14 @@ proc edit*(this:PostsController, idArg:string): Response =
 
 proc update*(this:PostsController, idArg:string): Response =
   let id = idArg.parseInt
-  let params = this.request.params
-  let title = params["title"]
-  let text = params["text"]
+  let title = this.request.params["title"]
+  let text = this.request.params["text"]
 
   # validation
-  var errors = newJObject()
-  if title.len == 0:
-    errors.add("title", %"This field is required")
-  if text.len == 0:
-    errors.add("text", %"This field is required")
-  if errors.len > 0:
-    return render(editHtml(this.login, id, title, text, errors))
+  let v = this.request.validate()
+            .required(["title", "text"])
+  if v.errors.len > 0:
+    return render(editHtml(this.login, id, title, text, v.errors))
 
   this.post.updatePost(id, title, text)
   return redirect(&"/posts/{id}")

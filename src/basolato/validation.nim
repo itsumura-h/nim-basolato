@@ -138,7 +138,7 @@ proc password*(this:Validation, key="password"): Validation =
 
 proc required*(this:Validation, keys:openArray[string]): Validation =
   for key in keys:
-    if this.params[key].len == 0:
+    if not this.params.hasKey(key) or this.params[key].len == 0:
       this.putValidate(key, &"{key} is required")
   return this
 
