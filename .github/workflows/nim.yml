@@ -3,8 +3,22 @@ name: Build and test Nim
 on: [push, pull_request]
 
 jobs:
+  # WIP でジョブがスキップされてもCIが失敗した扱いにならないようにするため
+  skip:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Skip job"
+
+  # WIP がコミットメッセージに含まれているとジョブを起動しない
+  before:
+    runs-on: ubuntu-latest
+    if: "! contains(github.event.head_commit.message, 'WIP')"
+    steps:
+      - run: echo "no WIP"
+
   build:
     runs-on: ${{ matrix.os }}
+    needs: before
     strategy:
       matrix:
         os:
@@ -36,6 +50,7 @@ jobs:
 
   test-on-docker:
     runs-on: ubuntu-latest
+    needs: before
     steps:
     - uses: actions/checkout@v1
     - name: Test

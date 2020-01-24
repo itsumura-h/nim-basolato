@@ -1,7 +1,6 @@
 import httpcore
-# framework
-# import basolato/view
-import ../../../src/basolato/private
+import templates
+import private
 
 proc errorPage*(status:HttpCode, msg:string): string =
   when defined(release):

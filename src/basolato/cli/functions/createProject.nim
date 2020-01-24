@@ -14,7 +14,6 @@ proc createMVC(dirPath:string):int =
     # get from tmp/MVC
     moveDir(&"{dirpath}/tmp/MVC/middleware", &"{dirpath}/middleware")
     moveDir(&"{dirpath}/tmp/MVC/migrations", &"{dirpath}/migrations")
-    moveDir(&"{dirpath}/tmp/MVC/resources", &"{dirpath}/resources")
     moveFile(&"{dirpath}/tmp/MVC/main.nim", &"{dirpath}/main.nim")
     # remove tmp
     removeDir(&"{dirpath}/tmp")
@@ -30,6 +29,7 @@ proc createMVC(dirPath:string):int =
     createDir(&"{dirPath}/public")
     createDir(&"{dirPath}/public/js")
     createDir(&"{dirPath}/public/css")
+    createDir(&"{dirPath}/resources")
     return 0
   except:
     echo getCurrentExceptionMsg()

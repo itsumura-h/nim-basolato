@@ -1,6 +1,5 @@
 # framework
-# import ../src/basolato/routing
-import ../src/basolato/private
+import ../src/basolato/routing
 # middleware
 # import middleware/custom_headers_middleware
 import middleware/framework_middleware

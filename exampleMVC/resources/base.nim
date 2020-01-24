@@ -1,7 +1,5 @@
-# import ../../src/basolato/view
-import ../../src/basolato/private
-import ../../src/basolato/session
-
+import tables
+import ../../src/basolato/view
 
 proc header(): string = """
 <title>Basolato Webpage sample blog</title>
@@ -12,22 +10,24 @@ proc header(): string = """
 """
 
 proc baseHtml*(login:Login, content:string): string =
-  tmpli html"""
+  tmpli html("""
 <html>
   <head>
     $(header())
   </head>
   <body>
     <div class="page-header">
-      $if login.isLogin {
-        <p class="top-menu">Login: $(login.info["login_name"])</p>
-        <a href="/logout" class="top-menu"><span class="glyphicon glyphicon-log-out"></span></a>
-        <a href="/posts/create" class="top-menu"><span class="glyphicon glyphicon-plus"></span></a>
-      }
-      $else {
-        <a href="/signUp" class="top-menu"><span class="glyphicon glyphicon-user"></span></a>
-        <a href="/login" class="top-menu"><span class="glyphicon glyphicon-log-in"></span></a>
-      }
+      <div class="flex">
+        $if login.isLogin {
+          <p class="top-menu">Login: $(login.info["login_name"])</p>
+          <a href="/logout" class="top-menu"><span class="glyphicon glyphicon-log-out"></span></a>
+          <a href="/posts/create" class="top-menu right"><span class="glyphicon glyphicon-plus"></span></a>
+        }
+        $else {
+          <a href="/signUp" class="top-menu"><span class="glyphicon glyphicon-user"></span></a>
+          <a href="/login" class="top-menu"><span class="glyphicon glyphicon-log-in"></span></a>
+        }
+      </div>
       <h1><a href="/posts">Basolato sample blog</a></h1>
     </div>
     <div class="content container">
@@ -39,4 +39,4 @@ proc baseHtml*(login:Login, content:string): string =
     </div>
   </body>
 </html>
-"""
+""")
