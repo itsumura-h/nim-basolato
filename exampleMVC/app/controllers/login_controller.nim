@@ -39,11 +39,12 @@ proc store*(this: LoginController): Response =
   # check error
   if v.errors.len > 0:
     return render(createHtml(this.login, email, v.errors))
-  # create sesstion
+  # get user info
   let user = this.user.getUserByEmail(email)
   let uid = user["id"].getInt
-  let token = sessionStart(uid)
   let name = user["name"].getStr
+  # create sesstion
+  let token = sessionStart(uid)
   addSession(token, "login_name", name)
   let cookie = genCookie("token", token, daysForward(5))
   return redirect("/posts").setCookie(cookie)
