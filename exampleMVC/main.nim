@@ -1,7 +1,6 @@
 # framework
 import ../src/basolato/routing
 # middleware
-# import middleware/custom_headers_middleware
 import middleware/framework_middleware
 # controller
 import app/controllers/sign_up_controller
@@ -16,16 +15,13 @@ router post:
   get "/@id": route(newPostsController(request).show(@"id"))
   get "/@id/edit": route(newPostsController(request).edit(@"id"))
   post "/@id/edit": route(newPostsController(request).update(@"id"))
-  # post "/@id/delete": route(newPostsController().destroy(@"id"))
+  post "/@id/delete": route(newPostsController(request).destroy(@"id"))
 
 routes:
   # Framework
-  error Http404:
-    http404Route
-  error Exception:
-    exceptionRoute
-  before:
-    framework
+  error Http404: http404Route
+  error Exception: exceptionRoute
+  before: framework
 
   get "/": route(redirect("/posts"))
 

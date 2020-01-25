@@ -61,8 +61,6 @@ project directory will be created!
 │   └── migration0001.nim
 ├── public
 └── resources
-    └── framework
-        └── error.nim
 ```
 
 You can specify project direcotry name
@@ -83,3 +81,4 @@ ducere new project_name
 - [View](./documents/view.md)
 - [Error](./documents/error.md)
 - [Validation](./documents/validation.md)
+- [Security](./documents/security.md)

@@ -12,6 +12,10 @@ proc showHtmlImpl(login:Login, post:JsonNode):string = tmpli html"""
     }
     $if login.isLogin and login.uid == post["auther_id"].get {
       <a class="btn btn-default" href="/posts/$(post["id"].get)/edit"><span class="glyphicon glyphicon-pencil"></span></a>
+      <form method="POST" action="/posts/$(post["id"].get)/delete">
+        $(csrfToken(login))
+        <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-trash" /></button>
+      </form>
     }
   </div>
   <h2>$(post["title"].get)</h2>
