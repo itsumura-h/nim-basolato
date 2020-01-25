@@ -15,7 +15,6 @@ type PostsController* = ref object
   request*: Request
   login*: Login
   post: Post
-  
 
 # constructor
 proc newPostsController*(request:Request): PostsController =
@@ -31,16 +30,18 @@ proc index*(this:PostsController): Response =
   return render(indexHtml(this.login, posts))
 
 
-proc show*(this:PostsController, idArg:string): Response =
-  let id = idArg.parseInt
-  let post = this.post.getPost(id)
-  if post.kind == JNull:
-    raise newException(Error404, "")
-  return render(showHtml(this.login, post))
+proc show*(this:PostsController, id:string): Response =
+  block:
+    let id = id.parseInt
+    let post = this.post.getPost(id)
+    if post.kind == JNull:
+      raise newException(Error404, "")
+    return render(showHtml(this.login, post))
 
 
 proc create*(this:PostsController): Response =
   return render(createHtml(this.login))
+
 
 proc store*(this:PostsController): Response =
   let title = this.request.params["title"]
@@ -57,23 +58,36 @@ proc store*(this:PostsController): Response =
   return redirect(&"/posts/{postId}")
 
 
-proc edit*(this:PostsController, idArg:string): Response =
-  let id = idArg.parseInt
-  let post = this.post.getPost(id)
-  let title = post["title"].getStr
-  let text = post["text"].getStr
-  return render(editHtml(this.login, id, title, text))
+proc edit*(this:PostsController, id:string): Response =
+  block:
+    let id = id.parseInt
+    let post = this.post.getPost(id)
+    # login check
+    if this.login.uid != $post["auther_id"].getInt:
+      raise newException(Error302, "/posts")
+    # get params
+    let title = post["title"].getStr
+    let text = post["text"].getStr
+    return render(editHtml(this.login, id, title, text))
 
-proc update*(this:PostsController, idArg:string): Response =
-  let id = idArg.parseInt
-  let title = this.request.params["title"]
-  let text = this.request.params["text"]
 
-  # validation
-  let v = this.request.validate()
-            .required(["title", "text"])
-  if v.errors.len > 0:
-    return render(editHtml(this.login, id, title, text, v.errors))
+proc update*(this:PostsController, id:string): Response =
+  block:
+    let id = id.parseInt
+    let title = this.request.params["title"]
+    let text = this.request.params["text"]
+    # validation
+    let v = this.request.validate()
+              .required(["title", "text"])
+    if v.errors.len > 0:
+      return render(editHtml(this.login, id, title, text, v.errors))
 
-  this.post.updatePost(id, title, text)
-  return redirect(&"/posts/{id}")
+    this.post.updatePost(id, title, text)
+    return redirect(&"/posts/{id}")
+
+
+proc destroy*(this:PostsController, id:string): Response =
+  block:
+    let id = id.parseInt
+    this.post.deletePost(id)
+    return redirect(&"/posts")

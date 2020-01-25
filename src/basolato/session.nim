@@ -59,28 +59,32 @@ proc deleteCookie*(r:Response, key:string): Response =
   var cookie = genCookie(key, "", daysForward(-1))
   r.header("Set-cookie", cookie)
 
-proc checkCsrfToken*(request:Request) =
+proc checkCsrfToken*(request:Request, excTyp=Exception, msg="") =
   if request.reqMethod == HttpPost or
         request.reqMethod == HttpPut or
         request.reqMethod == HttpPatch or
         request.reqMethod == HttpDelete:
+    var msg = msg
     # key not found
     if not request.params.contains("_token"):
-      raise newException(Exception, "CSRF verification failed.")
+      if msg == "": msg = "CSRF verification failed."
+      raise newException(excTyp, msg)
     # check token is valid
     let token = request.params["_token"]
     var db = initFlatDb()
     discard db.load()
     let session = db.queryOne(equal("token", token))
     if isNil(session):
-      raise newException(Exception, "CSRF verification failed.")
+      if msg == "": msg = "CSRF verification failed."
+      raise newException(excTyp, msg)
     # check timeout
     let loginAt = session["login_at"].getStr.parseInt
     if getTime().toUnix() > loginAt + SESSION_TIME:
       # delete token from session
       let id = session["_id"].getStr
       db.delete(id)
-      raise newException(Exception, "Session Timeout.")
+      if msg == "": msg = "Session Timeout."
+      raise newException(excTyp, msg)
     # update login time
     session["login_at"] = %($(getTime().toUnix()))
     # delete onetime session
