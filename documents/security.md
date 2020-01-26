@@ -19,26 +19,26 @@ Then, pass login field to view.
 # DI
 type PostsController* = ref object
   request*: Request
-  login*: Login
+  auth*: Auth
 
 # constructor
 proc newPostsController*(request:Request): PostsController =
   return PostsController(
     request: request,
-    login: initLogin(request)
+    auth: initAuth(request)
   )
 
 # pass login data to view
 proc create*(this:PostsController): Response =
-  return render(createHtml(this.login))
+  return render(createHtml(this.auth))
 ```
 
 ## View
-Set `$(csrfToken(login))` in view.
+Set `$(csrfToken(auth))` in view.
 ```nim
-proc createHtml*(login:Login):string = tmpli html("""
+proc createHtml*(auth:Auth):string = tmpli html("""
 <form method="post">
-  $(csrfToken(login))
+  $(csrfToken(auth))
   .
   .
 </form>
