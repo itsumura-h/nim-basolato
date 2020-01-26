@@ -9,19 +9,19 @@ import ../../resources/sign_up/create
 
 type SignUpController = ref object
   request:Request
-  login: Login
+  auth: Auth
   user:User
 
 proc newSignUpController*(request:Request): SignUpController =
   return SignUpController(
     request: request,
-    login: initLogin(request),
+    auth: initAuth(request),
     user: newUser()
   )
 
 
 proc create*(this:SignUpController): Response =
-  return render(createHtml(this.login))
+  return render(createHtml(this.auth))
 
 proc store*(this:SignUpController): Response =
   let name = this.request.params["name"]
@@ -34,14 +34,14 @@ proc store*(this:SignUpController): Response =
             .unique("email", "users", "email")
             .password("password")
   if v.errors.len > 0:
-    return render(createHtml(this.login, name, email, v.errors))
+    return render(createHtml(this.auth, name, email, v.errors))
   # insert
   let uid = this.user.createUser(name, email, password)
   if uid < 0:
     v.errors.add("general", %getCurrentExceptionMsg())
-    return render(createHtml(this.login, name, email, v.errors))
+    return render(createHtml(this.auth, name, email, v.errors))
   # session
-  let token = sessionStart(uid)
-  addSession(token, "login_name", name)
-  let cookie = genCookie("token", token, daysForward(5))
+  let cookie = sessionStart(uid)
+                .add("login_name", name)
+                .setCookie(daysForward(5))
   return redirect("/posts").setCookie(cookie)

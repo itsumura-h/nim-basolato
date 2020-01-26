@@ -13,21 +13,22 @@ import ../../resources/posts/edit
 # DI
 type PostsController* = ref object
   request*: Request
-  login*: Login
+  auth*: Auth
   post: Post
 
 # constructor
 proc newPostsController*(request:Request): PostsController =
   return PostsController(
     request: request,
-    login: initLogin(request),
+    auth: initAuth(request),
     post: newPost()
   )
 
 
 proc index*(this:PostsController): Response =
   let posts = this.post.getPosts()
-  return render(indexHtml(this.login, posts))
+  return render(indexHtml(this.auth, posts))
+          .updateCookieExpire(this.request, "token", 5)
 
 
 proc show*(this:PostsController, id:string): Response =
@@ -36,11 +37,11 @@ proc show*(this:PostsController, id:string): Response =
     let post = this.post.getPost(id)
     if post.kind == JNull:
       raise newException(Error404, "")
-    return render(showHtml(this.login, post))
+    return render(showHtml(this.auth, post))
 
 
 proc create*(this:PostsController): Response =
-  return render(createHtml(this.login))
+  return render(createHtml(this.auth))
 
 
 proc store*(this:PostsController): Response =
@@ -50,10 +51,10 @@ proc store*(this:PostsController): Response =
   let v = this.request.validate()
             .required(["title", "text"])
   if v.errors.len > 0:
-    return render(createHtml(this.login, title, text, v.errors))
+    return render(createHtml(this.auth, title, text, v.errors))
 
   let publishedDate = now().format("yyyy-MM-dd")
-  let autherId = this.login.uid
+  let autherId = this.auth.uid
   let postId = this.post.store(title, text, publishedDate, autherId)
   return redirect(&"/posts/{postId}")
 
@@ -63,12 +64,12 @@ proc edit*(this:PostsController, id:string): Response =
     let id = id.parseInt
     let post = this.post.getPost(id)
     # login check
-    if this.login.uid != $post["auther_id"].getInt:
+    if this.auth.uid != $post["auther_id"].getInt:
       raise newException(Error302, "/posts")
     # get params
     let title = post["title"].getStr
     let text = post["text"].getStr
-    return render(editHtml(this.login, id, title, text))
+    return render(editHtml(this.auth, id, title, text))
 
 
 proc update*(this:PostsController, id:string): Response =
@@ -80,7 +81,7 @@ proc update*(this:PostsController, id:string): Response =
     let v = this.request.validate()
               .required(["title", "text"])
     if v.errors.len > 0:
-      return render(editHtml(this.login, id, title, text, v.errors))
+      return render(editHtml(this.auth, id, title, text, v.errors))
 
     this.post.updatePost(id, title, text)
     return redirect(&"/posts/{id}")
