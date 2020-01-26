@@ -14,18 +14,18 @@ import ../../resources/login/create
 
 type LoginController = ref object
   request: Request
-  login: Login
+  auth: Auth
   user: User
 
 proc newLoginController*(request:Request): LoginController =
   return LoginController(
     request: request,
-    login: initLogin(request),
+    auth: initAuth(request),
     user: newUser()
   )
 
 proc create*(this: LoginController): Response =
-  return render(createHtml(this.login))
+  return render(createHtml(this.auth))
 
 proc store*(this: LoginController): Response =
   let email = this.request.params["email"]
@@ -38,16 +38,17 @@ proc store*(this: LoginController): Response =
             .checkPassword("password")
   # check error
   if v.errors.len > 0:
-    return render(createHtml(this.login, email, v.errors))
-  # create sesstion
+    return render(createHtml(this.auth, email, v.errors))
+  # get user info
   let user = this.user.getUserByEmail(email)
   let uid = user["id"].getInt
-  let token = sessionStart(uid)
   let name = user["name"].getStr
-  addSession(token, "login_name", name)
-  let cookie = genCookie("token", token, daysForward(5))
+  # create sesstion
+  let cookie = sessionStart(uid)
+                .add("login_name", name)
+                .setCookie(daysForward(5))
   return redirect("/posts").setCookie(cookie)
 
 proc destroy*(this: LoginController): Response =
-  this.login.sessionDestroy()
+  this.auth.sessionDestroy()
   return redirect("/posts").deleteCookie("token")

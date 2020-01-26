@@ -8,13 +8,19 @@ import flatdb
 import base
 import private
 
-type Login* = ref object
-  isLogin*: bool
-  token*: string
-  uid*: string
-  info*: Table[string, string]
+type
+  Auth* = ref object
+    isLogin*: bool
+    token*: string
+    uid*: string
+    info*: Table[string, string]
+  
+  Session* = ref object
+    token: string
+    cookie: tuple[key, value:string]
 
 const
+  SESSION_TIME = getEnv("SESSION_TIME").string.parseInt
   SESSION_DB = getEnv("SESSION_DB").string
   IS_SESSION_MEMORY = getEnv("IS_SESSION_MEMORY").string.parseBool
 
@@ -51,38 +57,53 @@ proc getCookie*(request:Request, key:string): string =
     if rowArr[0] == key:
       return rowArr[1]
 
+proc setCookie*(this:Session, expires: DateTime): string =
+  genCookie("token", this.token,
+            format(expires.utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"),
+            Lax, false, false, "", "")
+
 proc setCookie*(r:Response, c:string): Response =
   ## maybe c would be token
   r.header("Set-cookie", c)
+
+proc updateCookieExpire*(response:Response, request:Request, key:string, days:int): Response =
+  let c = genCookie(key, request.getCookie(key),
+            format(daysForward(days).utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"),
+            Lax, false, false, "", "")
+  response.header("Set-cookie", c)
 
 proc deleteCookie*(r:Response, key:string): Response =
   var cookie = genCookie(key, "", daysForward(-1))
   r.header("Set-cookie", cookie)
 
-proc checkCsrfToken*(request:Request) =
+proc checkCsrfToken*(request:Request, excTyp=Exception, msg="") =
   if request.reqMethod == HttpPost or
         request.reqMethod == HttpPut or
         request.reqMethod == HttpPatch or
         request.reqMethod == HttpDelete:
+    var msg = msg
     # key not found
     if not request.params.contains("_token"):
-      raise newException(Exception, "CSRF verification failed.")
+      if msg == "": msg = "CSRF verification failed."
+      raise newException(excTyp, msg)
     # check token is valid
     let token = request.params["_token"]
     var db = initFlatDb()
     discard db.load()
     let session = db.queryOne(equal("token", token))
     if isNil(session):
-      raise newException(Exception, "CSRF verification failed.")
+      if msg == "": msg = "CSRF verification failed."
+      raise newException(excTyp, msg)
     # check timeout
-    let loginAt = session["login_at"].getStr.parseInt
+    let loginAt = session["created_at"].getStr.parseInt
     if getTime().toUnix() > loginAt + SESSION_TIME:
       # delete token from session
       let id = session["_id"].getStr
       db.delete(id)
-      raise newException(Exception, "Session Timeout.")
+      if msg == "": msg = "Session Timeout."
+      raise newException(excTyp, msg)
     # update login time
-    session["login_at"] = %($(getTime().toUnix()))
+    session["created_at"] = %($(getTime().toUnix()))
     # delete onetime session
     if not session.hasKey("uid"):
       let id = session["_id"].getStr
@@ -99,14 +120,14 @@ proc checkCookieToken*(request:Request) =
       if isNil(session):
         raise newException(Exception, "CSRF verification failed.")
       # check timeout
-      let loginAt = session["login_at"].getStr.parseInt
+      let loginAt = session["created_at"].getStr.parseInt
       if getTime().toUnix() > loginAt + SESSION_TIME:
         # delete token from session
         let id = session["_id"].getStr
         db.delete(id)
         raise newException(Exception, "Session Timeout.")
       # uppdate last login
-      session["login_at"] = %($(getTime().toUnix()))
+      session["created_at"] = %($(getTime().toUnix()))
       db.flush()
 
 proc rundStr():string =
@@ -114,47 +135,72 @@ proc rundStr():string =
   for _ in .. 50:
     add(result, char(rand(int('A')..int('z'))))
 
-proc sessionStart*(uid:int):string =
+# proc sessionStart*(uid:int):string =
+#   randomize()
+#   let token = rundStr().secureHash()
+#   # insert db
+#   var db = initFlatDb()
+#   discard db.load()
+#   db.append(%*{
+#     "token": $token, "created_at": $(getTime().toUnix()), "uid": uid
+#   })
+#   return $token
+proc sessionStart*(uid:int):Session =
   randomize()
   let token = rundStr().secureHash()
   # insert db
   var db = initFlatDb()
   discard db.load()
   db.append(%*{
-    "token": $token, "login_at": $(getTime().toUnix()), "uid": uid
+    "token": $token, "created_at": $(getTime().toUnix()), "uid": uid
   })
-  return $token
+  return Session(token: $token)
 
-proc sessionDestroy*(login:Login) =
-  var db = initFlatDb()
-  discard db.load()
-  let session = db.queryOne(equal("token", login.token))
-  let id = session["_id"].getStr
-  db.delete(id)
-
-proc newSession*(): string =
+proc sessionStart*(): Session =
   randomize()
   let token = rundStr().secureHash()
   var db = initFlatDb()
   discard db.load()
   db.append(%*{
-    "token": $token, "login_at": $(getTime().toUnix())
+    "token": $token, "created_at": $(getTime().toUnix())
   })
-  return $token
+  return Session(token: $token)
 
-proc addSession*(token:string, key:string, val:string) =
+proc sessionDestroy*(auth:Auth) =
   var db = initFlatDb()
   discard db.load()
-  let session = db.queryOne(equal("token", token))
+  let session = db.queryOne(equal("token", auth.token))
+  let id = session["_id"].getStr
+  db.delete(id)
+
+# proc addSession*(token:string, key:string, val:string) =
+#   var db = initFlatDb()
+#   discard db.load()
+#   let session = db.queryOne(equal("token", token))
+#   if isNil(session):
+#     raise newException(Error403, "CSRF verification failed.")
+#   # check timeout
+#   let generatedAt = session["created_at"].getStr.parseInt
+#   if getTime().toUnix() > generatedAt + SESSION_TIME:
+#     raise newException(Error403, "Session Timeout.")
+#   # add
+#   session[key] = %val
+#   db.flush()
+
+proc add*(this:Session, key:string, val:string):Session =
+  var db = initFlatDb()
+  discard db.load()
+  let session = db.queryOne(equal("token", this.token))
   if isNil(session):
     raise newException(Error403, "CSRF verification failed.")
   # check timeout
-  let generatedAt = session["login_at"].getStr.parseInt
+  let generatedAt = session["created_at"].getStr.parseInt
   if getTime().toUnix() > generatedAt + SESSION_TIME:
     raise newException(Error403, "Session Timeout.")
   # add
   session[key] = %val
   db.flush()
+  return this
 
 proc removeSession*(token:string) =
   var db = initFlatDb()
@@ -173,35 +219,35 @@ proc getSession*(request:Request, key:string): string =
     result = session[key].getStr
 
 
-proc csrfToken*(login:Login):string =
+proc csrfToken*(auth:Auth):string =
   # insert db
-  if login.isLogin:
+  if auth.isLogin:
     var db = initFlatDb()
     discard db.load()
-    let session = db.queryOne(equal("token", login.token))
-    session["login_at"] = %($(getTime().toUnix()))
-    return &"""<input type="hidden" name="_token" value="{login.token}">"""
+    let session = db.queryOne(equal("token", auth.token))
+    session["created_at"] = %($(getTime().toUnix()))
+    return &"""<input type="hidden" name="_token" value="{auth.token}">"""
   else:
     randomize()
     let token = rundStr().secureHash()
     var db = initFlatDb()
     discard db.load()
     db.append(%*{
-      "token": $token, "login_at": $(getTime().toUnix())
+      "token": $token, "created_at": $(getTime().toUnix())
     })
     return &"""<input type="hidden" name="_token" value="{token}">"""
 
-proc initLogin*(request:Request): Login =
+proc initAuth*(request:Request): Auth =
   let token = request.getCookie("token")
   var db = initFlatDb()
   discard db.load()
   var info = initTable[string, string]()
   let session = db.queryOne(equal("token", token))
   if session == nil:
-    return Login(isLogin: false)
+    return Auth(isLogin: false)
   for key, val in session.pairs:
     info[key] = val.get
-  return Login(
+  return Auth(
     isLogin: true,
     token: token,
     uid: $session["uid"].getInt,

@@ -2,7 +2,7 @@ import json
 import ../../../src/basolato/view
 import ../base
 
-proc showHtmlImpl(login:Login, post:JsonNode):string = tmpli html"""
+proc showHtmlImpl(auth:Auth, post:JsonNode):string = tmpli html"""
 <div class="post">
   <div class="post-header">
     $if post["published_date"].get().len > 0 {
@@ -10,8 +10,12 @@ proc showHtmlImpl(login:Login, post:JsonNode):string = tmpli html"""
         $(post["published_date"].get)
       </div>
     }
-    $if login.isLogin and login.uid == post["auther_id"].get {
+    $if auth.isLogin and auth.uid == post["auther_id"].get {
       <a class="btn btn-default" href="/posts/$(post["id"].get)/edit"><span class="glyphicon glyphicon-pencil"></span></a>
+      <form method="POST" action="/posts/$(post["id"].get)/delete">
+        $(csrfToken(auth))
+        <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-trash" /></button>
+      </form>
     }
   </div>
   <h2>$(post["title"].get)</h2>
@@ -19,5 +23,5 @@ proc showHtmlImpl(login:Login, post:JsonNode):string = tmpli html"""
 </div>
 """
 
-proc showHtml*(login:Login, post:JsonNode):string =
-  baseHtml(login, showHtmlImpl(login, post))
+proc showHtml*(auth:Auth, post:JsonNode):string =
+  baseHtml(auth, showHtmlImpl(auth, post))
