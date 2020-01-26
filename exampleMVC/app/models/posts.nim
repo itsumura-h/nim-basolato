@@ -50,3 +50,7 @@ proc updatePost*(this:Post, id:int, title:string, text:string) =
       "title": title,
       "text": text
     })
+
+proc deletePost*(this:Post, id:int) =
+  this.db
+    .delete(id)

@@ -2,12 +2,9 @@ import ../../src/basolato/middleware
 # from custom_headers_middleware import corsHeader
 
 template framework*() =
-  try:
-    checkCsrfToken(request)
-  except Exception:
-    # raise newException(Error403, getCurrentExceptionMsg())
-    echo getCurrentExceptionMsg()
-    raise newException(Error302, "/login")
+  checkCsrfToken(request)
+  # checkCsrfToken(request, Error302, "/login")
+  # checkCsrfToken(request, Error403, getCurrentExceptionMsg())
 
   try:
     checkCookieToken(request)
