@@ -1,6 +1,6 @@
 import jester except redirect, setCookie
-import base, session
+import base, auth
 from private import render, redirect, errorRedirect
 
-export base, session
+export base, auth
 export render, redirect, errorRedirect

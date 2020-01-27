@@ -50,5 +50,5 @@ proc store*(this: LoginController): Response =
   return redirect("/posts").setCookie(cookie)
 
 proc destroy*(this: LoginController): Response =
-  this.auth.sessionDestroy()
+  this.auth.destroy()
   return redirect("/posts").deleteCookie("token")
