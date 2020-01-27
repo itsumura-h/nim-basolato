@@ -16,6 +16,3 @@ putEnv("LOG_DIR", "/home/www/example2/logs")
 putEnv("SESSION_TIME", "3600") # secounds
 putEnv("SESSION_DB", "/home/www/example2/session.db")
 putEnv("IS_SESSION_MEMORY", "false")
-
-# password
-putEnv("SALT", "$2a$10$mS01PNroYEMze2gUGujzvu")
