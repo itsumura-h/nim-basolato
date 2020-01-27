@@ -1,7 +1,7 @@
 import templates
-import base, session
+import base, auth
 from private import get
 
 export templates
-export base, session
-export csrfToken, get
+export base, auth
+export get
