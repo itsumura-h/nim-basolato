@@ -17,5 +17,3 @@ putEnv("SESSION_TIME", "3600") # secounds
 putEnv("SESSION_DB", "/home/www/exampleMVC/session.db")
 putEnv("IS_SESSION_MEMORY", "false")
 
-# password
-putEnv("SALT", "$2a$10$TmDKITAafzwVH69tkN1uz.")

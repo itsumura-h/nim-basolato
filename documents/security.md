@@ -100,4 +100,30 @@ proc index(this:Controller): Response =
 
 # Session
 
+create new session
+```nim
+proc index(this:Controller): Response =
+  let session = sessionStart()
+  echo session.token
+
+>> 9DF6D313AAADCCDE780AB54EAFF2CC49C130B760
+```
+
+create new session with id
+```nim
+proc index(this:Controller): Response =
+  let id = 1
+  let session = sessionStart(id)
+  echo session.token
+
+>> 9DF6D313AAADCCDE780AB54EAFF2CC49C130B760
+```
+
+add value in session
+```nim
+proc index(this:Controller): Response =
+  let session = sessionStart()
+                  .add("login_name", "user1")
+```
+
 # Auth
