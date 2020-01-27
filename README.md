@@ -5,6 +5,7 @@ Basolato Framework
 
 A Fullstack Web Framework for Nim based on Jester
 
+:warning: This is in development :grimacing::sweat_drops:
 
 To references
 
