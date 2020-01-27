@@ -25,13 +25,14 @@ proc genCookie*(name, value: string, expires: DateTime,
             sameSite, secure, httpOnly, domain, path)
 
 proc getCookie*(request:Request, key:string): string =
+  result = ""
   if not request.headers.hasKey("Cookie"):
-    return ""
+    return result
   let cookiesStrArr = request.headers["Cookie"].split(";")
   for row in cookiesStrArr:
     let rowArr = row.split("=")
     if rowArr[0] == key:
-      return rowArr[1]
+      result = rowArr[1]
 
 # proc setCookie*(this:Session, expires: DateTime): string =
 #   genCookie("token", this.token,
@@ -48,6 +49,10 @@ proc updateCookieExpire*(response:Response, request:Request, key:string, days:in
             Lax, false, false, "", "")
   response.header("Set-cookie", c)
 
-proc deleteCookie*(r:Response, key:string): Response =
-  var cookie = genCookie(key, "", daysForward(-1))
-  r.header("Set-cookie", cookie)
+proc deleteCookie*(response:Response, key:string): Response =
+  let cookie = genCookie(key, "", daysForward(-1))
+  response.header("Set-cookie", cookie)
+
+# proc deleteCookies*(response:Response, request: Request): Response =
+#   let cookie = genCookie(key, "", daysForward(-1))
+#   r.header("Set-cookie", cookie)

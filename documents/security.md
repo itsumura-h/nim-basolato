@@ -67,3 +67,37 @@ checkCsrfToken(request Error403, getCurrentMsg())
 # If you want to redirect login page
 checkCsrfToken(request Error302, "/login")
 ```
+
+# Cookie
+
+create new cookie
+```nim
+proc index(this:Controller): Response =
+  let cookie = genCookie("key", "val", daysForward(5))
+  return render("with cookie").setCookie(cookie)
+```
+
+get cookie
+```nim
+proc index(this:Controller): Response =
+  let val = this.request.getCookie("key")
+```
+
+update cookie expire
+```nim
+proc index(this:Controller): Response =
+  return render("with cookie")
+          .updateCookieExpire(this.request, "key", daysForward(5))
+```
+
+delete cookie
+```nim
+proc index(this:Controller): Response =
+  return render("with cookie")
+          .deleteCookie("key")
+```
+
+
+# Session
+
+# Auth
