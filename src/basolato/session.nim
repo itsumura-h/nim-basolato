@@ -32,7 +32,7 @@ proc setCookie*(this:Session, expires: DateTime): string =
             format(expires.utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"),
             Lax, false, false, "", "")
 
-proc sessionStart*(uid:int):Session =
+proc sessionStart*(uid:string):Session =
   randomize()
   let token = rundStr().secureHash()
   # insert db
