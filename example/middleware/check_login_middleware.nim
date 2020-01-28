@@ -1,3 +1,4 @@
+import httpcore
 import ../../src/basolato/middleware
 
 proc hasLoginId*(request: Request):Response =

@@ -8,11 +8,19 @@ import ../../resources/sample/vue
 import ../../resources/sample/react
 import ../../../src/basolato/sample/resources/welcome
 
-proc index*(): Response =
+type SampleController = ref object
+  request: Request
+
+proc newSampleController*(request:Request): SampleController =
+  return SampleController(
+    request: request
+  )
+
+proc index*(this:SampleController): Response =
   return render(html("sample/index.html"))
 
 
-proc welcome*(): Response =
+proc welcome*(this:SampleController): Response =
   let name = "Basolato " & basolatoVersion
   return render(welcomeHtml(name))
 
@@ -22,7 +30,7 @@ proc fib_logic(n: int): int =
     return fib_logic(n - 2) + fib_logic(n - 1)
 
 
-proc fib*(numArg: string): Response =
+proc fib*(this:SampleController, numArg: string): Response =
   let num = numArg.parseInt
   var results: seq[int]
   let start_time = getTime()
@@ -37,7 +45,7 @@ proc fib*(numArg: string): Response =
   return render(data)
 
 
-proc react*(): Response =
+proc react*(this:SampleController): Response =
   let users = %*RDB().table("users")
               .select("users.id", "users.name", "users.email", "auth.auth")
               .join("auth", "auth.id", "=", "users.auth_id")
@@ -45,7 +53,7 @@ proc react*(): Response =
   return render(react_html($users))
 
 
-proc vue*(): Response =
+proc vue*(this:SampleController): Response =
   let users = %*RDB().table("users")
               .select("users.id", "users.name", "users.email", "auth.auth")
               .join("auth", "auth.id", "=", "users.auth_id")
@@ -61,7 +69,7 @@ proc vue*(): Response =
   return render(vue_html($header, $users))
 
 
-proc customHeaders*(): Response =
+proc customHeaders*(this:SampleController): Response =
   return render("with header")
           .header("Controller-Header-Key1", "Controller-Header-Val1")
           .header("Controller-Header-Key2", ["val1", "val2", "val3"])
