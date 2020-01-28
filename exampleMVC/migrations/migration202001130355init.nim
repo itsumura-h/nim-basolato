@@ -3,7 +3,6 @@ import bcrypt
 import allographer/schema_builder
 import allographer/query_builder
 
-const SALT = $(getEnv("SALT"))
 
 proc migration202001130355init*() =
   schema([
@@ -24,13 +23,14 @@ proc migration202001130355init*() =
   ])
 
   var users: seq[JsonNode]
+  let salt = genSalt(10)
   for i in 1..20:
     let password = &"Password{i}"
     users.add(
       %*{
         "name": &"user{i}",
         "email": &"user{i}@gmail.com",
-        "password": password.hash(SALT)
+        "password": password.hash(salt)
       }
     )
   RDB().table("users").insert(users)

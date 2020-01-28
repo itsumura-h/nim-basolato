@@ -14,5 +14,5 @@ $for post in posts {
 }
 """
 
-proc indexHtml*(login:Login, posts:seq[JsonNode]): string =
-  baseHtml(login, indexHtmlImpl(posts))
+proc indexHtml*(auth:Auth, posts:seq[JsonNode]): string =
+  baseHtml(auth, indexHtmlImpl(posts))

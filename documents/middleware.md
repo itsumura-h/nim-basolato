@@ -28,10 +28,8 @@ proc hasLoginToken*(request: Request):Response =
 main.nim
 ```nim
 import basolato/routing
-import basolato/middleware
 
 from middleware/middlewares import loginCheck, someMiddleware
-import app/controllers/SomeController
 
 router api:
   get "/api1":

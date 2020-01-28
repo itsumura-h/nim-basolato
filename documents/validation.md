@@ -10,12 +10,12 @@ Controller
 ```nim
 type SignUpController = ref object
   request:Request
-  login: Login
+  auth: Auth
 
 proc newSignUpController*(request:Request): SignUpController =
   return SignUpController(
     request: request,
-    login: initLogin(request)
+    auth: initAuth(request)
   )
 
 proc store*(this:SignUpController): Response =
@@ -29,14 +29,14 @@ proc store*(this:SignUpController): Response =
             .unique("email", "users", "email")
             .password("password")
   if v.errors.len > 0:
-    return render(createHtml(this.login, name, email, v.errors))
+    return render(createHtml(this.auth, name, email, v.errors))
 ```
 
 View
 ```html
-proc createHtmlImpl(login:Login, name:string, email:string, errors:JsonNode): string = tmpli html"""
+proc createHtmlImpl(auth:Auth, name:string, email:string, errors:JsonNode): string = tmpli html"""
   <form method="post">
-    $(csrfToken(login))
+    $(csrfToken(auth))
     <div>
       <p>name</p>
       $if errors.hasKey("name") {

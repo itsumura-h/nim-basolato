@@ -5,6 +5,7 @@ Basolato Framework
 
 A Fullstack Web Framework for Nim based on Jester
 
+:warning: This is in development :grimacing::sweat_drops:
 
 To references
 
@@ -61,8 +62,6 @@ project directory will be created!
 │   └── migration0001.nim
 ├── public
 └── resources
-    └── framework
-        └── error.nim
 ```
 
 You can specify project direcotry name
@@ -83,3 +82,4 @@ ducere new project_name
 - [View](./documents/view.md)
 - [Error](./documents/error.md)
 - [Validation](./documents/validation.md)
+- [Security(CsrfToken, Cookie, Session, Auth)](./documents/security.md)

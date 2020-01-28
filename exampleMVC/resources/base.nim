@@ -9,7 +9,7 @@ proc header(): string = """
 <link rel="stylesheet" href="/css/blog.css">
 """
 
-proc baseHtml*(login:Login, content:string): string =
+proc baseHtml*(auth:Auth, content:string): string =
   tmpli html("""
 <html>
   <head>
@@ -18,8 +18,8 @@ proc baseHtml*(login:Login, content:string): string =
   <body>
     <div class="page-header">
       <div class="flex">
-        $if login.isLogin {
-          <p class="top-menu">Login: $(login.info["login_name"])</p>
+        $if auth.isLogin {
+          <p class="top-menu">Login: $(auth.info["login_name"])</p>
           <a href="/logout" class="top-menu"><span class="glyphicon glyphicon-log-out"></span></a>
           <a href="/posts/create" class="top-menu right"><span class="glyphicon glyphicon-plus"></span></a>
         }
