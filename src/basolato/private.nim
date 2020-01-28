@@ -119,7 +119,6 @@ template route*(rArg:Response,
       logger($r.status & &"  {request.ip}  {request.reqMethod}  {request.path}")
       logger($newHeaders)
     elif r.status.is4xx() or r.status.is5xx():
-      echoErrorMsg($request.params)
       echoErrorMsg($r.status & &"  {request.ip}  {request.reqMethod}  {request.path}")
       echoErrorMsg($newHeaders)
     resp r.status, newHeaders, r.bodyString
@@ -260,13 +259,13 @@ proc header*(r:Response, key:string, valuesArg:openArray[string]):Response =
   return response
 
 # load html
-proc html*(r_path:string):string =
-  ## arg r_path is relative path from /resources/
-  block:
-    let path = getCurrentDir() & "/resources/" & r_path
-    let f = open(path, fmRead)
-    result = $(f.readAll)
-    defer: f.close()
+# proc html*(r_path:string):string =
+#   ## arg r_path is relative path from /resources/
+#   block:
+#     let path = getCurrentDir() & "/resources/" & r_path
+#     let f = open(path, fmRead)
+#     result = $(f.readAll)
+#     defer: f.close()
 
 # ==================== view ===================================================
 

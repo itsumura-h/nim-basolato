@@ -7,17 +7,13 @@ import ../models/users
 # view
 import ../../resources/sign_up/create
 
-type SignUpController = ref object
-  request:Request
-  auth: Auth
+type SignUpController = ref object of Controller
   user:User
 
 proc newSignUpController*(request:Request): SignUpController =
-  return SignUpController(
-    request: request,
-    auth: initAuth(request),
-    user: newUser()
-  )
+  var instance = SignUpController.newController(request)
+  instance.user = newUser()
+  return instance
 
 
 proc create*(this:SignUpController): Response =
