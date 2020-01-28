@@ -9,6 +9,7 @@ type
     isLogin*: bool
     token*: string
     uid*: string
+    session_id*: string
     info*: Table[string, string]
 
 
@@ -100,6 +101,11 @@ proc initAuth*(request:Request): Auth =
     uid: $session["uid"].getInt,
     info: info,
   )
+
+proc login(uid:string): Auth =
+  let session = sessionStart(uid)
+
+
 
 proc destroy*(this:Auth) =
   var db = initFlatDb()
