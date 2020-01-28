@@ -39,15 +39,15 @@ proc getCookie*(request:Request, key:string): string =
 #             format(expires.utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"),
 #             Lax, false, false, "", "")
 
-proc setCookie*(response:Response, cookie:string): Response =
+proc setCookie*(r:Response, c:string): Response =
   ## maybe c would be token
-  response.header("Set-cookie", cookie)
+  r.header("Set-cookie", c)
 
 proc updateCookieExpire*(response:Response, request:Request, key:string, days:int): Response =
-  let cookie = genCookie(key, request.getCookie(key),
+  let c = genCookie(key, request.getCookie(key),
             format(daysForward(days).utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"),
             Lax, false, false, "", "")
-  response.header("Set-cookie", cookie)
+  response.header("Set-cookie", c)
 
 proc deleteCookie*(response:Response, key:string): Response =
   let cookie = genCookie(key, "", daysForward(-1))
