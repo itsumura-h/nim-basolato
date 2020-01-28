@@ -11,18 +11,14 @@ import ../../resources/posts/create
 import ../../resources/posts/edit
 
 # DI
-type PostsController* = ref object
-  request*: Request
-  auth*: Auth
+type PostsController* = ref object of Controller
   post: Post
 
 # constructor
 proc newPostsController*(request:Request): PostsController =
-  return PostsController(
-    request: request,
-    auth: initAuth(request),
-    post: newPost()
-  )
+  var instance = PostsController.newController(request)
+  instance.post = newPost()
+  return instance
 
 
 proc index*(this:PostsController): Response =
