@@ -12,17 +12,14 @@ import ../models/users
 import ../../resources/login/create
 
 
-type LoginController = ref object
-  request: Request
-  auth: Auth
+type LoginController = ref object of Controller
   user: User
 
 proc newLoginController*(request:Request): LoginController =
-  return LoginController(
-    request: request,
-    auth: initAuth(request),
-    user: newUser()
-  )
+  var instance = LoginController.newController(request)
+  instance.user = newUser()
+  return instance
+
 
 proc create*(this: LoginController): Response =
   return render(createHtml(this.auth))

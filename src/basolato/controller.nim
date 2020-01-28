@@ -7,6 +7,16 @@ export jester except redirect, setCookie
 export base, cookie, session, auth
 export render, redirect, errorRedirect, header
 
+type Controller* = ref object of RootObj
+  request*:Request
+  auth*:Auth
+
+proc newController*(this:typedesc, request:Request): this.type =
+  return this.type(
+    request:request,
+    auth: initAuth(request)
+  )
+
 proc html*(r_path:string):string =
   ## arg r_path is relative path from /resources/
   block:

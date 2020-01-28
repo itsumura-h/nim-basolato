@@ -8,13 +8,11 @@ import ../../resources/sample/vue
 import ../../resources/sample/react
 import ../../../src/basolato/sample/resources/welcome
 
-type SampleController = ref object
-  request: Request
+type SampleController = ref object of Controller
 
 proc newSampleController*(request:Request): SampleController =
-  return SampleController(
-    request: request
-  )
+  return SampleController.newController(request)
+
 
 proc index*(this:SampleController): Response =
   return render(html("sample/index.html"))
@@ -24,11 +22,11 @@ proc welcome*(this:SampleController): Response =
   let name = "Basolato " & basolatoVersion
   return render(welcomeHtml(name))
 
+
 proc fib_logic(n: int): int =
     if n < 2:
       return n
     return fib_logic(n - 2) + fib_logic(n - 1)
-
 
 proc fib*(this:SampleController, numArg: string): Response =
   let num = numArg.parseInt
