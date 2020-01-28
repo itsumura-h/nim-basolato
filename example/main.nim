@@ -12,18 +12,18 @@ import app/controllers/sample_controller
 
 router sample:
   get "/welcome":
-    route(sample_controller.welcome())
+    route(newSampleController(request).welcome())
   get "/checkLogin":
     middleware([isLogin(request)])
-    route(sample_controller.index(), [corsHeader()])
+    route(newSampleController(request).index(), [corsHeader()])
   get "/fib/@num":
-    route(sample_controller.fib(@"num"), [corsHeader()])
+    route(newSampleController(request).fib(@"num"), [corsHeader()])
   get "/react":
-    route(sample_controller.react())
+    route(newSampleController(request).react())
   get "/vue":
-    route(sample_controller.vue())
+    route(newSampleController(request).vue())
   get "/custom_headers":
-    route(sample_controller.customHeaders(), [secureHeader(), corsHeader(), customHeader()])
+    route(newSampleController(request).customHeaders(), [secureHeader(), corsHeader(), customHeader()])
 
 
 router api:
@@ -35,17 +35,13 @@ router api:
 # =============================================================================
 routes:
   # Framework
-  error Http404:
-    http404Route
-  error Exception:
-    exceptionRoute
-  before:
-    framework
-
+  error Http404: http404Route
+  error Exception: exceptionRoute
+  before: framework
 
   # Toppage
   get "/":
-    route(sample_controller.index())
+    route(newSampleController(request).index())
 
   # Sample
   extend sample, "/sample"
