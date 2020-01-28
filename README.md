@@ -82,4 +82,4 @@ ducere new project_name
 - [View](./documents/view.md)
 - [Error](./documents/error.md)
 - [Validation](./documents/validation.md)
-- [Security](./documents/security.md)
+- [Security(CsrfToken, Cookie, Session, Auth)](./documents/security.md)

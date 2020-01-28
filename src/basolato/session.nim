@@ -9,13 +9,7 @@ import base
 import private
 import cookie
 
-type
-  # Auth* = ref object
-  #   isLogin*: bool
-  #   token*: string
-  #   uid*: string
-  #   info*: Table[string, string]
-  
+type  
   Session* = ref object
     token*: string
     cookie*: tuple[key, value:string]
