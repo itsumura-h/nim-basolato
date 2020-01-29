@@ -8,6 +8,8 @@ const
   SESSION_TIME* = getEnv("SESSION_TIME").string.parseInt
 
 type
+  Headers* = seq[tuple[key, value:string]]
+
   Response* = ref object
     status*:HttpCode
     body*: string

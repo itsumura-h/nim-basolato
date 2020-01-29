@@ -66,7 +66,7 @@ template route*(rArg: Response) =
 
 # TODO after pull request mergeed https://github.com/dom96/jester/pull/234
 # proc joinHeader(headers:openArray[seq[tuple]]): seq[tuple[key,val:string]] =
-proc joinHeader(headers:openArray[seq[tuple]]): seq[tuple[key,value:string]] =
+proc joinHeader(headers:openArray[Headers]): Headers =
   ## join seq and children tuple if each headers have same key in child tuple
   ##
   ## .. code-block:: nim
@@ -81,56 +81,58 @@ proc joinHeader(headers:openArray[seq[tuple]]): seq[tuple[key,value:string]] =
   ##      ("key3", "val3"),
   ##    ]
   ##
-  var tmp:seq[tuple[key,value:string]]
-  var tmp_tbl = tmp.toOrderedTable
+  var newHeader: Headers
+  var tmp = result.toTable
   for header in headers:
-    let header_tbl = header.toOrderedTable
-    for key, value in header_tbl.pairs:
-      if tmp_tbl.hasKey(key):
-        tmp_tbl[key] = [tmp_tbl[key], header_tbl[key]].join(", ")
+    let headerTable = header.toOrderedTable
+    for key, value in headerTable.pairs:
+      if tmp.hasKey(key):
+        tmp[key] = [tmp[key], headerTable[key]].join(", ")
       else:
-        tmp_tbl[key] = header_tbl[key]
-  var result: seq[tuple[key,value:string]]
-  for key, val in tmp_tbl.pairs:
-    result.add((key:key, value:val))
-  return result
+        tmp[key] = headerTable[key]
+  for key, val in tmp.pairs:
+    newHeader.add(
+      (key:key, value:val)
+    )
+  return newHeader
 
 
-template route*(rArg:Response,
-                headers:openArray[seq[tuple]]) =
+template route*(respinseArg:Response,
+                headersArg:openArray[Headers]) =
   block:
-    let r = rArg
+    let response = respinseArg
+    var headersMiddleware = @headersArg
+    var newHeaders: Headers
+    headersMiddleware.add(response.headers) # headerMiddleware + headerController
     # TODO after pull request mergeed https://github.com/dom96/jester/pull/234
     # var newHeaders: seq[tuple[key,val:string]]
-    var newHeaders: seq[tuple[key,value:string]]
-    # headers += r.headers
-    newHeaders = joinHeader(headers)
-    case r.responseType:
+    newHeaders = joinHeader(headersMiddleware)
+    case response.responseType:
     of String:
       newHeaders.add(("Content-Type", "text/html;charset=utf-8"))
     of Json:
       newHeaders.add(("Content-Type", "application/json"))
-      r.bodyString = $(r.bodyJson)
+      response.bodyString = $(response.bodyJson)
     of Redirect:
-      logger($r.status & &"  {request.ip}  {request.reqMethod}  {request.path}")
-      newHeaders.add(("Location", r.url))
-      resp r.status, newHeaders, ""
+      logger($response.status & &"  {request.ip}  {request.reqMethod}  {request.path}")
+      newHeaders.add(("Location", response.url))
+      resp response.status, newHeaders, ""
 
-    if r.status == Http200:
-      logger($r.status & &"  {request.ip}  {request.reqMethod}  {request.path}")
+    if response.status == Http200:
+      logger($response.status & &"  {request.ip}  {request.reqMethod}  {request.path}")
       logger($newHeaders)
-    elif r.status.is4xx() or r.status.is5xx():
-      echoErrorMsg($r.status & &"  {request.ip}  {request.reqMethod}  {request.path}")
+    elif response.status.is4xx() or response.status.is5xx():
+      echoErrorMsg($response.status & &"  {request.ip}  {request.reqMethod}  {request.path}")
       echoErrorMsg($newHeaders)
-    resp r.status, newHeaders, r.bodyString
+    resp response.status, newHeaders, response.bodyString
 
 
 proc response*(arg:ResponseData):Response =
   if not arg[4]: raise newException(Error404, "")
   # ↓ TODO DELETE after pull request mergeed https://github.com/dom96/jester/pull/234
-  var newHeader:seq[tuple[key, value:string]]
+  var newHeader:Headers
   for header in arg[2].get(@[("", "")]):
-    newHeader.add((key:header.key , value:header.val))
+    newHeader.add((header.key , header.val))
   # ↑
   return Response(
     status: arg[1],
@@ -241,15 +243,11 @@ proc errorRedirect*(url:string): Response =
 
 # with header
 proc header*(response:Response, key:string, value:string):Response =
-  echo "====== header"
   block:
     var response = response
     var index = 0
     var preValue = ""
     for i, row in response.headers:
-      echo "====="
-      echo row.key
-      echo key
       if row.key == key:
         index = i
         preValue = row.value
@@ -260,8 +258,7 @@ proc header*(response:Response, key:string, value:string):Response =
         (key, value)
       )
     else:
-      response.headers[index] = (key, preValue & "; " & value)
-    echo response.headers
+      response.headers[index] = (key, preValue & ", " & value)
     return response
 
 proc header*(response:Response, key:string, valuesArg:openArray[string]):Response =
