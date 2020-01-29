@@ -28,7 +28,7 @@ proc rundStr*():string =
     add(result, char(rand(int('A')..int('z'))))
 
 proc setCookie*(this:Session, expires: DateTime): string =
-  genCookie("token", this.token,
+  newCookie("token", this.token,
             format(expires.utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"),
             Lax, false, false, "", "")
 

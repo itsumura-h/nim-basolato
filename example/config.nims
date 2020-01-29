@@ -18,5 +18,5 @@ putEnv("LOG_DIR", "/home/www/example/logs")
 
 # Session timeout
 putEnv("SESSION_TIME", "3600") # secounds
-putEnv("SESSION_DB", "/home/www/exampleMVC/session.db")
+putEnv("SESSION_DB", "/home/www/example/session.db")
 putEnv("IS_SESSION_MEMORY", "false")

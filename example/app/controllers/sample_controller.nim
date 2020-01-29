@@ -7,6 +7,7 @@ import allographer/query_builder
 import ../../resources/sample/vue
 import ../../resources/sample/react
 import ../../../src/basolato/sample/resources/welcome
+import ../../resources/sample/cookie
 
 type SampleController = ref object of Controller
 
@@ -24,9 +25,9 @@ proc welcome*(this:SampleController): Response =
 
 
 proc fib_logic(n: int): int =
-    if n < 2:
-      return n
-    return fib_logic(n - 2) + fib_logic(n - 1)
+  if n < 2:
+    return n
+  return fib_logic(n - 2) + fib_logic(n - 1)
 
 proc fib*(this:SampleController, numArg: string): Response =
   let num = numArg.parseInt
@@ -71,3 +72,15 @@ proc customHeaders*(this:SampleController): Response =
   return render("with header")
           .header("Controller-Header-Key1", "Controller-Header-Val1")
           .header("Controller-Header-Key2", ["val1", "val2", "val3"])
+
+proc indexCookie*(this:SampleController): Response =
+  return render(cookieHtml(this.auth))
+
+proc storeCookie*(this:SampleController): Response =
+  let key = this.request.params["key"]
+  let value = this.request.params["value"]
+  let cookie = newCookie(key, value)
+  return render(cookieHtml(this.auth)).setCookie(cookie)
+
+proc destroyCookie*(this:SampleController): Response =
+  return redirect("/sample/cookie").deleteCookies(this.request)

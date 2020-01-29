@@ -4,7 +4,7 @@ import jester/private/utils
 # framework
 import base, private
 
-proc genCookie*(name, value: string, expires="",
+proc newCookie*(name, value: string, expires="",
                     sameSite: SameSite=Lax, secure = false,
                     httpOnly = false, domain = "", path = ""): string =
   ## Creates a cookie which stores ``value`` under ``name``.
@@ -16,11 +16,11 @@ proc genCookie*(name, value: string, expires="",
   ## https://caniuse.com/#feat=same-site-cookie-attribute
   return makeCookie(name, value, expires, domain, path, secure, httpOnly, sameSite)
 
-proc genCookie*(name, value: string, expires: DateTime,
+proc newCookie*(name, value: string, expires: DateTime,
                     sameSite: SameSite=Lax, secure = false,
                     httpOnly = false, domain = "", path = ""): string =
   ## Creates a cookie which stores ``value`` under ``name``.
-  genCookie(name, value,
+  newCookie(name, value,
             format(expires.utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"),
             sameSite, secure, httpOnly, domain, path)
 
@@ -44,15 +44,20 @@ proc setCookie*(r:Response, c:string): Response =
   r.header("Set-cookie", c)
 
 proc updateCookieExpire*(response:Response, request:Request, key:string, days:int): Response =
-  let c = genCookie(key, request.getCookie(key),
+  let c = newCookie(key, request.getCookie(key),
             format(daysForward(days).utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"),
             Lax, false, false, "", "")
   response.header("Set-cookie", c)
 
 proc deleteCookie*(response:Response, key:string): Response =
-  let cookie = genCookie(key, "", daysForward(-1))
+  let cookie = newCookie(key, "", daysForward(-1))
   response.header("Set-cookie", cookie)
 
-# proc deleteCookies*(response:Response, request: Request): Response =
-#   let cookie = genCookie(key, "", daysForward(-1))
-#   r.header("Set-cookie", cookie)
+proc deleteCookies*(response:Response, request:Request): Response =
+  let cookiesStrArr = request.headers["Cookie"].split(";")
+  for row in cookiesStrArr:
+    let rowArr = row.split("=")
+    let cookie = newCookie(strip(rowArr[0]), "", daysForward(-1))
+    response.headers.add(("Set-cookie", cookie))
+  echo response.headers
+  return response
