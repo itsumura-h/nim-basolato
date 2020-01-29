@@ -53,11 +53,8 @@ proc deleteCookie*(response:Response, key:string): Response =
   let cookie = newCookie(key, "", daysForward(-1))
   response.header("Set-cookie", cookie)
 
-proc deleteCookies*(response:Response, request:Request): Response =
-  let cookiesStrArr = request.headers["Cookie"].split(";")
-  for row in cookiesStrArr:
-    let rowArr = row.split("=")
-    let cookie = newCookie(strip(rowArr[0]), "", daysForward(-1))
-    response.headers.add(("Set-cookie", cookie))
+proc deleteCookies*(response:Response, request:Request, key:string): Response =
+  let cookie = newCookie(key, "", daysForward(-1))
+  response.headers.add(("Set-cookie", cookie))
   echo response.headers
   return response
