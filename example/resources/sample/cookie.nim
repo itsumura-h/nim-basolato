@@ -7,6 +7,7 @@ proc cookieHtml*(auth:Auth): string = tmpli html("""
   <button type="submit">送信</button>
 </form>
 <form method="post" action="/sample/cookie/delete">
+  <input type="text" name="key">
   <button type="submit">削除</button>
 </form>
 <div id="display"></div>

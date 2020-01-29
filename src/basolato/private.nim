@@ -103,6 +103,7 @@ template route*(rArg:Response,
     # TODO after pull request mergeed https://github.com/dom96/jester/pull/234
     # var newHeaders: seq[tuple[key,val:string]]
     var newHeaders: seq[tuple[key,value:string]]
+    # headers += r.headers
     newHeaders = joinHeader(headers)
     case r.responseType:
     of String:
@@ -239,24 +240,42 @@ proc errorRedirect*(url:string): Response =
   
 
 # with header
-proc header*(r:Response, key:string, value:string):Response =
-  var response = r
-  response.headers.add(
-    (key, value)
-  )
-  return response
+proc header*(response:Response, key:string, value:string):Response =
+  echo "====== header"
+  block:
+    var response = response
+    var index = 0
+    var preValue = ""
+    for i, row in response.headers:
+      echo "====="
+      echo row.key
+      echo key
+      if row.key == key:
+        index = i
+        preValue = row.value
+        break
 
-proc header*(r:Response, key:string, valuesArg:openArray[string]):Response =
-  var response = r
-  
-  var value = ""
-  for i, v in valuesArg:
-    if i > 0:
-      value.add(", ")
-    value.add(v)
+    if preValue.len == 0:
+      response.headers.add(
+        (key, value)
+      )
+    else:
+      response.headers[index] = (key, preValue & "; " & value)
+    echo response.headers
+    return response
 
-  response.headers.add((key, value))
-  return response
+proc header*(response:Response, key:string, valuesArg:openArray[string]):Response =
+  block:
+    var response = response
+    
+    var value = ""
+    for i, v in valuesArg:
+      if i > 0:
+        value.add(", ")
+      value.add(v)
+
+    response.headers.add((key, value))
+    return response
 
 # load html
 # proc html*(r_path:string):string =
