@@ -13,6 +13,25 @@ type
     info*: Table[string, string]
 
 
+proc csrfToken*(auth:Auth):string =
+  # insert db
+  if auth.isLogin:
+    var db = initFlatDb()
+    discard db.load()
+    let session = db.queryOne(equal("token", auth.token))
+    session["created_at"] = %($(getTime().toUnix()))
+    return &"""<input type="hidden" name="_token" value="{auth.token}">"""
+  else:
+    randomize()
+    let token = rundStr().secureHash()
+    var db = initFlatDb()
+    discard db.load()
+    db.append(%*{
+      "token": $token, "created_at": $(getTime().toUnix())
+    })
+    return &"""<input type="hidden" name="_token" value="{token}">"""
+
+
 proc checkCsrfToken*(request:Request, excTyp=Exception, msg="") =
   if request.reqMethod == HttpPost or
         request.reqMethod == HttpPut or
@@ -67,23 +86,7 @@ proc checkCookieToken*(request:Request) =
       session["created_at"] = %($(getTime().toUnix()))
       db.flush()
 
-proc csrfToken*(auth:Auth):string =
-  # insert db
-  if auth.isLogin:
-    var db = initFlatDb()
-    discard db.load()
-    let session = db.queryOne(equal("token", auth.token))
-    session["created_at"] = %($(getTime().toUnix()))
-    return &"""<input type="hidden" name="_token" value="{auth.token}">"""
-  else:
-    randomize()
-    let token = rundStr().secureHash()
-    var db = initFlatDb()
-    discard db.load()
-    db.append(%*{
-      "token": $token, "created_at": $(getTime().toUnix())
-    })
-    return &"""<input type="hidden" name="_token" value="{token}">"""
+
 
 proc initAuth*(request:Request): Auth =
   let token = request.getCookie("token")

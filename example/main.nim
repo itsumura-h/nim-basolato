@@ -22,8 +22,15 @@ router sample:
     route(newSampleController(request).react())
   get "/vue":
     route(newSampleController(request).vue())
-  get "/custom_headers":
+  get "/custom-headers":
     route(newSampleController(request).customHeaders(), [secureHeader(), corsHeader(), customHeader()])
+  get "/cookie":
+    route(newSampleController(request).indexCookie())
+  post "/cookie":
+    route(newSampleController(request).storeCookie())
+  post "/cookie/delete":
+    route(newSampleController(request).destroyCookie())
+
 
 
 router api:
