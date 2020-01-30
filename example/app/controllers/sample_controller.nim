@@ -83,7 +83,25 @@ proc storeCookie*(this:SampleController): Response =
   let cookie = newCookie(key, value)
   return render(cookieHtml(this.auth)).setCookie(cookie)
 
+<<<<<<< HEAD
 proc destroyCookie*(this:SampleController): Response =
   let key = this.request.params["key"]
   return redirect("/sample/cookie")
           .deleteCookies(this.request, key)
+=======
+proc updateCookie*(this:SampleController): Response =
+  let key = this.request.params["key"]
+  let days = this.request.params["days"].parseInt
+  return redirect("/sample/cookie")
+          .updateCookieExpire(this.request, key, days)
+
+proc destroyCookie*(this:SampleController): Response =
+  let key = this.request.params["key"]
+  return redirect("/sample/cookie")
+          .deleteCookie(key)
+
+proc destroyCookies*(this:SampleController): Response =
+  # not work until https://github.com/dom96/jester/pull/237 is mearged and release
+  return redirect("/sample/cookie")
+          .deleteCookies(this.request)
+>>>>>>> 0422fbd4fbb574598107f23aa87245f4397934bb

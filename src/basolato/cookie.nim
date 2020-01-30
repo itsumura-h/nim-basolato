@@ -1,4 +1,4 @@
-import times, strutils
+import times, strutils, tables
 # 3rd party
 import jester/private/utils
 # framework
@@ -6,7 +6,7 @@ import base, private
 
 proc newCookie*(name, value: string, expires="",
                     sameSite: SameSite=Lax, secure = false,
-                    httpOnly = false, domain = "", path = ""): string =
+                    httpOnly = false, domain = "", path = "/"): string =
   ## Creates a cookie which stores ``value`` under ``name``.
   ##
   ## The SameSite argument determines the level of CSRF protection that
@@ -18,7 +18,7 @@ proc newCookie*(name, value: string, expires="",
 
 proc newCookie*(name, value: string, expires: DateTime,
                     sameSite: SameSite=Lax, secure = false,
-                    httpOnly = false, domain = "", path = ""): string =
+                    httpOnly = false, domain = "", path = "/"): string =
   ## Creates a cookie which stores ``value`` under ``name``.
   newCookie(name, value,
             format(expires.utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"),
@@ -28,33 +28,36 @@ proc getCookie*(request:Request, key:string): string =
   result = ""
   if not request.headers.hasKey("Cookie"):
     return result
-  let cookiesStrArr = request.headers["Cookie"].split(";")
+  let cookiesStrArr = request.headers["Cookie"].split("; ")
   for row in cookiesStrArr:
     let rowArr = row.split("=")
     if rowArr[0] == key:
       result = rowArr[1]
 
-# proc setCookie*(this:Session, expires: DateTime): string =
-#   genCookie("token", this.token,
-#             format(expires.utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"),
-#             Lax, false, false, "", "")
+proc setCookie*(response:Response, content:string): Response =
+  ## maybe content would be token
+  # resonse.header("Set-cookie", content)
+  response.headers.add(
+    ("Set-cookie", content)
+  )
+  return response
 
-proc setCookie*(r:Response, c:string): Response =
-  ## maybe c would be token
-  r.header("Set-cookie", c)
 
-proc updateCookieExpire*(response:Response, request:Request, key:string, days:int): Response =
-  let c = newCookie(key, request.getCookie(key),
+proc updateCookieExpire*(response:Response, request:Request, key:string, days:int, path="/"): Response =
+  let content = newCookie(key, request.getCookie(key),
             format(daysForward(days).utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"),
-            Lax, false, false, "", "")
-  response.header("Set-cookie", c)
+            Lax, false, false, "", path)
+  response.header("Set-cookie", content)
 
-proc deleteCookie*(response:Response, key:string): Response =
-  let cookie = newCookie(key, "", daysForward(-1))
+proc deleteCookie*(response:Response, key:string, path="/"): Response =
+  let cookie = newCookie(key, "", daysForward(-1), path=path)
   response.header("Set-cookie", cookie)
 
-proc deleteCookies*(response:Response, request:Request, key:string): Response =
-  let cookie = newCookie(key, "", daysForward(-1))
-  response.headers.add(("Set-cookie", cookie))
-  echo response.headers
-  return response
+proc deleteCookies*(response:Response, request:Request, path="/"): Response =
+  block:
+    var response = response
+    for row in request.headers["Cookie"].split("; "):
+      let rowArr = row.split("=")
+      let cookie = newCookie(rowArr[0], "", daysForward(-1), path=path)
+      response = response.setCookie(cookie)
+    return response
