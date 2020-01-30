@@ -24,12 +24,17 @@ router sample:
     route(newSampleController(request).vue())
   get "/custom-headers":
     route(newSampleController(request).customHeaders(), [secureHeader(), corsHeader(), customHeader()])
+
   get "/cookie":
     route(newSampleController(request).indexCookie())
   post "/cookie":
     route(newSampleController(request).storeCookie())
+  post "/cookie/update":
+    route(newSampleController(request).updateCookie())
   post "/cookie/delete":
     route(newSampleController(request).destroyCookie())
+  post "/cookie/delete-all":
+    route(newSampleController(request).destroyCookies())
 
 
 

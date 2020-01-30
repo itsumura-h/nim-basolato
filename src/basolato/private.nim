@@ -264,13 +264,11 @@ proc header*(response:Response, key:string, value:string):Response =
 proc header*(response:Response, key:string, valuesArg:openArray[string]):Response =
   block:
     var response = response
-    
     var value = ""
     for i, v in valuesArg:
       if i > 0:
         value.add(", ")
       value.add(v)
-
     response.headers.add((key, value))
     return response
 

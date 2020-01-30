@@ -1,5 +1,5 @@
 import json
-import ../../src/basolato/controller
+import ../../../src/basolato/controller
 
 proc root*(request:Request):Response =
   let params = request.params
