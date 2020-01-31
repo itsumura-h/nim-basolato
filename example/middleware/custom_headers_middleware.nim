@@ -4,11 +4,6 @@ import ../../src/basolato/middleware
 import ../../src/basolato/header
 
 proc customHeader*():Headers =
-  var headers: Headers
-  headers.add(("Middleware-Header-Key1", "Middleware-Header-Val1"))
-  headers.add(("Middleware-Header-Key2", ["val1", "val2", "val3"].join(", ")))
-
-proc customHeader*():Headers =
   let arr = [
     ("Middleware-Header-arr-Key1", "Middleware-Header-Val1"),
     ("Middleware-Header-arr-Key2", ["val1", "val2", "val3"].join(", "))

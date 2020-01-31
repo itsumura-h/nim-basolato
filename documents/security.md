@@ -132,7 +132,7 @@ proc deleteCookie*(response:Response, key:string): Response =
 ```nim
 type Session* = ref object
   token*: string
-  cookie*: tuple[key, value:string]
+  cookie*: tuple[key, val:string]
 ```
 
 

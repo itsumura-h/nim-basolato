@@ -24,6 +24,7 @@ router sample:
     route(newSampleController(request).vue())
   get "/custom-headers":
     route(newSampleController(request).customHeaders(), [secureHeader(), corsHeader(), customHeader()])
+
   get "/cookie":
     route(newSampleController(request).indexCookie())
   post "/cookie":
@@ -34,6 +35,9 @@ router sample:
     route(newSampleController(request).destroyCookie())
   post "/cookie/delete-all":
     route(newSampleController(request).destroyCookies())
+
+  get "/session":
+    route(newSampleController(request).indexSession())
 
 
 

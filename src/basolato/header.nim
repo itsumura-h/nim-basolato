@@ -2,7 +2,7 @@ import base, tables, json
 
 # Header: seq[tuple[key, value:string]]
 proc newHeaders*(i:int=0): Headers =
-  return newSeq[tuple[key, value:string]](i)
+  return newSeq[tuple[key, val:string]](i)
 
 
 # tuple => header

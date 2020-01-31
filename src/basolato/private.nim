@@ -64,8 +64,6 @@ template route*(rArg: Response) =
       echoErrorMsg($newHeaders)
     resp r.status, newHeaders, r.bodyString
 
-# TODO after pull request mergeed https://github.com/dom96/jester/pull/234
-# proc joinHeader(headers:openArray[seq[tuple]]): seq[tuple[key,val:string]] =
 proc joinHeader(headers:openArray[Headers]): Headers =
   ## join seq and children tuple if each headers have same key in child tuple
   ##
@@ -92,7 +90,7 @@ proc joinHeader(headers:openArray[Headers]): Headers =
         tmp[key] = headerTable[key]
   for key, val in tmp.pairs:
     newHeader.add(
-      (key:key, value:val)
+      (key:key, val:val)
     )
   return newHeader
 
@@ -104,8 +102,6 @@ template route*(respinseArg:Response,
     var headersMiddleware = @headersArg
     var newHeaders: Headers
     headersMiddleware.add(response.headers) # headerMiddleware + headerController
-    # TODO after pull request mergeed https://github.com/dom96/jester/pull/234
-    # var newHeaders: seq[tuple[key,val:string]]
     newHeaders = joinHeader(headersMiddleware)
     case response.responseType:
     of String:
@@ -130,14 +126,14 @@ template route*(respinseArg:Response,
 proc response*(arg:ResponseData):Response =
   if not arg[4]: raise newException(Error404, "")
   # ↓ TODO DELETE after pull request mergeed https://github.com/dom96/jester/pull/234
-  var newHeader:Headers
-  for header in arg[2].get(@[("", "")]):
-    newHeader.add((header.key , header.val))
+  # var newHeader:Headers
+  # for header in arg[2].get(@[("", "")]):
+  #   newHeader.add((header.key , header.val))
   # ↑
   return Response(
     status: arg[1],
-    headers: newHeader,
-    # headers: arg[2].get, # TODO after pull request mergeed https://github.com/dom96/jester/pull/234
+    # headers: newHeader,
+    headers: arg[2].get, # TODO after pull request mergeed https://github.com/dom96/jester/pull/234
     body: arg[3],
     match: arg[4]
   )
@@ -250,7 +246,7 @@ proc header*(response:Response, key:string, value:string):Response =
     for i, row in response.headers:
       if row.key == key:
         index = i
-        preValue = row.value
+        preValue = row.val
         break
 
     if preValue.len == 0:

@@ -8,7 +8,7 @@ const
   SESSION_TIME* = getEnv("SESSION_TIME").string.parseInt
 
 type
-  Headers* = seq[tuple[key, value:string]]
+  Headers* = seq[tuple[key, val:string]]
 
   Response* = ref object
     status*:HttpCode
@@ -16,8 +16,7 @@ type
     bodyString*: string
     bodyJson*: JsonNode
     responseType*: ResponseType
-    headers*: seq[tuple[key, value:string]]
-    # headers*: seq[tuple[key, val:string]] # TODO after pull request mergeed https://github.com/dom96/jester/pull/234
+    headers*: seq[tuple[key, val:string]]
     url*: string
     match*: bool
 
