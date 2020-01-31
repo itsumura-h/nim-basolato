@@ -75,6 +75,7 @@ proc customHeaders*(this:SampleController): Response =
           .header("Controller-Header-Key1", "Controller-Header-Val2")
           .header("Controller-Header-Key2", ["val1", "val2", "val3"])
 
+# ========== Cookie ==================== 
 proc indexCookie*(this:SampleController): Response =
   return render(cookieHtml(this.auth))
 
@@ -96,9 +97,17 @@ proc destroyCookie*(this:SampleController): Response =
           .deleteCookie(key)
 
 proc destroyCookies*(this:SampleController): Response =
-  # not work until https://github.com/dom96/jester/pull/237 is mearged and release
+  # TODO: not work until https://github.com/dom96/jester/pull/237 is mearged and release
   return redirect("/sample/cookie")
           .deleteCookies(this.request)
 
+# ========== Session ====================
 proc indexSession*(this:SampleController): Response =
   return render(sessionHtml(this.auth))
+
+proc storeSession*(this:SampleController): Response =
+  let key = this.request.params["key"]
+  let value = this.request.params["value"]
+  # let cookie = newCookie(key, value)
+  # return render(cookieHtml(this.auth)).setCookie(cookie)
+  return redirect("/sample/session")

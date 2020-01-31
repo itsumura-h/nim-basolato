@@ -9,7 +9,14 @@ import base
 import private
 import cookie
 
-type  
+type
+  SessionType = enum
+    File
+    Redis
+
+  SessionBb* = ref object
+    conn: FlatDb
+
   Session* = ref object
     token*: string
     cookie*: tuple[key, value:string]
@@ -19,8 +26,41 @@ const
   SESSION_DB = getEnv("SESSION_DB").string
   IS_SESSION_MEMORY = getEnv("IS_SESSION_MEMORY").string.parseBool
 
-proc initFlatDb*(): FlatDb =
-  newFlatDb(SESSION_DB, IS_SESSION_MEMORY)
+# ========= Flat DB ==================
+proc newSessionDb*(): SessionBb =
+  var db = newFlatDb(SESSION_DB, IS_SESSION_MEMORY)
+  discard db.load()
+  return SessionBb(conn: db)
+
+proc get*(this:SessionBb, request:Request, key:string): string =
+  let token = request.getCookie("token")
+  var db = newSessionDb().conn
+  let flat = db.queryOne(equal("token", token))
+  result = ""
+  if flat.hasKey(key):
+    result = flat[key].getStr
+
+proc set*(this:SessionBb, request:Request, key, value:string):SessionBb =
+  let token = request.getCookie("token")
+  var db = newSessionDb().conn
+  let flat = db.queryOne(equal("token", token))
+  flat[key] = %value
+  db.flush()
+  return this
+
+proc delete*(this:SessionBb, request:Request, key:string): SessionBb =
+  let token = request.getCookie("token")
+  var db = newSessionDb().conn
+  let flat = db.queryOne(equal("token", token))
+
+
+proc destroy*()
+
+
+# ========= session DB ==================
+proc newSessionDb(typ=File): Session =
+  return Session()
+
 
 proc rundStr*():string =
   randomize()
@@ -85,7 +125,6 @@ proc removeSession*(token:string) =
 proc getSession*(request:Request, key:string): string =
   let token = request.getCookie("token")
   var db = initFlatDb()
-  discard db.load()
   let session = db.queryOne(equal("token", token))
   result = ""
   if session.hasKey(key):
