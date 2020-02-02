@@ -8,6 +8,7 @@ import ../../resources/sample/vue
 import ../../resources/sample/react
 import ../../../src/basolato/sample/resources/welcome
 import ../../resources/sample/cookie
+import ../../resources/sample/login
 import ../../resources/sample/session
 
 type SampleController = ref object of Controller
@@ -100,6 +101,21 @@ proc destroyCookies*(this:SampleController): Response =
   # TODO: not work until https://github.com/dom96/jester/pull/237 is mearged and release
   return redirect("/sample/cookie")
           .deleteCookies(this.request)
+
+# ========== Login ====================
+proc indexLogin*(this:SampleController): Response =
+ return render(loginHtml())
+
+proc storeLogin*(this:SampleController): Response =
+  let name = this.request.params["name"]
+  let password = this.request.params["password"]
+  let session = newSession().set("name", name)
+  let token = session.db().getToken()
+  let cookie = newCookie("_token", token)
+  return redirect("/sample/login").setCookie(cookie)
+
+proc destroyLogin*(this:SampleController): Response =
+  discard
 
 # ========== Session ====================
 proc indexSession*(this:SampleController): Response =

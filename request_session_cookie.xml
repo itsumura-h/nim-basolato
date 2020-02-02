@@ -37,7 +37,60 @@
 		<type label="SET" quote="" sql="SET" length="1"/>
 		<type label="Bit" quote="" sql="bit" length="0"/>
 	</group>
-</datatypes><table x="10" y="10" name="Controller">
+</datatypes><table x="480" y="30" name="SessionDb">
+<row name="token()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="FlatDB" row="token" />
+<relation table="Redis" row="token" />
+</row>
+<row name="newSessionDb()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="set()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="get()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="delete()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="destroy()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="encript()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="Encrypt" row="loginEncript()" />
+</row>
+<row name="decript()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="Encrypt" row="loginDecript()" />
+</row>
+<key type="PRIMARY" name="">
+<part>token()</part>
+</key>
+</table>
+<table x="780" y="300" name="Encrypt">
+<row name="loginEncript()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="loginDecript()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="csrfEncrypt()" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="csrfDecrypt()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>csrfEncrypt()</part>
+<part>csrfDecrypt()</part>
+<part>loginEncript()</part>
+<part>loginDecript()</part>
+</key>
+</table>
+<table x="10" y="20" name="Controller">
 <row name="Auth" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="Auth" row="id" />
@@ -53,7 +106,80 @@
 <key type="PRIMARY" name="">
 </key>
 </table>
-<table x="190" y="143" name="Cookie">
+<table x="580" y="340" name="Token">
+<row name="getToken()" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="CsrfToken" row="getToken()" />
+</row>
+<row name="newToken()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="Encrypt" row="csrfEncrypt()" />
+</row>
+<row name="toTimestamp()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="Encrypt" row="csrfDecrypt()" />
+</row>
+<key type="PRIMARY" name="">
+<part>getToken()</part>
+</key>
+</table>
+<table x="330" y="30" name="Session">
+<row name="db()" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="SessionDb" row="token()" />
+</row>
+<row name="newSession()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="set()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="get()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="delete()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="destroy()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>db()</part>
+</key>
+</table>
+<table x="190" y="30" name="Auth">
+<row name="id" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="session" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="Session" row="db()" />
+</row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="410" y="380" name="CsrfToken">
+<row name="getToken()" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="newCsrfToken()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="CheckTimeout()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="framework middleware" row="checkCsrfTimeout()" />
+</row>
+<row name="csrfToken()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>getToken()</part>
+<part>csrfToken()</part>
+<part>CheckTimeout()</part>
+</key>
+</table>
+<table x="190" y="130" name="Cookie">
 <row name="key" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -82,7 +208,7 @@
 <part>key</part>
 </key>
 </table>
-<table x="184" y="387" name="Request">
+<table x="30" y="170" name="Request">
 <row name="body" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -129,7 +255,7 @@
 <part>body</part>
 </key>
 </table>
-<table x="656" y="29" name="FlatDB">
+<table x="660" y="30" name="FlatDB">
 <row name="token" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -137,7 +263,7 @@
 <part>token</part>
 </key>
 </table>
-<table x="656" y="108" name="Redis">
+<table x="660" y="110" name="Redis">
 <row name="token" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -145,96 +271,21 @@
 <part>token</part>
 </key>
 </table>
-<table x="497" y="24" name="SessionDb">
-<row name="newSessionDb()" null="1" autoincrement="0">
+<table x="170" y="460" name="View">
+<row name="csrfToken()" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
-<default>NULL</default></row>
-<row name="token()" null="1" autoincrement="0">
-<datatype>INTEGER</datatype>
-<default>NULL</default><relation table="FlatDB" row="token" />
-<relation table="Redis" row="token" />
-<relation table="Session" row="db()" />
-</row>
-<row name="set()" null="1" autoincrement="0">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
-<row name="get()" null="1" autoincrement="0">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
-<row name="delete()" null="1" autoincrement="0">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
-<row name="destroy()" null="1" autoincrement="0">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
-<key type="PRIMARY" name="">
-</key>
-</table>
-<table x="346" y="18" name="Session">
-<row name="newSession()" null="1" autoincrement="0">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
-<row name="db()" null="1" autoincrement="1">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
-<row name="set()" null="1" autoincrement="0">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
-<row name="get()" null="1" autoincrement="0">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
-<row name="delete()" null="1" autoincrement="0">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
-<row name="destroy()" null="1" autoincrement="0">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
-<key type="PRIMARY" name="">
-<part>db()</part>
-</key>
-</table>
-<table x="204" y="16" name="Auth">
-<row name="id" null="1" autoincrement="1">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
-<row name="session" null="1" autoincrement="0">
-<datatype>INTEGER</datatype>
-<default>NULL</default><relation table="Session" row="db()" />
+<default>NULL</default><relation table="CsrfToken" row="csrfToken()" />
 </row>
 <key type="PRIMARY" name="">
-<part>id</part>
+<part>csrfToken()</part>
 </key>
 </table>
-<table x="350" y="224" name="CsrfToken">
-<row name="newCsrfToken()" null="1" autoincrement="0">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
-<row name="getToken()" null="1" autoincrement="1">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
-<row name="csrfToken()" null="1" autoincrement="0">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
-<row name="CheckTimeout()" null="1" autoincrement="0">
+<table x="170" y="380" name="framework middleware">
+<row name="checkCsrfTimeout()" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
 <key type="PRIMARY" name="">
-<part>getToken()</part>
-</key>
-</table>
-<table x="513" y="227" name="Token">
-<row name="netToken()" null="1" autoincrement="0">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
-<row name="getToken()" null="1" autoincrement="1">
-<datatype>INTEGER</datatype>
-<default>NULL</default><relation table="CsrfToken" row="getToken()" />
-</row>
-<row name="toTimestamp()" null="1" autoincrement="0">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
-<key type="PRIMARY" name="">
-<part>getToken()</part>
+<part>checkCsrfTimeout()</part>
 </key>
 </table>
 </sql>

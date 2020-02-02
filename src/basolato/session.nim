@@ -1,13 +1,10 @@
 import
-  httpcore, json, os, random, std/sha1, oids,
-  strformat, strutils, tables, times
-# 3rd party
-import jester/private/utils
+  httpcore, json, os, strutils, tables
 import flatdb
 # framework
 import base
 import private
-import cookie
+import encript
 
 type
   SessionDb = ref object
@@ -22,7 +19,6 @@ type
     db: SessionDb
 
 const
-  SESSION_TIME = getEnv("SESSION_TIME").string.parseInt
   SESSION_DB_FILE = getEnv("SESSION_DB").string
   IS_SESSION_MEMORY = getEnv("IS_SESSION_MEMORY").string.parseBool
 
@@ -36,8 +32,14 @@ proc newSessionDb*(token=""):SessionDb =
     let token = db.append(newJObject())
     return SessionDb(conn: db, token:token)
 
-proc token*(this:SessionDb): string =
-  this.token
+proc encript(token:string):string =
+  loginEncrypt(token)
+
+proc decript(token:string):string =
+  loginDecript(token)
+
+proc getToken*(this:SessionDb): string =
+  this.token.encript()
 
 proc set*(this:SessionDb, key, value:string):SessionDb =
   let db = this.conn

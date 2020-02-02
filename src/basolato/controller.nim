@@ -14,7 +14,7 @@ type Controller* = ref object of RootObj
 proc newController*(this:typedesc, request:Request): this.type =
   return this.type(
     request:request,
-    auth: initAuth(request)
+    # auth: initAuth(request)
   )
 
 proc html*(r_path:string):string =

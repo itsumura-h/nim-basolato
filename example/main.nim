@@ -29,6 +29,10 @@ router sample:
   post "/cookie/delete": route(newSampleController(request).destroyCookie())
   post "/cookie/delete-all": route(newSampleController(request).destroyCookies())
 
+  get "/login": route(newSampleController(request).indexLogin())
+  post "/login": route(newSampleController(request).storeLogin())
+  post "/logout": route(newSampleController(request).destroyLogin())
+
   get "/session": route(newSampleController(request).indexSession())
   post "/session": route(newSampleController(request).storeSession())
   # post "/session/update":
