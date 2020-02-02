@@ -48,7 +48,7 @@
 </row>
 <row name="Session" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
-<default>NULL</default><relation table="Session" row="token" />
+<default>NULL</default><relation table="Session" row="db" />
 </row>
 <row name="Auth" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
@@ -56,7 +56,7 @@
 <key type="PRIMARY" name="">
 </key>
 </table>
-<table x="342" y="65" name="Cookie">
+<table x="355" y="66" name="Cookie">
 <row name="key" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -132,15 +132,39 @@
 <part>body</part>
 </key>
 </table>
-<table x="187" y="115" name="Session">
+<table x="357" y="317" name="FlatDB">
 <row name="token" null="1" autoincrement="1">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
-<row name="cookie" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
 <key type="PRIMARY" name="">
 <part>token</part>
+</key>
+</table>
+<table x="354" y="410" name="Redis">
+<row name="token" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>token</part>
+</key>
+</table>
+<table x="165" y="245" name="SessionDb">
+<row name="conn" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="FlatDB" row="token" />
+<relation table="Redis" row="token" />
+</row>
+<key type="PRIMARY" name="">
+<part>conn</part>
+</key>
+</table>
+<table x="167" y="157" name="Session">
+<row name="db" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="SessionDb" row="conn" />
+</row>
+<key type="PRIMARY" name="">
+<part>db</part>
 </key>
 </table>
 </sql>
