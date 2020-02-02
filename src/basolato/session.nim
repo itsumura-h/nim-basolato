@@ -10,7 +10,7 @@ import private
 import cookie
 
 type
-  SessionDb* = ref object
+  SessionDb = ref object
     conn: FlatDb
     token: string
 
@@ -62,77 +62,23 @@ proc destroy*(this:SessionDb) =
 
 
 # ========= Session ==================
-# proc newSession*(typ=File, token=""):Session =
-#   if typ == File:
-#     return Session(db:newSessionDb(token))
+proc newSession*(token="", typ=File):Session =
+  if typ == File:
+    return Session(db:newSessionDb(token))
 
-# proc db*(this:Session):SessionDb =
-#   this.db
+proc db*(this:Session):SessionDb =
+  this.db
 
-# proc rundStr*():string =
-#   randomize()
-#   for _ in .. 50:
-#     add(result, char(rand(int('A')..int('z'))))
+proc set*(this:Session, key, value:string):Session =
+  discard this.db.set(key, value)
+  return this
 
-# proc setCookie*(this:Session, expires: DateTime): string =
-#   newCookie("token", this.token,
-#             format(expires.utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"),
-#             Lax, false, false, "", "")
+proc get*(this:Session, key:string):string =
+  this.db.get(key)
 
-# proc sessionStart*(uid:string):Session =
-#   randomize()
-#   let token = rundStr().secureHash()
-#   # insert db
-#   var db = newFlatDb()
-#   discard db.load()
-#   db.append(%*{
-#     "token": $token, "created_at": $(getTime().toUnix()), "uid": uid
-#   })
-#   return Session(token: $token)
+proc delete*(this:Session, key:string): Session =
+  discard this.db.delete(key)
+  return this
 
-# proc sessionStart*(): Session =
-#   randomize()
-#   let token = rundStr().secureHash()
-#   var db = newFlatDb()
-#   discard db.load()
-#   db.append(%*{
-#     "token": $token, "created_at": $(getTime().toUnix())
-#   })
-#   return Session(token: $token)
-
-# proc sessionDestroy*(token:string) =
-#   var db = newFlatDb()
-#   discard db.load()
-#   let session = db.queryOne(equal("token", token))
-#   let id = session["_id"].getStr
-#   db.delete(id)
-
-# proc add*(this:Session, key:string, val:string):Session =
-#   var db = newFlatDb()
-#   discard db.load()
-#   let session = db.queryOne(equal("token", this.token))
-#   if isNil(session):
-#     raise newException(Error403, "CSRF verification failed.")
-#   # check timeout
-#   let generatedAt = session["created_at"].getStr.parseInt
-#   if getTime().toUnix() > generatedAt + SESSION_TIME:
-#     raise newException(Error403, "Session Timeout.")
-#   # add
-#   session[key] = %val
-#   db.flush()
-#   return this
-
-# proc removeSession*(token:string) =
-#   var db = newFlatDb()
-#   discard db.load()
-#   let session = db.queryOne(equal("token", token))
-#   let id = session["_id"].getStr
-#   db.delete id
-
-# proc getSession*(request:Request, key:string): string =
-#   let token = request.getCookie("token")
-#   var db = newFlatDb()
-#   let session = db.queryOne(equal("token", token))
-#   result = ""
-#   if session.hasKey(key):
-#     result = session[key].getStr
+proc destroy*(this:Session) =
+  this.db.destroy()

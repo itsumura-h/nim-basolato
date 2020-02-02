@@ -6,7 +6,7 @@
 # To run these tests, simply execute `nimble test`.
 
 import unittest
-import ../src/basolato/session
+include ../src/basolato/session
 
 let sessionDb = newSessionDb()
 
@@ -30,10 +30,12 @@ suite "SessionDb":
     check result == ""
 
   test "destroy":
+    let sessionDb = newSessionDb()
+                      .set("key_sessionDb", "value sessionDb")
     sessionDb.destroy()
     var result = ""
     try:
-      result = sessionDb.get("key1")
+      result = sessionDb.get("key_sessionDb")
     except:
       check result == ""
 
@@ -46,5 +48,35 @@ suite "Session":
   test "newSession token":
     let token = sessionDb.token
     echo token
-    let session = newSession(token=token)
+    let session = newSession(token)
     check session.db.token == token
+
+  test "set":
+    let token = sessionDb.token
+    echo token
+    discard newSession(token)
+              .set("key_session", "value_session")
+
+  test "get":
+    let token = sessionDb.token
+    echo token
+    let result = newSession(token).get("key_session")
+    echo result
+    check result == "value_session"
+
+  test "delete":
+    let token = sessionDb.token
+    let session = newSession(token)
+                   .delete("key_session")
+    check session.get("key_session") == ""
+
+  test "destroy":
+    let token = sessionDb.token
+    let session = newSession(token)
+                    .set("key_session2", "value_session2")
+    session.destroy()
+    var result = ""
+    try:
+      result = session.get("key_session2")
+    except:
+      check result == ""

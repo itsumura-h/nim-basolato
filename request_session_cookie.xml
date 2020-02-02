@@ -38,25 +38,22 @@
 		<type label="Bit" quote="" sql="bit" length="0"/>
 	</group>
 </datatypes><table x="10" y="10" name="Controller">
-<row name="Request" null="1" autoincrement="0">
+<row name="Auth" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
-<default>NULL</default><relation table="Request" row="body" />
+<default>NULL</default><relation table="Auth" row="id" />
 </row>
 <row name="Cookies" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="Cookie" row="key" />
 </row>
-<row name="Session" null="1" autoincrement="0">
+<row name="Request" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
-<default>NULL</default><relation table="Session" row="db" />
+<default>NULL</default><relation table="Request" row="body" />
 </row>
-<row name="Auth" null="1" autoincrement="0">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
 <key type="PRIMARY" name="">
 </key>
 </table>
-<table x="355" y="66" name="Cookie">
+<table x="190" y="143" name="Cookie">
 <row name="key" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -85,7 +82,7 @@
 <part>key</part>
 </key>
 </table>
-<table x="531" y="5" name="Request">
+<table x="184" y="387" name="Request">
 <row name="body" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -132,7 +129,7 @@
 <part>body</part>
 </key>
 </table>
-<table x="357" y="317" name="FlatDB">
+<table x="656" y="29" name="FlatDB">
 <row name="token" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -140,7 +137,7 @@
 <part>token</part>
 </key>
 </table>
-<table x="354" y="410" name="Redis">
+<table x="656" y="108" name="Redis">
 <row name="token" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -148,23 +145,96 @@
 <part>token</part>
 </key>
 </table>
-<table x="165" y="245" name="SessionDb">
-<row name="conn" null="1" autoincrement="1">
+<table x="497" y="24" name="SessionDb">
+<row name="newSessionDb()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="token()" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="FlatDB" row="token" />
 <relation table="Redis" row="token" />
+<relation table="Session" row="db()" />
 </row>
+<row name="set()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="get()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="delete()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="destroy()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
 <key type="PRIMARY" name="">
-<part>conn</part>
 </key>
 </table>
-<table x="167" y="157" name="Session">
-<row name="db" null="1" autoincrement="1">
+<table x="346" y="18" name="Session">
+<row name="newSession()" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
-<default>NULL</default><relation table="SessionDb" row="conn" />
+<default>NULL</default></row>
+<row name="db()" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="set()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="get()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="delete()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="destroy()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>db()</part>
+</key>
+</table>
+<table x="204" y="16" name="Auth">
+<row name="id" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="session" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="Session" row="db()" />
 </row>
 <key type="PRIMARY" name="">
-<part>db</part>
+<part>id</part>
+</key>
+</table>
+<table x="350" y="224" name="CsrfToken">
+<row name="newCsrfToken()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="getToken()" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="csrfToken()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="CheckTimeout()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>getToken()</part>
+</key>
+</table>
+<table x="513" y="227" name="Token">
+<row name="netToken()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="getToken()" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="CsrfToken" row="getToken()" />
+</row>
+<row name="toTimestamp()" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>getToken()</part>
 </key>
 </table>
 </sql>
