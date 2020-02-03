@@ -52,6 +52,9 @@ proc set*(this:Auth, key, value:string):Auth =
     discard this.session.set(key, value)
   return this
 
+proc destroy*(this:Auth) =
+  this.session.destroy()
+
 
 # proc csrfToken*(auth:Auth):string =
 #   # insert db
