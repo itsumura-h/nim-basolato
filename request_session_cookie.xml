@@ -60,21 +60,21 @@
 <default>NULL</default></row>
 <row name="encript()" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
-<default>NULL</default><relation table="Encrypt" row="loginEncript()" />
+<default>NULL</default><relation table="Encrypt" row="sessionIdEncrypt()" />
 </row>
 <row name="decript()" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
-<default>NULL</default><relation table="Encrypt" row="loginDecript()" />
+<default>NULL</default><relation table="Encrypt" row="sessionIdDecript()" />
 </row>
 <key type="PRIMARY" name="">
 <part>token()</part>
 </key>
 </table>
 <table x="780" y="300" name="Encrypt">
-<row name="loginEncript()" null="1" autoincrement="0">
+<row name="sessionIdEncrypt()" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
-<row name="loginDecript()" null="1" autoincrement="0">
+<row name="sessionIdDecript()" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
 <row name="csrfEncrypt()" null="1" autoincrement="1">
@@ -86,8 +86,8 @@
 <key type="PRIMARY" name="">
 <part>csrfEncrypt()</part>
 <part>csrfDecrypt()</part>
-<part>loginEncript()</part>
-<part>loginDecript()</part>
+<part>sessionIdEncrypt()</part>
+<part>sessionIdDecript()</part>
 </key>
 </table>
 <table x="10" y="20" name="Controller">

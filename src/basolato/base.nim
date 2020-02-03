@@ -1,11 +1,15 @@
-import os, json, httpcore, strutils
+import os, json, httpcore, strutils, random
 
 const
   basolatoVersion* = "v0.1.0"
   IS_DISPLAY* = getEnv("LOG_IS_DISPLAY").string.parseBool
   IS_FILE* = getEnv("LOG_IS_FILE").string.parseBool
   LOG_DIR* = getEnv("LOG_DIR").string
+  SECRET_KEY* = getEnv("SECRET_KEY").string
+  CSRF_TIME* = getEnv("CSRF_TIME").string.parseInt
   SESSION_TIME* = getEnv("SESSION_TIME").string.parseInt
+  SESSION_DB_PATH* = getEnv("SESSION_DB_PATH").string
+  IS_SESSION_MEMORY* = getEnv("IS_SESSION_MEMORY").string.parseBool
 
 type
   Headers* = seq[tuple[key, val:string]]
@@ -68,12 +72,3 @@ type
 const errorStatusArray* = [505, 504, 503, 502, 501, 500, 451, 431, 429, 428, 426,
   422, 421, 418, 417, 416, 415, 414, 413, 412, 411, 410, 409, 408, 407, 406,
   405, 404, 403, 401, 400, 307, 305, 304, 303, 302, 301, 300]
-
-# macro createHttpException():untyped =
-#   var strBody = """type
-# """
-#   for num in errorStatusArray:
-#     strBody.add(fmt"""  Error{num}* = object of Exception
-# """)
-#   parseStmt(strBody)
-# createHttpException

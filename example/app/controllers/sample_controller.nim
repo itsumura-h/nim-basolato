@@ -104,14 +104,18 @@ proc destroyCookies*(this:SampleController): Response =
 
 # ========== Login ====================
 proc indexLogin*(this:SampleController): Response =
- return render(loginHtml())
+  # let auth = this.request.newAuth()
+  let auth = this.auth
+  return render(loginHtml(auth))
 
 proc storeLogin*(this:SampleController): Response =
   let name = this.request.params["name"]
   let password = this.request.params["password"]
-  let session = newSession().set("name", name)
-  let token = session.db().getToken()
-  let cookie = newCookie("_token", token)
+  # auth
+  let auth = newAuth()
+  discard auth.set("name", name)
+  let sessionId = auth.getId()
+  let cookie = newCookie("session_id", sessionId)
   return redirect("/sample/login").setCookie(cookie)
 
 proc destroyLogin*(this:SampleController): Response =

@@ -2,24 +2,55 @@ import times, strutils, json, random, strformat, std/sha1
 # 3rd party
 import jester/private/utils
 # framework
-import base, private, session, cookie
+import base, private, session, cookie, encript
 
 type
   Auth* = ref object
-    isLogin*: bool
-    token*: string
-    uid*: string
-    session_id*: string
-    info*: Table[string, string]
+    isLogin*:bool
+    session*:Session
+
+proc checkSessionIdValid*(sessionId:string) =
+  var sessionId = sessionIdDecript(sessionId)
+  echo sessionId
+  echo sessionId.len
+  if sessionId.len != 24:
+    raise newException(Exception, "Invalid session_id")
 
 proc newAuth*(request:Request):Auth =
-  let token = request.getCookie("_token")
-  if token.len > 0:
+  ## use in constructor
+  var sessionId = request.getCookie("session_id")
+  if sessionId.len > 0:
+    sessionId = sessionId.sessionIdDecript()
     return Auth(
       isLogin: true,
-      token: token
+      session:newSession(sessionId)
     )
+  else:
+    return Auth(isLogin:false)
 
+proc newAuth*():Auth =
+  ## use in action method
+  return Auth(
+    isLogin: true,
+    session:newSession()
+  )
+
+proc isLogin*(this:Auth):bool =
+  this.isLogin
+
+proc getId*(this:Auth):string =
+  this.session.getToken()
+
+proc get*(this:Auth, key:string):string =
+  if this.isLogin:
+    return this.session.get(key)
+  else:
+    return ""
+
+proc set*(this:Auth, key, value:string):Auth =
+  if this.isLogin:
+    discard this.session.set(key, value)
+  return this
 
 
 # proc csrfToken*(auth:Auth):string =
@@ -48,11 +79,11 @@ proc newAuth*(request:Request):Auth =
 #         request.reqMethod == HttpDelete:
 #     var msg = msg
 #     # key not found
-#     if not request.params.contains("_token"):
+#     if not request.params.contains("session_id"):
 #       if msg == "": msg = "CSRF verification failed."
 #       raise newException(excTyp, msg)
 #     # check token is valid
-#     let token = request.params["_token"]
+#     let token = request.params["session_id"]
 #     var db = initFlatDb()
 #     discard db.load()
 #     let session = db.queryOne(equal("token", token))

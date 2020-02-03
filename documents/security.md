@@ -215,3 +215,22 @@ proc destroy*(this: Controller): Response =
 # API
 proc destroy*(this:Auth) =
 ```
+
+## dev info
+### Not loged in
+- cookie:
+  - csrftoken: 1 year
+    - 403 CSRF Error
+- input:
+  - csrfmiddlewaretoken
+    - 403 CSRF Error
+
+### logged in
+- cookie:
+  - csrftoken: 1 year. update all access
+    - 403 CSRF Error
+  - sessionid: 2 weeks.
+    - 302 redirect login page
+- input:
+  - csrfmiddlewaretoken
+    - 403 CSRF Error

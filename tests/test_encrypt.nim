@@ -12,5 +12,5 @@ suite "login":
   test "decript":
     var token = "5e36c9483fc935047d8faaf9"
     token = loginEncrypt(token)
-    token = loginDecript(token)
+    token = sessionIdDecript(token)
     check token.len > 0

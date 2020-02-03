@@ -1,6 +1,6 @@
 import os, times, strutils, strformat
 # framework
-import logger, encript
+import base, logger, encript
 
 type
   Token* = ref object
@@ -8,9 +8,6 @@ type
 
   CsrfToken* = ref object
     token:Token
-
-const
-  SESSION_TIME = getEnv("SESSION_TIME").parseInt
 
 
 # ========== Token ====================
@@ -36,10 +33,10 @@ proc getToken*(this:CsrfToken): string =
 
 proc csrfToken*(token=""):string =
   var token = newCsrfToken(token).getToken()
-  return &"""<input type="hidden" name="csrfmiddlewaretoken" value="{token}">"""
+  return &"""<input type="hidden" name="csrf_token" value="{token}">"""
 
 proc checkCsrfTimeout*(this:CsrfToken):bool =
   let timestamp = this.token.toTimestamp()
-  if getTime().toUnix > timestamp + SESSION_TIME:
+  if getTime().toUnix > timestamp + CSRF_TIME * 60:
     raise newException(Exception, "Timeout")
   return true

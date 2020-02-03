@@ -1,4 +1,4 @@
-import os, strformat, strutils, terminal
+import os, strformat, strutils, terminal, random
 
 proc isFileExists*(targetPath:string):bool =
   if existsFile(targetPath):
@@ -23,3 +23,9 @@ proc isTargetContainSlash*(target:string):bool =
     return true
   else:
     return false
+
+proc rundStr*(n:openArray[int]):string =
+  randomize()
+  var n = n.sample()
+  for _ in 1..n:
+    add(result, char(rand(int('0')..int('z'))))

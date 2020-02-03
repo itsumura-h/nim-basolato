@@ -18,13 +18,10 @@ type
   Session* = ref object
     db: SessionDb
 
-const
-  SESSION_DB_FILE = getEnv("SESSION_DB").string
-  IS_SESSION_MEMORY = getEnv("IS_SESSION_MEMORY").string.parseBool
 
 # ========= Flat DB ==================
 proc newSessionDb*(token=""):SessionDb =
-  let db = newFlatDb(SESSION_DB_FILE, IS_SESSION_MEMORY)
+  let db = newFlatDb(SESSION_DB_PATH, IS_SESSION_MEMORY)
   discard db.load()
   if token.len > 0:
     return SessionDb(conn: db, token:token)
@@ -33,10 +30,10 @@ proc newSessionDb*(token=""):SessionDb =
     return SessionDb(conn: db, token:token)
 
 proc encript(token:string):string =
-  loginEncrypt(token)
+  sessionIdEncrypt(token)
 
 proc decript(token:string):string =
-  loginDecript(token)
+  sessionIdDecript(token)
 
 proc getToken*(this:SessionDb): string =
   this.token.encript()
@@ -49,7 +46,7 @@ proc set*(this:SessionDb, key, value:string):SessionDb =
 
 proc get*(this:SessionDb, key:string): string =
   let db = this.conn
-  return db[this.token].getOrDefault(key).getStr()
+  return db[this.token].getOrDefault(key).getStr("")
 
 proc delete*(this:SessionDb, key:string):SessionDb =
   let db = this.conn
@@ -70,6 +67,9 @@ proc newSession*(token="", typ=File):Session =
 
 proc db*(this:Session):SessionDb =
   this.db
+
+proc getToken*(this:Session):string =
+  this.db.getToken()
 
 proc set*(this:Session, key, value:string):Session =
   discard this.db.set(key, value)
