@@ -1,16 +1,19 @@
-import unittest
+import unittest, times
 
-import ../src/basolato/encript
+import ../src/basolato/encrypt
 
-suite "login":
+suite "CFB":
   test "encrypt":
-    var token = "5e36c9483fc935047d8faaf9"
-    token = sessionIdEncrypt(token)
+    let input = $(getTime().toUnix().int()) 
+    let token = encrypt(input)
     echo token
     check token.len > 0
 
-  test "decript":
-    var token = "5e36c9483fc935047d8faaf9"
-    token = sessionIdEncrypt(token)
-    token = sessionIdDecript(token)
-    check token.len > 0
+  test "decrypt":
+    let input = $(getTime().toUnix().int())
+    echo input
+    let hashed = encrypt(input)
+    echo hashed
+    let output = decrypt(hashed)
+    echo output
+    check input == output

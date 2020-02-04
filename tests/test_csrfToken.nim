@@ -54,4 +54,4 @@ suite "csrf token":
     except:
       let msg = getCurrentExceptionMsg()
       echo msg
-      check msg == "Incorrect hex string len"
+      check msg == "Invalid csrf token"

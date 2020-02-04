@@ -4,7 +4,7 @@ import flatdb
 # framework
 import base
 import private
-import encript
+import encrypt
 
 type
   SessionDb = ref object
@@ -29,14 +29,8 @@ proc newSessionDb*(token=""):SessionDb =
     let token = db.append(newJObject())
     return SessionDb(conn: db, token:token)
 
-proc encript(token:string):string =
-  sessionIdEncrypt(token)
-
-proc decript(token:string):string =
-  sessionIdDecript(token)
-
 proc getToken*(this:SessionDb): string =
-  this.token.encript()
+  this.token.encrypt()
 
 proc set*(this:SessionDb, key, value:string):SessionDb =
   let db = this.conn

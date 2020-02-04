@@ -1,6 +1,6 @@
-import os, times, strutils, strformat
+import times, strutils, strformat
 # framework
-import base, logger, encript
+import base, encrypt
 
 type
   Token* = ref object
@@ -14,15 +14,15 @@ type
 proc newToken*(token:string):Token =
   if token.len > 0:
     return Token(token:token)
-  let token = csrfEncript()
+  var token = $(getTime().toUnix().int())
+  token = token.encrypt()
   return Token(token:token)
 
 proc getToken*(this:Token):string =
   return this.token
 
 proc toTimestamp*(this:Token): int =
-  let timestamp16 = this.getToken().csrfDecript()
-  return timestamp16.parseInt
+  return this.getToken().decrypt().parseInt()
 
 # ========== CsrfToken ====================
 proc newCsrfToken*(token:string):CsrfToken =
@@ -36,7 +36,12 @@ proc csrfToken*(token=""):string =
   return &"""<input type="hidden" name="csrf_token" value="{token}">"""
 
 proc checkCsrfTimeout*(this:CsrfToken):bool =
-  let timestamp = this.token.toTimestamp()
+  var timestamp:int
+  try:
+    timestamp = this.token.toTimestamp()
+  except:
+    raise newException(Exception, "Invalid csrf token")
+
   if getTime().toUnix > timestamp + CSRF_TIME * 60:
     raise newException(Exception, "Timeout")
   return true

@@ -1,5 +1,5 @@
 # framework
-import base, private, session, cookie, encript
+import base, private, session, cookie, encrypt
 
 type
   Auth* = ref object
@@ -7,9 +7,8 @@ type
     session*:Session
 
 proc checkSessionIdValid*(sessionId:string) =
-  var sessionId = sessionIdDecript(sessionId)
-  echo sessionId
-  echo sessionId.len
+  # var sessionId = sessionIdDecript(sessionId)
+  var sessionId = sessionId.decrypt()
   if sessionId.len != 24:
     raise newException(Exception, "Invalid session_id")
 
@@ -17,7 +16,8 @@ proc newAuth*(request:Request):Auth =
   ## use in constructor
   var sessionId = request.getCookie("session_id")
   if sessionId.len > 0:
-    sessionId = sessionId.sessionIdDecript()
+    # sessionId = sessionId.sessionIdDecript()
+    sessionId = sessionId.decrypt()
     return Auth(
       isLogin: true,
       session:newSession(sessionId)
