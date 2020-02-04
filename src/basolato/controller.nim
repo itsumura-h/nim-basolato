@@ -1,4 +1,4 @@
-import os, json
+import json
 # framework
 import base, cookie, session, auth, response
 from private import render, redirect, errorRedirect#, header

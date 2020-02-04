@@ -1,5 +1,4 @@
-import
-  httpcore, json, os, strutils, tables
+import httpcore, json, tables
 import flatdb
 # framework
 import base

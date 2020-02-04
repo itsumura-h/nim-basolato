@@ -17,9 +17,9 @@ proc createCookie*(name, value: string, expires="",
 proc createCookie*(name, value: string, expires:DateTime,
                     sameSite: SameSite=Lax, secure = false,
                     httpOnly = false, domain = "", path = "/"): string =
-  createCookie(name, value,
-    format(expires.utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"),
-    sameSite, secure, httpOnly, domain, path)
+  let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
+  let expireStr = format(expires.utc, f)
+  createCookie(name, value, expireStr, sameSite, secure, httpOnly, domain, path)
 
 proc minutesForward*(minutes:int): DateTime =
   return getTime().utc + initTimeInterval(minutes = minutes)
@@ -29,18 +29,18 @@ proc newCookie*(request:Request):Cookie =
 
 proc set*(this:Cookie, name, value: string, expires:DateTime,
       sameSite: SameSite=Lax, secure = false, httpOnly = false, domain = "", path = "/"):Cookie =
-  let cookie = createCookie(name, value,
-                format(expires.utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"),
-                sameSite, secure, httpOnly, domain, path)
+  let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
+  let expireStr = format(expires.utc, f)
+  let cookie = createCookie(name, value, expireStr, sameSite, secure, httpOnly, domain, path)
   this.cookies.add(cookie)
   return this
 
 proc set*(this:Cookie, name, value: string, sameSite: SameSite=Lax,
       secure = false, httpOnly = false, domain = "", path = "/"):Cookie =
   let expires = minutesForward(CSRF_TIME)
-  let cookie = createCookie(name, value,
-                format(expires.utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"),
-                sameSite, secure, httpOnly, domain, path)
+  let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
+  let expireStr = format(expires.utc, f)
+  let cookie = createCookie(name, value, expireStr, sameSite, secure, httpOnly, domain, path)
   this.cookies.add(cookie)
   return this
       
@@ -70,9 +70,9 @@ proc setCookie*(response:Response, content:string): Response =
 
 
 proc updateCookieExpire*(response:Response, request:Request, key:string, days:int, path="/"): Response =
-  let content = createCookie(key, request.getCookie(key),
-            format(daysForward(days).utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"),
-            Lax, false, false, "", path)
+  let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
+  let expireStr = format(daysForward(days).utc, f)
+  let content = createCookie(key, request.getCookie(key), expireStr, Lax, false, false, "", path)
   response.header("Set-cookie", content)
 
 proc deleteCookie*(response:Response, key:string, path="/"): Response =
