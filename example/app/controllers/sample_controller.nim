@@ -83,24 +83,29 @@ proc indexCookie*(this:SampleController): Response =
 proc storeCookie*(this:SampleController): Response =
   let key = this.request.params["key"]
   let value = this.request.params["value"]
-  let cookie = createCookie(key, value)
+  # let cookie = createCookie(key, value)
+  let cookie = newCookie(this.request)
+                .set(key, value)
   return render(cookieHtml(this.auth)).setCookie(cookie)
 
 proc updateCookie*(this:SampleController): Response =
   let key = this.request.params["key"]
   let days = this.request.params["days"].parseInt
-  return redirect("/sample/cookie")
-          .updateCookieExpire(this.request, key, days)
+  let cookie = newCookie(this.request)
+                .updateExpire(key, days)
+  return redirect("/sample/cookie").setCookie(cookie)
 
 proc destroyCookie*(this:SampleController): Response =
   let key = this.request.params["key"]
-  return redirect("/sample/cookie")
-          .deleteCookie(key)
+  let cookie = newCookie(this.request)
+                .delete(key)
+  return redirect("/sample/cookie").setCookie(cookie)
 
 proc destroyCookies*(this:SampleController): Response =
   # TODO: not work until https://github.com/dom96/jester/pull/237 is mearged and release
-  return redirect("/sample/cookie")
-          .deleteCookies(this.request)
+  let cookie = newCookie(this.request)
+                .destroy()
+  return redirect("/sample/cookie").setCookie(cookie)
 
 # ========== Login ====================
 proc indexLogin*(this:SampleController): Response =
@@ -123,8 +128,8 @@ proc storeLogin*(this:SampleController): Response =
 
 proc destroyLogin*(this:SampleController): Response =
   this.auth.destroy()
-  return redirect("/sample/login")
-          .deleteCookies(this.request)
+  let cookie = newCookie(this.request).destroy()
+  return redirect("/sample/login").setCookie(cookie)
 
 # ========== Session ====================
 proc indexSession*(this:SampleController): Response =

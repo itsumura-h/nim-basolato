@@ -1,6 +1,6 @@
 import httpcore, json, tables, strutils, times, random
 # framework
-import base, private, response
+import base, private#, response
 # 3rd party
 import flatdb, nimAES
 import jester/private/utils
@@ -106,88 +106,109 @@ proc destroy*(this:Session) =
   this.db.destroy()
 
 # ========== Cookie ====================
-type Cookie* = ref object
-  request:Request
-  cookies*:seq[string]
+type
+  CookieData* = ref object
+    name:string
+    value:string
+    expire:string
+    sameSite:SameSite
+    secure:bool
+    httpOnly:bool
+    domain:string
+    path:string
 
-proc createCookie*(name, value: string, expires="",
-                    sameSite: SameSite=Lax, secure = false,
-                    httpOnly = false, domain = "", path = "/"): string =
-  ## https://github.com/dom96/jester/blob/4c3965259891de174c059dfc9165dfe8d6ddc600/jester.nim#L716
-  return makeCookie(name, value, expires, domain, path, secure, httpOnly, sameSite)
-
-proc createCookie*(name, value: string, expires:DateTime,
-                    sameSite: SameSite=Lax, secure = false,
-                    httpOnly = false, domain = "", path = "/"): string =
-  let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
-  let expireStr = format(expires.utc, f)
-  createCookie(name, value, expireStr, sameSite, secure, httpOnly, domain, path)
+  Cookie* = ref object
+    request:Request
+    cookies*:seq[CookieData]
 
 proc minutesForward*(minutes:int): DateTime =
   return getTime().utc + initTimeInterval(minutes = minutes)
 
-proc newCookie*(request:Request):Cookie =
-  return Cookie(request:request)
+proc toCookieStr(this:CookieData):string =
+  makeCookie(this.name, this.value,this.expire,this.domain, this.path,
+              this.secure,this.httpOnly, this.sameSite)
 
-proc set*(this:Cookie, name, value: string, expires:DateTime,
-      sameSite: SameSite=Lax, secure = false, httpOnly = false, domain = "", path = "/"):Cookie =
+proc newCookieData(name, value:string, expire:DateTime, sameSite: SameSite=Lax,
+      secure = false, httpOnly = false, domain = "", path = "/"):CookieData =
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
-  let expireStr = format(expires.utc, f)
-  let cookie = createCookie(name, value, expireStr, sameSite, secure, httpOnly, domain, path)
-  this.cookies.add(cookie)
-  return this
+  let expireStr = format(expire.utc, f)
+  CookieData(name:name, value:value,expire:expireStr, sameSite:sameSite,
+    secure:secure, httpOnly:httpOnly, domain:domain, path:path)
+
+proc newCookieData(name, value:string, expire="", sameSite: SameSite=Lax,
+      secure = false, httpOnly = false, domain = "", path = "/"):CookieData =
+  CookieData(name:name, value:value,expire:expire, sameSite:sameSite,
+    secure:secure, httpOnly:httpOnly, domain:domain, path:path)
+
+proc newCookie*(request:Request):Cookie =
+  return Cookie(request:request, cookies:newSeq[CookieData](0))
+
+proc set*(this:Cookie, name, value: string, expire:DateTime,
+      sameSite: SameSite=Lax, secure = false, httpOnly = false, domain = "",
+      path = "/"):Cookie =
+  let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
+  let expireStr = format(expire.utc, f)
+  this.cookies.add(
+    CookieData(name:name, value:value, expire:expireStr, sameSite:sameSite,
+      secure:secure, httpOnly:httpOnly, domain:domain, path:path)
+  )
 
 proc set*(this:Cookie, name, value: string, sameSite: SameSite=Lax,
       secure = false, httpOnly = false, domain = "", path = "/"):Cookie =
   let expires = minutesForward(CSRF_TIME)
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(expires.utc, f)
-  let cookie = createCookie(name, value, expireStr, sameSite, secure, httpOnly, domain, path)
-  this.cookies.add(cookie)
-  return this
-      
-
-proc getCookie*(request:Request, key:string): string =
-  result = ""
-  if not request.headers.hasKey("Cookie"):
-    return result
-  let cookiesStrArr = request.headers["Cookie"].split("; ")
-  for row in cookiesStrArr:
-    let rowArr = row.split("=")
-    if rowArr[0] == key:
-      result = rowArr[1]
-
-proc setCookie*(response:Response, cookie:Cookie):Response =
-  for row in cookie.cookies:
-    response.headers.add(("Set-cookie", row))
-  # echo response.headers
-  return response  
-
-proc setCookie*(response:Response, content:string): Response =
-  # resonse.header("Set-cookie", content)
-  response.headers.add(
-    ("Set-cookie", content)
+  this.cookies.add(
+    CookieData(name:name, value:value, expire:expireStr, sameSite:sameSite,
+      secure:secure, httpOnly:httpOnly, domain:domain, path:path)
   )
-  return response
+  return this
 
-proc updateCookieExpire*(response:Response, request:Request, key:string, days:int, path="/"): Response =
+proc updateExpire*(this:Cookie, name:string, days:int, path="/"):Cookie =
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(daysForward(days).utc, f)
-  let content = createCookie(key, request.getCookie(key), expireStr, Lax, false, false, "", path)
-  response.header("Set-cookie", content)
+  let cookiesStrArr = this.request.headers["Cookie"].split("; ")
+  for i, row in cookiesStrArr:
+    let rowArr = row.split("=")
+    if rowArr[0] == name:
+      this.cookies.add(newCookieData(rowArr[0], rowArr[1], expire=expireStr))
+      break
+  echo this.cookies.repr
+  return this
 
-proc deleteCookie*(response:Response, key:string, path="/"): Response =
-  let cookie = createCookie(key, "", daysForward(-1), path=path)
-  response.header("Set-cookie", cookie)
+proc get*(this:Cookie, name:string):string =
+  result = ""
+  if not this.request.headers.hasKey("Cookie"):
+    return result
+  let cookiesStrArr = this.request.headers["Cookie"].split("; ")
+  for row in cookiesStrArr:
+    let rowArr = row.split("=")
+    if rowArr[0] == name:
+      result = rowArr[1]
+      break
 
-proc deleteCookies*(response:Response, request:Request, path="/"): Response =
-  block:
-    var response = response
-    for row in request.headers["Cookie"].split("; "):
-      let rowArr = row.split("=")
-      let cookie = createCookie(rowArr[0], "", daysForward(-1), path=path)
-      response = response.setCookie(cookie)
-    return response
+proc delete*(this:Cookie, key:string, path="/"):Cookie =
+  this.cookies.add(
+    newCookieData(name=key, value="", expire=daysForward(-1), path=path)
+  )
+  return this
+
+proc destroy*(this:Cookie, path="/"):Cookie =
+  if this.request.headers.hasKey("Cookie"):
+    let cookiesStrArr = this.request.headers["Cookie"].split("; ")
+    for row in cookiesStrArr:
+      let name = row.split("=")[0]
+      this.cookies.add(
+        newCookieData(name=name, value="", expire=daysForward(-1), path=path)
+      )
+  return this
+
+proc setCookie*(response:Response, cookie:Cookie):Response =
+  for cookieData in cookie.cookies:
+    let cookieStr = cookieData.toCookieStr()
+    response.headers.add(("Set-cookie", cookieStr))
+  return response
+
 
 # ========== Auth ====================
 type
@@ -202,7 +223,8 @@ proc checkSessionIdValid*(sessionId:string) =
 
 proc newAuth*(request:Request):Auth =
   ## use in constructor
-  var sessionId = request.getCookie("session_id")
+  # var sessionId = request.getCookie("session_id")
+  var sessionId = newCookie(request).get("session_id")
   if sessionId.len > 0:
     sessionId = sessionId.decryptCtr()
     return Auth(
