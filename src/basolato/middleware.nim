@@ -1,11 +1,11 @@
 import jester except redirect, setCookie
-import base, auth
+import base, security
 # from private import render, redirect, errorRedirect
 from controller import render, redirect, errorRedirect
 import csrf_token
 
 export jester.request
-export base, auth
+export base, security
 export render, redirect, errorRedirect
 
 proc checkCsrfToken*(request:Request) =

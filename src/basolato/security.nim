@@ -1,9 +1,83 @@
-import times, strutils, tables
-# 3rd party
-import jester/private/utils
+import httpcore, json, tables, strutils, times
 # framework
-import base, private, response
+import base, private, encrypt, response
+# 3rd party
+import flatdb
+import jester/private/utils
 
+# ========= Flat DB ==================
+type SessionDb = ref object
+  conn: FlatDb
+  token: string
+
+proc newSessionDb*(token=""):SessionDb =
+  let db = newFlatDb(SESSION_DB_PATH, IS_SESSION_MEMORY)
+  discard db.load()
+  if token.len > 0:
+    return SessionDb(conn: db, token:token)
+  else:
+    let token = db.append(newJObject())
+    return SessionDb(conn: db, token:token)
+
+proc getToken*(this:SessionDb): string =
+  this.token.encryptCtr()
+
+proc set*(this:SessionDb, key, value:string):SessionDb =
+  let db = this.conn
+  db[this.token][key] = %value
+  db.flush()
+  return this
+
+proc get*(this:SessionDb, key:string): string =
+  let db = this.conn
+  return db[this.token].getOrDefault(key).getStr("")
+
+proc delete*(this:SessionDb, key:string):SessionDb =
+  let db = this.conn
+  let row = db[this.token]
+  if row.hasKey(key):
+    row.delete(key)
+    db.flush()
+  return this
+
+proc destroy*(this:SessionDb) =
+  this.conn.delete(this.token)
+
+
+# ========= Session ==================
+type 
+  SessionType* = enum
+    File
+    Redis
+
+  Session* = ref object
+    db: SessionDb
+
+proc newSession*(token="", typ:SessionType=File):Session =
+  if typ == File:
+    return Session(db:newSessionDb(token))
+
+proc db*(this:Session):SessionDb =
+  this.db
+
+proc getToken*(this:Session):string =
+  this.db.getToken()
+
+proc set*(this:Session, key, value:string):Session =
+  discard this.db.set(key, value)
+  return this
+
+proc get*(this:Session, key:string):string =
+  this.db.get(key)
+
+proc delete*(this:Session, key:string): Session =
+  discard this.db.delete(key)
+  return this
+
+proc destroy*(this:Session) =
+  this.db.destroy()
+
+# ========== Cookie ====================
 type Cookie* = ref object
   request:Request
   cookies*:seq[string]
@@ -68,7 +142,6 @@ proc setCookie*(response:Response, content:string): Response =
   )
   return response
 
-
 proc updateCookieExpire*(response:Response, request:Request, key:string, days:int, path="/"): Response =
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(daysForward(days).utc, f)
@@ -87,3 +160,53 @@ proc deleteCookies*(response:Response, request:Request, path="/"): Response =
       let cookie = createCookie(rowArr[0], "", daysForward(-1), path=path)
       response = response.setCookie(cookie)
     return response
+
+# ========== Auth ====================
+type
+  Auth* = ref object
+    isLogin*:bool
+    session*:Session
+
+proc checkSessionIdValid*(sessionId:string) =
+  var sessionId = sessionId.decryptCtr()
+  if sessionId.len != 24:
+    raise newException(Exception, "Invalid session_id")
+
+proc newAuth*(request:Request):Auth =
+  ## use in constructor
+  var sessionId = request.getCookie("session_id")
+  if sessionId.len > 0:
+    sessionId = sessionId.decryptCtr()
+    return Auth(
+      isLogin: true,
+      session:newSession(sessionId)
+    )
+  else:
+    return Auth(isLogin:false)
+
+proc newAuth*():Auth =
+  ## use in action method
+  return Auth(
+    isLogin: true,
+    session:newSession()
+  )
+
+proc isLogin*(this:Auth):bool =
+  this.isLogin
+
+proc getId*(this:Auth):string =
+  this.session.getToken()
+
+proc get*(this:Auth, key:string):string =
+  if this.isLogin:
+    return this.session.get(key)
+  else:
+    return ""
+
+proc set*(this:Auth, key, value:string):Auth =
+  if this.isLogin:
+    discard this.session.set(key, value)
+  return this
+
+proc destroy*(this:Auth) =
+  this.session.destroy()

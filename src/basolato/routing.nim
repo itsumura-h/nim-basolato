@@ -12,7 +12,6 @@ export
   base, response, middleware#, http404Route, exceptionRoute
   #redirect, render, errorRedirect
 
-# ==================== routing ================================================
 
 template route*(rArg: Response) =
   block:

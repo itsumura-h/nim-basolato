@@ -1,12 +1,12 @@
 import json
 # framework
-import base, cookie, session, auth, response
+import base, security, response
 from private import render, redirect, errorRedirect#, header
 # 3rd party
 import jester except redirect, setCookie, setHeader, resp
 
 # framework
-export base, cookie, session, auth, response
+export base, security, response
 export render, redirect, errorRedirect, header
 # 3rd party
 export jester except redirect, setCookie, setHeader, resp

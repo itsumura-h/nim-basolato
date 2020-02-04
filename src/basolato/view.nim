@@ -1,7 +1,7 @@
 import templates
-import base, auth
+import base, security
 from private import get
 
 export templates
-export base, auth
+export base, security
 export get
