@@ -10,7 +10,6 @@ proc rundStr(n:openArray[int]):string =
   for _ in 1..n:
     add(result, char(rand(int('0')..int('z'))))
 
-let SALT = rundStr([16])
 
 # ========== Csrf Token ====================
 proc gen16Timestamp():string =
@@ -18,7 +17,8 @@ proc gen16Timestamp():string =
 
 proc csrfEncript*():string =
   var aes = initAES()
-  let now = SALT & gen16Timestamp()
+  let salt = rundStr([16])
+  let now = salt & gen16Timestamp()
   discard aes.setEncodeKey(SECRET_KEY)
   let iv = repeat(chr(1), 16).cstring
   let token = aes.encryptCBC(iv, now).toHex()

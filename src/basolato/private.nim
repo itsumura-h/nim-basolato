@@ -4,11 +4,11 @@ import
 # framework
 import base
 # 3rd party
-import jester except redirect, setCookie
+import jester except redirect, setCookie, setHeader, resp
 import bcrypt, flatdb, templates
 
 export base
-export jester except redirect, setCookie
+export jester except redirect, setCookie, setHeader, resp
 export bcrypt, flatdb, templates
 
 # ==================== logger =================================================
@@ -36,6 +36,38 @@ proc echoErrorMsg*(msg:string) =
     let logger = newRollingFileLogger(path, mode=fmAppend, fmtStr=verboseFmtStr)
     logger.log(lvlError, msg)
     flushFile(logger.file)
+
+
+# ==================== response ================================================
+
+template setHeader(headers: var Option[RawHeaders], key, value: string): typed =
+  ## Customized for jester
+  bind isNone
+  if isNone(headers):
+    headers = some(@({key: value}))
+  else:
+    block outer:
+      # Overwrite key if it exists.
+      var h = headers.get()
+      if key != "Set-cookie": # multiple cookies should be allowed
+        for i in 0 ..< h.len:
+          if h[i][0] == key:
+            h[i][1] = value
+            headers = some(h)
+            break outer
+
+      # Add key if it doesn't exist.
+      headers = some(h & @({key: value}))
+
+template resp*(code: HttpCode,
+               headers: openarray[tuple[key, val: string]],
+               content: string): typed =
+  ## Sets ``(code, headers, content)`` as the response.
+  bind TCActionSend
+  result = (TCActionSend, code, none[RawHeaders](), content, true)
+  for header in headers:
+    setHeader(result[2], header[0], header[1])
+  break route
 
 
 # ==================== routing ================================================
@@ -209,7 +241,6 @@ template exceptionRoute*(pagePath="") =
 
 
 # ==================== controller =============================================
-
 # String
 proc render*(body:string):Response =
   return Response(status:Http200, bodyString:body, responseType:String)

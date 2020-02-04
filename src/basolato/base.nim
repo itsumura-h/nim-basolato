@@ -1,4 +1,4 @@
-import os, json, httpcore, strutils, random
+import os, json, httpcore, strutils
 
 const
   basolatoVersion* = "v0.1.0"

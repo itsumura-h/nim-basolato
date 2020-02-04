@@ -3,6 +3,7 @@ import ../../../src/basolato/csrf_token
 import ../../../src/basolato/auth
 
 proc loginHtml*(auth:Auth): string = tmpli html"""
+<a href="/">go back</a>
 <div>
   $if auth.isLogin {
     <h1>Login Name: $(auth.get("name"))</h1>
@@ -16,7 +17,7 @@ proc loginHtml*(auth:Auth): string = tmpli html"""
       $(csrfToken())
       <input type="text" name="name" value="$(auth.get("name"))">
       <input type="text" name="password">
-      <button type="submit">submit</button>
+      <button type="submit">login</button>
     </form>
   }
 </div>

@@ -1,11 +1,12 @@
-import os
-import jester except redirect, setCookie
+import os, json
+import jester except redirect, setCookie, setHeader, resp
 import base, cookie, session, auth
 from private import render, redirect, errorRedirect, header
 
-export jester except redirect, setCookie
+export jester except redirect, setCookie, setHeader, resp
 export base, cookie, session, auth
 export render, redirect, errorRedirect, header
+
 
 type Controller* = ref object of RootObj
   request*:Request

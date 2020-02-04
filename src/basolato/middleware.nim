@@ -1,6 +1,7 @@
 import jester except redirect, setCookie
 import base, auth
-from private import render, redirect, errorRedirect
+# from private import render, redirect, errorRedirect
+from controller import render, redirect, errorRedirect
 import csrf_token
 
 export jester.request

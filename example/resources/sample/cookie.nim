@@ -2,6 +2,7 @@ import ../../../src/basolato/view
 import ../../../src/basolato/csrf_token
 
 proc cookieHtml*(auth:Auth): string = tmpli html("""
+<a href="/">go back</a>
 <form method="post">
   $(csrfToken())
   <input type="text" name="key">
@@ -26,7 +27,14 @@ proc cookieHtml*(auth:Auth): string = tmpli html("""
 
 <div id="display"></div>
 <script>
-  let list = document.cookie.split(';');
-  document.getElementById('display').innerHTML = list;
+  let cookies = document.cookie.split(';');
+  let ul = document.createElement('ul');
+  for (let i in cookies) {
+    let cookieVal = cookies[i];
+    let cookie = document.createElement('li');
+    cookie.innerHTML = cookieVal;
+    ul.appendChild(cookie);
+  }
+  document.getElementById('display').appendChild(ul);
 </script>
 """)
