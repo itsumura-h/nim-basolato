@@ -1,6 +1,6 @@
 import times, strutils, strformat
 # framework
-import base, encrypt
+import base, security
 
 type
   Token* = ref object

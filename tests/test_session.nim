@@ -6,7 +6,7 @@
 # To run these tests, simply execute `nimble test`.
 
 import unittest
-include ../src/basolato/session
+include ../src/basolato/security
 
 let sessionDb = newSessionDb()
 

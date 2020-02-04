@@ -1,22 +1,6 @@
 import unittest, times
 
-import ../src/basolato/encrypt
-
-suite "CFB":
-  test "encrypt":
-    let input = $(getTime().toUnix().int()) 
-    let token = encryptCfb(input)
-    echo token
-    check token.len > 0
-
-  test "decrypt":
-    let input = $(getTime().toUnix().int())
-    echo input
-    let hashed = encryptCfb(input)
-    echo hashed
-    let output = decryptCfb(hashed)
-    echo output
-    check input == output
+import ../src/basolato/security
 
 suite "CTR":
   test "timestamp":
