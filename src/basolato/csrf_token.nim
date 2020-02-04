@@ -15,14 +15,14 @@ proc newToken*(token:string):Token =
   if token.len > 0:
     return Token(token:token)
   var token = $(getTime().toUnix().int())
-  token = token.encrypt()
+  token = token.encryptCtr()
   return Token(token:token)
 
 proc getToken*(this:Token):string =
   return this.token
 
 proc toTimestamp*(this:Token): int =
-  return this.getToken().decrypt().parseInt()
+  return this.getToken().decryptCtr().parseInt()
 
 # ========== CsrfToken ====================
 proc newCsrfToken*(token:string):CsrfToken =

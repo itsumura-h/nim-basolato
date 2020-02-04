@@ -30,7 +30,7 @@ proc newSessionDb*(token=""):SessionDb =
     return SessionDb(conn: db, token:token)
 
 proc getToken*(this:SessionDb): string =
-  this.token.encrypt()
+  this.token.encryptCtr()
 
 proc set*(this:SessionDb, key, value:string):SessionDb =
   let db = this.conn

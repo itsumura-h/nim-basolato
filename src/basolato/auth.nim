@@ -7,8 +7,7 @@ type
     session*:Session
 
 proc checkSessionIdValid*(sessionId:string) =
-  # var sessionId = sessionIdDecript(sessionId)
-  var sessionId = sessionId.decrypt()
+  var sessionId = sessionId.decryptCtr()
   if sessionId.len != 24:
     raise newException(Exception, "Invalid session_id")
 
@@ -16,8 +15,7 @@ proc newAuth*(request:Request):Auth =
   ## use in constructor
   var sessionId = request.getCookie("session_id")
   if sessionId.len > 0:
-    # sessionId = sessionId.sessionIdDecript()
-    sessionId = sessionId.decrypt()
+    sessionId = sessionId.decryptCtr()
     return Auth(
       isLogin: true,
       session:newSession(sessionId)

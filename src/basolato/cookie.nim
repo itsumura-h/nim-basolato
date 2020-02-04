@@ -58,7 +58,7 @@ proc getCookie*(request:Request, key:string): string =
 proc setCookie*(response:Response, cookie:Cookie):Response =
   for row in cookie.cookies:
     response.headers.add(("Set-cookie", row))
-  echo response.headers
+  # echo response.headers
   return response  
 
 proc setCookie*(response:Response, content:string): Response =

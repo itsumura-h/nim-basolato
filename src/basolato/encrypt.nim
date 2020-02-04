@@ -14,7 +14,7 @@ proc iv():cstring =
   repeat(chr(1), 16).cstring
 
 # ========== CFB ====================
-proc encrypt*(input:string):string =
+proc encryptCfb*(input:string):string =
   var
     ctx: AESContext
     offset = 0
@@ -26,7 +26,7 @@ proc encrypt*(input:string):string =
   let token = ctx.encryptCFB128(offset, iv, input).toHex()
   return token
 
-proc decrypt*(input:string):string =
+proc decryptCfb*(input:string):string =
   var
     input = input.parseHexStr()
     ctx: AESContext
@@ -36,3 +36,23 @@ proc decrypt*(input:string):string =
   var output = ctx.decryptCFB128(offset, iv, input)
   output = output[16..high(output)]
   return output
+
+# ========== CTR ====================
+proc commonCtr(input:string):string =
+  var ctx: AESContext
+  zeroMem(addr(ctx), sizeof(ctx))
+  discard ctx.setEncodeKey(SECRET_KEY)
+  var offset = 0
+  var counter: array[0..15, uint8]
+  var nonce = cast[cstring](addr(counter[0]))
+  zeroMem(addr(counter), sizeof(counter))
+  return ctx.cryptCTR(offset, nonce, input)
+
+proc encryptCtr*(input:string):string =
+  var input = randStr([16]) & input
+  input.commonCtr().toHex()
+
+proc decryptCtr*(input:string):string =
+  var input = input.parseHexStr()
+  var output = input.commonCtr()
+  return output[16..high(output)]
