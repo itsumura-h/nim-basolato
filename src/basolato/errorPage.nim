@@ -1,6 +1,6 @@
 import httpcore
 import templates
-import private
+from base import basolatoVersion
 
 proc errorPage*(status:HttpCode, msg:string): string =
   when defined(release):

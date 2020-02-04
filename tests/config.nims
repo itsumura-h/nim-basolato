@@ -16,7 +16,9 @@ putEnv("LOG_IS_DISPLAY", "true")
 putEnv("LOG_IS_FILE", "true")
 putEnv("LOG_DIR", "/home/www/example/logs")
 
-# Session timeout
-putEnv("SESSION_TIME", "3600") # secounds
-putEnv("SESSION_DB", "/home/www/example/session.db")
+# Security
+putEnv("SECRET_KEY", "s40q834uc0mq4ur834u3874u843r734r")
+putEnv("CSRF_TIME", "525600") # minutes 1 year
+putEnv("SESSION_TIME", "20160") # minutes 2 weeks
+putEnv("SESSION_DB_PATH", "/home/www/example/session.db")
 putEnv("IS_SESSION_MEMORY", "false")

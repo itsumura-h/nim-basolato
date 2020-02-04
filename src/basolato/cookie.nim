@@ -2,7 +2,7 @@ import times, strutils, tables
 # 3rd party
 import jester/private/utils
 # framework
-import base, private
+import base, private, response
 
 type Cookie* = ref object
   request:Request

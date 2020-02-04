@@ -1,12 +1,15 @@
 import os, json
+# framework
+import base, cookie, session, auth, response
+from private import render, redirect, errorRedirect#, header
+# 3rd party
 import jester except redirect, setCookie, setHeader, resp
-import base, cookie, session, auth
-from private import render, redirect, errorRedirect, header
 
-export jester except redirect, setCookie, setHeader, resp
-export base, cookie, session, auth
+# framework
+export base, cookie, session, auth, response
 export render, redirect, errorRedirect, header
-
+# 3rd party
+export jester except redirect, setCookie, setHeader, resp
 
 type Controller* = ref object of RootObj
   request*:Request
@@ -20,11 +23,3 @@ proc newController*(this:typedesc, request:Request): this.type =
     request:request,
     auth: auth
   )
-
-proc html*(r_path:string):string =
-  ## arg r_path is relative path from /resources/
-  block:
-    let path = getCurrentDir() & "/resources/" & r_path
-    let f = open(path, fmRead)
-    result = $(f.readAll)
-    defer: f.close()
