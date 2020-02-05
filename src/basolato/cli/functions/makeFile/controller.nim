@@ -3,7 +3,8 @@ import utils
 
 proc makeController*(target:string, message:var string):int =
   let targetPath = &"{getCurrentDir()}/app/controllers/{target}_controller.nim"
-  let targetCaptalized = capitalizeAscii(target)
+  let targetName = target.split("/").max()
+  let targetCaptalized = capitalizeAscii(targetName)
   let CONTROLLER = &"""
 from strutils import parseInt
 # framework
@@ -49,6 +50,6 @@ proc destroy*(this:{targetCaptalized}Controller, idArg:string):Response =
   f.write(CONTROLLER)
   defer: f.close()
 
-  message = &"created controller {target}Controller"
+  message = &"created controller {target}_controller.nim"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
   return 0
