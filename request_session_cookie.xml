@@ -37,7 +37,7 @@
 		<type label="SET" quote="" sql="SET" length="1"/>
 		<type label="Bit" quote="" sql="bit" length="0"/>
 	</group>
-</datatypes><table x="940" y="440" name="SessionDb">
+</datatypes><table x="780" y="330" name="SessionDb">
 <row name="newSessionDb()" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="Session" row="db()" />
@@ -61,7 +61,7 @@
 <part>getToken()</part>
 </key>
 </table>
-<table x="350" y="330" name="Controller">
+<table x="190" y="220" name="Controller">
 <row name="newController" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="main" row="controller" />
@@ -78,7 +78,7 @@
 <part>Request</part>
 </key>
 </table>
-<table x="820" y="80" name="Token">
+<table x="660" y="20" name="Token">
 <row name="getToken()" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="CsrfToken" row="getToken()" />
@@ -93,7 +93,7 @@
 <part>getToken()</part>
 </key>
 </table>
-<table x="630" y="80" name="CsrfToken">
+<table x="470" y="20" name="CsrfToken">
 <row name="getToken()" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -113,7 +113,7 @@
 <part>CheckTimeout()</part>
 </key>
 </table>
-<table x="370" y="480" name="Request">
+<table x="210" y="370" name="Request">
 <row name="body" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -160,7 +160,7 @@
 <part>body</part>
 </key>
 </table>
-<table x="1120" y="430" name="FlatDB">
+<table x="960" y="320" name="FlatDB">
 <row name="token" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="SessionDb" row="getToken()" />
@@ -169,7 +169,7 @@
 <part>token</part>
 </key>
 </table>
-<table x="1120" y="500" name="Redis">
+<table x="960" y="390" name="Redis">
 <row name="token" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="SessionDb" row="getToken()" />
@@ -178,7 +178,7 @@
 <part>token</part>
 </key>
 </table>
-<table x="360" y="170" name="View">
+<table x="200" y="110" name="View">
 <row name="csrfToken()" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="CsrfToken" row="csrfToken()" />
@@ -187,7 +187,7 @@
 <part>csrfToken()</part>
 </key>
 </table>
-<table x="360" y="90" name="framework middleware">
+<table x="200" y="30" name="framework middleware">
 <row name="checkCsrfTimeout()" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="main" row="middleware" />
@@ -196,7 +196,7 @@
 <part>checkCsrfTimeout()</part>
 </key>
 </table>
-<table x="560" y="330" name="Security">
+<table x="400" y="220" name="Security">
 <row name="Encrypt" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="Controller" row="Security" />
@@ -217,7 +217,7 @@
 <part>Auth</part>
 </key>
 </table>
-<table x="790" y="330" name="Encrypt">
+<table x="630" y="220" name="Encrypt">
 <row name="encryptCtr()" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="Security" row="Encrypt" />
@@ -226,7 +226,7 @@
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
 </table>
-<table x="790" y="420" name="Session">
+<table x="630" y="310" name="Session">
 <row name="newSession()" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="Security" row="Session" />
@@ -254,7 +254,7 @@
 <part>db()</part>
 </key>
 </table>
-<table x="790" y="630" name="Cookie">
+<table x="630" y="520" name="Cookie">
 <row name="newCookie()" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="Security" row="Cookie" />
@@ -278,7 +278,7 @@
 <part>newCookie()</part>
 </key>
 </table>
-<table x="950" y="630" name="CookieData">
+<table x="780" y="510" name="CookieData">
 <row name="newCookieData()" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="Cookie" row="newCookie()" />
@@ -287,7 +287,7 @@
 <part>newCookieData()</part>
 </key>
 </table>
-<table x="790" y="810" name="Auth">
+<table x="780" y="580" name="Auth">
 <row name="newAuth()" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="Security" row="Auth" />
@@ -311,7 +311,7 @@
 <part>newAuth()</part>
 </key>
 </table>
-<table x="80" y="330" name="main">
+<table x="20" y="220" name="main">
 <row name="middleware" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>

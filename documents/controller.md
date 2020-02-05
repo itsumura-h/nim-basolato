@@ -4,36 +4,79 @@ Controller
 
 ## Creating a Controller
 Use `ducere` command  
-[`ducere make controller`](./ducere.md#controller)
+[ducere make controller](./ducere.md#controller)
 
 Resource controllers are controllers that have basic CRUD / resource style methods to them.  
 Generated controller is resource controller.
 
 ```nim
-proc index*(): Response =
+from strutils import parseInt
+# framework
+import basolato/controller
+
+
+type SampleController* = ref object of Controller
+
+proc newSampleController(request:Request):SampleController =
+  return SampleController.newController(request)
+
+
+proc index*(this:SampleController):Response =
   return render("index")
 
-proc show*(idArg: string): Response =
+proc show*(this:SampleController, idArg:string):Response =
   let id = idArg.parseInt
   return render("show")
 
-proc create*(): Response =
+proc create*(this:SampleController):Response =
   return render("create")
 
-proc store*(request: Request): Response =
+proc store*(this:SampleController):Response =
   return render("store")
 
-proc edit*(idArg: string): Response =
+proc edit*(this:SampleController, idArg:string):Response =
   let id = idArg.parseInt
   return render("edit")
 
-proc update*(request: Request): Response =
+proc update*(this:SampleController):Response =
   return render("update")
 
-proc destroy*(idArg: string): Response =
+proc destroy*(this:SampleController, idArg:string):Response =
   let id = idArg.parseInt
   return render("destroy")
+
 ```
+## Constructor & DI
+main.nim
+```nim
+routes
+  get "/": newSampleController(request).index()
+
+```
+
+app/controllers/sample_controller.nim
+```nim
+import ../models/users
+
+type SampleController = ref object of Controller
+  user:User
+
+proc newSampleController*(request:Request): SampleController =
+  var sampleController = SampleController.newController(request)
+  this.user = newUser()
+  return this
+
+proc index*(this:SampleController): Response =
+  this.request # Request
+  this.auth # Auth
+  this.user # User(DB model)
+```
+DI(Dependency Injection) is a technique whereby one object supplies the dependencies of another object.  
+In this example, `request`, `auth` and `user` userd in controller action method is initialized in `newSampleController` constructor.  
+When you define controller object extends `Controller`, `request` and `auth` is initialized. You can add object by yourself.(ex: DB model object)
+
+
+
 
 ## Returning string
 If you set string in `render` proc, controller returns string.

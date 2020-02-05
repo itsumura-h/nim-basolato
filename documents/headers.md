@@ -14,13 +14,10 @@ proc hasLoginId*(request: Request):Response =
     raise newException(Error403, "Can't get login id")
 ```
 
-main.nim
+app/controllers/sample_controller.nim
 ```nim
-from middleware/check_login import hasLoginId
-
-get "/checkLogin":
-  middleware([hasLoginId(request)])
-  route(sample_controller.index())
+proc index*(this:SampleController): Response =
+  let loginId = this.request.headers["X-login-id"]
 ```
 
 # Response header
