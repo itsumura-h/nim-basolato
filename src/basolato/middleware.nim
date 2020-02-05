@@ -1,11 +1,11 @@
 # framework
-import base, security
+import base, security, header
 from controller import render, redirect, errorRedirect
 # 3rd party
 import jester except redirect, setCookie
 
 # framework
-export base, security, render, redirect, errorRedirect
+export base, security, header, render, redirect, errorRedirect
 # 3rd party
 export jester.request
 

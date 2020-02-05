@@ -1,7 +1,8 @@
 import tables, json
 from strutils import join
+# framework
 import ../../src/basolato/middleware
-import ../../src/basolato/header
+
 
 proc customHeader*():Headers =
   let arr = [

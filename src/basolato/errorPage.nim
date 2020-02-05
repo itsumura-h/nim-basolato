@@ -1,5 +1,6 @@
 import httpcore
-import templates
+# framework
+import view
 from base import basolatoVersion
 
 proc errorPage*(status:HttpCode, msg:string): string =

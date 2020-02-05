@@ -11,29 +11,32 @@ export base, response, redirect, render, errorRedirect
 export jester except redirect, setCookie, resp
 
 
-template route*(rArg: Response) =
+template route*(responseArg: Response) =
   block:
-    let r = rArg
-    var newHeaders = r.headers
-    case r.responseType:
+    let response = responseArg
+    var newHeaders = response.headers
+    case response.responseType:
     of String:
       newHeaders.add(("Content-Type", "text/html;charset=utf-8"))
     of Json:
       newHeaders.add(("Content-Type", "application/json"))
-      r.bodyString = $(r.bodyJson)
+      response.bodyString = $(response.bodyJson)
     of Redirect:
-      logger($r.status & &"  {request.ip}  {request.reqMethod}  {request.path}")
-      newHeaders.add(("Location", r.url))
-      resp r.status, newHeaders, ""
+      logger($response.status &
+        &"  {request.ip}  {request.reqMethod}  {request.path}")
+      newHeaders.add(("Location", response.url))
+      resp response.status, newHeaders, ""
 
-    if r.status == Http200:
-      logger($r.status & &"  {request.ip}  {request.reqMethod}  {request.path}")
+    if response.status == Http200:
+      logger($response.status &
+        &"  {request.ip}  {request.reqMethod}  {request.path}")
       logger($newHeaders)
-    elif r.status.is4xx() or r.status.is5xx():
+    elif response.status.is4xx() or response.status.is5xx():
       echoErrorMsg($request.params)
-      echoErrorMsg($r.status & &"  {request.ip}  {request.reqMethod}  {request.path}")
+      echoErrorMsg($response.status &
+        &"  {request.ip}  {request.reqMethod}  {request.path}")
       echoErrorMsg($newHeaders)
-    resp r.status, newHeaders, r.bodyString
+    resp response.status, newHeaders, response.bodyString
 
 proc joinHeader(headers:openArray[Headers]): Headers =
   ## join seq and children tuple if each headers have same key in child tuple
@@ -81,15 +84,18 @@ template route*(respinseArg:Response,
       newHeaders.add(("Content-Type", "application/json"))
       response.bodyString = $(response.bodyJson)
     of Redirect:
-      logger($response.status & &"  {request.ip}  {request.reqMethod}  {request.path}")
+      logger($response.status &
+        &"  {request.ip}  {request.reqMethod}  {request.path}")
       newHeaders.add(("Location", response.url))
       resp response.status, newHeaders, ""
 
     if response.status == Http200:
-      logger($response.status & &"  {request.ip}  {request.reqMethod}  {request.path}")
+      logger($response.status &
+        &"  {request.ip}  {request.reqMethod}  {request.path}")
       logger($newHeaders)
     elif response.status.is4xx() or response.status.is5xx():
-      echoErrorMsg($response.status & &"  {request.ip}  {request.reqMethod}  {request.path}")
+      echoErrorMsg($response.status &
+        &"  {request.ip}  {request.reqMethod}  {request.path}")
       echoErrorMsg($newHeaders)
     resp response.status, newHeaders, response.bodyString
 
@@ -128,7 +134,8 @@ template exceptionRoute*(pagePath="") =
   let status = checkHttpCode(exception)
   if status.is4xx() or status.is5xx():
     echoErrorMsg($request.params)
-    echoErrorMsg($status & &"  {request.reqMethod}  {request.ip}  {request.path}  {exception.msg}")
+    echoErrorMsg($status &
+      &"  {request.reqMethod}  {request.ip}  {request.path}  {exception.msg}")
     if pagePath == "":
       route(render(errorPage(status, exception.msg)))
     else:

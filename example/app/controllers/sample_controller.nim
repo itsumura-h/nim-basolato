@@ -138,6 +138,7 @@ proc indexSession*(this:SampleController): Response =
 proc storeSession*(this:SampleController): Response =
   let key = this.request.params["key"]
   let value = this.request.params["value"]
+  echo key, value
   # let cookie = newCookie(key, value)
   # return render(cookieHtml(this.auth)).setCookie(cookie)
   return redirect("/sample/session")
