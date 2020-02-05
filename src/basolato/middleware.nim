@@ -1,7 +1,17 @@
+# framework
+import base, security, header
+from controller import render, redirect, errorRedirect
+# 3rd party
 import jester except redirect, setCookie
-import base, auth
-from private import render, redirect, errorRedirect
 
+# framework
+export base, security, header, render, redirect, errorRedirect
+# 3rd party
 export jester.request
-export base, auth
-export render, redirect, errorRedirect
+
+
+proc checkCsrfToken*(request:Request) =
+  if request.reqMethod == HttpPost or request.reqMethod == HttpPut or
+        request.reqMethod == HttpPatch or request.reqMethod == HttpDelete:
+    let token = request.params["csrf_token"]
+    discard newCsrfToken(token).checkCsrfTimeout()

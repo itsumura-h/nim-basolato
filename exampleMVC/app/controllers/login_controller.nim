@@ -41,7 +41,7 @@ proc store*(this: LoginController): Response =
   let uid = user["id"].getInt
   let name = user["name"].getStr
   # create sesstion
-  let cookie = sessionStart(uid)
+  let cookie = sessionStart($uid)
                 .add("login_name", name)
                 .setCookie(daysForward(5))
   return redirect("/posts").setCookie(cookie)

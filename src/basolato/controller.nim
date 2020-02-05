@@ -1,26 +1,50 @@
-import os
-import jester except redirect, setCookie
-import base, cookie, session, auth
-from private import render, redirect, errorRedirect, header
+import json
+# framework
+import base, security, response, header
+# 3rd party
+import jester except redirect, setCookie, setHeader, resp
 
-export jester except redirect, setCookie
-export base, cookie, session, auth
-export render, redirect, errorRedirect, header
+# framework
+export base, security, response, header
+# 3rd party
+export jester except redirect, setCookie, setHeader, resp
+
 
 type Controller* = ref object of RootObj
   request*:Request
   auth*:Auth
 
 proc newController*(this:typedesc, request:Request): this.type =
+  var auth = Auth(isLogin:false)
+  if request.cookies.hasKey("session_id"):
+    auth = request.newAuth()
   return this.type(
     request:request,
-    auth: initAuth(request)
+    auth: auth
   )
 
-proc html*(r_path:string):string =
-  ## arg r_path is relative path from /resources/
-  block:
-    let path = getCurrentDir() & "/resources/" & r_path
-    let f = open(path, fmRead)
-    result = $(f.readAll)
-    defer: f.close()
+# String
+proc render*(body:string):Response =
+  return Response(status:Http200, bodyString:body, responseType:String)
+
+proc render*(status:HttpCode, body:string):Response =
+  return Response(status:status, bodyString:body, responseType:String)
+
+
+# Json
+proc render*(body:JsonNode):Response =
+  return Response(status:Http200, bodyJson:body, responseType:Json)
+
+proc render*(status:HttpCode, body:JsonNode):Response =
+  return Response(status:status, bodyJson:body, responseType:Json)
+
+
+proc redirect*(url:string) : Response =
+  return Response(
+    status:Http303, url:url, responseType: Redirect
+  )
+
+proc errorRedirect*(url:string): Response =
+  return Response(
+    status:Http302, url:url, responseType: Redirect
+  )

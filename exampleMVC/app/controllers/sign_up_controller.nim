@@ -37,7 +37,7 @@ proc store*(this:SignUpController): Response =
     v.errors.add("general", %getCurrentExceptionMsg())
     return render(createHtml(this.auth, name, email, v.errors))
   # session
-  let cookie = sessionStart(uid)
+  let cookie = sessionStart($uid)
                 .add("login_name", name)
                 .setCookie(daysForward(5))
   return redirect("/posts").setCookie(cookie)

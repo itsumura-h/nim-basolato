@@ -14,15 +14,19 @@ user.setName("jiro")
 echo user.getName()
 
 
-type
-  Parent = ref object of RootObj
-    name:string
+type Parent = ref object of RootObj
+  name:string
 
-  Child = ref object of Parent
+proc new(this:typedesc, name:string):this.type =
+  this.type(name:name)
 
-proc getName(this:Parent): string =
-  echo this.name
 
-let c =  Child(name:"child")
-echo c.repr
-echo c.getName()
+type Child = ref object of Parent
+
+proc newChild(name:string):Child =
+  Child.new(name)
+
+proc getName(this:Child): string =
+  this.name
+
+echo newChild("taro").getName()

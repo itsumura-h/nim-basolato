@@ -1,40 +1,47 @@
-const CONTROLLER = """
-from strutils import parseInt
+import os, strformat, terminal, strutils
+import utils
 
+proc makeController*(target:string, message:var string):int =
+  let targetPath = &"{getCurrentDir()}/app/controllers/{target}_controller.nim"
+  let targetCaptalized = capitalizeAscii(target)
+  let CONTROLLER = &"""
+from strutils import parseInt
+# framework
 import basolato/controller
 
-proc index*(): Response =
+
+type {targetCaptalized}Controller* = ref object of Controller
+
+proc new{targetCaptalized}Controller(request:Request):{targetCaptalized}Controller =
+  return {targetCaptalized}Controller.newController(request)
+
+
+proc index*(this:{targetCaptalized}Controller):Response =
   return render("index")
 
-proc show*(idArg: string): Response =
+proc show*(this:{targetCaptalized}Controller, idArg:string):Response =
   let id = idArg.parseInt
   return render("show")
 
-proc create*(): Response =
+proc create*(this:{targetCaptalized}Controller):Response =
   return render("create")
 
-proc store*(request: Request): Response =
+proc store*(this:{targetCaptalized}Controller):Response =
   return render("store")
 
-proc edit*(idArg: string): Response =
+proc edit*(this:{targetCaptalized}Controller, idArg:string):Response =
   let id = idArg.parseInt
   return render("edit")
 
-proc update*(request: Request): Response =
+proc update*(this:{targetCaptalized}Controller):Response =
   return render("update")
 
-proc destroy*(idArg: string): Response =
+proc destroy*(this:{targetCaptalized}Controller, idArg:string):Response =
   let id = idArg.parseInt
   return render("destroy")
 """
 
-import os, strformat, terminal
-import utils
-
-proc makeController*(target:string, message:var string):int =
-  let targetPath = &"{getCurrentDir()}/app/controllers/{target}Controller.nim"
-
-  if isFileExists(targetPath): return 0
+  if isFileExists(targetPath): return 1
 
   createDir(parentDir(targetPath))
 
@@ -44,4 +51,4 @@ proc makeController*(target:string, message:var string):int =
 
   message = &"created controller {target}Controller"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
-  return 1
+  return 0

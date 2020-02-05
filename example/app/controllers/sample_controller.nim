@@ -7,6 +7,9 @@ import allographer/query_builder
 import ../../resources/sample/vue
 import ../../resources/sample/react
 import ../../../src/basolato/sample/resources/welcome
+import ../../resources/sample/cookie
+import ../../resources/sample/login
+import ../../resources/sample/session
 
 type SampleController = ref object of Controller
 
@@ -24,9 +27,9 @@ proc welcome*(this:SampleController): Response =
 
 
 proc fib_logic(n: int): int =
-    if n < 2:
-      return n
-    return fib_logic(n - 2) + fib_logic(n - 1)
+  if n < 2:
+    return n
+  return fib_logic(n - 2) + fib_logic(n - 1)
 
 proc fib*(this:SampleController, numArg: string): Response =
   let num = numArg.parseInt
@@ -68,6 +71,74 @@ proc vue*(this:SampleController): Response =
 
 
 proc customHeaders*(this:SampleController): Response =
-  return render("with header")
-          .header("Controller-Header-Key1", "Controller-Header-Val1")
-          .header("Controller-Header-Key2", ["val1", "val2", "val3"])
+  let header = newHeaders()
+                .set("Controller-Header-Key1", "Controller-Header-Val1")
+                .set("Controller-Header-Key1", "Controller-Header-Val2")
+                .set("Controller-Header-Key2", ["val1", "val2", "val3"])
+  return render("with header").setHeader(header)
+
+# ========== Cookie ==================== 
+proc indexCookie*(this:SampleController): Response =
+  return render(cookieHtml(this.auth))
+
+proc storeCookie*(this:SampleController): Response =
+  let key = this.request.params["key"]
+  let value = this.request.params["value"]
+  let cookie = newCookie(this.request)
+                .set(key, value)
+  return render(cookieHtml(this.auth)).setCookie(cookie)
+
+proc updateCookie*(this:SampleController): Response =
+  let key = this.request.params["key"]
+  let days = this.request.params["days"].parseInt
+  let cookie = newCookie(this.request)
+                .updateExpire(key, days)
+  return redirect("/sample/cookie").setCookie(cookie)
+
+proc destroyCookie*(this:SampleController): Response =
+  let key = this.request.params["key"]
+  let cookie = newCookie(this.request)
+                .delete(key)
+  return redirect("/sample/cookie").setCookie(cookie)
+
+proc destroyCookies*(this:SampleController): Response =
+  # TODO: not work until https://github.com/dom96/jester/pull/237 is mearged and release
+  let cookie = newCookie(this.request)
+                .destroy()
+  return redirect("/sample/cookie").setCookie(cookie)
+
+# ========== Login ====================
+proc indexLogin*(this:SampleController): Response =
+  let auth = this.auth
+  return render(loginHtml(auth))
+
+proc storeLogin*(this:SampleController): Response =
+  let name = this.request.params["name"]
+  let password = this.request.params["password"]
+  echo name, password
+  # auth
+  let sessionId = newAuth()
+                    .set("name", name)
+                    .getId()
+  let cookie = newCookie(this.request)
+                .set("session_id", sessionId)
+                .set("key1", "val1")
+                .set("key2", "val2")
+  return redirect("/sample/login").setCookie(cookie)
+
+proc destroyLogin*(this:SampleController): Response =
+  this.auth.destroy()
+  let cookie = newCookie(this.request).destroy()
+  return redirect("/sample/login").setCookie(cookie)
+
+# ========== Session ====================
+proc indexSession*(this:SampleController): Response =
+  return render(sessionHtml(this.auth))
+
+proc storeSession*(this:SampleController): Response =
+  let key = this.request.params["key"]
+  let value = this.request.params["value"]
+  echo key, value
+  # let cookie = newCookie(key, value)
+  # return render(cookieHtml(this.auth)).setCookie(cookie)
+  return redirect("/sample/session")
