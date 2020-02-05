@@ -1,5 +1,4 @@
 import ../../../src/basolato/view
-import ../../../src/basolato/csrf_token
 
 proc cookieHtml*(auth:Auth): string = tmpli html("""
 <a href="/">go back</a>

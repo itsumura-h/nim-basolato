@@ -1,16 +1,14 @@
 import json, strformat, options, strutils, macros
-import jester except redirect, setCookie, resp
+# framework
 import base, response, logger, errorPage, header
 from controller import redirect, render, errorRedirect
-from private import
-  middleware#, http404Route, exceptionRoute, response, redirect, render,
-  #errorRedirect
+# 3rd party
+import jester except redirect, setCookie, resp
 
+# framework
+export base, response, redirect, render, errorRedirect
+# 3rd party
 export jester except redirect, setCookie, resp
-export redirect, render, errorRedirect
-export
-  base, response, middleware#, http404Route, exceptionRoute
-  #redirect, render, errorRedirect
 
 
 template route*(rArg: Response) =
@@ -145,3 +143,13 @@ template http404Route*(pagePath="") =
     route(render(errorPage(Http404, "route not match")))
   else:
     route(render(html(pagePath)))
+
+
+template middleware*(procs:varargs[Response]) =
+  for p in procs:
+    if p == nil:
+      # echo getCurrentExceptionMsg()
+      discard
+    else:
+      route(p)
+      break

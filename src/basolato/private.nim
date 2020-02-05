@@ -1,23 +1,23 @@
-import httpcore, json, macros, options, os, std/sha1, tables, times
-# framework
-import base
-# 3rd party
-import jester except redirect, setCookie, setHeader, resp
-import bcrypt, flatdb, templates
+# import httpcore, json, macros, options, os, std/sha1, tables, times
+# # framework
+# import base
+# # 3rd party
+# import jester except redirect, setCookie, setHeader, resp
+# import bcrypt, flatdb, templates
 
-export base
-export jester except redirect, setCookie, setHeader, resp
-export bcrypt, flatdb, templates
+# export base
+# export jester except redirect, setCookie, setHeader, resp
+# export bcrypt, flatdb, templates
 
 
-template middleware*(procs:varargs[Response]) =
-  for p in procs:
-    if p == nil:
-      # echo getCurrentExceptionMsg()
-      discard
-    else:
-      route(p)
-      break
+# template middleware*(procs:varargs[Response]) =
+#   for p in procs:
+#     if p == nil:
+#       # echo getCurrentExceptionMsg()
+#       discard
+#     else:
+#       route(p)
+#       break
 
 
 # # ==================== controller =============================================
@@ -49,17 +49,4 @@ template middleware*(procs:varargs[Response]) =
 
 # ==================== view ===================================================
 
-proc get*(val:JsonNode):string =
-  case val.kind
-  of JString:
-    return val.getStr
-  of JInt:
-    return $(val.getInt)
-  of JFloat:
-    return $(val.getFloat)
-  of JBool:
-    return $(val.getBool)
-  of JNull:
-    return ""
-  else:
-    raise newException(JsonKindError, "val is array")
+

@@ -1,5 +1,5 @@
 import unittest, times
-include ../src/basolato/csrf_token
+include ../src/basolato/security
 
 suite "token":
   test "newToken":

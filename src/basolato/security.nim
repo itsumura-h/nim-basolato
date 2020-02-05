@@ -1,8 +1,10 @@
-import httpcore, json, tables, strutils, times, random
+import httpcore, json, tables, strutils, times, random, strformat
 # framework
-import base, private#, response
+import base
 # 3rd party
 import flatdb, nimAES
+from jester import daysForward
+import jester/request
 import jester/private/utils
 
 
@@ -203,18 +205,12 @@ proc destroy*(this:Cookie, path="/"):Cookie =
       )
   return this
 
-# proc setCookie*(response:Response, cookie:Cookie):Response =
-#   for cookieData in cookie.cookies:
-#     let cookieStr = cookieData.toCookieStr()
-#     response.headers.add(("Set-cookie", cookieStr))
-#   return response
-
 
 # ========== Auth ====================
-type
-  Auth* = ref object
-    isLogin*:bool
-    session*:Session
+type Auth* = ref object
+  isLogin*:bool
+  session*:Session
+
 
 proc checkSessionIdValid*(sessionId:string) =
   var sessionId = sessionId.decryptCtr()
@@ -260,3 +256,48 @@ proc set*(this:Auth, key, value:string):Auth =
 
 proc destroy*(this:Auth) =
   this.session.destroy()
+
+
+# ========== Token ====================
+type Token* = ref object
+  token:string
+
+
+proc newToken*(token:string):Token =
+  if token.len > 0:
+    return Token(token:token)
+  var token = $(getTime().toUnix().int())
+  token = token.encryptCtr()
+  return Token(token:token)
+
+proc getToken*(this:Token):string =
+  return this.token
+
+proc toTimestamp*(this:Token): int =
+  return this.getToken().decryptCtr().parseInt()
+
+# ========== CsrfToken ====================
+type CsrfToken* = ref object
+  token:Token
+
+
+proc newCsrfToken*(token:string):CsrfToken =
+  return CsrfToken(token: newToken(token))
+
+proc getToken*(this:CsrfToken): string =
+  this.token.getToken()
+
+proc csrfToken*(token=""):string =
+  var token = newCsrfToken(token).getToken()
+  return &"""<input type="hidden" name="csrf_token" value="{token}">"""
+
+proc checkCsrfTimeout*(this:CsrfToken):bool =
+  var timestamp:int
+  try:
+    timestamp = this.token.toTimestamp()
+  except:
+    raise newException(Exception, "Invalid csrf token")
+
+  if getTime().toUnix > timestamp + CSRF_TIME * 60:
+    raise newException(Exception, "Timeout")
+  return true

@@ -1,7 +1,26 @@
-import templates
+import json
+# framework
 import base, security
-from private import get
+# 3rd party
+import templates
 
-export templates
+# framework
 export base, security
-export get
+# 3rd party
+export templates
+
+
+proc get*(val:JsonNode):string =
+  case val.kind
+  of JString:
+    return val.getStr
+  of JInt:
+    return $(val.getInt)
+  of JFloat:
+    return $(val.getFloat)
+  of JBool:
+    return $(val.getBool)
+  of JNull:
+    return ""
+  else:
+    raise newException(JsonKindError, "val is array")
