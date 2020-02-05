@@ -1,6 +1,6 @@
 import httpcore, json, options, os
 # framework
-import base, header
+import base, header, security
 # 3rd party
 import httpbeast
 from jester import RawHeaders, CallbackAction, ResponseData
@@ -37,7 +37,7 @@ template resp*(code: HttpCode,
   break route
 
 
-# =============================================================================
+# ========== Header ====================
 proc setHeader*(response:Response, headers:Headers):Response =
   for header in headers:
     var index = 0
@@ -53,6 +53,15 @@ proc setHeader*(response:Response, headers:Headers):Response =
       response.headers[index] = (header.key, tmpValue & ", " & header.val)
   return response
 
+# ========== Cookie ====================
+proc setCookie*(response:Response, cookie:Cookie):Response =
+  for cookieData in cookie.cookies:
+    let cookieStr = cookieData.toCookieStr()
+    response.headers.add(("Set-cookie", cookieStr))
+  return response
+
+
+# =============================================================================
 proc response*(arg:ResponseData):Response =
   if not arg[4]: raise newException(Error404, "")
   return Response(

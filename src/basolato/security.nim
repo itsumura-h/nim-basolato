@@ -124,7 +124,7 @@ type
 proc minutesForward*(minutes:int): DateTime =
   return getTime().utc + initTimeInterval(minutes = minutes)
 
-proc toCookieStr(this:CookieData):string =
+proc toCookieStr*(this:CookieData):string =
   makeCookie(this.name, this.value,this.expire,this.domain, this.path,
               this.secure,this.httpOnly, this.sameSite)
 
@@ -203,11 +203,11 @@ proc destroy*(this:Cookie, path="/"):Cookie =
       )
   return this
 
-proc setCookie*(response:Response, cookie:Cookie):Response =
-  for cookieData in cookie.cookies:
-    let cookieStr = cookieData.toCookieStr()
-    response.headers.add(("Set-cookie", cookieStr))
-  return response
+# proc setCookie*(response:Response, cookie:Cookie):Response =
+#   for cookieData in cookie.cookies:
+#     let cookieStr = cookieData.toCookieStr()
+#     response.headers.add(("Set-cookie", cookieStr))
+#   return response
 
 
 # ========== Auth ====================
