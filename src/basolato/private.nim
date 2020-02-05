@@ -20,32 +20,32 @@ template middleware*(procs:varargs[Response]) =
       break
 
 
-# ==================== controller =============================================
-# String
-proc render*(body:string):Response =
-  return Response(status:Http200, bodyString:body, responseType:String)
+# # ==================== controller =============================================
+# # String
+# proc render*(body:string):Response =
+#   return Response(status:Http200, bodyString:body, responseType:String)
 
-proc render*(status:HttpCode, body:string):Response =
-  return Response(status:status, bodyString:body, responseType:String)
-
-
-# Json
-proc render*(body:JsonNode):Response =
-  return Response(status:Http200, bodyJson:body, responseType:Json)
-
-proc render*(status:HttpCode, body:JsonNode):Response =
-  return Response(status:status, bodyJson:body, responseType:Json)
+# proc render*(status:HttpCode, body:string):Response =
+#   return Response(status:status, bodyString:body, responseType:String)
 
 
-proc redirect*(url:string) : Response =
-  return Response(
-    status:Http303, url:url, responseType: Redirect
-  )
+# # Json
+# proc render*(body:JsonNode):Response =
+#   return Response(status:Http200, bodyJson:body, responseType:Json)
 
-proc errorRedirect*(url:string): Response =
-  return Response(
-    status:Http302, url:url, responseType: Redirect
-  )
+# proc render*(status:HttpCode, body:JsonNode):Response =
+#   return Response(status:status, bodyJson:body, responseType:Json)
+
+
+# proc redirect*(url:string) : Response =
+#   return Response(
+#     status:Http303, url:url, responseType: Redirect
+#   )
+
+# proc errorRedirect*(url:string): Response =
+#   return Response(
+#     status:Http302, url:url, responseType: Redirect
+#   )
 
 # ==================== view ===================================================
 
