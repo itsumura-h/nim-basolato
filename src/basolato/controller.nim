@@ -1,13 +1,13 @@
 import json
 # framework
-import base, security, response
-from private import render, redirect, errorRedirect#, header
+import base, security, response, header
+from private import render, redirect, errorRedirect
 # 3rd party
 import jester except redirect, setCookie, setHeader, resp
 
 # framework
-export base, security, response
-export render, redirect, errorRedirect, header
+export base, security, response, header
+export render, redirect, errorRedirect
 # 3rd party
 export jester except redirect, setCookie, setHeader, resp
 

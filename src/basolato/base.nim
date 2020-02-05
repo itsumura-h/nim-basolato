@@ -12,8 +12,6 @@ const
   IS_SESSION_MEMORY* = getEnv("IS_SESSION_MEMORY").string.parseBool
 
 type
-  Headers* = seq[tuple[key, val:string]]
-
   Response* = ref object
     status*:HttpCode
     body*: string

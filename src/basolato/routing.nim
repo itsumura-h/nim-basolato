@@ -1,6 +1,6 @@
 import json, strformat, options, strutils, macros
 import jester except redirect, setCookie, resp
-import base, response, logger, errorPage
+import base, response, logger, errorPage, header
 from controller import redirect, render, errorRedirect
 from private import
   middleware#, http404Route, exceptionRoute, response, redirect, render,

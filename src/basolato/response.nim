@@ -1,6 +1,6 @@
 import httpcore, json, options, os
 # framework
-import base
+import base, header
 # 3rd party
 import httpbeast
 from jester import RawHeaders, CallbackAction, ResponseData
@@ -37,32 +37,20 @@ template resp*(code: HttpCode,
   break route
 
 
-proc header*(response:Response, key:string, value:string):Response =
-  var response = response
-  var index = 0
-  var preValue = ""
-  for i, row in response.headers:
-    if row.key == key:
-      index = i
-      preValue = row.val
-      break
-
-  if preValue.len == 0:
-    response.headers.add(
-      (key, value)
-    )
-  else:
-    response.headers[index] = (key, preValue & ", " & value)
-  return response
-
-proc header*(response:Response, key:string, valuesArg:openArray[string]):Response =
-  var response = response
-  var value = ""
-  for i, v in valuesArg:
-    if i > 0:
-      value.add(", ")
-    value.add(v)
-  response.headers.add((key, value))
+# =============================================================================
+proc setHeader*(response:Response, headers:Headers):Response =
+  for header in headers:
+    var index = 0
+    var tmpValue = ""
+    for i, row in response.headers:
+      if row.key == header.key:
+        index = i
+        tmpValue = row.val
+        break
+    if tmpValue.len == 0:
+      response.headers.add((header.key, header.val))
+    else:
+      response.headers[index] = (header.key, tmpValue & ", " & header.val)
   return response
 
 proc response*(arg:ResponseData):Response =

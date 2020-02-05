@@ -71,10 +71,11 @@ proc vue*(this:SampleController): Response =
 
 
 proc customHeaders*(this:SampleController): Response =
-  return render("with header")
-          .header("Controller-Header-Key1", "Controller-Header-Val1")
-          .header("Controller-Header-Key1", "Controller-Header-Val2")
-          .header("Controller-Header-Key2", ["val1", "val2", "val3"])
+  let header = newHeaders()
+                .set("Controller-Header-Key1", "Controller-Header-Val1")
+                .set("Controller-Header-Key1", "Controller-Header-Val2")
+                .set("Controller-Header-Key2", ["val1", "val2", "val3"])
+  return render("with header").setHeader(header)
 
 # ========== Cookie ==================== 
 proc indexCookie*(this:SampleController): Response =
@@ -83,7 +84,6 @@ proc indexCookie*(this:SampleController): Response =
 proc storeCookie*(this:SampleController): Response =
   let key = this.request.params["key"]
   let value = this.request.params["value"]
-  # let cookie = createCookie(key, value)
   let cookie = newCookie(this.request)
                 .set(key, value)
   return render(cookieHtml(this.auth)).setCookie(cookie)
