@@ -11,19 +11,36 @@ import app/controllers/sample_controller
 
 
 router sample:
-  get "/welcome":
-    route(newSampleController(request).welcome())
+  get "/welcome": route(newSampleController(request).welcome())
   get "/checkLogin":
-    middleware([isLogin(request)])
-    route(newSampleController(request).index(), [corsHeader()])
-  get "/fib/@num":
-    route(newSampleController(request).fib(@"num"), [corsHeader()])
-  get "/react":
-    route(newSampleController(request).react())
-  get "/vue":
-    route(newSampleController(request).vue())
-  get "/custom_headers":
-    route(newSampleController(request).customHeaders(), [secureHeader(), corsHeader(), customHeader()])
+    middleware([isLogin(request)]);
+    route(newSampleController(request).index(),
+    [corsHeader()])
+  get "/fib/@num": route(newSampleController(request).fib(@"num"),
+                    [corsHeader()])
+  get "/react": route(newSampleController(request).react())
+  get "/vue": route(newSampleController(request).vue())
+  get "/custom-headers": route(newSampleController(request).customHeaders(),
+                          [secureHeader(), corsHeader(), customHeader()])
+
+  get "/cookie": route(newSampleController(request).indexCookie())
+  post "/cookie": route(newSampleController(request).storeCookie())
+  post "/cookie/update": route(newSampleController(request).updateCookie())
+  post "/cookie/delete": route(newSampleController(request).destroyCookie())
+  post "/cookie/delete-all": route(newSampleController(request).destroyCookies())
+
+  get "/login": route(newSampleController(request).indexLogin())
+  post "/login": route(newSampleController(request).storeLogin())
+  post "/logout": route(newSampleController(request).destroyLogin())
+
+  get "/session": route(newSampleController(request).indexSession())
+  post "/session": route(newSampleController(request).storeSession())
+  # post "/session/update":
+  #   route(newSampleController(request).updateSession())
+  # post "/session/delete":
+  #   route(newSampleController(request).destroySession())
+  # post "/session/delete-all":
+  #   route(newSampleController(request).destroySession())
 
 
 router api:

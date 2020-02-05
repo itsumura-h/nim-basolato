@@ -23,6 +23,7 @@ This framework depends on following libralies
 - [allographer](https://github.com/itsumura-h/nim-allographer), Query builder library
 - [flatdb](https://github.com/enthus1ast/flatdb), a small flatfile, inprocess database for nim-lang. as session DB
 - [bcrypt](https://github.com/runvnc/bcryptnim), useful for hashing passwords.
+- [nimAES](https://github.com/jangko/nimAES), Advanced Encryption Standard
 
 Following libralies are not installed by automatically, but I have highly recommandation to you to install and use them for creating modern web app.
 - [Karax](https://github.com/pragmagic/karax), Single page applications for Nim.

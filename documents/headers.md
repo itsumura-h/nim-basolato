@@ -25,7 +25,7 @@ get "/checkLogin":
 
 # Response header
 ## Type of headers
-Type of response header is `seq[tuple[key, value:string]]`
+Type of response header is `seq[tuple[key, val:string]]`
 ```nim
 from strutils import join
 
@@ -44,9 +44,7 @@ proc secureHeader*(): seq =
 
 ## Set headers in routing
 You can set custom headers by setting 2nd arg or `route()`  
-Procs which return custom headers have to return seq `@[(key, value: string)]`
-
-*It should change as `@[(key, val: string)]` after pull request merged and release https://github.com/dom96/jester/pull/234*
+Procs which return custom headers have to return seq `@[(key, val: string)]`
 
 ```nim
 import basolato/routing

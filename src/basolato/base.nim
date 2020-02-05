@@ -5,7 +5,11 @@ const
   IS_DISPLAY* = getEnv("LOG_IS_DISPLAY").string.parseBool
   IS_FILE* = getEnv("LOG_IS_FILE").string.parseBool
   LOG_DIR* = getEnv("LOG_DIR").string
+  SECRET_KEY* = getEnv("SECRET_KEY").string
+  CSRF_TIME* = getEnv("CSRF_TIME").string.parseInt
   SESSION_TIME* = getEnv("SESSION_TIME").string.parseInt
+  SESSION_DB_PATH* = getEnv("SESSION_DB_PATH").string
+  IS_SESSION_MEMORY* = getEnv("IS_SESSION_MEMORY").string.parseBool
 
 type
   Response* = ref object
@@ -14,8 +18,7 @@ type
     bodyString*: string
     bodyJson*: JsonNode
     responseType*: ResponseType
-    headers*: seq[tuple[key, value:string]]
-    # headers*: seq[tuple[key, val:string]] # TODO after pull request mergeed https://github.com/dom96/jester/pull/234
+    headers*: seq[tuple[key, val:string]]
     url*: string
     match*: bool
 
@@ -67,12 +70,3 @@ type
 const errorStatusArray* = [505, 504, 503, 502, 501, 500, 451, 431, 429, 428, 426,
   422, 421, 418, 417, 416, 415, 414, 413, 412, 411, 410, 409, 408, 407, 406,
   405, 404, 403, 401, 400, 307, 305, 304, 303, 302, 301, 300]
-
-# macro createHttpException():untyped =
-#   var strBody = """type
-# """
-#   for num in errorStatusArray:
-#     strBody.add(fmt"""  Error{num}* = object of Exception
-# """)
-#   parseStmt(strBody)
-# createHttpException

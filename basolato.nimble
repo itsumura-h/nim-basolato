@@ -15,11 +15,13 @@ skipDirs      = @["basolato/cli"]
 
 requires "nim >= 1.0.0"
 requires "cligen >= 0.9.41"
-requires "jester >= 0.4.3"
+# requires "jester >= 0.4.3"
+requires "https://github.com/dom96/jester#4c39652"
 requires "templates >= 0.5"
 requires "bcrypt >= 0.2.1"
+requires "nimAES >= 0.1.2"
 requires "https://github.com/enthus1ast/flatdb >= 0.2.4"
-requires "https://github.com/itsumura-h/nim-allographer >= 0.8.0"
+requires "allographer >= 0.8.0"
 
 # import strformat
 # from os import `/`
