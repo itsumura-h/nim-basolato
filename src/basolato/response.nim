@@ -60,6 +60,23 @@ proc setCookie*(response:Response, cookie:Cookie):Response =
     response.headers.add(("Set-cookie", cookieStr))
   return response
 
+# ========== Auth ====================
+proc setAuth*(response:Response, auth:Auth):Response =
+  let sessionId = auth.getToken()
+  let cookie = newCookieData("session_id", sessionId,
+                    minutesForward(SESSION_TIME))
+                .toCookieStr()
+  response.headers.add(("Set-cookie", cookie))
+  return response
+
+proc destroyAuth*(response:Response, auth:Auth):Response =
+  let sessionId = auth.getToken()
+  let cookie = newCookieData("session_id", sessionId, minutesForward(-1))
+                .toCookieStr()
+  response.headers.add(("Set-cookie", cookie))
+  return response
+
+
 
 # =============================================================================
 proc response*(arg:ResponseData):Response =

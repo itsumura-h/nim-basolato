@@ -165,7 +165,7 @@ proc index(this:Controller): Response =
   let value = newSession(sessionId).get(key)
 ```
 
-set value to session
+set value in session
 ```nim
 proc store(this:Controller): Response =
   let key = this.request.params["key"]
@@ -190,6 +190,8 @@ proc destroy(this:Controller): Response =
 
 
 # Auth
+Basolato has Auth system. it conceal inconvenient cookie and session function.
+
 ```nim
 type Auth* = ref object
   isLogin*:bool
@@ -204,7 +206,7 @@ proc newAuth*():Auth =
 
 proc isLogin*(this:Auth):bool =
 
-proc getId*(this:Auth):string =
+proc getToken*(this:Auth):string =
 
 proc get*(this:Auth, key:string):string =
 
@@ -213,4 +215,36 @@ proc set*(this:Auth, key, value:string):Auth =
 proc delete*(this:Auth, key:string):AUth =
 
 proc destroy*(this:Auth) =
+```
+
+get auth
+```nim
+proc newController*(request:Request):Controller =
+  return Controller(
+    auth:newAuth(request)
+  )
+
+proc index(this:Controller): Response =
+  let loginName = this.auth.get("login_name")
+```
+
+set value in auth
+```nim
+proc index(this:Controller): Response =
+  let name = this.request.params["name"]
+  let auth = this.auth.set("login_name", name)
+  return render("auth").setAuth(auth)
+```
+
+delete one key-value pair of session
+```nim
+proc destroy(this:Controller): Response =
+  let auth = this.auth.delete("login_name")
+  return render("auth").setAuth(auth)
+```
+
+destroy auth
+```nim
+proc destroy(this:Controller): Response =
+  return render("auth").destroyAuth(this.auth)
 ```

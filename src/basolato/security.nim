@@ -40,10 +40,18 @@ type SessionDb = ref object
   conn: FlatDb
   token: string
 
+proc checkTokenValid(db:FlatDb, token:string) =
+  try:
+    discard db[token]
+  except:
+    raise newException(Exception, "Invalid session id")
+
 proc newSessionDb*(token=""):SessionDb =
   let db = newFlatDb(SESSION_DB_PATH, IS_SESSION_MEMORY)
   discard db.load()
   if token.len > 0:
+    var token = token.decryptCtr()
+    checkTokenValid(db, token)
     return SessionDb(conn: db, token:token)
   else:
     let token = db.append(newJObject())
@@ -130,14 +138,14 @@ proc toCookieStr*(this:CookieData):string =
   makeCookie(this.name, this.value,this.expire,this.domain, this.path,
               this.secure,this.httpOnly, this.sameSite)
 
-proc newCookieData(name, value:string, expire:DateTime, sameSite: SameSite=Lax,
+proc newCookieData*(name, value:string, expire:DateTime, sameSite: SameSite=Lax,
       secure = false, httpOnly = false, domain = "", path = "/"):CookieData =
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(expire.utc, f)
   CookieData(name:name, value:value,expire:expireStr, sameSite:sameSite,
     secure:secure, httpOnly:httpOnly, domain:domain, path:path)
 
-proc newCookieData(name, value:string, expire="", sameSite: SameSite=Lax,
+proc newCookieData*(name, value:string, expire="", sameSite: SameSite=Lax,
       secure = false, httpOnly = false, domain = "", path = "/"):CookieData =
   CookieData(name:name, value:value,expire:expire, sameSite:sameSite,
     secure:secure, httpOnly:httpOnly, domain:domain, path:path)
@@ -186,7 +194,6 @@ proc updateExpire*(this:Cookie, name:string, days:int, path="/"):Cookie =
     if rowArr[0] == name:
       this.cookies.add(newCookieData(rowArr[0], rowArr[1], expire=expireStr))
       break
-  echo this.cookies.repr
   return this
 
 proc delete*(this:Cookie, key:string, path="/"):Cookie =
@@ -211,17 +218,10 @@ type Auth* = ref object
   isLogin*:bool
   session*:Session
 
-
-proc checkSessionIdValid*(sessionId:string) =
-  var sessionId = sessionId.decryptCtr()
-  if sessionId.len != 24:
-    raise newException(Exception, "Invalid session_id")
-
 proc newAuth*(request:Request):Auth =
   ## use in constructor
   var sessionId = newCookie(request).get("session_id")
   if sessionId.len > 0:
-    sessionId = sessionId.decryptCtr()
     return Auth(
       isLogin: true,
       session:newSession(sessionId)
@@ -239,7 +239,7 @@ proc newAuth*():Auth =
 proc isLogin*(this:Auth):bool =
   this.isLogin
 
-proc getId*(this:Auth):string =
+proc getToken*(this:Auth):string =
   this.session.getToken()
 
 proc get*(this:Auth, key:string):string =
