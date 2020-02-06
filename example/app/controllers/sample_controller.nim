@@ -130,15 +130,3 @@ proc destroyLogin*(this:SampleController): Response =
   this.auth.destroy()
   let cookie = newCookie(this.request).destroy()
   return redirect("/sample/login").setCookie(cookie)
-
-# ========== Session ====================
-proc indexSession*(this:SampleController): Response =
-  return render(sessionHtml(this.auth))
-
-proc storeSession*(this:SampleController): Response =
-  let key = this.request.params["key"]
-  let value = this.request.params["value"]
-  echo key, value
-  # let cookie = newCookie(key, value)
-  # return render(cookieHtml(this.auth)).setCookie(cookie)
-  return redirect("/sample/session")

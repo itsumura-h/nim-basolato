@@ -33,16 +33,6 @@ router sample:
   post "/login": route(newSampleController(request).storeLogin())
   post "/logout": route(newSampleController(request).destroyLogin())
 
-  get "/session": route(newSampleController(request).indexSession())
-  post "/session": route(newSampleController(request).storeSession())
-  # post "/session/update":
-  #   route(newSampleController(request).updateSession())
-  # post "/session/delete":
-  #   route(newSampleController(request).destroySession())
-  # post "/session/delete-all":
-  #   route(newSampleController(request).destroySession())
-
-
 router api:
   get "/api1":
     route(render("api1"))

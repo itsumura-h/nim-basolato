@@ -82,7 +82,6 @@ get cookie
 ```nim
 proc index(this:Controller): Response =
   let val = newCookie(this.request).get("key")
-  echo val
 ```
 
 set cookie
@@ -123,6 +122,8 @@ proc index(this:Controller): Response =
 # Session
 Basolato use [nimAES](https://github.com/jangko/nimAES) as session DB. We have a plan to be able to choose Redis in the future.
 
+If you set `sessionId` in arg of `newSession()`, it return existing session otherwise create new session.
+
 ```nim
 type 
   SessionType* = enum
@@ -141,13 +142,50 @@ proc db*(this:Session):SessionDb =
 
 proc getToken*(this:Session):string =
 
-proc set*(this:Session, key, value:string):Session =
-
 proc get*(this:Session, key:string):string =
+
+proc set*(this:Session, key, value:string):Session =
 
 proc delete*(this:Session, key:string): Session =
 
 proc destroy*(this:Session) =
+```
+
+get session id
+```nim
+proc index(this:Controller): Response =
+  let sessionId = newCookie().getToken()
+```
+
+get value in session
+```nim
+proc index(this:Controller): Response =
+  let sessionId = newCookie(request).get("session_id")
+  let key = this.request.params["key"]
+  let value = newSession(sessionId).get(key)
+```
+
+set value to session
+```nim
+proc store(this:Controller): Response =
+  let key = this.request.params["key"]
+  let value = this.request.params["value"]
+  discard newSession().set(key, value)
+```
+
+delete one key-value pair of session
+```nim
+proc destroy(this:Controller): Response =
+  let sessionId = newCookie().getToken()
+  let key = this.request.params["key"]
+  discard newSession(sessionId).delete(key)
+```
+
+destroy session
+```nim
+proc destroy(this:Controller): Response =
+  let sessionId = newCookie().getToken()
+  newSession(sessionId).destroy()
 ```
 
 

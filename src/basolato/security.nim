@@ -219,7 +219,6 @@ proc checkSessionIdValid*(sessionId:string) =
 
 proc newAuth*(request:Request):Auth =
   ## use in constructor
-  # var sessionId = request.getCookie("session_id")
   var sessionId = newCookie(request).get("session_id")
   if sessionId.len > 0:
     sessionId = sessionId.decryptCtr()
