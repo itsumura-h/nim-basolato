@@ -11,11 +11,11 @@ import app/controllers/SomeController
 
 routes:
   get "/":
-    route(SomeController.index())
+    route(newSomeController(request).index())
   post "/":
-    route(SomeController.create(request))
+    route(newSomeController(request).create())
   get "/@id":
-    route(SomeController.show(@"id"))
+    route(newSomeController(request).show(@"id"))
 ```
 
 ## HTTP_Verbs
@@ -41,9 +41,9 @@ This functions is definded in `jester`
 ```nim
 router dashboard:
   get "/url1":
-    route(DashboardController.url1())
+    route(newDashboardController(request).url1())
   get "/url2":
-    route(DashboardController.url2())
+    route(newDashboardController(request).url2())
 
 routes:
   extend dashboard, "/dashboard"

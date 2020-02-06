@@ -1,4 +1,4 @@
-import httpcore, json, tables, strutils, times, random, strformat
+import httpcore, json, tables, strutils, times, random, strformat, tables
 # framework
 import base
 # 3rd party
@@ -145,6 +145,17 @@ proc newCookieData(name, value:string, expire="", sameSite: SameSite=Lax,
 proc newCookie*(request:Request):Cookie =
   return Cookie(request:request, cookies:newSeq[CookieData](0))
 
+proc get*(this:Cookie, name:string):string =
+  result = ""
+  if not this.request.headers.hasKey("Cookie"):
+    return result
+  let cookiesStrArr = this.request.headers["Cookie"].split("; ")
+  for row in cookiesStrArr:
+    let rowArr = row.split("=")
+    if rowArr[0] == name:
+      result = rowArr[1]
+      break
+
 proc set*(this:Cookie, name, value: string, expire:DateTime,
       sameSite: SameSite=Lax, secure = false, httpOnly = false, domain = "",
       path = "/"):Cookie =
@@ -177,17 +188,6 @@ proc updateExpire*(this:Cookie, name:string, days:int, path="/"):Cookie =
       break
   echo this.cookies.repr
   return this
-
-proc get*(this:Cookie, name:string):string =
-  result = ""
-  if not this.request.headers.hasKey("Cookie"):
-    return result
-  let cookiesStrArr = this.request.headers["Cookie"].split("; ")
-  for row in cookiesStrArr:
-    let rowArr = row.split("=")
-    if rowArr[0] == name:
-      result = rowArr[1]
-      break
 
 proc delete*(this:Cookie, key:string, path="/"):Cookie =
   this.cookies.add(
@@ -252,6 +252,10 @@ proc get*(this:Auth, key:string):string =
 proc set*(this:Auth, key, value:string):Auth =
   if this.isLogin:
     discard this.session.set(key, value)
+  return this
+
+proc delete*(this:Auth, key:string):AUth =
+  discard this.session.delete(key)
   return this
 
 proc destroy*(this:Auth) =

@@ -2,6 +2,7 @@ View
 ===
 [back](../README.md)
 
+## Introduction
 Basolato use [nim-templates](https://github.com/onionhammer/nim-templates) as view. It is a usefull HTML templating library for Nim. You can use nim-templates by importing `basolate/view`.  
 Views file should place in `resources` dir.
 
@@ -28,6 +29,37 @@ result
 ```html
 <p>paragraph</p>
 ```
+
+## if
+view
+```nim
+import basolate/view
+
+proc indexHtml*(auth:string): string tmpli html"""
+$if auth == "admin" {
+  <p>You are administrator</p>
+}
+$elif auth == "user" {
+  <p>You are user</p>
+}
+$else {
+  <p>You don't have permission</p>
+}
+"""
+```
+
+controller
+```nim
+proc index*(): Response =
+  let auth = "hoge"
+  return render(indexHtml(auth))
+```
+
+result
+```html
+<p>You don't have permission</p>
+```
+
 
 ## for
 view
@@ -93,7 +125,7 @@ proc index*(): Response =
 result
 ```html
 <html>
-  <heade>
+  <head>
     <title>Basolato</title>
   </head>
   <body>

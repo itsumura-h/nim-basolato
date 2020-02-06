@@ -3,57 +3,26 @@ Security
 [back](../README.md)
 
 # CSRF Token
-When you run application as web page, Basolato check whether csrf token is valid if request metod is `post`.
+Basolato can check whether csrf token is valid if request metod is `post`, `put`, `patch`, `delete`.
 
-## Routing
-When to pass request to controller, set login field in constructor.
+### View
+Set `$(csrfToken())` in view.
 ```nim
-get "/posts/create": route(newPostsController(request).create())
-post "/posts/create": route(newPostsController(request).store())
-```
+import basolato/view
 
-## Controller
-Then, pass login field to view.
-
-```nim
-# DI
-type PostsController* = ref object
-  request*: Request
-  auth*: Auth
-
-# constructor
-proc newPostsController*(request:Request): PostsController =
-  return PostsController(
-    request: request,
-    auth: initAuth(request)
-  )
-
-# pass login data to view
-proc create*(this:PostsController): Response =
-  return render(createHtml(this.auth))
-```
-
-## View
-Set `$(csrfToken(auth))` in view.
-```nim
-proc createHtml*(auth:Auth):string = tmpli html("""
+proc createHtml*():string = tmpli html("""
 <form method="post">
-  $(csrfToken(auth))
+  $(csrfToken())
   .
   .
 </form>
 """)
 ```
 
-## Middleware
-When Basolato recieve post request, csrf token check is run in `framework_middleware`.
+If `checkCsrfToken(request)` is in `template framework()`, csrf check is available.
 
+middleware/framework_middleware.nim
 ```nim
-# routing
-routes:
-  before: framework
-
-# middleware
 template framework*() =
   checkCsrfToken(request)
 ```
@@ -70,167 +39,140 @@ checkCsrfToken(request Error302, "/login")
 
 # Cookie
 
-create new cookie
 ```nim
-# example
-proc index(this:Controller): Response =
-  let cookie = genCookie("key", "val", daysForward(5))
-  return render("with cookie").setCookie(cookie)
+type
+  CookieData* = ref object
+    name: string
+    value: string
+    expire: string
+    sameSite: SameSite
+    secure: bool
+    httpOnly: bool
+    domain: string
+    path: string
+
+  Cookie* = ref object
+    request: Request
+    cookies*: seq[CookieData]
 ```
+
+### API
 ```nim
-# API
-proc genCookie*(name, value: string, expires="",
-                    sameSite: SameSite=Lax, secure = false,
-                    httpOnly = false, domain = "", path = ""): string =
+proc newCookie*(request:Request):Cookie =
 
-proc genCookie*(name, value: string, expires: DateTime,
-                    sameSite: SameSite=Lax, secure = false,
-                    httpOnly = false, domain = "", path = ""): string =
+proc get*(this:Cookie, name:string):string =
 
-proc setCookie*(response:Response, cookie:string): Response =
+proc set*(this:Cookie, name, value: string, expire:DateTime,
+      sameSite: SameSite=Lax, secure = false, httpOnly = false, domain = "",
+      path = "/"):Cookie =
 
-proc daysForward*(days: int): DateTime =
+proc set*(this:Cookie, name, value: string, sameSite: SameSite=Lax,
+      secure = false, httpOnly = false, domain = "", path = "/"):Cookie =
+
+proc updateExpire*(this:Cookie, name:string, days:int, path="/"):Cookie =
+
+proc delete*(this:Cookie, key:string, path="/"):Cookie =
+
+proc destroy*(this:Cookie, path="/"):Cookie =
+
+proc setCookie*(response:Response, cookie:Cookie):Response =
 ```
 
 get cookie
 ```nim
-# example
 proc index(this:Controller): Response =
-  let val = this.request.getCookie("key")
+  let val = newCookie(this.request).get("key")
+  echo val
 ```
+
+set cookie
 ```nim
-# API
-proc getCookie*(request:Request, key:string): string =
+proc store*(this:Controller): Response =
+  let name = this.request.params["name"]
+  let cookie = newCookie(this.request)
+                .set("name", name)
+  return render("with cookie").setCookie(cookie)
 ```
 
 update cookie expire
 ```nim
-# example
-proc index(this:Controller): Response =
-  return render("with cookie")
-          .updateCookieExpire(this.request, "key", 5)
-```
-```nim
-# API
-proc updateCookieExpire*(response:Response, request:Request, key:string, days:int): Response =
+proc store*(this:Controller): Response =
+  let cookie = newCookie(this.request)
+                .updateExpire("name", 5)
+                # cookie will be deleted 5 days from now
+  return render("with cookie").setCookie(cookie)
 ```
 
 delete cookie
 ```nim
-# example
 proc index(this:Controller): Response =
-  return render("with cookie")
-          .deleteCookie("key")
+  let cookie = newCookie(this.request)
+                .delete("key")
+  return render("with cookie").setCookie(cookie)
 ```
+
+destroy all cookies
 ```nim
-# API
-proc deleteCookie*(response:Response, key:string): Response =
+proc index(this:Controller): Response =
+  let cookie = newCookie(this.request)
+                .destroy()
+  return render("with cookie").setCookie(cookie)
 ```
 
 
 # Session
+Basolato use [nimAES](https://github.com/jangko/nimAES) as session DB. We have a plan to be able to choose Redis in the future.
+
 ```nim
-type Session* = ref object
-  token*: string
-  cookie*: tuple[key, val:string]
+type 
+  SessionType* = enum
+    File
+    Redis # Not work now
+
+  Session* = ref object
+    db: SessionDb
 ```
 
-
-create new session
+API
 ```nim
-# example
-proc index(this:Controller): Response =
-  let session = sessionStart()
-  echo session.token
+proc newSession*(token="", typ:SessionType=File):Session =
 
->> 9DF6D313AAADCCDE780AB54EAFF2CC49C130B760
-```
-```nim
-proc sessionStart*(): Session =
-```
+proc db*(this:Session):SessionDb =
 
+proc getToken*(this:Session):string =
 
-create new session which relate to id
-```nim
-# example
-proc index(this:Controller): Response =
-  let id = 1
-  let session = sessionStart(id)
-  echo session.token
+proc set*(this:Session, key, value:string):Session =
 
->> 9DF6D313AAADCCDE780AB54EAFF2CC49C130B760
-```
-```nim
-# API
-proc sessionStart*(uid:int):Session =
+proc get*(this:Session, key:string):string =
+
+proc delete*(this:Session, key:string): Session =
+
+proc destroy*(this:Session) =
 ```
 
-add value in session
-```nim
-# example
-proc index(this:Controller): Response =
-  let session = sessionStart()
-                  .add("login_name", "user1")
-```
-```nim
-# API
-proc add*(this:Session, key:string, val:string):Session =
-```
 
 # Auth
 ```nim
 type Auth* = ref object
-  isLogin*: bool
-  token*: string
-  uid*: string
-  info*: Table[string, string]
+  isLogin*:bool
+  session*:Session
 ```
 
-create auth instance in constructor
+API
 ```nim
-# example
-type Controller = ref object
-  request: Request
-  auth: Auth
+proc newAuth*(request:Request):Auth =
 
-proc newController*(request:Request): Controller =
-  return Controller(
-    request: request,
-    auth: initAuth(request)
-  )
-```
-```nim
-# API
-proc initAuth*(request:Request): Auth =
-```
+proc newAuth*():Auth =
 
-destroy auth status and related session
-```nim
-# example
-proc destroy*(this: Controller): Response =
-  this.auth.destroy()
-  return redirect("/").deleteCookie("token")
-```
-```nim
-# API
+proc isLogin*(this:Auth):bool =
+
+proc getId*(this:Auth):string =
+
+proc get*(this:Auth, key:string):string =
+
+proc set*(this:Auth, key, value:string):Auth =
+
+proc delete*(this:Auth, key:string):AUth =
+
 proc destroy*(this:Auth) =
 ```
-
-## dev info
-### Not loged in
-- cookie:
-  - csrftoken: 1 year
-    - 403 CSRF Error
-- input:
-  - csrfmiddlewaretoken
-    - 403 CSRF Error
-
-### logged in
-- cookie:
-  - csrftoken: 1 year. update all access
-    - 403 CSRF Error
-  - sessionid: 2 weeks.
-    - 302 redirect login page
-- input:
-  - csrfmiddlewaretoken
-    - 403 CSRF Error

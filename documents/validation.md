@@ -262,3 +262,8 @@ table: users
 ```nim
 validate().unique("address", "users", "email")
 ```
+|arg position|example|content|
+|---|---|---|
+|1|"address"|response params key|
+|2|"users"|RDB table name|
+|3|"email"|RDB column name|
