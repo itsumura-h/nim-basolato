@@ -19,7 +19,7 @@ proc baseHtml*(auth:Auth, content:string): string =
     <div class="page-header">
       <div class="flex">
         $if auth.isLogin {
-          <p class="top-menu">Login: $(auth.info["login_name"])</p>
+          <p class="top-menu">Login: $(auth.get("login_name"))</p>
           <a href="/logout" class="top-menu"><span class="glyphicon glyphicon-log-out"></span></a>
           <a href="/posts/create" class="top-menu right"><span class="glyphicon glyphicon-plus"></span></a>
         }

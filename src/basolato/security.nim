@@ -188,12 +188,13 @@ proc set*(this:Cookie, name, value: string, sameSite: SameSite=Lax,
 proc updateExpire*(this:Cookie, name:string, days:int, path="/"):Cookie =
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(daysForward(days).utc, f)
-  let cookiesStrArr = this.request.headers["Cookie"].split("; ")
-  for i, row in cookiesStrArr:
-    let rowArr = row.split("=")
-    if rowArr[0] == name:
-      this.cookies.add(newCookieData(rowArr[0], rowArr[1], expire=expireStr))
-      break
+  if this.request.headers.hasKey("Cookie"):
+    let cookiesStrArr = this.request.headers["Cookie"].split("; ")
+    for i, row in cookiesStrArr:
+      let rowArr = row.split("=")
+      if rowArr[0] == name:
+        this.cookies.add(newCookieData(rowArr[0], rowArr[1], expire=expireStr))
+        break
   return this
 
 proc delete*(this:Cookie, key:string, path="/"):Cookie =

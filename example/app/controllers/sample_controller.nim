@@ -9,7 +9,6 @@ import ../../resources/sample/react
 import ../../../src/basolato/sample/resources/welcome
 import ../../resources/sample/cookie
 import ../../resources/sample/login
-import ../../resources/sample/session
 
 type SampleController = ref object of Controller
 

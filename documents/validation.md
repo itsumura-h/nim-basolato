@@ -34,9 +34,9 @@ proc store*(this:SignUpController): Response =
 
 View
 ```html
-proc createHtmlImpl(auth:Auth, name:string, email:string, errors:JsonNode): string = tmpli html"""
+proc createHtmlImpl(name:string, email:string, errors:JsonNode): string = tmpli html"""
   <form method="post">
-    $(csrfToken(auth))
+    $(csrfToken())
     <div>
       <p>name</p>
       $if errors.hasKey("name") {

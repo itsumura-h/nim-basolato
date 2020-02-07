@@ -1,17 +1,21 @@
+import strutils
 import ../../src/basolato/middleware
-# from custom_headers_middleware import corsHeader
+from custom_headers_middleware import corsHeader
 
 template framework*() =
-  checkCsrfToken(request)
-  # checkCsrfToken(request, Error302, "/login")
-  # checkCsrfToken(request, Error403, getCurrentExceptionMsg())
+  if not request.path.contains("."):
+    checkCsrfToken(request).catch()
+    checkAuthTokenValid(request).catch()
+    # checkCsrfToken(request, Error302, "/login")
+    # checkCsrfToken(request, Error403, getCurrentExceptionMsg())
+    if request.reqMethod == HttpOptions:
+      route(render(""), [corsHeader()])
 
-  try:
-    checkCookieToken(request)
-  except Exception:
-    echo getCurrentExceptionMsg()
-    discard
-  
+#[
+checkCsrfToken(request)
+  .catch(Error500, "error")
 
-  # if request.reqMethod == HttpOptions:
-  #   route(render(""), [corsHeader()])
+checkCsrfToken(request)
+  .redirect("/login")
+
+]#

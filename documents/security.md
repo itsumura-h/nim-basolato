@@ -190,7 +190,7 @@ proc destroy(this:Controller): Response =
 
 
 # Auth
-Basolato has Auth system. it conceal inconvenient cookie and session function.
+Basolato has Auth system. it conceal inconvenient cookie and session process.
 
 ```nim
 type Auth* = ref object

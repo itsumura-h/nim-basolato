@@ -3,10 +3,10 @@ import ../../../src/basolato/view
 import ../base
 
 
-proc editHtmlImpl*(auth:Auth, id:int, title:string, text:string, errors:JsonNode):string = tmpli html"""
+proc editHtmlImpl*(id:int, title:string, text:string, errors:JsonNode):string = tmpli html"""
 <h2>Edit Post</h2>
 <form method="post">
-  $(csrfToken(auth))
+  $(csrfToken())
   <div>
     <p>Title</p>
     $if errors.hasKey("title") {
@@ -34,4 +34,4 @@ proc editHtmlImpl*(auth:Auth, id:int, title:string, text:string, errors:JsonNode
 """
 
 proc editHtml*(auth:Auth, id:int, title="", text="", errors=newJObject()):string =
-  baseHtml(auth, editHtmlImpl(auth, id, title, text, errors))
+  baseHtml(auth, editHtmlImpl(id, title, text, errors))
