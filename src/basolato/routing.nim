@@ -1,12 +1,12 @@
 import json, strformat, options, strutils, macros
 # framework
-import base, response, logger, errorPage, header
+import base, response, logger, middleware, errorPage, header
 from controller import redirect, render, errorRedirect
 # 3rd party
 import jester except redirect, setCookie, resp
 
 # framework
-export base, response, redirect, render, errorRedirect
+export base, response, middleware, redirect, render, errorRedirect
 # 3rd party
 export jester except redirect, setCookie, resp
 

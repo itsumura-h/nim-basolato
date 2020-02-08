@@ -3,7 +3,6 @@ import httpcore, json, tables, strutils, times, random, strformat, tables
 import base
 # 3rd party
 import flatdb, nimAES
-from jester import daysForward
 import jester/request
 import jester/private/utils
 
@@ -131,12 +130,34 @@ type
     request:Request
     cookies*:seq[CookieData]
 
-proc minutesForward*(minutes:int): DateTime =
-  return getTime().utc + initTimeInterval(minutes = minutes)
+
+proc timeForward*(num:int, timeUnit:TimeUnit):DateTime =
+  case timeUnit
+  of Years:
+    return getTime().utc + initTimeInterval(hours = num)
+  of Months:
+    return getTime().utc + initTimeInterval(months = num)
+  of Weeks:
+    return getTime().utc + initTimeInterval(weeks = num)
+  of Days:
+    return getTime().utc + initTimeInterval(days = num)
+  of Hours:
+    return getTime().utc + initTimeInterval(hours = num)
+  of Minutes:
+    return getTime().utc + initTimeInterval(minutes = num)
+  of Seconds:
+    return getTime().utc + initTimeInterval(seconds = num)
+  of Milliseconds:
+    return getTime().utc + initTimeInterval(milliseconds = num)
+  of Microseconds:
+    return getTime().utc + initTimeInterval(microseconds = num)
+  of Nanoseconds:
+    return getTime().utc + initTimeInterval(nanoseconds = num)
 
 proc toCookieStr*(this:CookieData):string =
   makeCookie(this.name, this.value,this.expire,this.domain, this.path,
               this.secure,this.httpOnly, this.sameSite)
+
 
 proc newCookieData*(name, value:string, expire:DateTime, sameSite: SameSite=Lax,
       secure = false, httpOnly = false, domain = "", path = "/"):CookieData =
@@ -176,7 +197,7 @@ proc set*(this:Cookie, name, value: string, expire:DateTime,
 
 proc set*(this:Cookie, name, value: string, sameSite: SameSite=Lax,
       secure = false, httpOnly = false, domain = "", path = "/"):Cookie =
-  let expires = minutesForward(CSRF_TIME)
+  let expires = timeForward(CSRF_TIME, Minutes)
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(expires.utc, f)
   this.cookies.add(
@@ -185,9 +206,10 @@ proc set*(this:Cookie, name, value: string, sameSite: SameSite=Lax,
   )
   return this
 
-proc updateExpire*(this:Cookie, name:string, days:int, path="/"):Cookie =
+proc updateExpire*(this:Cookie, name:string, num:int,
+                    timeUnit:TimeUnit, path="/"):Cookie =
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
-  let expireStr = format(daysForward(days).utc, f)
+  let expireStr = format(timeForward(num, timeUnit).utc, f)
   if this.request.headers.hasKey("Cookie"):
     let cookiesStrArr = this.request.headers["Cookie"].split("; ")
     for i, row in cookiesStrArr:
@@ -199,7 +221,7 @@ proc updateExpire*(this:Cookie, name:string, days:int, path="/"):Cookie =
 
 proc delete*(this:Cookie, key:string, path="/"):Cookie =
   this.cookies.add(
-    newCookieData(name=key, value="", expire=daysForward(-1), path=path)
+    newCookieData(name=key, value="", expire=timeForward(-1, Days), path=path)
   )
   return this
 
@@ -209,7 +231,7 @@ proc destroy*(this:Cookie, path="/"):Cookie =
     for row in cookiesStrArr:
       let name = row.split("=")[0]
       this.cookies.add(
-        newCookieData(name=name, value="", expire=daysForward(-1), path=path)
+        newCookieData(name=name, value="", expire=timeForward(-1, Days), path=path)
       )
   return this
 
@@ -254,9 +276,9 @@ proc set*(this:Auth, key, value:string):Auth =
     discard this.session.set(key, value)
   return this
 
-proc delete*(this:Auth, key:string):AUth =
-  discard this.session.delete(key)
-  return this
+# proc delete*(this:Auth, key:string):AUth =
+#   discard this.session.delete(key)
+#   return this
 
 proc destroy*(this:Auth) =
   this.session.destroy()

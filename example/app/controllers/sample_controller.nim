@@ -91,7 +91,7 @@ proc updateCookie*(this:SampleController): Response =
   let key = this.request.params["key"]
   let days = this.request.params["days"].parseInt
   let cookie = newCookie(this.request)
-                .updateExpire(key, days)
+                .updateExpire(key, days, Days)
   return redirect("/sample/cookie").setCookie(cookie)
 
 proc destroyCookie*(this:SampleController): Response =

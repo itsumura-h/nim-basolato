@@ -1,6 +1,6 @@
-import httpcore, json, options, os
+import httpcore, json, options, os, times
 # framework
-import base, header, security
+import base, header, security, logger
 # 3rd party
 import httpbeast
 from jester import RawHeaders, CallbackAction, ResponseData
@@ -62,18 +62,27 @@ proc setCookie*(response:Response, cookie:Cookie):Response =
 
 # ========== Auth ====================
 proc setAuth*(response:Response, auth:Auth):Response =
-  let sessionId = auth.getToken()
-  let cookie = newCookieData("session_id", sessionId,
-                    minutesForward(SESSION_TIME))
-                .toCookieStr()
-  response.headers.add(("Set-cookie", cookie))
+  ## If not logged in, do nothing.
+  ## If logged in but not updated any session value,
+  ## expire of session_id is updated.
+
+  if auth.isLogin:
+    let sessionId = auth.getToken()
+    let cookie = newCookieData("session_id", sessionId,
+                      timeForward(SESSION_TIME, Minutes))
+                  .toCookieStr()
+    response.headers.add(("Set-cookie", cookie))
   return response
 
+
 proc destroyAuth*(response:Response, auth:Auth):Response =
-  let sessionId = auth.getToken()
-  let cookie = newCookieData("session_id", sessionId, minutesForward(-1))
-                .toCookieStr()
-  response.headers.add(("Set-cookie", cookie))
+  if auth.isLogin:
+    let sessionId = auth.getToken()
+    let cookie = newCookieData("session_id", sessionId, timeForward(-1, Days))
+                  .toCookieStr()
+    response.headers.add(("Set-cookie", cookie))
+  else:
+    echoErrorMsg("Tried to destroy auth but not logged in")
   return response
 
 

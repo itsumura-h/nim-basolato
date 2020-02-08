@@ -13,6 +13,7 @@ type Check* = ref object
   status*:bool
   msg*:string
 
+
 proc catch*(this:Check, error:typedesc=Error500, msg="") =
   if not this.status:
     var newMsg = ""
@@ -38,7 +39,7 @@ proc checkCsrfToken*(request:Request):Check =
       )
   
 
-proc checkAuthTokenValid*(request:Request):Check =
+proc checkAuthToken*(request:Request):Check =
   result = Check(status:true)
   try:
     var sessionId = newCookie(request).get("session_id")
@@ -49,5 +50,3 @@ proc checkAuthTokenValid*(request:Request):Check =
       status:false,
       msg:getCurrentExceptionMsg()
     )
-
-

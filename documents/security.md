@@ -2,10 +2,13 @@ Security
 ===
 [back](../README.md)
 
-# CSRF Token
+# Check in middleware
+Basolato check whether value is valid in middleware. `checkCsrfToken()` and `checkAuthToken()` are available.  
+These procs return `Check` object. `catch()` defines what to do if value is invalid.
+
+## CSRF Token
 Basolato can check whether csrf token is valid if request metod is `post`, `put`, `patch`, `delete`.
 
-### View
 Set `$(csrfToken())` in view.
 ```nim
 import basolato/view
@@ -24,17 +27,17 @@ If `checkCsrfToken(request)` is in `template framework()`, csrf check is availab
 middleware/framework_middleware.nim
 ```nim
 template framework*() =
-  checkCsrfToken(request)
+  checkCsrfToken(request).catch()
 ```
 If token is invalid, return `500`.
 
 You can overwrite your own custom error handring.
 ```nim
 # If you want to return 403
-checkCsrfToken(request Error403, getCurrentMsg())
+checkCsrfToken(request).catch(Error403, "Error message")
 
 # If you want to redirect login page
-checkCsrfToken(request Error302, "/login")
+checkCsrfToken(request).catch(Error302, "/login")
 ```
 
 # Cookie
@@ -137,8 +140,8 @@ type
 API
 ```nim
 proc newSession*(token="", typ:SessionType=File):Session =
-
-proc db*(this:Session):SessionDb =
+  # If you set valid token, it connect to existing session.
+  # If you don't set token, it creates new session.
 
 proc getToken*(this:Session):string =
 
@@ -154,13 +157,13 @@ proc destroy*(this:Session) =
 get session id
 ```nim
 proc index(this:Controller): Response =
-  let sessionId = newCookie().getToken()
+  let sessionId = newSession().getToken()
 ```
 
 get value in session
 ```nim
 proc index(this:Controller): Response =
-  let sessionId = newCookie(request).get("session_id")
+  let sessionId = newCookie(this.request).get("session_id")
   let key = this.request.params["key"]
   let value = newSession(sessionId).get(key)
 ```
@@ -176,7 +179,7 @@ proc store(this:Controller): Response =
 delete one key-value pair of session
 ```nim
 proc destroy(this:Controller): Response =
-  let sessionId = newCookie().getToken()
+  let sessionId = newCookie(this.request).getToken()
   let key = this.request.params["key"]
   discard newSession(sessionId).delete(key)
 ```
@@ -184,7 +187,7 @@ proc destroy(this:Controller): Response =
 destroy session
 ```nim
 proc destroy(this:Controller): Response =
-  let sessionId = newCookie().getToken()
+  let sessionId = newCookie(this.request).getToken()
   newSession(sessionId).destroy()
 ```
 
@@ -214,16 +217,16 @@ proc set*(this:Auth, key, value:string):Auth =
 
 proc delete*(this:Auth, key:string):AUth =
 
-proc destroy*(this:Auth) =
+proc setAuth*(response:Response, auth:Auth):Response =
+  # If not logged in, do nothing.
+  # If logged in but not updated any session value,
+  # expire of session_id is updated.
+
+proc destroyAuth*(response:Response, auth:Auth):Response =
 ```
 
 get auth
 ```nim
-proc newController*(request:Request):Controller =
-  return Controller(
-    auth:newAuth(request)
-  )
-
 proc index(this:Controller): Response =
   let loginName = this.auth.get("login_name")
 ```

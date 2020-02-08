@@ -1,4 +1,4 @@
-import tables, json
+import tables, json, times
 # framework
 import ../../../src/basolato/controller
 import ../../../src/basolato/validation
@@ -38,5 +38,5 @@ proc store*(this:SignUpController): Response =
     return render(createHtml(this.auth, name, email, v.errors))
   # session
   let cookie =newCookie(this.request)
-                .updateExpire("login_name", 5)
+                .updateExpire("login_name", 5, Days)
   return redirect("/posts").setCookie(cookie)

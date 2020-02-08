@@ -23,11 +23,8 @@ proc newPostsController*(request:Request): PostsController =
 
 proc index*(this:PostsController): Response =
   let posts = this.post.getPosts()
-  if this.auth.isLogin:
-    return render(indexHtml(this.auth, posts))
+  return render(indexHtml(this.auth, posts))
             .setAuth(this.auth) # update expire
-  else:
-    return render(indexHtml(this.auth, posts))
 
 
 proc show*(this:PostsController, id:string): Response =
