@@ -83,6 +83,72 @@ proc welcomeHtml*(name:string): string = tmpli html"""
     <i>—utilitas, firmitas et venustas (utility, strength and beauty)—</i> by De architectura / Marcus Vitruvius Pollio
   </p>
   <p class="whiteFont">
+    Develop as easy as Ruby on Rais, Stably as Laravel, Run faster and lighter than every other full-skack web framework.
+  </p>
+
+<!--
+  <div class="architecture" style="background-color: #101010">
+    <h2 id="DDD">Domain-Driven Design(DDD)</h2>
+    <div class="components">
+      <div class="discription">
+        <h3>discription</h3>
+        <p>discription</p>
+      </div>
+      <div class="sourceCode">
+        <p>source code</p>
+        <pre>
+          <code class="nimrod">
+            aaaa
+          </code>
+        </pre>
+      </div>
+    </div>
+  </div>
+-->
+<!--
+  <div class="architecture">
+    <h2 id="clean">Clean Architecture</h2>
+    <div class="components">
+      <div class="discription">
+        <h3>discription</h3>
+        <p>discription</p>
+      </div>
+      <div class="sourceCode">
+        <p>source code</p>
+        <pre>
+          <code class="nimrod">
+            aaaa
+          </code>
+        </pre>
+      </div>
+    </div>
+  </div>
+-->
+  <script>hljs.initHighlightingOnLoad();</script>
+</body>
+"""
+
+#[
+  <div class="architecture">
+    <h2>architecture title</h2>
+    <div class="components">
+      <div class="discription">
+        <h3>discription</h3>
+        <p>discription</p>
+      </div>
+      <div class="sourceCode">
+        <p>source code</p>
+        <pre>
+          <code class="nimrod">
+            aaaa
+          </code>
+        </pre>
+      </div>
+    </div>
+  </div>
+
+
+  <p class="whiteFont">
     Basolate is compatible multiple Architecture
     <ul class="ulLink">
       <li><a href="#MVC_Architecture">MVC Architecture</a></li>
@@ -184,67 +250,6 @@ proc edit*(this:UsersController, idArg:string): Response =
   return render(editHtml(user, auth))
         </code>
       </pre>
-      </div>
-    </div>
-  </div>
-
-<!--
-  <div class="architecture" style="background-color: #101010">
-    <h2 id="DDD">Domain-Driven Design(DDD)</h2>
-    <div class="components">
-      <div class="discription">
-        <h3>discription</h3>
-        <p>discription</p>
-      </div>
-      <div class="sourceCode">
-        <p>source code</p>
-        <pre>
-          <code class="nimrod">
-            aaaa
-          </code>
-        </pre>
-      </div>
-    </div>
-  </div>
--->
-<!--
-  <div class="architecture">
-    <h2 id="clean">Clean Architecture</h2>
-    <div class="components">
-      <div class="discription">
-        <h3>discription</h3>
-        <p>discription</p>
-      </div>
-      <div class="sourceCode">
-        <p>source code</p>
-        <pre>
-          <code class="nimrod">
-            aaaa
-          </code>
-        </pre>
-      </div>
-    </div>
-  </div>
--->
-  <script>hljs.initHighlightingOnLoad();</script>
-</body>
-"""
-
-#[
-  <div class="architecture">
-    <h2>architecture title</h2>
-    <div class="components">
-      <div class="discription">
-        <h3>discription</h3>
-        <p>discription</p>
-      </div>
-      <div class="sourceCode">
-        <p>source code</p>
-        <pre>
-          <code class="nimrod">
-            aaaa
-          </code>
-        </pre>
       </div>
     </div>
   </div>

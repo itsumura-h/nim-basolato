@@ -38,7 +38,6 @@ proc checkCsrfToken*(request:Request):Check =
         msg:getCurrentExceptionMsg()
       )
   
-
 proc checkAuthToken*(request:Request):Check =
   result = Check(status:true)
   try:

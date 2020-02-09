@@ -1,4 +1,4 @@
-import httpcore, json, tables, strutils, times, random, strformat, tables
+import httpcore, json, strutils, times, random, strformat
 # framework
 import base
 # 3rd party

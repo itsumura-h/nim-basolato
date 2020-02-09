@@ -72,7 +72,7 @@ ducere new project_name
 >> create project to /your/project/dir/project_name
 ```
 
-# index
+# Documents
 - [decere CLI tool](./documents/ducere.md)
 - [Routing](./documents/routing.md)
 - [Controller](./documents/controller.md)

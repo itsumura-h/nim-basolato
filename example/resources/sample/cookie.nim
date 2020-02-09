@@ -1,6 +1,7 @@
+import json
 import ../../../src/basolato/view
 
-proc cookieHtml*(auth:Auth): string = tmpli html("""
+proc cookieHtml*(auth:Auth, errors=newJObject()): string = tmpli html("""
 <a href="/">go back</a>
 <form method="post">
   $(csrfToken())
