@@ -45,33 +45,27 @@ suite "Session":
     echo session.db.token
     check session.db.token.len > 0
 
-  test "newSession token":
-    let token = sessionDb.token
-    echo token
-    let session = newSession(token)
-    check session.db.token == token
-
   test "set":
-    let token = sessionDb.token
+    let token = sessionDb.getToken()
     echo token
     discard newSession(token)
               .set("key_session", "value_session")
 
   test "get":
-    let token = sessionDb.token
+    let token = sessionDb.getToken()
     echo token
     let result = newSession(token).get("key_session")
     echo result
     check result == "value_session"
 
   test "delete":
-    let token = sessionDb.token
+    let token = sessionDb.getToken()
     let session = newSession(token)
                    .delete("key_session")
     check session.get("key_session") == ""
 
   test "destroy":
-    let token = sessionDb.token
+    let token = sessionDb.getToken()
     let session = newSession(token)
                     .set("key_session2", "value_session2")
     session.destroy()
