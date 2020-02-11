@@ -9,6 +9,7 @@ import ../../resources/sample/react
 import ../../../src/basolato/sample/resources/welcome
 import ../../resources/sample/cookie
 import ../../resources/sample/login
+import ../../resources/sample/karax
 
 type SampleController = ref object of Controller
 
@@ -67,6 +68,9 @@ proc vue*(this:SampleController): Response =
     {"text": "updated_at", "value": "updated_at"}
   ]
   return render(vue_html($header, $users))
+
+proc karaxIndex*(this:SampleController): Response =
+  return render(karaxHtml())
 
 
 proc customHeaders*(this:SampleController): Response =

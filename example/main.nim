@@ -20,6 +20,7 @@ router sample:
                     [corsHeader()])
   get "/react": route(newSampleController(request).react())
   get "/vue": route(newSampleController(request).vue())
+  get "/karax": route(newSampleController(request).karaxIndex())
   get "/custom-headers": route(newSampleController(request).customHeaders(),
                           [secureHeader(), corsHeader(), customHeader()])
 
@@ -32,6 +33,7 @@ router sample:
   get "/login": route(newSampleController(request).indexLogin())
   post "/login": route(newSampleController(request).storeLogin())
   post "/logout": route(newSampleController(request).destroyLogin())
+
 
 router api:
   get "/api1":
