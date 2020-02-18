@@ -1,132 +1,102 @@
-import templates
+import htmlgen, strformat
+# 3rd party
+# import templates
+# framework
+import ../../view
 
-proc welcomeHtml*(name:string): string = tmpli html"""
+proc welcomeHtml*(name:string): string  =
+  html(
+    head(
+      link(rel="stylesheet", href="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/styles/dracula.min.css"),
+      script(src="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/highlight.min.js"),
+      style(
+        """
+          #title {
+            color: goldenrod;
+            text-align: center;
+          }
 
-<head>
-  <link rel="stylesheet" href="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/styles/dracula.min.css">
-  <script src="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/highlight.min.js"></script>
-  <style>
-    #title {
-      color: goldenrod;
-      text-align: center;
-    }
+          #topImage {
+            background-color: gray;
+            text-align: center;
+          }
 
-    #topImage {
-      background-color: gray;
-      text-align: center;
-    }
+          .goldFont {
+            color: goldenrod
+          }
 
-    .goldFont {
-      color: goldenrod
-    }
+          .whiteFont {
+            color: white
+          }
 
-    .whiteFont {
-      color: white
-    }
+          .ulLink li {
+            margin: 8px;
+          }
 
-    .ulLink li {
-      margin: 8px;
-    }
+          .ulLink li a {
+            color: skyblue;
+          }
 
-    .ulLink li a {
-      color: skyblue;
-    }
+          .architecture {
+            padding: 10px
+          }
 
-    .architecture {
-      padding: 10px
-    }
+          .architecture h2 {
+            color: goldenrod
+          }
 
-    .architecture h2 {
-      color: goldenrod
-    }
+          .components {
+            display:flex
+          }
 
-    .components {
-      display:flex
-    }
+          .discription {
+            width: 50vw
+          }
 
-    .discription {
-      width: 50vw
-    }
+          .discription h3 {
+            color: goldenrod
+          }
 
-    .discription h3 {
-      color: goldenrod
-    }
+          .discription p {
+            color: white
+          }
 
-    .discription p {
-      color: white
-    }
+          .sourceCode {
+            width: 50vw
+          }
 
-    .sourceCode {
-      width: 50vw
-    }
+          .sourceCode p {
+            color: white;
+            margin-bottom: 0;
+          }
 
-    .sourceCode p {
-      color: white;
-      margin-bottom: 0;
-    }
+          .sourceCode pre {
+            margin-top: 0;
+          }
+        """
+      )
+    ),
+    body(style="background-color: black",
+      h1(id="title", &"Nim {name} is successfully running!!!"),
+      `div`(id="topImage",
+        img(
+          src="https://raw.githubusercontent.com/nim-lang/assets/master/Art/logo-crown.png",
+          alt="nim-logo",
+          style="height: 40vh"
+        )
+      ),
+      h2(class="goldFont",
+        "Fullstack Web Framewrok for Nim"
+      ),
+      p(class="whiteFont",
+        i("—utilitas, firmitas et venustas (utility, strength and beauty)—"), " by De architectura / Marcus Vitruvius Pollio"
+      ),
+      p(class="whiteFont",
+        "Develop as easy as Ruby on Rais, Stably as Laravel, Run faster and lighter than every other full-skack web framework."
+      )
+    )
+  )
 
-    .sourceCode pre {
-      margin-top: 0;
-    }
-  </style>
-</head>
-
-<body style="background-color: black">
-  <h1 id="title">Nim $(name) is successfully running!!!</h1>
-  <div id="topImage">
-    <image src="https://raw.githubusercontent.com/nim-lang/assets/master/Art/logo-crown.png" style="height: 40vh" />
-  </div>
-  <h2 class="goldFont">
-    Fullstack Web Framewrok for Nim
-  </h2>
-  <p class="whiteFont">
-    <i>—utilitas, firmitas et venustas (utility, strength and beauty)—</i> by De architectura / Marcus Vitruvius Pollio
-  </p>
-  <p class="whiteFont">
-    Develop as easy as Ruby on Rais, Stably as Laravel, Run faster and lighter than every other full-skack web framework.
-  </p>
-
-<!--
-  <div class="architecture" style="background-color: #101010">
-    <h2 id="DDD">Domain-Driven Design(DDD)</h2>
-    <div class="components">
-      <div class="discription">
-        <h3>discription</h3>
-        <p>discription</p>
-      </div>
-      <div class="sourceCode">
-        <p>source code</p>
-        <pre>
-          <code class="nimrod">
-            aaaa
-          </code>
-        </pre>
-      </div>
-    </div>
-  </div>
--->
-<!--
-  <div class="architecture">
-    <h2 id="clean">Clean Architecture</h2>
-    <div class="components">
-      <div class="discription">
-        <h3>discription</h3>
-        <p>discription</p>
-      </div>
-      <div class="sourceCode">
-        <p>source code</p>
-        <pre>
-          <code class="nimrod">
-            aaaa
-          </code>
-        </pre>
-      </div>
-    </div>
-  </div>
--->
-  <script>hljs.initHighlightingOnLoad();</script>
-</body>
-"""
 
 #[
   <div class="architecture">

@@ -1,4 +1,7 @@
 import json
+# 3rd party
+import templates
+# framework
 import ../../../src/basolato/view
 
 proc cookieHtml*(auth:Auth, errors=newJObject()): string = tmpli html("""

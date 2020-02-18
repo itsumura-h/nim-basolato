@@ -1,4 +1,6 @@
 import httpcore
+# 3rd party
+import templates
 # framework
 import view
 from base import basolatoVersion

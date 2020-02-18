@@ -6,7 +6,7 @@ import allographer/query_builder
 # html
 import ../../resources/sample/vue
 import ../../resources/sample/react
-import ../../../src/basolato/sample/resources/welcome
+import ../../../src/basolato/welcome_page/resources/welcome
 import ../../resources/sample/cookie
 import ../../resources/sample/login
 import ../../resources/sample/karax
