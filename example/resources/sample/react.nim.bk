@@ -1,5 +1,6 @@
-#? stdtmpl | standard
-#proc reactHtml*(users: string): string =
+import templates
+
+proc reactHtml*(users: string): string = tmpli html"""
 <html>
   <head>
     <title>👑React</title>
@@ -45,7 +46,7 @@
         constructor(props) {
           super(props);
           this.state = {
-            users: JSON.parse('$users')
+            users: JSON.parse('$(users)')
           };
         }
 
@@ -76,7 +77,7 @@
               </TableContainer>
             </div>
           );
-        }
+        }a
       }
       
       ReactDOM.render(
@@ -90,3 +91,4 @@
     </script>
   </body>
 </html>
+"""

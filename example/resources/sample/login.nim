@@ -1,25 +1,21 @@
-# 3rd party
-import templates
-# framework
-import ../../../src/basolato/view
-
-proc loginHtml*(auth:Auth): string = tmpli html"""
+#? stdtmpl | standard
+# #framework
+# import ../../../src/basolato/view
+#proc loginHtml*(auth:Auth): string =
 <a href="/">go back</a>
 <div>
-  $if auth.isLogin {
-    <h1>Login Name: $(auth.get("name"))</h1>
+  #if auth.isLogin:
+    <h1>Login Name: ${auth.get("name")}</h1>
     <form method="POST" action="/sample/logout">
-      $(csrfToken())
+      ${csrfToken()}
       <button type="submit">Logout</button>
     </form>
-  }
-  $else {
+  #else:
     <form method="POST">
-      $(csrfToken())
-      <input type="text" name="name" value="$(auth.get("name"))">
+      ${csrfToken()}
+      <input type="text" name="name" value="${auth.get("name")}">
       <input type="text" name="password">
       <button type="submit">login</button>
     </form>
-  }
+  #end if
 </div>
-"""

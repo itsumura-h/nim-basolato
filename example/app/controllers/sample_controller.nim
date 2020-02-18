@@ -4,12 +4,12 @@ import ../../../src/basolato/controller
 import allographer/query_builder
 
 # html
+import ../../../src/basolato/welcome_page/resources/welcome
+import ../../resources/sample/karax
 import ../../resources/sample/vue
 import ../../resources/sample/react
-import ../../../src/basolato/welcome_page/resources/welcome
 import ../../resources/sample/cookie
 import ../../resources/sample/login
-import ../../resources/sample/karax
 
 type SampleController = ref object of Controller
 
@@ -24,6 +24,10 @@ proc index*(this:SampleController): Response =
 proc welcome*(this:SampleController): Response =
   let name = "Basolato " & basolatoVersion
   return render(welcomeHtml(name))
+
+
+proc karaxIndex*(this:SampleController): Response =
+  return render(karaxHtml())
 
 
 proc fib_logic(n: int): int =
@@ -68,9 +72,6 @@ proc vue*(this:SampleController): Response =
     {"text": "updated_at", "value": "updated_at"}
   ]
   return render(vue_html($header, $users))
-
-proc karaxIndex*(this:SampleController): Response =
-  return render(karaxHtml())
 
 
 proc customHeaders*(this:SampleController): Response =

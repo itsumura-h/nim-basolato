@@ -12,15 +12,15 @@ import app/controllers/sample_controller
 
 router sample:
   get "/welcome": route(newSampleController(request).welcome())
-  get "/checkLogin":
-    middleware([isLogin(request)]);
-    route(newSampleController(request).index(),
-    [corsHeader()])
+  get "/karax": route(newSampleController(request).karaxIndex())
   get "/fib/@num": route(newSampleController(request).fib(@"num"),
                     [corsHeader()])
   get "/react": route(newSampleController(request).react())
   get "/vue": route(newSampleController(request).vue())
-  get "/karax": route(newSampleController(request).karaxIndex())
+  get "/checkLogin":
+    middleware([isLogin(request)]);
+    route(newSampleController(request).index(),
+    [corsHeader()])
   get "/custom-headers": route(newSampleController(request).customHeaders(),
                           [secureHeader(), corsHeader(), customHeader()])
 

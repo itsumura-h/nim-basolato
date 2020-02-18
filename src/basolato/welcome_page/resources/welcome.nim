@@ -1,6 +1,4 @@
 import htmlgen, strformat
-# 3rd party
-# import templates
 # framework
 import ../../view
 
