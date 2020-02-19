@@ -6,6 +6,7 @@ import allographer/query_builder
 # html
 import ../../../src/basolato/welcome_page/resources/welcome
 import ../../resources/sample/karax
+import ../../resources/sample/react
 import ../../resources/sample/material_ui
 import ../../resources/sample/vuetify
 import ../../resources/sample/cookie
@@ -50,12 +51,18 @@ proc fib*(this:SampleController, numArg: string): Response =
   return render(data)
 
 
+proc react*(this:SampleController): Response =
+  let users = %*RDB().table("users")
+              .select("users.id", "users.name", "users.email", "auth.auth")
+              .join("auth", "auth.id", "=", "users.auth_id")
+              .get()
+  return render(reactHtml($users))
+
 proc materialUi*(this:SampleController): Response =
   let users = %*RDB().table("users")
               .select("users.id", "users.name", "users.email", "auth.auth")
               .join("auth", "auth.id", "=", "users.auth_id")
               .get()
-  echo $users
   return render(materialUiHtml($users))
 
 
@@ -72,7 +79,6 @@ proc vuetify*(this:SampleController): Response =
     {"text": "created_at", "value": "created_at"},
     {"text": "updated_at", "value": "updated_at"}
   ]
-  echo $users
   return render(vuetifyHtml($header, $users))
 
 

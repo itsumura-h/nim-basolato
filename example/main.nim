@@ -15,12 +15,12 @@ router sample:
   get "/karax": route(newSampleController(request).karaxIndex())
   get "/fib/@num": route(newSampleController(request).fib(@"num"),
                     [corsHeader()])
+  get re"/react.*": route(newSampleController(request).react())
   get "/material-ui": route(newSampleController(request).materialUi())
   get "/vuetify": route(newSampleController(request).vuetify())
   get "/checkLogin":
     middleware([isLogin(request)]);
-    route(newSampleController(request).index(),
-    [corsHeader()])
+    route(newSampleController(request).index(), [corsHeader()])
   get "/custom-headers": route(newSampleController(request).customHeaders(),
                           [secureHeader(), corsHeader(), customHeader()])
 
