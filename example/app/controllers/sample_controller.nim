@@ -6,8 +6,8 @@ import allographer/query_builder
 # html
 import ../../../src/basolato/welcome_page/resources/welcome
 import ../../resources/sample/karax
-import ../../resources/sample/vue
-import ../../resources/sample/react
+import ../../resources/sample/material_ui
+import ../../resources/sample/vuetify
 import ../../resources/sample/cookie
 import ../../resources/sample/login
 
@@ -50,15 +50,16 @@ proc fib*(this:SampleController, numArg: string): Response =
   return render(data)
 
 
-proc react*(this:SampleController): Response =
+proc materialUi*(this:SampleController): Response =
   let users = %*RDB().table("users")
               .select("users.id", "users.name", "users.email", "auth.auth")
               .join("auth", "auth.id", "=", "users.auth_id")
               .get()
-  return render(react_html($users))
+  echo $users
+  return render(materialUiHtml($users))
 
 
-proc vue*(this:SampleController): Response =
+proc vuetify*(this:SampleController): Response =
   let users = %*RDB().table("users")
               .select("users.id", "users.name", "users.email", "auth.auth")
               .join("auth", "auth.id", "=", "users.auth_id")
@@ -71,7 +72,8 @@ proc vue*(this:SampleController): Response =
     {"text": "created_at", "value": "created_at"},
     {"text": "updated_at", "value": "updated_at"}
   ]
-  return render(vue_html($header, $users))
+  echo $users
+  return render(vuetifyHtml($header, $users))
 
 
 proc customHeaders*(this:SampleController): Response =

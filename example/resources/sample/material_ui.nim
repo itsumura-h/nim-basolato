@@ -1,5 +1,5 @@
 #? stdtmpl | standard
-#proc reactHtml*(users: string): string =
+#proc materialUiHtml*(users: string): string =
 <html>
   <head>
     <title>👑React</title>

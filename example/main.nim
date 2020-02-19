@@ -15,8 +15,8 @@ router sample:
   get "/karax": route(newSampleController(request).karaxIndex())
   get "/fib/@num": route(newSampleController(request).fib(@"num"),
                     [corsHeader()])
-  get "/react": route(newSampleController(request).react())
-  get "/vue": route(newSampleController(request).vue())
+  get "/material-ui": route(newSampleController(request).materialUi())
+  get "/vuetify": route(newSampleController(request).vuetify())
   get "/checkLogin":
     middleware([isLogin(request)]);
     route(newSampleController(request).index(),

@@ -1,5 +1,5 @@
 #? stdtmpl | standard
-#proc vue_html*(header: string, users: string): string =
+#proc vuetifyHtml*(header: string, users: string): string =
 <head>
   <title>👑Nim Jester</title>
   <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
