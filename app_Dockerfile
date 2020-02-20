@@ -14,7 +14,7 @@ RUN apk update && \
     rm /usr/lib/mysqld* -fr && rm /usr/bin/mysql* -fr && \
     update-ca-certificates
 RUN git config --global http.sslVerify false
-RUN nimble install -y bcrypt cligen coco karax && \
-    nimble install https://github.com/itsumura-h/nim-allographer
-ENV PATH $PATH:/root/.nimble/bin
 WORKDIR /home/www
+ADD ./basolato.nimble /home/www
+RUN nimble install -y bcrypt cligen coco karax
+ENV PATH $PATH:/root/.nimble/bin

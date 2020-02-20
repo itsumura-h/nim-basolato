@@ -1,4 +1,4 @@
-import ../src/basolato/controller
+import ../../src/basolato/controller
 
 type TestController = ref object of Controller
   name*:string

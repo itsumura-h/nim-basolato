@@ -1,7 +1,7 @@
 import asyncdispatch, httpcore, re, tables
 # framework
-import ../src/basolato/routing
-import ../src/basolato/middleware
+import ../../src/basolato/routing
+import ../../src/basolato/middleware
 
 import controller
 
