@@ -49,7 +49,7 @@ proc email*(this:Validation, key="email"): Validation =
   if this.params[key].len == 0:
     error.add(%"this field is required")
 
-  if not this.params[key].match(re"^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9]+\.[?:\.a-zA-Z0-9]*$"):
+  if not this.params[key].match(re"\A[\w+\-.]+@[a-zA-Z\d\-.]+\.[a-zA-Z]+\Z"):
     error.add(%"invalid form of email")
   
   if error.len > 0:

@@ -24,11 +24,23 @@
 
   function Index(){
     let [count, setCount] = useState(0)
+    let users = JSON.parse('$users')
+    console.log(users)
     
     return <div>
       <h1>index</h1>
       <button onClick={function(){setCount(count+1)}}>add</button>
       <p>{count}</p>
+      <table>
+        <tr>
+          <th>id</th><th>name</th><th>email</th><th>auth</th>
+        </tr>
+        users.map(user=>{
+          <tr>
+            <td>{user.id}</td><td>{user.name}</td><td>{user.email}</td><td>{user.auth}</td>
+          </tr>
+        })
+      </table>
     </div>
   }
 
