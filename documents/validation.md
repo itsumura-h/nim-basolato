@@ -251,9 +251,9 @@ table: users
 |id|name|email|
 |---|---|---|
 |1|user1|user1@gmail.com|
-|2|user2|user1@gmai2.com|
-|3|user3|user1@gmai3.com|
-|4|user4|user1@gmai4.com|
+|2|user2|user2@gmail.com|
+|3|user3|user3@gmail.com|
+|4|user4|user4@gmail.com|
 
 ```json
 {"address": "user5@gmail.com"}
