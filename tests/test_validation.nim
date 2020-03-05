@@ -23,6 +23,7 @@ suite "validation":
       {"email": "asdadad"}.toTable(),
       {"email": "adaasda@asdaa"}.toTable(),
       {"email": ";/@;@;:"}.toTable(),
+      {"email": "foo@bar..com"}.toTable(),
       {"email": ""}.toTable()
     ]
 
