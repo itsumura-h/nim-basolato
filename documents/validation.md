@@ -183,7 +183,7 @@ This will add errors if value is not match for one of expected values.
 ```
 
 ```nim
-validate().isIn("name", ["John", "Paul", "George", "Ringo")
+validate().isIn("name", ["John", "Paul", "George", "Ringo"])
 ```
 
 ## lessThan
