@@ -17,6 +17,16 @@ To references
 |Java/Scala|Play|
 |Go|Revel|
 
+## Dev roadmap
+
+|Version|Content|
+|---|---|
+|v1.0|Support Three-layer architecture (generally called as MVC)|
+|v2.0|Support Clean architecture, Tactical DDD|
+|v3.0|Support GraphQL|
+
+
+## Dependencies
 This framework depends on following libralies
 - [Jester](https://github.com/dom96/jester), Micro web framework.
 - [Karax](https://github.com/pragmagic/karax), Single page applications for Nim, as view.
