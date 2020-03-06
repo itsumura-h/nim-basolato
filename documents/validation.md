@@ -256,14 +256,14 @@ table: users
 |4|user4|user4@gmail.com|
 
 ```json
-{"address": "user5@gmail.com"}
+{"mail": "user5@gmail.com"}
 ```
 
 ```nim
-validate().unique("address", "users", "email")
+validate().unique("mail", "users", "email")
 ```
 |arg position|example|content|
 |---|---|---|
-|1|"address"|response params key|
+|1|"mail"|response params key|
 |2|"users"|RDB table name|
 |3|"email"|RDB column name|

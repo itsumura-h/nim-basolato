@@ -146,7 +146,7 @@ proc unique*(this:Validation, key:string, table:string, column:string): Validati
   if this.params.hasKey(key):
     let val = this.params[key]
     let num = RDB().table(table).where(column, "=", val).count()
-    if num != 0:
+    if num > 0:
       this.putValidate(key, &"{key} should be unique")
   return this
 

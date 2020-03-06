@@ -1,6 +1,7 @@
 import unittest, json, tables
 import ../src/basolato/validation
-
+import allographer/query_builder
+import allographer/schema_builder
 
 suite "validation":
   test "accepted":
@@ -232,4 +233,38 @@ suite "validation":
     var v = Validation(params: params,
                         errors: newJObject())
                         .required(["name", "email", "job"])
+    check v.errors.len > 0
+
+  # ==========================================================================
+  test "unique":
+    schema([
+      table("test_users", [
+        Column().increments("id"),
+        Column().string("name"),
+        Column().string("email")
+      ], reset=true)
+    ])
+
+    RDB().table("test_users").insert([
+      %*{
+        "name": "user1",
+        "email": "user1@gmail.com",
+      },
+      %*{
+        "name": "user2",
+        "email": "user2@gmail.com",
+      }
+    ])
+
+    var params = {"mail": "user3@gmail.com"}.toTable()
+    var v = Validation(params: params,
+                        errors: newJObject())
+                        .unique("mail", "test_users", "email")
+    check v.errors.len == 0
+
+  test "unique invalid":
+    var params = {"mail": "user2@gmail.com"}.toTable()
+    var v = Validation(params: params,
+                        errors: newJObject())
+                        .unique("mail", "test_users", "email")
     check v.errors.len > 0
