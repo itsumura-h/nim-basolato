@@ -22,6 +22,15 @@ proc toHeaders*(headersArg:Table): Headers =
     i.inc()
   return headers
 
+# OrderdTable => header
+proc toHeaders*(headersArg:OrderedTable): Headers =
+  var headers = newHeaders(headersArg.len)
+  var i = 0
+  for key, val in headersArg.pairs:
+    headers[i] = (key, val)
+    i.inc()
+  return headers
+
 # JsonNode => header
 proc toHeaders*(headersArg:JsonNode): Headers =
   var headers = newHeaders(headersArg.len)
