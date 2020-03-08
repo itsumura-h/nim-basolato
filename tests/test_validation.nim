@@ -55,7 +55,7 @@ suite "validation":
                         .email("email")
       check v.errors.len == 0
 
-  test "email not valid":
+  test "email invalid":
     let valid_addresses = [
       {"email": "asdadad"}.toTable(),
       {"email": "adaasda@asdaa"}.toTable(),

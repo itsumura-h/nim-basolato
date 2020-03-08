@@ -15,6 +15,10 @@ proc createMVC(dirPath:string):int =
     moveDir(&"{dirpath}/tmp/MVC/middleware", &"{dirpath}/middleware")
     moveDir(&"{dirpath}/tmp/MVC/migrations", &"{dirpath}/migrations")
     moveFile(&"{dirpath}/tmp/MVC/main.nim", &"{dirpath}/main.nim")
+    # move static files
+    createDir(&"{dirPath}/public")
+    moveFile(&"{dirpath}/tmp/assets/basolato.svg", &"{dirpath}/public/basolato.svg")
+    moveFile(&"{dirpath}/tmp/assets/favicon.ico", &"{dirpath}/public/favicon.ico")
     # remove tmp
     removeDir(&"{dirpath}/tmp")
     # create config.nims
@@ -26,7 +30,6 @@ proc createMVC(dirPath:string):int =
     createDir(&"{dirPath}/app")
     createDir(&"{dirPath}/app/controllers")
     createDir(&"{dirPath}/app/models")
-    createDir(&"{dirPath}/public")
     createDir(&"{dirPath}/public/js")
     createDir(&"{dirPath}/public/css")
     createDir(&"{dirPath}/resources")

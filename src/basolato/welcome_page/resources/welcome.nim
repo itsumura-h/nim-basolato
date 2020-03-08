@@ -78,7 +78,7 @@ proc welcomeHtml*(name:string): string  =
       h1(id="title", &"Nim {name} is successfully running!!!"),
       `div`(id="topImage",
         img(
-          src="https://raw.githubusercontent.com/nim-lang/assets/master/Art/logo-crown.png",
+          src="/basolato.svg",
           alt="nim-logo",
           style="height: 40vh"
         )

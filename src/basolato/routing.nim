@@ -97,6 +97,7 @@ template route*(respinseArg:Response,
       echoErrorMsg($response.status &
         &"  {request.ip}  {request.reqMethod}  {request.path}")
       echoErrorMsg($newHeaders)
+    echo response.status
     resp response.status, newHeaders, response.bodyString
 
 
@@ -145,11 +146,11 @@ template exceptionRoute*(pagePath="") =
     if pagePath == "":
       if exception.msg == "Invalid session id":
         let cookie = newCookie(request).destroy()
-        route(render(errorPage(status, exception.msg)).setCookie(cookie))
+        route(render(status, errorPage(status, exception.msg)).setCookie(cookie))
       else:
-        route(render(errorPage(status, exception.msg)))
+        route(render(status, errorPage(status, exception.msg)))
     else:
-      route(render(html(pagePath)))
+      route(render(status, html(pagePath)))
   else:
     route(errorRedirect(exception.msg))
 

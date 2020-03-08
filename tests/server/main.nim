@@ -1,11 +1,15 @@
 import asyncdispatch, httpcore, re, tables
 # framework
 import ../../src/basolato/routing
-import ../../src/basolato/middleware
+import middleware
 
 import controller
 
 routes:
+  # test middleware
+  error Exception: exceptionRoute
+  before: framework
+
   # test routing
   get "/test_routing": route(newTestController(request).getAction())
   post "/test_routing": route(newTestController(request).postAction())
