@@ -12,13 +12,6 @@ router withMiddleware:
 routes:
   error Exception: exceptionRoute
 
-  # test routing
-  get "/test_routing": route(newTestController(request).getAction())
-  post "/test_routing": route(newTestController(request).postAction())
-  patch "/test_routing": route(newTestController(request).patchAction())
-  put "/test_routing": route(newTestController(request).putAction())
-  delete "/test_routing": route(newTestController(request).deleteAction())
-
   # test controller
   get "/renderStr": route(newTestController(request).renderStr())
   get "/renderHtml": route(newTestController(request).renderHtml())
@@ -28,6 +21,16 @@ routes:
   get "/status500json": route(newTestController(request).status500json())
   get "/redirect": route(newTestController(request).redirect())
   get "/error_redirect": route(newTestController(request).error_redirect())
+
+  # test response
+  get "/set-header": route(newTestController(request).setHeader())
+
+  # test routing
+  get "/test_routing": route(newTestController(request).getAction())
+  post "/test_routing": route(newTestController(request).postAction())
+  patch "/test_routing": route(newTestController(request).patchAction())
+  put "/test_routing": route(newTestController(request).putAction())
+  delete "/test_routing": route(newTestController(request).deleteAction())
 
   before re"/with_middleware.*": framework
   extend withMiddleware, "/with_middleware"

@@ -8,7 +8,7 @@ import jester/request
 
 
 template setHeader(headers: var Option[RawHeaders], key, value: string) =
-  ## Customized for jester
+  ## Customized jester code
   bind isNone
   if isNone(headers):
     headers = some(@({key: value}))
@@ -29,7 +29,7 @@ template setHeader(headers: var Option[RawHeaders], key, value: string) =
 template resp*(code: HttpCode,
                headers: openarray[tuple[key, val: string]],
                content: string) =
-  ## Sets ``(code, headers, content)`` as the response.
+  ## Set ``(code, headers, content)`` as the response.
   bind TCActionSend
   result = (TCActionSend, code, none[RawHeaders](), content, true)
   for header in headers:

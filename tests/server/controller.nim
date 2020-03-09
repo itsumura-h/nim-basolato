@@ -11,22 +11,6 @@ proc newTestController*(request:Request):TestController =
   testController.name = "test"
   return testController
 
-# test routing
-proc getAction*(this:TestController):Response =
-  return render("get")
-
-proc postAction*(this:TestController):Response =
-  return render("post")
-
-proc patchAction*(this:TestController):Response =
-  return render("patch")
-
-proc putAction*(this:TestController):Response =
-  return render("put")
-
-proc deleteAction*(this:TestController):Response =
-  return render("delete")
-
 # test controller
 proc renderStr*(this:TestController):Response =
   return render("test")
@@ -51,3 +35,27 @@ proc redirect*(this:TestController):Response =
 
 proc error_redirect*(this:TestController):Response =
   return errorRedirect("/new_url")
+
+# test response
+proc setHeader*(this:TestController):Response =
+  var header = newHeaders()
+                .set("key1", "value1")
+                .set("key2", ["value1", "value2"])
+  return render("setHeader").setHeader(header)
+
+
+# test routing
+proc getAction*(this:TestController):Response =
+  return render("get")
+
+proc postAction*(this:TestController):Response =
+  return render("post")
+
+proc patchAction*(this:TestController):Response =
+  return render("patch")
+
+proc putAction*(this:TestController):Response =
+  return render("put")
+
+proc deleteAction*(this:TestController):Response =
+  return render("delete")
