@@ -30,3 +30,8 @@ suite "routing":
     var response = client.delete(&"{HOST}/test_routing")
     echo response.body
     check response.body == "delete"
+
+  test "favicon":
+    var response = client.get(&"{HOST}/favicon.ico")
+    check response.contentType == "image/x-icon"
+    check response.code == Http200

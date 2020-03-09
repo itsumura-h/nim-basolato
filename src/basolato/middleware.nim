@@ -29,8 +29,8 @@ proc checkCsrfToken*(request:Request):Check =
   result = Check(status:true)
   if request.reqMethod == HttpPost or request.reqMethod == HttpPut or
         request.reqMethod == HttpPatch or request.reqMethod == HttpDelete:
-    let token = request.params["csrf_token"]
     try:
+      let token = request.params["csrf_token"]
       discard newCsrfToken(token).checkCsrfTimeout()
     except:
       result = Check(

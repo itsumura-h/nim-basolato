@@ -1,6 +1,6 @@
 nimble install -y
-nim c -d:release tests/server/main
 cd /home/www/tests/server
+nim c main
 nohup ./main > /dev/null &
 cd /home/www/
 nimble test

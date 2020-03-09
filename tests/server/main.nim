@@ -5,10 +5,12 @@ import middleware
 
 import controller
 
-routes:
+router withMiddleware:
   # test middleware
+  post "/test_routing": route(newTestController(request).postAction())
+
+routes:
   error Exception: exceptionRoute
-  before: framework
 
   # test routing
   get "/test_routing": route(newTestController(request).getAction())
@@ -26,3 +28,6 @@ routes:
   get "/status500json": route(newTestController(request).status500json())
   get "/redirect": route(newTestController(request).redirect())
   get "/error_redirect": route(newTestController(request).error_redirect())
+
+  before re"/with_middleware.*": framework
+  extend withMiddleware, "/with_middleware"
