@@ -1,5 +1,6 @@
 import json
 import ../../src/basolato/controller
+import ../../src/basolato/security
 # template
 import resources/test_template
 
@@ -42,6 +43,22 @@ proc setHeader*(this:TestController):Response =
                 .set("key1", "value1")
                 .set("key2", ["value1", "value2"])
   return render("setHeader").setHeader(header)
+
+proc setCookie*(this:TestController):Response =
+  var cookie = newCookie(this.request)
+                .set("key1", "value1")
+                .set("key2", "value2")
+  return render("setCookie").setCookie(cookie)
+
+proc setAuth*(this:TestController):Response =
+  var auth = newAuth()
+              .set("key1", "value1")
+              .set("key2", "value2")
+  return render("setAuth").setAuth(auth)
+
+proc destroyAuth*(this:TestController):Response =
+  let auth = newAuth()
+  return render("setAuth").destroyAuth(auth)
 
 
 # test routing

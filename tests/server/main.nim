@@ -24,6 +24,9 @@ routes:
 
   # test response
   get "/set-header": route(newTestController(request).setHeader())
+  get "/set-cookie": route(newTestController(request).setCookie())
+  get "/set-auth": route(newTestController(request).setAuth())
+  get "/destroy-auth": route(newTestController(request).destroyAuth())
 
   # test routing
   get "/test_routing": route(newTestController(request).getAction())
