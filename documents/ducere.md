@@ -4,35 +4,35 @@ decere command
 
 `ducere` is a CLI tool for Basolato framework such as `rails new`/`php artisan`.
 
-# new
+## new
 Create new project
 ```
 ducere new
 ```
 
-# make
+## make
 Create new file
 
-## config
+### config
 Create `config.nims` for database connection, logging, session-timeout configuation.
 ```
 ducere make config
 ```
 
-## controller
+### controller
 Create new controller  
 ```sh
-ducere make controller User
->> app/controllers/UserController.nim
+ducere make controller user
+>> app/controllers/user_controller.nim
 
-ducere make controller sample/User
->> app/controllers/sample/UserController.nim
+ducere make controller sample/user
+>> app/controllers/sample/user_controller.nim
 
-ducere make controller sample/sample2/User
->> app/controllers/sample/sample2/UserController.nim
+ducere make controller sample/sample2/user
+>> app/controllers/sample/sample2/user_controller.nim
 ```
 
-## migration
+### migration
 Create new migration file
 ```sh
 ducere make migration createUser

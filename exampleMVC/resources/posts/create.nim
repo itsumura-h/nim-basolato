@@ -3,10 +3,10 @@ import json
 import ../../../src/basolato/view
 import ../base
 
-proc createHtmlImpl(auth:Auth, title:string, text:string, errors:JsonNode): string = tmpli html"""
+proc createHtmlImpl(title:string, text:string, errors:JsonNode): string = tmpli html"""
 <h2>New Post</h2>
 <form method="post">
-  $(csrfToken(auth))
+  $(csrfToken())
   <div>
     <p>Title</p>
     $if errors.hasKey("title") {
@@ -34,4 +34,4 @@ proc createHtmlImpl(auth:Auth, title:string, text:string, errors:JsonNode): stri
 """
 
 proc createHtml*(auth:Auth, title="", text="", errors=newJObject()): string =
-  baseHtml(auth, createHtmlImpl(auth, title, text, errors))
+  baseHtml(auth, createHtmlImpl(title, text, errors))

@@ -1,3 +1,4 @@
+import re
 # framework
 import ../src/basolato/routing
 # middleware
@@ -22,6 +23,7 @@ routes:
   error Http404: http404Route
   error Exception: exceptionRoute
   before: framework
+  options re".*" : cors
 
   get "/": route(redirect("/posts"))
 

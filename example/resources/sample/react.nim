@@ -1,94 +1,70 @@
-import templates
+#? stdtmpl | standard
+#proc reactHtml*(users:string): string =
+<main></main>
+<script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+<!-- <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script> -->
+<!-- router -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-router-dom/5.1.2/react-router-dom.min.js"></script>
+<!-- babel -->
+<script src="https://unpkg.com/babel-standalone@latest/babel.min.js" crossorigin="anonymous"></script>
 
-proc reactHtml*(users: string): string = tmpli html"""
-<html>
-  <head>
-    <title>👑React</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
-  </head>
-  <body>
-    <!-- react -->
-    <!-- <script src="https://unpkg.com/react@latest/umd/react.development.js" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/react-dom@latest/umd/react-dom.development.js"></script> -->
-    <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
-    <!-- material ui -->
-    <!-- <script src="https://unpkg.com/@material-ui/core@latest/umd/material-ui.development.js" crossorigin="anonymous"></script> -->
-    <script src="https://unpkg.com/@material-ui/core@latest/umd/material-ui.production.min.js"></script>
-    <!-- babel -->
-    <script src="https://unpkg.com/babel-standalone@latest/babel.min.js" crossorigin="anonymous"></script>
-    <!-- Fonts to support Material Design -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
-    <!-- Icons to support Material Design -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+<script type="text/babel">
+  const {useState} = React
+  const {BrowserRouter, Switch, Route, Link } = ReactRouterDOM
+
+  function Header(){
+    return <div>
+      <Link to="/sample/react" style={{marginRight: '10px'}}>react</Link>
+      <Link to="/sample/react/page1" style={{marginRight: '10px'}}>page1</Link>
+      <Link to="/sample/react/page2" style={{marginRight: '10px'}}>page2</Link>
+    </div>
+  }
+
+  function Index(){
+    let [count, setCount] = useState(0)
+    let users = JSON.parse('$users')
+    console.log(users)
     
-    <h1>React Users index</h1>
-    <p><a href="../../">戻る</a></p>
-    <div id="app"></div>
-    <script type="text/babel">
-      const {
-        createMuiTheme,
-        MuiThemeProvider,
-        CssBaseline,
-        Table,
-        TableBody,
-        TableCell,
-        TableContainer,
-        TableHead,
-        TableRow,
-        Paper
-      } = MaterialUI;
+    return <div>
+      <h1>index</h1>
+      <button onClick={function(){setCount(count+1)}}>add</button>
+      <p>{count}</p>
+      <table>
+        <tr>
+          <th>id</th><th>name</th><th>email</th><th>auth</th>
+        </tr>
+        users.map(user=>{
+          <tr>
+            <td>{user.id}</td><td>{user.name}</td><td>{user.email}</td><td>{user.auth}</td>
+          </tr>
+        })
+      </table>
+    </div>
+  }
 
-      const theme = createMuiTheme();
+  function Page1(){
+    return <h1>page1</h1>
+  }
 
-      class App extends React.PureComponent {
-        constructor(props) {
-          super(props);
-          this.state = {
-            users: JSON.parse('$(users)')
-          };
-        }
+  function Page2(){
+    return <h1>page2</h1>
+  }
 
-        render() {
-          return(
-            <div>
-              <TableContainer component={Paper}>
-                <Table aria-label="simple table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell align="right">id</TableCell>
-                      <TableCell align="right">name</TableCell>
-                      <TableCell align="right">email</TableCell>
-                      <TableCell align="right">auth</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {this.state.users.map(user => (
-                      <TableRow key={user.id}>
-                        <TableCell component="th" scope="row">{user.id}</TableCell>
-                        <TableCell align="right">{user.name}</TableCell>
-                        <TableCell align="right">{user.email}</TableCell>
-                        <TableCell align="right">{user.auth}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </div>
-          );
-        }
-      }
-      
-      ReactDOM.render(
-        <MuiThemeProvider theme={theme}>
-          {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-          <CssBaseline />
-          <App />
-        </MuiThemeProvider>,
-        document.querySelector('#App'),
-      );
-    </script>
-  </body>
-</html>
-"""
+  function App(){
+    return <div>
+      <a href="/">back</a>
+      <BrowserRouter>
+        <Header/>
+        <Switch>
+          <Route exact path='/sample/react' children={<Index/>} />
+          <Route exact path='/sample/react/page1' children={<Page1/>} />
+          <Route exact path='/sample/react/page2' children={<Page2/>} />
+        </Switch>
+      </BrowserRouter>
+    </div>
+  }
+
+  ReactDOM.render(<App/>,document.querySelector('main'))
+</script>

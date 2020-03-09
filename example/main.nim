@@ -12,14 +12,15 @@ import app/controllers/sample_controller
 
 router sample:
   get "/welcome": route(newSampleController(request).welcome())
-  get "/checkLogin":
-    middleware([isLogin(request)]);
-    route(newSampleController(request).index(),
-    [corsHeader()])
+  get "/karax": route(newSampleController(request).karaxIndex())
   get "/fib/@num": route(newSampleController(request).fib(@"num"),
                     [corsHeader()])
-  get "/react": route(newSampleController(request).react())
-  get "/vue": route(newSampleController(request).vue())
+  get re"/react.*": route(newSampleController(request).react())
+  get "/material-ui": route(newSampleController(request).materialUi())
+  get "/vuetify": route(newSampleController(request).vuetify())
+  get "/checkLogin":
+    middleware([isLogin(request)]);
+    route(newSampleController(request).index(), [corsHeader()])
   get "/custom-headers": route(newSampleController(request).customHeaders(),
                           [secureHeader(), corsHeader(), customHeader()])
 
@@ -32,15 +33,6 @@ router sample:
   get "/login": route(newSampleController(request).indexLogin())
   post "/login": route(newSampleController(request).storeLogin())
   post "/logout": route(newSampleController(request).destroyLogin())
-
-  get "/session": route(newSampleController(request).indexSession())
-  post "/session": route(newSampleController(request).storeSession())
-  # post "/session/update":
-  #   route(newSampleController(request).updateSession())
-  # post "/session/delete":
-  #   route(newSampleController(request).destroySession())
-  # post "/session/delete-all":
-  #   route(newSampleController(request).destroySession())
 
 
 router api:

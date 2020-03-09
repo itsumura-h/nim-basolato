@@ -3,7 +3,6 @@ import ../../../src/basolato/controller
 
 proc root*(request:Request):Response =
   let params = request.params
-  echo params
   return render("<h1>root</h1>")
 
 proc rootPost*(request:Request):Response =

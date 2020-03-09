@@ -1,7 +1,6 @@
 import strutils, json, strformat, tables, times
 # framework
 import ../../../src/basolato/controller
-import ../../../src/basolato/validation
 # model
 import ../models/posts
 # view
@@ -24,7 +23,7 @@ proc newPostsController*(request:Request): PostsController =
 proc index*(this:PostsController): Response =
   let posts = this.post.getPosts()
   return render(indexHtml(this.auth, posts))
-          .updateCookieExpire(this.request, "token", 5)
+            .setAuth(this.auth) # update expire
 
 
 proc show*(this:PostsController, id:string): Response =
@@ -50,7 +49,7 @@ proc store*(this:PostsController): Response =
     return render(createHtml(this.auth, title, text, v.errors))
 
   let publishedDate = now().format("yyyy-MM-dd")
-  let autherId = this.auth.uid
+  let autherId = this.auth.get("uid")
   let postId = this.post.store(title, text, publishedDate, autherId)
   return redirect(&"/posts/{postId}")
 
@@ -60,7 +59,7 @@ proc edit*(this:PostsController, id:string): Response =
     let id = id.parseInt
     let post = this.post.getPost(id)
     # login check
-    if this.auth.uid != $post["auther_id"].getInt:
+    if this.auth.get("uid") != $post["auther_id"].getInt:
       raise newException(Error302, "/posts")
     # get params
     let title = post["title"].getStr

@@ -54,9 +54,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Test
-      run: docker-compose run app nimble test
+      run: docker-compose run app sh /home/www/runTest.sh
     - name: Test multi-thread
       run: |
         echo '' >> tests/config.nims
         echo 'switch("threads", "on")' >> tests/config.nims
-        docker-compose run app nimble test
+        docker-compose run app sh /home/www/runTest.sh

@@ -34,9 +34,9 @@ proc store*(this:SignUpController): Response =
 
 View
 ```html
-proc createHtmlImpl(auth:Auth, name:string, email:string, errors:JsonNode): string = tmpli html"""
+proc createHtmlImpl(name:string, email:string, errors:JsonNode): string = tmpli html"""
   <form method="post">
-    $(csrfToken(auth))
+    $(csrfToken())
     <div>
       <p>name</p>
       $if errors.hasKey("name") {
@@ -183,7 +183,7 @@ This will add errors if value is not match for one of expected values.
 ```
 
 ```nim
-validate().isIn("name", ["John", "Paul", "George", "Ringo")
+validate().isIn("name", ["John", "Paul", "George", "Ringo"])
 ```
 
 ## lessThan
@@ -251,14 +251,19 @@ table: users
 |id|name|email|
 |---|---|---|
 |1|user1|user1@gmail.com|
-|2|user2|user1@gmai2.com|
-|3|user3|user1@gmai3.com|
-|4|user4|user1@gmai4.com|
+|2|user2|user2@gmail.com|
+|3|user3|user3@gmail.com|
+|4|user4|user4@gmail.com|
 
 ```json
-{"address": "user5@gmail.com"}
+{"mail": "user5@gmail.com"}
 ```
 
 ```nim
-validate().unique("address", "users", "email")
+validate().unique("mail", "users", "email")
 ```
+|arg position|example|content|
+|---|---|---|
+|1|"mail"|response params key|
+|2|"users"|RDB table name|
+|3|"email"|RDB column name|

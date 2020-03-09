@@ -81,8 +81,7 @@ When you define controller object extends `Controller`, `request` and `auth` is 
 ## Returning string
 If you set string in `render` proc, controller returns string.
 ```nim
-proc index*(): Response =
-  return render("index")
+return render("index")
 ```
 
 ## Returning HTML file
@@ -90,8 +89,7 @@ If you set html file path in `html` proc, controller returns HTML.
 This file path should be relative path from `resources` dir
 
 ```nim
-proc index*(): Response =
-  return render(html("sample/index.html"))
+return render(html("sample/index.html"))
 
 >> display /resources/sample/index.html
 ```
@@ -101,7 +99,7 @@ Call template proc with args in `render` will return template
 
 resources/sample/index.nim
 ```nim
-import tampleates
+import basolato/view
 
 proc indexHtml(name:string):string = tmpli html"""
 <h1>index</h1>
@@ -110,27 +108,22 @@ proc indexHtml(name:string):string = tmpli html"""
 ```
 main.nim
 ```nim
-import resources/sample/index
-
-proc index*(): Response =
-  return render(indexHtml("John"))
+return render(indexHtml("John"))
 ```
 
 ## Returning JSON
 If you set JsonNode in `render` proc, controller returns JSON.
 
 ```nim
-proc index*(): Response =
-  return render(
-    %*{"key": "value"}
-  )
+return render(
+  %*{"key": "value"}
+)
 ```
 
 ## Response status
 Put response status code arge1 and response body arge2
 ```nim
-proc index*(): Response =
-  return render(HTTP500, "It is a response body")
+return render(HTTP500, "It is a response body")
 ```
 
 [Here](https://nim-lang.org/docs/httpcore.html#10) is the list of response status code available.  

@@ -22,6 +22,8 @@ proc newLoginController*(request:Request): LoginController =
 
 
 proc create*(this: LoginController): Response =
+  if this.auth.isLogin:
+    return redirect("/posts")
   return render(createHtml(this.auth))
 
 proc store*(this: LoginController): Response =
@@ -41,11 +43,9 @@ proc store*(this: LoginController): Response =
   let uid = user["id"].getInt
   let name = user["name"].getStr
   # create sesstion
-  let cookie = sessionStart($uid)
-                .add("login_name", name)
-                .setCookie(daysForward(5))
-  return redirect("/posts").setCookie(cookie)
+  let auth = newAuth().set("uid", $uid)
+                      .set("login_name", name)
+  return redirect("/posts").setAuth(auth)
 
 proc destroy*(this: LoginController): Response =
-  this.auth.destroy()
-  return redirect("/posts").deleteCookie("token")
+  return redirect("/posts").destroyAuth(this.auth)

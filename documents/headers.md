@@ -1,6 +1,6 @@
 Headers
 ===
-# Request Header
+## Request Header
 To get request header, use `request.headers`
 
 middleware/check_login.nim
@@ -20,14 +20,15 @@ proc index*(this:SampleController): Response =
   let loginId = this.request.headers["X-login-id"]
 ```
 
-# Response header
-## Type of headers
-Type of response header is `seq[tuple[key, val:string]]`
-```nim
-from strutils import join
+## Response header
+### Type of headers
+`toHeaders()` generate `Header` object from `array`, `seq`, `table` and `JsonNode`.
 
-proc secureHeader*(): seq =
-  return @[
+```nim
+import ../../src/basolato/middleware
+
+proc secureHeader*(): Headers =
+  return [
     ("Strict-Transport-Security", ["max-age=63072000", "includeSubdomains"].join(", ")),
     ("X-Frame-Options", "SAMEORIGIN"),
     ("X-XSS-Protection", ["1", "mode=block"].join(", ")),
@@ -35,11 +36,11 @@ proc secureHeader*(): seq =
     ("Referrer-Policy", ["no-referrer", "strict-origin-when-cross-origin"].join(", ")),
     ("Cache-control", ["no-cache", "no-store", "must-revalidate"].join(", ")),
     ("Pragma", "no-cache"),
-  ]
+  ].toHeaders()
 ```
 
 
-## Set headers in routing
+### Set headers in routing
 You can set custom headers by setting 2nd arg or `route()`  
 Procs which return custom headers have to return seq `@[(key, val: string)]`
 
@@ -61,11 +62,13 @@ after re"/api.*":
 extend api, "/api"
 ```
 
-## Set headers in controller
-`headers` proc with method chain with `render` will set custom response header. If same key of header set in `main.nim`, it will be overwitten.
+### Set headers in controller
+Create header instance by `newHeaders()` and add by `set()`. Finally, set header to response with `setHeader()`
 ```nim
-proc index*(): Response =
-  return render("with headers")
-    .header("key1", "value1")
-    .header("key2", ["a", "b", "c"])
+proc index*(this:SampleController): Response =
+  let header = newHeaders()
+                .set("Controller-Header-Key1", "Controller-Header-Val1")
+                .set("Controller-Header-Key1", "Controller-Header-Val2")
+                .set("Controller-Header-Key2", ["val1", "val2", "val3"])
+  return render("with header").setHeader(header)
 ```

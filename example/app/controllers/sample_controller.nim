@@ -4,12 +4,13 @@ import ../../../src/basolato/controller
 import allographer/query_builder
 
 # html
-import ../../resources/sample/vue
+import ../../../src/basolato/welcome_page/resources/welcome
+import ../../resources/sample/karax
 import ../../resources/sample/react
-import ../../../src/basolato/sample/resources/welcome
+import ../../resources/sample/material_ui
+import ../../resources/sample/vuetify
 import ../../resources/sample/cookie
 import ../../resources/sample/login
-import ../../resources/sample/session
 
 type SampleController = ref object of Controller
 
@@ -24,6 +25,10 @@ proc index*(this:SampleController): Response =
 proc welcome*(this:SampleController): Response =
   let name = "Basolato " & basolatoVersion
   return render(welcomeHtml(name))
+
+
+proc karaxIndex*(this:SampleController): Response =
+  return render(karaxHtml())
 
 
 proc fib_logic(n: int): int =
@@ -51,10 +56,17 @@ proc react*(this:SampleController): Response =
               .select("users.id", "users.name", "users.email", "auth.auth")
               .join("auth", "auth.id", "=", "users.auth_id")
               .get()
-  return render(react_html($users))
+  return render(reactHtml($users))
+
+proc materialUi*(this:SampleController): Response =
+  let users = %*RDB().table("users")
+              .select("users.id", "users.name", "users.email", "auth.auth")
+              .join("auth", "auth.id", "=", "users.auth_id")
+              .get()
+  return render(materialUiHtml($users))
 
 
-proc vue*(this:SampleController): Response =
+proc vuetify*(this:SampleController): Response =
   let users = %*RDB().table("users")
               .select("users.id", "users.name", "users.email", "auth.auth")
               .join("auth", "auth.id", "=", "users.auth_id")
@@ -67,7 +79,7 @@ proc vue*(this:SampleController): Response =
     {"text": "created_at", "value": "created_at"},
     {"text": "updated_at", "value": "updated_at"}
   ]
-  return render(vue_html($header, $users))
+  return render(vuetifyHtml($header, $users))
 
 
 proc customHeaders*(this:SampleController): Response =
@@ -92,7 +104,7 @@ proc updateCookie*(this:SampleController): Response =
   let key = this.request.params["key"]
   let days = this.request.params["days"].parseInt
   let cookie = newCookie(this.request)
-                .updateExpire(key, days)
+                .updateExpire(key, days, Days)
   return redirect("/sample/cookie").setCookie(cookie)
 
 proc destroyCookie*(this:SampleController): Response =
@@ -109,36 +121,15 @@ proc destroyCookies*(this:SampleController): Response =
 
 # ========== Login ====================
 proc indexLogin*(this:SampleController): Response =
-  let auth = this.auth
-  return render(loginHtml(auth))
+  return render(loginHtml(this.auth))
 
 proc storeLogin*(this:SampleController): Response =
   let name = this.request.params["name"]
   let password = this.request.params["password"]
   echo name, password
   # auth
-  let sessionId = newAuth()
-                    .set("name", name)
-                    .getId()
-  let cookie = newCookie(this.request)
-                .set("session_id", sessionId)
-                .set("key1", "val1")
-                .set("key2", "val2")
-  return redirect("/sample/login").setCookie(cookie)
+  let auth = newAuth().set("name", name)
+  return redirect("/sample/login").setAuth(auth)
 
 proc destroyLogin*(this:SampleController): Response =
-  this.auth.destroy()
-  let cookie = newCookie(this.request).destroy()
-  return redirect("/sample/login").setCookie(cookie)
-
-# ========== Session ====================
-proc indexSession*(this:SampleController): Response =
-  return render(sessionHtml(this.auth))
-
-proc storeSession*(this:SampleController): Response =
-  let key = this.request.params["key"]
-  let value = this.request.params["value"]
-  echo key, value
-  # let cookie = newCookie(key, value)
-  # return render(cookieHtml(this.auth)).setCookie(cookie)
-  return redirect("/sample/session")
+  return redirect("/sample/login").destroyAuth(this.auth)

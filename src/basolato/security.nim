@@ -1,9 +1,8 @@
-import httpcore, json, tables, strutils, times, random, strformat
+import httpcore, json, strutils, times, random, strformat
 # framework
 import base
 # 3rd party
 import flatdb, nimAES
-from jester import daysForward
 import jester/request
 import jester/private/utils
 
@@ -40,10 +39,18 @@ type SessionDb = ref object
   conn: FlatDb
   token: string
 
+proc checkTokenValid(db:FlatDb, token:string) =
+  try:
+    discard db[token]
+  except:
+    raise newException(Exception, "Invalid session id")
+
 proc newSessionDb*(token=""):SessionDb =
   let db = newFlatDb(SESSION_DB_PATH, IS_SESSION_MEMORY)
   discard db.load()
   if token.len > 0:
+    var token = token.decryptCtr()
+    checkTokenValid(db, token)
     return SessionDb(conn: db, token:token)
   else:
     let token = db.append(newJObject())
@@ -123,27 +130,60 @@ type
     request:Request
     cookies*:seq[CookieData]
 
-proc minutesForward*(minutes:int): DateTime =
-  return getTime().utc + initTimeInterval(minutes = minutes)
+
+proc timeForward*(num:int, timeUnit:TimeUnit):DateTime =
+  case timeUnit
+  of Years:
+    return getTime().utc + initTimeInterval(hours = num)
+  of Months:
+    return getTime().utc + initTimeInterval(months = num)
+  of Weeks:
+    return getTime().utc + initTimeInterval(weeks = num)
+  of Days:
+    return getTime().utc + initTimeInterval(days = num)
+  of Hours:
+    return getTime().utc + initTimeInterval(hours = num)
+  of Minutes:
+    return getTime().utc + initTimeInterval(minutes = num)
+  of Seconds:
+    return getTime().utc + initTimeInterval(seconds = num)
+  of Milliseconds:
+    return getTime().utc + initTimeInterval(milliseconds = num)
+  of Microseconds:
+    return getTime().utc + initTimeInterval(microseconds = num)
+  of Nanoseconds:
+    return getTime().utc + initTimeInterval(nanoseconds = num)
 
 proc toCookieStr*(this:CookieData):string =
   makeCookie(this.name, this.value,this.expire,this.domain, this.path,
               this.secure,this.httpOnly, this.sameSite)
 
-proc newCookieData(name, value:string, expire:DateTime, sameSite: SameSite=Lax,
+
+proc newCookieData*(name, value:string, expire:DateTime, sameSite: SameSite=Lax,
       secure = false, httpOnly = false, domain = "", path = "/"):CookieData =
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(expire.utc, f)
   CookieData(name:name, value:value,expire:expireStr, sameSite:sameSite,
     secure:secure, httpOnly:httpOnly, domain:domain, path:path)
 
-proc newCookieData(name, value:string, expire="", sameSite: SameSite=Lax,
+proc newCookieData*(name, value:string, expire="", sameSite: SameSite=Lax,
       secure = false, httpOnly = false, domain = "", path = "/"):CookieData =
   CookieData(name:name, value:value,expire:expire, sameSite:sameSite,
     secure:secure, httpOnly:httpOnly, domain:domain, path:path)
 
 proc newCookie*(request:Request):Cookie =
   return Cookie(request:request, cookies:newSeq[CookieData](0))
+
+proc get*(this:Cookie, name:string):string =
+  result = ""
+  if not this.request.headers.hasKey("Cookie"):
+    return result
+  let cookiesStrArr = this.request.headers["Cookie"].split("; ")
+  for row in cookiesStrArr:
+    let rowArr = row.split("=")
+    if rowArr[0] == name:
+      result = rowArr[1]
+      break
 
 proc set*(this:Cookie, name, value: string, expire:DateTime,
       sameSite: SameSite=Lax, secure = false, httpOnly = false, domain = "",
@@ -157,7 +197,7 @@ proc set*(this:Cookie, name, value: string, expire:DateTime,
 
 proc set*(this:Cookie, name, value: string, sameSite: SameSite=Lax,
       secure = false, httpOnly = false, domain = "", path = "/"):Cookie =
-  let expires = minutesForward(CSRF_TIME)
+  let expires = timeForward(CSRF_TIME, Minutes)
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(expires.utc, f)
   this.cookies.add(
@@ -166,32 +206,22 @@ proc set*(this:Cookie, name, value: string, sameSite: SameSite=Lax,
   )
   return this
 
-proc updateExpire*(this:Cookie, name:string, days:int, path="/"):Cookie =
+proc updateExpire*(this:Cookie, name:string, num:int,
+                    timeUnit:TimeUnit, path="/"):Cookie =
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
-  let expireStr = format(daysForward(days).utc, f)
-  let cookiesStrArr = this.request.headers["Cookie"].split("; ")
-  for i, row in cookiesStrArr:
-    let rowArr = row.split("=")
-    if rowArr[0] == name:
-      this.cookies.add(newCookieData(rowArr[0], rowArr[1], expire=expireStr))
-      break
-  echo this.cookies.repr
+  let expireStr = format(timeForward(num, timeUnit).utc, f)
+  if this.request.headers.hasKey("Cookie"):
+    let cookiesStrArr = this.request.headers["Cookie"].split("; ")
+    for i, row in cookiesStrArr:
+      let rowArr = row.split("=")
+      if rowArr[0] == name:
+        this.cookies.add(newCookieData(rowArr[0], rowArr[1], expire=expireStr))
+        break
   return this
-
-proc get*(this:Cookie, name:string):string =
-  result = ""
-  if not this.request.headers.hasKey("Cookie"):
-    return result
-  let cookiesStrArr = this.request.headers["Cookie"].split("; ")
-  for row in cookiesStrArr:
-    let rowArr = row.split("=")
-    if rowArr[0] == name:
-      result = rowArr[1]
-      break
 
 proc delete*(this:Cookie, key:string, path="/"):Cookie =
   this.cookies.add(
-    newCookieData(name=key, value="", expire=daysForward(-1), path=path)
+    newCookieData(name=key, value="", expire=timeForward(-1, Days), path=path)
   )
   return this
 
@@ -201,7 +231,7 @@ proc destroy*(this:Cookie, path="/"):Cookie =
     for row in cookiesStrArr:
       let name = row.split("=")[0]
       this.cookies.add(
-        newCookieData(name=name, value="", expire=daysForward(-1), path=path)
+        newCookieData(name=name, value="", expire=timeForward(-1, Days), path=path)
       )
   return this
 
@@ -211,18 +241,10 @@ type Auth* = ref object
   isLogin*:bool
   session*:Session
 
-
-proc checkSessionIdValid*(sessionId:string) =
-  var sessionId = sessionId.decryptCtr()
-  if sessionId.len != 24:
-    raise newException(Exception, "Invalid session_id")
-
 proc newAuth*(request:Request):Auth =
   ## use in constructor
-  # var sessionId = request.getCookie("session_id")
   var sessionId = newCookie(request).get("session_id")
   if sessionId.len > 0:
-    sessionId = sessionId.decryptCtr()
     return Auth(
       isLogin: true,
       session:newSession(sessionId)
@@ -240,7 +262,7 @@ proc newAuth*():Auth =
 proc isLogin*(this:Auth):bool =
   this.isLogin
 
-proc getId*(this:Auth):string =
+proc getToken*(this:Auth):string =
   this.session.getToken()
 
 proc get*(this:Auth, key:string):string =
@@ -253,6 +275,10 @@ proc set*(this:Auth, key, value:string):Auth =
   if this.isLogin:
     discard this.session.set(key, value)
   return this
+
+# proc delete*(this:Auth, key:string):AUth =
+#   discard this.session.delete(key)
+#   return this
 
 proc destroy*(this:Auth) =
   this.session.destroy()

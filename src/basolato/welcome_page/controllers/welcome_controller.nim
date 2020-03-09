@@ -2,14 +2,14 @@ import basolato/controller
 # view
 import ../resources/welcome
 
-type SampleController* = ref object
+type WelcomeController* = ref object
   request: Request
 
-proc newSampleController*(request:Request): SampleController =
-  return SampleController(
+proc newWelcomeController*(request:Request): WelcomeController =
+  return WelcomeController(
     request:request
   )
 
-proc index*(this:SampleController):Response =
+proc index*(this:WelcomeController):Response =
   let name = "Basolato " & basolatoVersion
   return render(welcomeHtml(name))

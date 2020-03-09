@@ -49,7 +49,7 @@ proc email*(this:Validation, key="email"): Validation =
   if this.params[key].len == 0:
     error.add(%"this field is required")
 
-  if not this.params[key].match(re"^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9]+\.[?:\.a-zA-Z0-9]*$"):
+  if not this.params[key].match(re"\A[\w+\-.]+@[a-zA-Z\d\-]+(\.[a-zA-Z\d\-]+)*\.[a-zA-Z]+\Z"):
     error.add(%"invalid form of email")
   
   if error.len > 0:
@@ -146,7 +146,7 @@ proc unique*(this:Validation, key:string, table:string, column:string): Validati
   if this.params.hasKey(key):
     let val = this.params[key]
     let num = RDB().table(table).where(column, "=", val).count()
-    if num != 0:
+    if num > 0:
       this.putValidate(key, &"{key} should be unique")
   return this
 

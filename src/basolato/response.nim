@@ -1,6 +1,6 @@
-import httpcore, json, options, os
+import httpcore, json, options, os, times
 # framework
-import base, header, security
+import base, header, security, logger
 # 3rd party
 import httpbeast
 from jester import RawHeaders, CallbackAction, ResponseData
@@ -8,7 +8,7 @@ import jester/request
 
 
 template setHeader(headers: var Option[RawHeaders], key, value: string) =
-  ## Customized for jester
+  ## Customized jester code
   bind isNone
   if isNone(headers):
     headers = some(@({key: value}))
@@ -29,7 +29,7 @@ template setHeader(headers: var Option[RawHeaders], key, value: string) =
 template resp*(code: HttpCode,
                headers: openarray[tuple[key, val: string]],
                content: string) =
-  ## Sets ``(code, headers, content)`` as the response.
+  ## Set ``(code, headers, content)`` as the response.
   bind TCActionSend
   result = (TCActionSend, code, none[RawHeaders](), content, true)
   for header in headers:
@@ -59,6 +59,32 @@ proc setCookie*(response:Response, cookie:Cookie):Response =
     let cookieStr = cookieData.toCookieStr()
     response.headers.add(("Set-cookie", cookieStr))
   return response
+
+# ========== Auth ====================
+proc setAuth*(response:Response, auth:Auth):Response =
+  ## If not logged in, do nothing.
+  ## If logged in but not updated any session value,
+  ## expire of session_id is updated.
+
+  if auth.isLogin:
+    let sessionId = auth.getToken()
+    let cookie = newCookieData("session_id", sessionId,
+                      timeForward(SESSION_TIME, Minutes))
+                  .toCookieStr()
+    response.headers.add(("Set-cookie", cookie))
+  return response
+
+
+proc destroyAuth*(response:Response, auth:Auth):Response =
+  if auth.isLogin:
+    let sessionId = auth.getToken()
+    let cookie = newCookieData("session_id", sessionId, timeForward(-1, Days))
+                  .toCookieStr()
+    response.headers.add(("Set-cookie", cookie))
+  else:
+    echoErrorMsg("Tried to destroy auth but not logged in")
+  return response
+
 
 
 # =============================================================================
