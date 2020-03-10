@@ -1,7 +1,11 @@
-Basolato Framework
-===
 
-![Build Status](https://github.com/itsumura-h/nim-basolato/workflows/Build%20and%20test%20Nim/badge.svg)
+<div align="center">
+<img src="./documents/basolato.svg" style="width:160px">
+<h1>Basolato Framework</h1>
+<img src="https://github.com/itsumura-h/nim-basolato/workflows/Build%20and%20test%20Nim/badge.svg">
+</div>
+
+---
 
 A Fullstack Web Framework for Nim based on Jester
 
@@ -16,15 +20,6 @@ To references
 |Python|Masonite|
 |Java/Scala|Play|
 |Go|Revel|
-
-## Dev roadmap
-
-|Version|Content|
-|---|---|
-|v1.0|Support Three-layer architecture (generally called as MVC)|
-|v2.0|Support Clean architecture, Tactical DDD|
-|v3.0|Support GraphQL|
-
 
 ## Dependencies
 This framework depends on following libralies
@@ -96,3 +91,11 @@ ducere new project_name
 - [Error](./documents/error.md)
 - [Validation](./documents/validation.md)
 - [Security(CsrfToken, Cookie, Session, Auth)](./documents/security.md)
+
+## Dev roadmap
+
+|Version|Content|
+|---|---|
+|v1.0|Support Three-layer architecture (generally called as MVC)|
+|v2.0|Support Clean architecture, Tactical DDD|
+|v3.0|Support GraphQL|
