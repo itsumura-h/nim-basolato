@@ -321,7 +321,7 @@ proc csrfToken*(token=""):string =
 
 proc csrfTokenKarax*(token=""):VNode =
   var token = newCsrfToken(token).getToken()
-  return buildHtml(input(type="hidden", name="csrf_token", "value"=token))
+  return buildHtml(input(type="hidden", name="csrf_token", value=token))
 
 proc checkCsrfTimeout*(this:CsrfToken):bool =
   var timestamp:int

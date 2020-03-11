@@ -7,7 +7,7 @@ import ../base
 proc editHtmlImpl(id:int, title:string, text:string, errors:JsonNode):string =
   let vnode = buildHtml(tdiv):
     h2: text("Edit Post")
-    form("method"="post"):
+    form(`method`="post"):
       csrfTokenKarax()
       tdiv:
         p: text("Title")
@@ -15,7 +15,7 @@ proc editHtmlImpl(id:int, title:string, text:string, errors:JsonNode):string =
           ul:
             for row in errors["title"]:
               li: text(row.get)
-        p: input(type="text", "value"=title, name="title")
+        p: input(type="text", value=title, name="title")
       tdiv:
         p: text("Text")
         if errors.hasKey("text"):
