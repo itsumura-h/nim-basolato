@@ -1,8 +1,10 @@
 
+<p align="center">
+  <img src="./documents/basolato.svg" style="width:160px">
+</p>
 <div align="center">
-<img src="./documents/basolato.svg" style="width:160px">
-<h1>Basolato Framework</h1>
-<img src="https://github.com/itsumura-h/nim-basolato/workflows/Build%20and%20test%20Nim/badge.svg">
+  <h2>Basolato Framework</h2>
+  <img src="https://github.com/itsumura-h/nim-basolato/workflows/Build%20and%20test%20Nim/badge.svg">
 </div>
 
 ---

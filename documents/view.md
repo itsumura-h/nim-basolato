@@ -7,15 +7,18 @@ Basolato use [nim-templates](https://github.com/onionhammer/nim-templates) as vi
 Views file should place in `resources` dir.
 
 # Examples
-## Display variable
+## SCF
+
+See also [Official document](https://nim-lang.org/docs/filters.html)
+
+### Display variable
 
 view
 ```nim
-import basolate/view
-
-proc indexHtml*(message:string): string tmpli html"""
-<p>$message</p>
-"""
+#? stdtmpl | standard
+#proc indexHtml*(message:string): string =
+#  result = ""
+<p>${message}</p>
 ```
 
 controller
@@ -30,22 +33,19 @@ result
 <p>paragraph</p>
 ```
 
-## if
+### if statement
 view
 ```nim
-import basolate/view
-
-proc indexHtml*(auth:string): string tmpli html"""
-$if auth == "admin" {
+#? stdtmpl | standard
+#proc indexHtml*(auth:string): string =
+#  result = ""
+#if auth == "admin":
   <p>You are administrator</p>
-}
-$elif auth == "user" {
+#elif auth == "user":
   <p>You are user</p>
-}
-$else {
+#else:
   <p>You don't have permission</p>
-}
-"""
+#end if
 ```
 
 controller
@@ -61,16 +61,16 @@ result
 ```
 
 
-## for
+### for statement
 view
 ```nim
-import basolate/view
-
-proc indexHtml*(arr:oppenarray[int]): string tmpli html"""
+#? stdtmpl | standard
+#proc indexHtml*(arr:oppenarray[int]): string =
+#  result = ""
 <ul>
-  $for row in arr {
-    <il>$(row)</li>
-  }
+  #for row in arr:
+    <il>${row}</li>
+  # end for
 </ul>
 """
 ```
@@ -93,7 +93,7 @@ result
 </ul>
 ```
 
-## Block components
+### Block components
 view
 ```nim
 proc baseImpl(content:string): string = tmpli html"""
