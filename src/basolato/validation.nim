@@ -70,19 +70,20 @@ proc strictEmail*(this: Validation, key = "email"): Validation =
     if not email.contains("@"):
       raise newException(Exception, "email need '@'")
 
+    # if local is wrappd by double wuote
     if email.find(re"""".+"@""") > -1:
-      # "local"@host.domain, check only full-width character
       domain = email.replace(re"""".+"@""")
       local = email.findAll(re"""".+"@""")[0]
+      # Japanese or Chinese is invalid
       if local.find(re"[^\x01-\x7E]+") > 0:
-        raise newException(Exception, "invalid form of email")
+        raise newException(Exception, "full-width char is invalid")
     else:
       let arr = email.split("@")
       local = arr[0]
       domain = arr[1]
 
       if email.cstring.len > 254:
-        raise newException(Exception, "invalid form of email")
+        raise newException(Exception, "email should shorter than 254")
 
       if local.cstring.len > 64:
         raise newException(Exception, "invalid form of email")
@@ -121,29 +122,25 @@ proc strictEmail*(this: Validation, key = "email"): Validation =
           # label cannot start / end of symbol
           raise newException(Exception, "invalid form of email")
 
-      let host = domainArr[0]
-      if host.find(re"[^a-zA-Z0-9\-]+") > -1:
-        raise newException(Exception, "invalid form of email")
+        if label.find(re"[^a-zA-Z0-9\-]+") > -1:
+          raise newException(Exception, "invalid form of email")
 
-      domainArr.delete(0)
-      for domainData in domainArr:
-        if domainData.find(re"[^a-zA-Z0-9]+") > -1:
+        if label.find(re"[^a-zA-Z0-9]+") > -1:
           raise newException(Exception, "invalid form of email")
 
       if domainArr[^1].match(re"[0-9]{1}"):
         # end of domain should not be number
         raise newException(Exception, "invalid form of email")
-
   except:
     error.add(%(getCurrentExceptionMsg()))
 
   if error.len > 0:
-    # echo local
-    # echo email
+    echo local
+    echo email
     this.putValidate(key, error)
   else:
     # echo local
-    echo domain
+    # echo domain
     # echo email
     discard
 
