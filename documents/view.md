@@ -3,117 +3,81 @@ View
 [back](../README.md)
 
 ## Introduction
-Basolato use [nim-templates](https://github.com/onionhammer/nim-templates) as view. It is a usefull HTML templating library for Nim. You can use nim-templates by importing `basolate/view`.  
-Views file should place in `resources` dir.
+There are 4 ways to render HTML in Basolato. Although each library has it's own benefits and drawbacks, every library can be used.  
+Although Karax is installed by Basolato automatidcally, `nim-templates` is not installed. If you want to use `nim-templates`, please install by yourself.
 
-# Examples
-## SCF
+- [htmlgen](https://nim-lang.org/docs/htmlgen.html)
+- [SCF](https://nim-lang.org/docs/filters.html)
+- [Karax](https://github.com/pragmagic/karax)
+- [nim-templates](https://github.com/onionhammer/nim-templates)
 
-See also [Official document](https://nim-lang.org/docs/filters.html)
+<table>
+  <tr>
+    <th>Library</th><th>Benefits</th><th>Drawbacks</th>
+  </tr>
+  <tr>
+    <td>htmlgen</td>
+    <td>
+      <ul>
+        <li>Nim standard library</li>
+        <li>Easy to use for Nim programmer</li>
+        <li>Available to define plural Procedures in one file</li>
+      </ul>
+    </td>
+    <td>
+      <ul>
+        <li>Cannot use `if` statement and `for` statement</li>
+        <li>Maybe difficult to collaborate with designer or markup enginner</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>SCF</td>
+    <td>
+      <li>Nim standard library</li>
+      <li>Available to use `if` statement and `for` statement</li>
+      <li>Easy to collaborate with designer or markup enginner</li>
+    </td>
+    <td>
+      <ul>
+        <li>Cannot define plural Procedures in one file</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>Karax</td>
+    <td>
+      <li>Available to define plural Procedures in one file</li>
+      <li>Available to use `if` statement and `for` statement</li>
+    </td>
+    <td>
+      <ul>
+        <li>Maybe difficult to collaborate with designer or markup enginner</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>nim-templates</td>
+    <td>
+      <ul>
+        <li>Available to define plural Procedures in one file</li>
+        <li>Available to use `if` statement and `for` statement</li>
+        <li>Easy to collaborate with designer or markup enginner</li>
+      </ul>
+    </td>
+    <td>
+      <ul>
+        <li>Maintained by a person</li>
+      </ul>
+    </td>
+  </tr>
+</table>
 
-### Display variable
+Views file should be in `resources` dir.
 
-view
-```nim
-#? stdtmpl | standard
-#proc indexHtml*(message:string): string =
-#  result = ""
-<p>${message}</p>
-```
+# Block components example
 
-controller
-```nim
-proc index*(): Response =
-  let message = "paragraph"
-  return render(indexHtml(message))
-```
-
-result
-```html
-<p>paragraph</p>
-```
-
-### if statement
-view
-```nim
-#? stdtmpl | standard
-#proc indexHtml*(auth:string): string =
-#  result = ""
-#if auth == "admin":
-  <p>You are administrator</p>
-#elif auth == "user":
-  <p>You are user</p>
-#else:
-  <p>You don't have permission</p>
-#end if
-```
-
-controller
-```nim
-proc index*(): Response =
-  let auth = "hoge"
-  return render(indexHtml(auth))
-```
-
-result
-```html
-<p>You don't have permission</p>
-```
-
-
-### for statement
-view
-```nim
-#? stdtmpl | standard
-#proc indexHtml*(arr:oppenarray[int]): string =
-#  result = ""
-<ul>
-  #for row in arr:
-    <il>${row}</li>
-  # end for
-</ul>
-"""
-```
-
-controller
-```nim
-proc index*(): Response =
-  let arr = [1, 2, 3, 4, 5]
-  return render(indexHtml(arr))
-```
-
-result
-```html
-<ul>
-  <li>1</li>
-  <li>2</li>
-  <li>3</li>
-  <li>4</li>
-  <li>5</li>
-</ul>
-```
-
-### Block components
-view
-```nim
-proc baseImpl(content:string): string = tmpli html"""
-<html>
-  <heade>
-    <title>Basolato</title>
-  </head>
-  <body>
-    $(content)
-  </body>
-</html>
-"""
-
-proc indexImpl(message:string): string = tmpli html"""
-<p>$message</p>
-"""
-
-proc indexHtml(message:string): string =
-  baseImpl(indexImpl(message))
-```
+Controller and result is same for each example.
 
 controller
 ```nim
@@ -132,96 +96,90 @@ result
     <p>Basolato</p>
   </body>
 </html>
+```
+
+## htmlgen
+
+```nim
+import htmlgen
+
+proc baseImpl(content:string): string =
+  html(
+    head(
+      title("Basolato")
+    ),
+    body(content)
+  )
+
+proc indexImpl(message:string): string =
+  p(message)
+
+proc indexHtml*(message:string): string =
+  baseImpl(indexImpl(message))
+```
+
+
+## SCF
+
+SCF should divide procs for each file
+
+baseImpl.nim
+```nim
+#? stdtmpl | standard
+#proc baseImpl*(content:string): string = tmpli html"""
+<html>
+  <heade>
+    <title>Basolato</title>
+  </head>
+  <body>
+    $content
+  </body>
+</html>
+```
+
+indexImpl.nim
+```nim
+#? stdtmpl | standard
+#proc indexImpl*(message:string): string =
+<p>$message</p>
+```
+
+indexHtml.nim
+```nim
+#? stdtmpl | standard
+#import baseImpl
+#import indexImpl
+#proc indexHtml*(message:string): string =
+${baseImpl(indexImpl(message))}
 ```
 
 ## Karax
 This usage is **Server Side HTML Rendering**
 
-See also [Github](https://github.com/pragmagic/karax)
-
-### Display variable
-
-view
 ```nim
-import karax / [karaxdsl, vdom]
-proc indexHtml*(message:string): string =
+import karax / [karasdsl, vdom]
+
+proc baseImpl(content:string): string =
+  var vnode = buildHtml(html):
+    head:
+      title: text("Basolato")
+    body: text(content)
+  return $vnode
+
+proc indexImpl(message:string): string =
   var vnode = buildHtml(p):
     text(message)
   return $vnode
+
+proc indexHtml*(message:string): string =
+  baseImpl(indexImpl(message))
 ```
 
-controller
+## nim-templates
+
 ```nim
-proc index*(): Response =
-  let message = "paragraph"
-  return render(indexHtml(message))
-```
+import tamplates
 
-result
-```html
-<p>paragraph</p>
-```
-
-### if statement
-view
-```nim
-import karax / [karaxdsl, vdom]
-proc indexHtml*(auth:string): string =
-  var vnode = buildHtml(tdiv):
-    if auth == "admin":
-      p: text("You are administrator")
-    elif auth == "user":
-      p: text("You are user")
-    else:
-      p: text("You don't have permission")
-  return $vnode
-```
-
-controller
-```nim
-proc index*(): Response =
-  let auth = "hoge"
-  return render(indexHtml(auth))
-```
-
-result
-```html
-<p>You don't have permission</p>
-```
-
-
-### for statement
-view
-```nim
-import karax / [karaxdsl, vdom]
-proc indexHtml*(arr:oppenarray[int]): string =
-  var vnode = buildHtml(ul):
-    for row in arr:
-      li: text(row)
-  return $vnode
-```
-
-controller
-```nim
-proc index*(): Response =
-  let arr = [1, 2, 3, 4, 5]
-  return render(indexHtml(arr))
-```
-
-result
-```html
-<ul>
-  <li>1</li>
-  <li>2</li>
-  <li>3</li>
-  <li>4</li>
-  <li>5</li>
-</ul>
-```
-
-### Block components
-view
-```nim
 proc baseImpl(content:string): string = tmpli html"""
 <html>
   <heade>
@@ -237,25 +195,6 @@ proc indexImpl(message:string): string = tmpli html"""
 <p>$message</p>
 """
 
-proc indexHtml(message:string): string =
+proc indexHtml*(message:string): string =
   baseImpl(indexImpl(message))
-```
-
-controller
-```nim
-proc index*(): Response =
-  let message = "Basolato"
-  return render(indexHtml(message))
-```
-
-result
-```html
-<html>
-  <head>
-    <title>Basolato</title>
-  </head>
-  <body>
-    <p>Basolato</p>
-  </body>
-</html>
 ```
