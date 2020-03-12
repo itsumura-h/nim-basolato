@@ -75,6 +75,58 @@ Although Karax is installed by Basolato automatidcally, `nim-templates` is not i
 
 Views file should be in `resources` dir.
 
+# Csrf Token
+To send POST request from `form`, you have to set `csrf token`. You can use helper function from `basolato/view`
+
+## htmlgen
+```nim
+import htmlgen
+import basolato/view
+
+proc index*():string =
+  form(
+    csrfToken(),
+    input(type="text", name="name")
+  )
+```
+
+## SCF
+```nim
+#? stdtmpl | standard
+#import basolato/view
+#proc index*():string =
+<form>
+  ${csrfToken()}
+  <input type="text", name="name">
+</form>
+```
+
+## Karax
+```nim
+import basolato/view
+import karax / [karaxdsl, vdom]
+
+proc index*():string =
+  var vnode = buildHtml(form):
+    csrfTokenKarax()
+    input(type="text", name="name")
+  return $vnode
+```
+
+## nim-templates
+```nim
+import basolato/view
+import templates
+
+proc index*():string = tmpli html"""
+<form>
+  $(csrfToken())
+  <input type="text", name="name">
+</form>
+"""
+```
+
+
 # Block components example
 
 Controller and result is same for each example.
@@ -126,7 +178,7 @@ SCF should divide procs for each file
 baseImpl.nim
 ```nim
 #? stdtmpl | standard
-#proc baseImpl*(content:string): string = tmpli html"""
+#proc baseImpl*(content:string): string =
 <html>
   <heade>
     <title>Basolato</title>
