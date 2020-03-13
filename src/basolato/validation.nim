@@ -1,4 +1,5 @@
-import json, re, tables, strformat, strutils
+import json, re, tables, strformat, strutils, unicode
+from net import isIpAddress
 from jester import Request, params
 import allographer/query_builder
 
@@ -58,6 +59,7 @@ proc email*(this: Validation, key = "email"): Validation =
   return this
 
 proc strictEmail*(this: Validation, key = "email"): Validation =
+  echo "============================="
   var error = newJArray()
   var email = this.params[key]
   var local = ""
@@ -82,66 +84,79 @@ proc strictEmail*(this: Validation, key = "email"): Validation =
       local = arr[0]
       domain = arr[1]
 
+      # length check
       if email.cstring.len > 254:
         raise newException(Exception, "email should shorter than 254")
-
+      # length check
       if local.cstring.len > 64:
         raise newException(Exception, "invalid form of email")
 
+      # .xxx.@xx.xx
       if local.startsWith(".") or local.endsWith("."):
-        raise newException(Exception, "invalid form of email")
+        raise newException(Exception, "local cannot start with '.'")
 
+      # ..
       if local.match(re".*\.{2}.*"):
-        raise newException(Exception, "invalid form of email")
+        raise newException(Exception, "'.' cannot align in local")
 
       if local.find(re"[^a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+") > -1:
-        raise newException(Exception, "invalid form of email")
+        raise newException(Exception, "including not allowed char")
 
     if domain.match(re"\[.*\]"):
       # domain is IP address
-      if not domain.match(re"\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\]"):
-        raise newException(Exception, "invalid form of email")
+      var ipType = 4
+      domain.removePrefix("[")
+      domain.removeSuffix("]")
+      if domain.contains(":"):
+        ipType = 6
+        if not isIpAddress(domain):
+          raise newException(Exception, "invalid domain as IP address")
+
+      if ipType == 4:
+        if domain.findAll(re"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")[0] != domain:
+          raise newException(Exception, "invalid domain as IPv4 address")
+      elif ipType == 6:
+        if domain.count(":") > 7:
+          raise newException(Exception, "invalid domain as IPv6 address, too many ':'")
+        if domain.find(re"::$") > -1:
+          raise newException(Exception, "invalid domain as IPv6 address, domain finish with '::'")
+        if domain.find(re"::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}") > -1:
+          raise newException(Exception, "IPv4-compatible address is deprecated")
     else:
       # domain is string
 
-      if not domain.match(re"[a-zA-Z]+"):
-        # if no alphabet
-        raise newException(Exception, "invalid form of email")
+      if not domain.toRunes[0].toUTF8.match(re"[a-zA-Z0-9]+"):
+        raise newException(Exception, "domain cannot start with alphabet")
 
       if domain.match(re".*\.{2}.*"):
-        ## ..
-        raise newException(Exception, "invalid form of email")
+        # ..
+        raise newException(Exception, "'.' cannot align in domain")
 
       var domainArr = domain.split(".")
       for label in domainArr:
         if label.cstring.len > 63:
-          raise newException(Exception, "invalid form of email")
+          raise newException(Exception, "label length should shorter than 63")
 
         if label.find(re"^[^a-zA-Z0-9]") > -1 or
         label.find(re"[^a-zA-Z0-9]$") > -1:
           # label cannot start / end of symbol
-          raise newException(Exception, "invalid form of email")
+          raise newException(Exception, "label cannot start / end with symbol")
 
         if label.find(re"[^a-zA-Z0-9\-]+") > -1:
-          raise newException(Exception, "invalid form of email")
-
-        if label.find(re"[^a-zA-Z0-9]+") > -1:
-          raise newException(Exception, "invalid form of email")
+          raise newException(Exception, "not allowed symbol in label")
 
       if domainArr[^1].match(re"[0-9]{1}"):
         # end of domain should not be number
-        raise newException(Exception, "invalid form of email")
+        raise newException(Exception, "last of domain should not number")
   except:
     error.add(%(getCurrentExceptionMsg()))
 
   if error.len > 0:
-    echo local
     echo email
+    echo error
     this.putValidate(key, error)
   else:
-    # echo local
-    # echo domain
-    # echo email
+    echo email
     discard
 
   return this
