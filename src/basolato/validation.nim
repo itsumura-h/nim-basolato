@@ -59,7 +59,7 @@ proc email*(this: Validation, key = "email"): Validation =
   return this
 
 proc strictEmail*(this: Validation, key = "email"): Validation =
-  echo "============================="
+  # echo "============================="
   var error = newJArray()
   var email = this.params[key]
   var local = ""
@@ -72,13 +72,23 @@ proc strictEmail*(this: Validation, key = "email"): Validation =
     if not email.contains("@"):
       raise newException(Exception, "email need '@'")
 
-    # if local is wrappd by double wuote
+    # local is wrappd by double quote
     if email.find(re"""".+"@""") > -1:
       domain = email.replace(re"""".+"@""")
-      local = email.findAll(re"""".+"@""")[0]
+      local = email.findAll(re"""".+"@""")[0].replace(re"@$")
+
       # Japanese or Chinese is invalid
       if local.find(re"[^\x01-\x7E]+") > 0:
         raise newException(Exception, "full-width char is invalid")
+      # length check
+      if local.cstring.len > 64:
+        raise newException(Exception, "local length should horter than 64")
+
+      local.removePrefix("\"")
+      local.removeSuffix("\"")
+      # local "foo"."bar"
+      if local.find(re"""\\"""") == -1 and local.count("\"") > 0:
+        raise newException(Exception, "invalid local")
     else:
       let arr = email.split("@")
       local = arr[0]
@@ -86,10 +96,14 @@ proc strictEmail*(this: Validation, key = "email"): Validation =
 
       # length check
       if email.cstring.len > 254:
-        raise newException(Exception, "email should shorter than 254")
+        raise newException(Exception, "email length should shorter than 254")
       # length check
-      if local.cstring.len > 64:
-        raise newException(Exception, "invalid form of email")
+      if local.cstring.len > 64 or
+      local.len == 0:
+        raise newException(Exception, "local length should horter than 64")
+
+      if email.count("@") > 1:
+        raise newException(Exception, "email has '@' than one")
 
       # .xxx.@xx.xx
       if local.startsWith(".") or local.endsWith("."):
@@ -152,11 +166,11 @@ proc strictEmail*(this: Validation, key = "email"): Validation =
     error.add(%(getCurrentExceptionMsg()))
 
   if error.len > 0:
-    echo email
-    echo error
+    # echo email
+    # echo error
     this.putValidate(key, error)
   else:
-    echo email
+    # echo email
     discard
 
   return this

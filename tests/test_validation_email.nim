@@ -47,33 +47,20 @@ suite "email valid":
       {"email": "a@[2001:db8::9abc]"}.toTable(),
       {"email": "a@[::1]"}.toTable(),
       {"email": "ea@[::ffff:255.255.255.255]"}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
+      # 63 byte ok
+      {"email": "a@abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890.com"}.toTable(),
+      # 64 byte ok
+      {"email": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/@example.com"}.toTable(),
+      # local-part limitation OK
+      {"email": """"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567+/"@example.com"""}.toTable(),
+      # 252 octet OK
+      # ? length over
+      #{"email": "abcdefhghijklmnopqrstuvwxyzABC@aaaaaaaa01.aaaaaaaa02.aaaaaaaa03.aaaaaaaa04.aaaaaaaa05.aaaaaaaa06.aaaaaaaa07.aaaaaaaa08.aaaaaaaa09.aaaaaaaa10.aaaaaaaa11.aaaaaaaa12.aaaaaaaa13.aaaaaaaa14.aaaaaaaa15.aaaaaaaa16.aaaaaaaa17.aaaaaaaa18.aaaaaaaa19.aaaaaaaa20.aaaaaaaa21.aaaaaaaa22.aaaaaaaa23"}.toTable(),
+      # domain 255 OK
+      # ? length over
+      #{"email": "abcdefhghijklmnopqrstuvwxyzABCD@aaaaaaaa01.aaaaaaaa02.aaaaaaaa03.aaaaaaaa04.aaaaaaaa05.aaaaaaaa06.aaaaaaaa07.aaaaaaaa08.aaaaaaaa09.aaaaaaaa10.aaaaaaaa11.aaaaaaaa12.aaaaaaaa13.aaaaaaaa14.aaaaaaaa15.aaaaaaaa16.aaaaaaaa17.aaaaaaaa18.aaaaaaaa19.aaaaaaaa20.aaaaaaaa21.aaaaaaaa22.aaaaaaaa23.zz"}.toTable(),
+      {"email": """"abcdefhghijklmnopqrstuvwxyzABC"@aaaaaaaa01.aaaaaaaa02.aaaaaaaa03.aaaaaaaa04.aaaaaaaa05.aaaaaaaa06.aaaaaaaa07.aaaaaaaa08.aaaaaaaa09.aaaaaaaa10.aaaaaaaa11.aaaaaaaa12.aaaaaaaa13.aaaaaaaa14.aaaaaaaa15.aaaaaaaa16.aaaaaaaa17.aaaaaaaa18.aaaaaaaa19.aaaaaaaa20.com"""}.toTable(),
+      {"email": """"abcdefhghijklmnopqrstuvwxyzABCD"@aaaaaaaa01.aaaaaaaa02.aaaaaaaa03.aaaaaaaa04.aaaaaaaa05.aaaaaaaa06.aaaaaaaa07.aaaaaaaa08.aaaaaaaa09.aaaaaaaa10.aaaaaaaa11.aaaaaaaa12.aaaaaaaa13.aaaaaaaa14.aaaaaaaa15.aaaaaaaa16.aaaaaaaa17.aaaaaaaa18.aaaaaaaa19.aaaaaaaa20.com"""}.toTable(),
     ]
 
     for valid_address in valid_addresses:
@@ -121,28 +108,22 @@ suite "email valid":
       {"email": "a@[::255.255.255.255]"}.toTable(),
       {"email": "a@[2001:db8:3:4::192.0.2.33]"}.toTable(),
       {"email": "a@[64:ff9b::192.0.2.33]"}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
-      # {"email": ""}.toTable(),
+      # 64 byte NG
+      {"email": "a@abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678901.com"}.toTable(),
+      # 65 byte NG
+      {"email": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/a@example.com"}.toTable(),
+      # 65 byte NG
+      {"email": """"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567+/a"@example.com"""}.toTable(),
+      # domain 256 NG
+      {"email": "abcdefhghijklmnopqrstuvwxyzABCD@aaaaaaaa01.aaaaaaaa02.aaaaaaaa03.aaaaaaaa04.aaaaaaaa05.aaaaaaaa06.aaaaaaaa07.aaaaaaaa08.aaaaaaaa09.aaaaaaaa10.aaaaaaaa11.aaaaaaaa12.aaaaaaaa13.aaaaaaaa14.aaaaaaaa15.aaaaaaaa16.aaaaaaaa17.aaaaaaaa18.aaaaaaaa19.aaaaaaaa20.aaaaaaaa21.aaaaaaaa22.aaaaaaaa23.zzz"}.toTable(),
+      {"email": "plainaddress"}.toTable(),
+      {"email": "@domain.com"}.toTable(),
+      {"email": "Joe Smith <email@domain.com>"}.toTable(),
+      {"email": "email.domain.com"}.toTable(),
+      {"email": "email@domain@domain.com"}.toTable(),
+      {"email": "email@domain.com (Joe Smith)"}.toTable(),
+      {"email": "email@ example"}.toTable(),
+      {"email": """"foo"."bar"@example.com"""}.toTable(),
     ]
 
     for valid_address in valid_addresses:
