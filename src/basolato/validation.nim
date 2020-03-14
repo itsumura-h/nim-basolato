@@ -49,130 +49,136 @@ proc email*(this: Validation, key = "email"): Validation =
   var error = newJArray()
   if this.params[key].len == 0:
     error.add(%"this field is required")
-
   if not this.params[key].match(re"\A[\w+\-.]+@[a-zA-Z\d\-]+(\.[a-zA-Z\d\-]+)*\.[a-zA-Z]+\Z"):
     error.add(%"invalid form of email")
-
   if error.len > 0:
     this.putValidate(key, error)
-
   return this
 
+proc validateDomain(domain:string) =
+  block:
+    let fqdn = re"^(([a-z0-9]{1,2}|[a-z0-9][a-z0-9-]{0,61}[a-z0-9])\.)*([a-z0-9]{1,2}|[a-z0-9][a-z0-9-]{0,61}?[a-z0-9])$"
+    let addr4 = re"(([01]?[0-9]{1,2}|2(?:[0-4]?[0-9]|5[0-5]))\.){3}([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))"
+    let addr4Start = re"^(([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))\.){3}([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))$"
+    if domain.len == 0 or domain.len > 255:
+      raise newException(Exception, "domain length is 0")
+    if not domain.startsWith("["):
+      if not (not domain.match(addr4) and domain.match(fqdn)):
+        raise newException(Exception, "invalid domain format")
+        # return false
+      elif domain.find(re"\.[0-9]$|^[0-9]+$") > -1:
+        raise newException(Exception, "the last label of domain should not number")
+      else:
+        break
+    if not domain.endsWith("]"):
+      raise newException(Exception, "domain lacks ']'")
+    var domain = domain
+    domain.removePrefix("[")
+    domain.removeSuffix("]")
+    if domain.match(addr4Start):
+      if domain != "0.0.0.0":
+        break
+      else:
+        raise newException(Exception, "domain 0.0.0.0 is invalid")
+    if domain.endsWith("::"):
+      raise newException(Exception, "IPv6 should not end with '::'")
+    var v4_flg = false
+    var last = ""
+    try:
+      last = domain.rsplit(":", maxsplit=1)[^1]
+    except:
+      raise newException(Exception, "invalid domain")
+    if last.match(addr4):
+      if domain == "0.0.0.0":
+        raise newException(Exception, "domain 0.0.0.0 is invalid")
+      domain = domain.replace(last, "0:0")
+      v4_flg = true
+    var oc:int
+    if domain.contains("::"):
+      oc = 8 - domain.count(":")
+      if oc < 1:
+        raise newException(Exception, "8 blocks is required for IPv6")
+      var ocStr = "0:"
+      domain = domain.replace("::", &":{ocStr.repeat(oc)}")
+      if domain.startsWith(":"):
+        domain = &"0{domain}"
+      if domain.endsWith(":"):
+        domain = &"{domain}0"
+    var elems = domain.split(":")
+    if elems.len != 8:
+      raise newException(Exception, "invalid IP address")
+    var res = 0
+    for i, a in elems:
+      if a.len > 4:
+        raise newException(Exception, "each blick of IP address should be shorter than 4")
+      try:
+        res += a.parseHexInt shl ((7 - i) * 16)
+      except:
+        raise newException(Exception, "invalid IPv6 address")
+    if not (res != 0 and (not v4_flg or res shr 32 == 0xffff)):
+      raise newException(Exception, "invalid IPv4-Mapped IPv6 address")
+
 proc strictEmail*(this: Validation, key = "email"): Validation =
-  # echo "============================="
   var error = newJArray()
   var email = this.params[key]
-  var local = ""
-  var domain = ""
-
   try:
+    let valid = "abcdefghijklmnopqrstuvwxyz1234567890!#$%&\'*+-/=?^_`{}|~"
     if email.len == 0:
-      raise newException(Exception, "this field is required")
-
+      raise newException(Exception, "invalid email format 1")
+    email = email.toLowerAscii()
     if not email.contains("@"):
-      raise newException(Exception, "email need '@'")
-
-    # local is wrappd by double quote
-    if email.find(re"""".+"@""") > -1:
-      domain = email.replace(re"""".+"@""")
-      local = email.findAll(re"""".+"@""")[0].replace(re"@$")
-
-      # Japanese or Chinese is invalid
-      if local.find(re"[^\x01-\x7E]+") > 0:
-        raise newException(Exception, "full-width char is invalid")
-      # length check
-      if local.cstring.len > 64:
-        raise newException(Exception, "local length should horter than 64")
-
-      local.removePrefix("\"")
-      local.removeSuffix("\"")
-      # local "foo"."bar"
-      if local.find(re"""\\"""") == -1 and local.count("\"") > 0:
-        raise newException(Exception, "invalid local")
+      raise newException(Exception, "email should have '@'")
+    var i:int
+    if email.startsWith("\""):
+      i = 1
+      while i < min(64, email.len):
+        if (valid & "()<>[]:;@,. ").contains(email[i]):
+          i.inc()
+          continue
+        if $email[i] == "\\":
+          if email[i+1..^1].len > 0 and (valid & """()<>[]:;@,.\\" """).contains($email[i+1]):
+            i.inc(2)
+            continue
+          raise newException(Exception, "invalid email format 2")
+        if email[i] == '"':
+          break
+      if i == 64:
+        i.dec()
+      if not (email[i+1..^1].len > 0 and $email[i+1] == "@"):
+        raise newException(Exception, "invalid email local-part")
+      validateDomain(email[i+2..^1])
     else:
-      let arr = email.split("@")
-      local = arr[0]
-      domain = arr[1]
-
-      # length check
-      if email.cstring.len > 254:
-        raise newException(Exception, "email length should shorter than 254")
-      # length check
-      if local.cstring.len > 64 or
-      local.len == 0:
-        raise newException(Exception, "local length should horter than 64")
-
-      if email.count("@") > 1:
-        raise newException(Exception, "email has '@' than one")
-
-      # .xxx.@xx.xx
-      if local.startsWith(".") or local.endsWith("."):
-        raise newException(Exception, "local cannot start with '.'")
-
-      # ..
-      if local.match(re".*\.{2}.*"):
-        raise newException(Exception, "'.' cannot align in local")
-
-      if local.find(re"[^a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+") > -1:
-        raise newException(Exception, "including not allowed char")
-
-    if domain.match(re"\[.*\]"):
-      # domain is IP address
-      var ipType = 4
-      domain.removePrefix("[")
-      domain.removeSuffix("]")
-      if domain.contains(":"):
-        ipType = 6
-        if not isIpAddress(domain):
-          raise newException(Exception, "invalid domain as IP address")
-
-      if ipType == 4:
-        if domain.findAll(re"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")[0] != domain:
-          raise newException(Exception, "invalid domain as IPv4 address")
-      elif ipType == 6:
-        if domain.count(":") > 7:
-          raise newException(Exception, "invalid domain as IPv6 address, too many ':'")
-        if domain.find(re"::$") > -1:
-          raise newException(Exception, "invalid domain as IPv6 address, domain finish with '::'")
-        if domain.find(re"::[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}") > -1:
-          raise newException(Exception, "IPv4-compatible address is deprecated")
-    else:
-      # domain is string
-
-      if not domain.toRunes[0].toUTF8.match(re"[a-zA-Z0-9]+"):
-        raise newException(Exception, "domain cannot start with alphabet")
-
-      if domain.match(re".*\.{2}.*"):
-        # ..
-        raise newException(Exception, "'.' cannot align in domain")
-
-      var domainArr = domain.split(".")
-      for label in domainArr:
-        if label.cstring.len > 63:
-          raise newException(Exception, "label length should shorter than 63")
-
-        if label.find(re"^[^a-zA-Z0-9]") > -1 or
-        label.find(re"[^a-zA-Z0-9]$") > -1:
-          # label cannot start / end of symbol
-          raise newException(Exception, "label cannot start / end with symbol")
-
-        if label.find(re"[^a-zA-Z0-9\-]+") > -1:
-          raise newException(Exception, "not allowed symbol in label")
-
-      if domainArr[^1].match(re"[0-9]{1}"):
-        # end of domain should not be number
-        raise newException(Exception, "last of domain should not number")
+      i = 0
+      while i < min(64, email.len):
+        if valid.contains(email[i]):
+          i.inc()
+          continue
+        if $email[i] == ".":
+          if i == 0 or email[i+1..^1].len == 0 or ".@".contains(email[i+1]):
+            raise newException(Exception, "invalid email local-part")
+          i.inc()
+          continue
+        if $email[i] == "@":
+          if i == 0:
+            raise newException(Exception, "email has no local-part")
+          i.dec()
+          break
+        raise newException(Exception, "email includes invalid char")
+      if i == 64:
+        i.dec
+      if not (email[i+1..^1].len > 0 and "@".contains(email[i+1])):
+        raise newException(Exception, "email local-part should be shorter than 64")
+      validateDomain(email[i+2..^1])
   except:
     error.add(%(getCurrentExceptionMsg()))
 
   if error.len > 0:
-    # echo email
-    # echo error
+    # debugEcho email
+    # debugEcho error
     this.putValidate(key, error)
   else:
-    # echo email
+    # debugEcho email
     discard
-
   return this
 
 proc equals*(this: Validation, key: string, val: string): Validation =
