@@ -109,8 +109,9 @@ This will add errors if value in request doesn't contain a expected string.
 validate().contains("email", "user")
 ```
 
-## email
-This will add errors if value is not match a style of email address.
+## email, strictEmail
+This will add errors if value is not match a style of email address.  
+`strictEmail` supports [RFC5321](https://tools.ietf.org/html/rfc5321) and [RFC5322](https://tools.ietf.org/html/rfc5322) completely. References this Python code https://gist.github.com/frodo821/681869a36148b5214632166e0ad293a9
 
 ```json
 {"address": "user1@gmail.com"}
@@ -118,6 +119,7 @@ This will add errors if value is not match a style of email address.
 
 ```nim
 validate().email("address")
+validate().strictEmail("address")
 ```
 
 ## equals

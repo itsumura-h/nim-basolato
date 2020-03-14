@@ -9,17 +9,28 @@ These procs return `Check` object. `catch()` defines what to do if value is inva
 ## CSRF Token
 Basolato can check whether csrf token is valid if request metod is `post`, `put`, `patch`, `delete`.
 
-Set `$(csrfToken())` in view.
+When you use SCF,Set `${csrfToken()}` in view.
 ```nim
-import basolato/view
-
-proc createHtml*():string = tmpli html("""
+#? stdtmpl | standard
+#import basolato/view
+#proc createHtml*():string =
 <form method="post">
-  $(csrfToken())
+  ${csrfToken()}
   .
   .
 </form>
-""")
+```
+
+When you use Karax, Set `csrfTokenKarax()` in view.
+```nim
+import karax / [karaxdsl, vdom]
+import basolato/view
+proc createHtml*():string =
+  var vnode = buildHtml(tdiv):
+    form(`method`="post"):
+      csrfTokenKarax()
+      .
+      .
 ```
 
 If `checkCsrfToken(request)` is in `template framework()`, csrf check is available.
