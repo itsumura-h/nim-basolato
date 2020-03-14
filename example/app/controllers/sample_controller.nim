@@ -133,3 +133,17 @@ proc storeLogin*(this:SampleController): Response =
 
 proc destroyLogin*(this:SampleController): Response =
   return redirect("/sample/login").destroyAuth(this.auth)
+
+proc presentDd*(this:SampleController): Response =
+  var a = %*{
+    "key1": "value1",
+    "key2": "value2",
+    "key3": "value3",
+    "key4": "value4",
+  }
+  dd(
+    this.request.repr,
+    $a,
+    "あいうえお"
+  )
+  return render("dd")

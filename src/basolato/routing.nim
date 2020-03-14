@@ -1,6 +1,6 @@
-import json, strformat, options, strutils, macros
+import json, strformat, options, strutils, macros, re
 # framework
-import base, response, logger, middleware, errorPage, header
+import base, response, logger, middleware, errorPage, ddPage, header
 from controller import redirect, render, errorRedirect
 # 3rd party
 import jester except redirect, setCookie, resp
@@ -137,6 +137,11 @@ template exceptionRoute*(pagePath="") =
   if exception.name == "ErrorAuthRedirect".cstring:
     let cookie = newCookie(request).destroy()
     route(errorRedirect(exception.msg).setCookie(cookie))
+
+  if exception.name == "DD".cstring:
+    var msg = exception.msg
+    msg = msg.replace(re"Async traceback:[.\s\S]*")
+    route(render(Http200, ddPage(msg)))
 
   let status = checkHttpCode(exception)
   if status.is4xx() or status.is5xx():
