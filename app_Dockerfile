@@ -14,7 +14,7 @@ RUN apk update && \
     rm /usr/lib/mysqld* -fr && rm /usr/bin/mysql* -fr && \
     update-ca-certificates
 RUN git config --global http.sslVerify false
-WORKDIR /home/www
-ADD ./basolato.nimble /home/www
+WORKDIR /root/project/
+ADD ./basolato.nimble /root/project/
 RUN nimble install -y bcrypt cligen coco karax
 ENV PATH $PATH:/root/.nimble/bin
