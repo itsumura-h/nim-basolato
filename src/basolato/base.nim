@@ -1,8 +1,7 @@
 import os, json, httpcore, strutils
-from jester import resp
 
 const
-  basolatoVersion* = "v0.2.1"
+  basolatoVersion* = "v0.2.2"
   IS_DISPLAY* = getEnv("LOG_IS_DISPLAY").string.parseBool
   IS_FILE* = getEnv("LOG_IS_FILE").string.parseBool
   LOG_DIR* = getEnv("LOG_DIR").string
@@ -74,8 +73,9 @@ const errorStatusArray* = [505, 504, 503, 502, 501, 500, 451, 431, 429, 428, 426
   405, 404, 403, 401, 400, 307, 305, 304, 303, 302, 301, 300]
 
 proc dd*(outputs: varargs[string]) =
-  var output:string
-  for i, row in outputs:
-    if i > 0: output &= "\n\n" else: output &= "\n"
-    output.add(row)
-  raise newException(DD, output)
+  when not defined(release):
+    var output:string
+    for i, row in outputs:
+      if i > 0: output &= "\n\n" else: output &= "\n"
+      output.add(row)
+    raise newException(DD, output)

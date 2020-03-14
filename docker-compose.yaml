@@ -10,7 +10,7 @@ services:
     ports:
       - "9000:5000"
     volumes:
-      - .:/root/project/
+      - .:/home/www/
   # mysql:
   #   image: mariadb
   #   tty: true

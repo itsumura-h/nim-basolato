@@ -142,8 +142,8 @@ proc presentDd*(this:SampleController): Response =
     "key4": "value4",
   }
   dd(
-    this.request.repr,
     $a,
-    "あいうえお"
+    "abc",
+    this.request.repr,
   )
   return render("dd")

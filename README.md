@@ -93,6 +93,7 @@ ducere new project_name
 - [Error](./documents/error.md)
 - [Validation](./documents/validation.md)
 - [Security(CsrfToken, Cookie, Session, Auth)](./documents/security.md)
+- [Helper](./documents/helper.md)
 
 ## Dev roadmap
 
