@@ -34,6 +34,8 @@ router sample:
   post "/login": route(newSampleController(request).storeLogin())
   post "/logout": route(newSampleController(request).destroyLogin())
 
+  get "/dd": route(newSampleController(request).presentDd())
+
 
 router api:
   get "/api1":

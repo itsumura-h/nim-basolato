@@ -1,7 +1,7 @@
 import os, json, httpcore, strutils
 
 const
-  basolatoVersion* = "v0.2.1"
+  basolatoVersion* = "v0.2.2"
   IS_DISPLAY* = getEnv("LOG_IS_DISPLAY").string.parseBool
   IS_FILE* = getEnv("LOG_IS_FILE").string.parseBool
   LOG_DIR* = getEnv("LOG_DIR").string
@@ -66,8 +66,16 @@ type
   Error301* = object of Exception
   Error300* = object of Exception
   ErrorAuthRedirect* = object of Exception
+  DD* = object of Exception
 
-  
 const errorStatusArray* = [505, 504, 503, 502, 501, 500, 451, 431, 429, 428, 426,
   422, 421, 418, 417, 416, 415, 414, 413, 412, 411, 410, 409, 408, 407, 406,
   405, 404, 403, 401, 400, 307, 305, 304, 303, 302, 301, 300]
+
+proc dd*(outputs: varargs[string]) =
+  when not defined(release):
+    var output:string
+    for i, row in outputs:
+      if i > 0: output &= "\n\n" else: output &= "\n"
+      output.add(row)
+    raise newException(DD, output)

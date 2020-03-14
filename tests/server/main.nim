@@ -22,6 +22,9 @@ routes:
   get "/redirect": route(newTestController(request).redirect())
   get "/error_redirect": route(newTestController(request).error_redirect())
 
+  # test helper
+  get "/dd": route(newTestController(request).dd())
+
   # test response
   get "/set-header": route(newTestController(request).setHeader())
   get "/set-cookie": route(newTestController(request).setCookie())

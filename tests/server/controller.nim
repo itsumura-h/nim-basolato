@@ -37,6 +37,15 @@ proc redirect*(this:TestController):Response =
 proc error_redirect*(this:TestController):Response =
   return errorRedirect("/new_url")
 
+# test helper
+proc dd*(this:TestController):Response =
+  var a = %*{
+    "key1": "value1",
+    "key2": 2
+  }
+  dd($a, "abc")
+  return render("dd")
+
 # test response
 proc setHeader*(this:TestController):Response =
   var header = newHeaders()
