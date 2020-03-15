@@ -63,13 +63,11 @@ routes:
     route(response(result), [secureHeader(), corsHeader(), customHeader()])
   extend api, "/api"
 
-runForever()
-
 # proc main() =
-#   let port = 8000.Port
+#   let port = 5000.Port
 #   let settings = newSettings(port=port)
-#   # var jester = initJester(main_router, settings=settings)
-#   var jester = initJester(settings=settings)
+#   var jester = initJester(main_router, settings=settings)
+#   performCodeReload()
 #   jester.serve()
 
 # when isMainModule:
