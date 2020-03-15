@@ -15,8 +15,6 @@ proc createMVC(dirPath:string):int =
     moveDir(&"{dirpath}/tmp/MVC/middleware", &"{dirpath}/middleware")
     moveDir(&"{dirpath}/tmp/MVC/migrations", &"{dirpath}/migrations")
     moveFile(&"{dirpath}/tmp/MVC/main.nim", &"{dirpath}/main.nim")
-    moveFile(&"{dirpath}/tmp/MVC/serve.sh", &"{dirpath}/serve.sh")
-    setFilePermissions(&"{dirpath}/serve.sh", {fpUserExec, fpGroupExec, fpOthersExec})
     # move static files
     createDir(&"{dirPath}/public")
     moveFile(&"{dirpath}/tmp/assets/basolato.svg", &"{dirpath}/public/basolato.svg")

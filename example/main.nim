@@ -3,7 +3,6 @@ import asyncdispatch, httpcore, re, tables
 import ../src/basolato/routing
 import ../src/basolato/middleware
 # middleware
-# aaabbb
 import middleware/framework_middleware
 import middleware/custom_headers_middleware
 import middleware/check_login_middleware
@@ -39,7 +38,7 @@ router sample:
 
 
 router api:
-  get "/api1": 
+  get "/api1":
     route(render("api1"))
   get "/api2":
     route(render("api2"))
@@ -64,13 +63,11 @@ routes:
     route(response(result), [secureHeader(), corsHeader(), customHeader()])
   extend api, "/api"
 
-runForever()
-
 # proc main() =
-#   let port = 8000.Port
+#   let port = 5000.Port
 #   let settings = newSettings(port=port)
-#   # var jester = initJester(main_router, settings=settings)
-#   var jester = initJester(settings=settings)
+#   var jester = initJester(main_router, settings=settings)
+#   performCodeReload()
 #   jester.serve()
 
 # when isMainModule:

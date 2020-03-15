@@ -81,11 +81,11 @@ ducere new project_name
 >> create project to /your/project/dir/project_name
 ```
 
-run server 
-```
-nim c -r main
+run server
+```nim
+ducere serve # hot reload available
  or
-./server.sh # requiring "inotify" and "inotifywait", Hot reload is available
+nim c -r main
 ```
 
 # Documents
