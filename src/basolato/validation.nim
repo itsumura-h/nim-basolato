@@ -65,7 +65,6 @@ proc validateDomain(domain:string) =
     if not domain.startsWith("["):
       if not (not domain.match(addr4) and domain.match(fqdn)):
         raise newException(Exception, "invalid domain format")
-        # return false
       elif domain.find(re"\.[0-9]$|^[0-9]+$") > -1:
         raise newException(Exception, "the last label of domain should not number")
       else:
@@ -208,7 +207,9 @@ proc inRange*(this: Validation, key: string, min: float,
 
 proc ip*(this: Validation, key: string): Validation =
   if this.params.hasKey(key):
-    if not this.params[key].match(re"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}"):
+    try:
+      validateDomain(&"[{this.params[key]}]")
+    except:
       this.putValidate(key, &"{key} should be a form of IP address")
   return this
 
