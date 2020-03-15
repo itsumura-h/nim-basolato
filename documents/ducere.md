@@ -10,6 +10,12 @@ Create new project
 ducere new
 ```
 
+## serve
+Run develop server with hot reload
+```
+ducere serve
+```
+
 ## make
 Create new file
 
