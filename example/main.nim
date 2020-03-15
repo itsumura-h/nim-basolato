@@ -3,6 +3,7 @@ import asyncdispatch, httpcore, re, tables
 import ../src/basolato/routing
 import ../src/basolato/middleware
 # middleware
+# aaabbb
 import middleware/framework_middleware
 import middleware/custom_headers_middleware
 import middleware/check_login_middleware
@@ -38,7 +39,7 @@ router sample:
 
 
 router api:
-  get "/api1":
+  get "/api1": 
     route(render("api1"))
   get "/api2":
     route(render("api2"))

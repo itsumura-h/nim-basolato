@@ -7,7 +7,7 @@ Healper
 proc dd(outputs:varges[string])
 ```
 `dd()` is essentially adding a break point in your code which dumps the properties of an object to your browser.  
-This proc is only avaiable in develop mode.
+This proc is only available in develop mode.
 
 ```nim
 var a = %*{

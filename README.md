@@ -81,6 +81,13 @@ ducere new project_name
 >> create project to /your/project/dir/project_name
 ```
 
+run server 
+```
+nim c -r main
+ or
+./server.sh # requiring "inotify" and "inotifywait", Hot reload is available
+```
+
 # Documents
 - [decere CLI tool](./documents/ducere.md)
 - [Routing](./documents/routing.md)
