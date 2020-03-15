@@ -132,18 +132,47 @@ suite "validation":
 
   # ==========================================================================
   test "ip":
-    var params = {"ip_address": "127.0.0.1"}.toTable()
-    var v = Validation(params: params,
-                        errors: newJObject())
-                        .ip("ip_address")
-    check v.errors.len == 0
+    var params = [
+      {"ip_address": "127.0.0.1"}.toTable(),
+      {"ip_address": "192.168.0.80"}.toTable(),
+      {"ip_address": "123.123.123.123"}.toTable(),
+      {"ip_address": "255.255.255.255"}.toTable(),
+      {"ip_address": "001.002.003.004"}.toTable(),
+      {"ip_address": "2001:0db8:bd05:01d2:288a:1fc0:0001:10ee"}.toTable(),
+      {"ip_address": "2001:db8:20:3:1000:100:20:3"}.toTable(),
+      {"ip_address": "2001:db8::1234:0:0:9abc"}.toTable(),
+      {"ip_address": "2001:db8::9abc"}.toTable(),
+      {"ip_address": "::1"}.toTable(),
+      {"ip_address": "::ffff:255.255.255.255"}.toTable(),
+    ]
+    for param in params:
+      var v = Validation(params: param,
+                          errors: newJObject())
+                          .ip("ip_address")
+      check v.errors.len == 0
 
   test "ip invalid":
-    var params = {"ip_address": "dsdsadads"}.toTable()
-    var v = Validation(params: params,
-                        errors: newJObject())
-                        .ip("ip_address")
-    check v.errors.len > 0
+    var params = [
+      {"ip_address": "dsdsadads"}.toTable(),
+      {"ip_address": "127.0.0.1111"}.toTable(),
+      {"ip_address": "example.com:hoge"}.toTable(),
+      {"ip_address": "fuga:xxxxxxx"}.toTable(),
+      {"ip_address": "2001:0db8:bd05:01d2:288a::1fc0:0001:10ee"}.toTable(),
+      {"ip_address": "2001:0db8:bd05:01d2:288a:1fc0:0001:10ee:11fe"}.toTable(),
+      {"ip_address": "::"}.toTable(),
+      {"ip_address": "1::"}.toTable(),
+      {"ip_address": "1:2:3:4:5:6:7::"}.toTable(),
+      {"ip_address": "::255.255.255.255"}.toTable(),
+      {"ip_address": "2001:db8:3:4::192.0.2.33"}.toTable(),
+      {"ip_address": "64:ff9b::192.0.2.33"}.toTable(),
+      {"ip_address": "0.0.0.0"}.toTable(),
+      {"ip_address": "1111.1111.1111.11111"}.toTable(),
+    ]
+    for param in params:
+      var v = Validation(params: param,
+                          errors: newJObject())
+                          .ip("ip_address")
+      check v.errors.len > 0
 
   # ==========================================================================
   test "isIn":

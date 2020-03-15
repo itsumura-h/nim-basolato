@@ -7,6 +7,8 @@
   <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
       <title>Basolato Display Valiable Page</title>
+      <link rel="stylesheet", href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/styles/ir-black.min.css"/>
+      <script src="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/highlight.min.js"></script>
       <style>
         body {
           max-height: 100vh;
@@ -24,21 +26,23 @@
         }
         pre {
           /* 62px + 13(margin of pre) + 8(margin of body)*2 + 1 */
-          height: calc(100vh - 92px);
-          background-color: black;
-          color: white;
+          height: calc(100vh - 92px);          
+        }
+        code {
+          height: 100%;
           overflow: auto;
         }
       </style>
     </head>
     <body>
       <div class="wrap">
-        <code><pre>${msg.indent(2)}</pre></code>
+        <pre><code class="nimrod">${msg.indent(2)}</code></pre>
         <footer>
           <hr>
           <p style="text-align: center;">👑Nim ⬟Basolato ${basolatoVersion}</p>
         </footer>
       </div>
+      <script>hljs.initHighlightingOnLoad();</script>
     </body>
   </html>
   
