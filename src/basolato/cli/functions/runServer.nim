@@ -1,4 +1,4 @@
-import os, tables, times, re, strformat
+import os, tables, times, re, strformat, osproc, streams
 
 let
   sleepTime = 2
@@ -10,13 +10,41 @@ let
   ]
 var
   files: Table[string, Time]
+  isModified = false
+  p: Process
+  pid = 0
 
-proc runCommand(cmds:openArray[string]) =
-  for cmd in cmds:
-    discard execShellCmd(cmd)
+proc handler() {.noconv.} =
+  discard execShellCmd(&"kill {pid}")
+  echo "===== Stop running server ====="
+  quit 0
+setControlCHook(handler)
+
+proc runCommand() =
+  if pid != 0:
+    discard execShellCmd(&"kill {pid}")
+  discard execShellCmd("nim c main.nim")
+  try:
+    p = startProcess("./main", currentDir, ["&"])
+    pid = p.processID()
+    # present terminal
+    var outp = outputStream(p)
+    var line = newStringOfCap(120).TaintedString
+    while true:
+      if isModified:
+        echo "===break"
+        break
+      if outp.readLine(line):
+        echo line
+      else:
+        echo "===break"
+        break
+    close(p)
+  except:
+    echo getCurrentExceptionMsg()
 
 proc serve*() =
-  runCommand(cmds)
+  runCommand()
   while true:
     sleep sleepTime * 1000
     for f in walkDirRec(currentDir, {pcFile}):
@@ -30,5 +58,9 @@ proc serve*() =
           # debugEcho &"Skip {f} because of the file has not modified"
           continue
         # modified
-        runCommand(cmds)
+        isModified = true
         files[f] = modTime
+      
+    if isModified:
+      isModified = false
+      runCommand()
