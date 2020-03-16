@@ -14,11 +14,24 @@ var
   p: Process
   pid = 0
 
-proc handler() {.noconv.} =
+proc ctrlC() {.noconv.} =
   discard execShellCmd(&"kill {pid}")
   echo "===== Stop running server ====="
   quit 0
-setControlCHook(handler)
+setControlCHook(ctrlC)
+
+proc display() =
+  echo "=== display"
+  var outp = outputStream(p)
+  close inputStream(p)
+  var line = newStringOfCap(120).TaintedString
+  for line in outp.lines():
+    echo "=== display loop"
+    echo line
+    echo outp.atEnd()
+    if outp.atEnd():
+      break
+  close(p)
 
 proc runCommand() =
   if pid != 0:
@@ -27,19 +40,7 @@ proc runCommand() =
   try:
     p = startProcess("./main", currentDir, ["&"])
     pid = p.processID()
-    # present terminal
-    var outp = outputStream(p)
-    var line = newStringOfCap(120).TaintedString
-    while true:
-      if isModified:
-        echo "===break"
-        break
-      if outp.readLine(line):
-        echo line
-      else:
-        echo "===break"
-        break
-    close(p)
+    display()
   except:
     echo getCurrentExceptionMsg()
 
@@ -50,6 +51,7 @@ proc serve*() =
     for f in walkDirRec(currentDir, {pcFile}):
       if f.find(re"\.nim$") > -1:
         let modTime = getFileInfo(f).lastWriteTime
+        display()
         if not files.hasKey(f):
           files[f] = modTime
           # debugEcho &"Skip {f} because of first checking"
