@@ -148,5 +148,5 @@ proc presentDd*(this:SampleController): Response =
   # )
   echo "a"
   echo "b"
-  dd("abc")
+  # dd("abc")
   return render("dd")

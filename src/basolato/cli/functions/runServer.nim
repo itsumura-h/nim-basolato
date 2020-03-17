@@ -1,4 +1,4 @@
-import os, tables, times, re, strformat, osproc, streams
+import os, tables, times, re, strformat, osproc, streams, terminal
 
 let
   sleepTime = 2
@@ -15,31 +15,31 @@ var
   pid = 0
 
 proc ctrlC() {.noconv.} =
+  close(p)
   discard execShellCmd(&"kill {pid}")
   echo "===== Stop running server ====="
   quit 0
 setControlCHook(ctrlC)
 
 proc display() =
-  echo "=== display"
   var outp = outputStream(p)
+  outp = StringStream(outp)
   close inputStream(p)
   var line = newStringOfCap(120).TaintedString
-  for line in outp.lines():
-    echo "=== display loop"
+  while true:
+    echo outp.readAll().repr
+    discard outp.readLine(line)
     echo line
-    echo outp.atEnd()
-    if outp.atEnd():
-      break
-  close(p)
+    
 
 proc runCommand() =
-  if pid != 0:
+  if pid > 0:
     discard execShellCmd(&"kill {pid}")
-  discard execShellCmd("nim c main.nim")
+  discard execShellCmd("nim c main")
   try:
     p = startProcess("./main", currentDir, ["&"])
     pid = p.processID()
+    echo "=== modified display"
     display()
   except:
     echo getCurrentExceptionMsg()
