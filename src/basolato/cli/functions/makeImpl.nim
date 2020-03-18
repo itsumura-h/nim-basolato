@@ -1,7 +1,7 @@
 import os, terminal
-import makeFile/controller
-import makeFile/migration
-import makeFile/config
+import make/controller
+import make/migration
+import make/config
 
 
 template getTarget() =

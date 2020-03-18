@@ -1,5 +1,5 @@
 import os, strformat, terminal
-import makeFile/utils
+from make/utils import isDirExists
 
 
 proc createMVC(dirPath:string):int =

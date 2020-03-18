@@ -1,12 +1,10 @@
 import
-  functions/createProject,
-  functions/makeFile,
-  functions/runServer
+  functions/newImpl,
+  functions/makeImpl,
+  functions/serveImpl
 
 when isMainModule:
   import cligen
   dispatchMulti(
-    [createProject.new],
-    [makeFile.make],
-    [runServer.serve]
+    [newImpl.new],[make],[serve]
   )
