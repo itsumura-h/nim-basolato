@@ -146,5 +146,7 @@ proc presentDd*(this:SampleController): Response =
     "abc",
     # this.request.repr,
   )
+  echo "a"
+  echo "b"
   # dd("abc")
   return render("dd")

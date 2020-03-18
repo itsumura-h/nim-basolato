@@ -1,22 +1,44 @@
-import os, tables, times, re, strformat
+import
+  os, tables, times, re, strformat, osproc, terminal
 
 let
-  sleepTime = 2
+  sleepTime = 1
   currentDir = getCurrentDir()
-  cmds = [
-    "killall main",
-    "nim c main.nim",
-    "./main &"
-  ]
+
 var
   files: Table[string, Time]
+  isModified = false
+  p: Process
+  pid = 0
 
-proc runCommand(cmds:openArray[string]) =
-  for cmd in cmds:
-    discard execShellCmd(cmd)
+proc echoMsg(bg: BackgroundColor, msg: string) =
+  styledEcho(fgBlack, bg, msg, resetStyle)
+
+proc ctrlC() {.noconv.} =
+  kill(p)
+  discard execShellCmd(&"kill {pid}")
+  echoMsg(bgGreen, "[SUCCESS] Stop dev server")
+  quit 0
+setControlCHook(ctrlC)
+
+proc runCommand() =
+  try:
+    if pid > 0:
+      discard execShellCmd(&"kill {pid}")
+    discard tryRemoveFile("./main")
+    if execShellCmd("nim c main") > 0:
+      raise newException(Exception, "")
+    echoMsg(bgGreen, "[SUCCESS] Start running dev server")
+    p = startProcess("./main", currentDir, ["&"],
+                    options={poStdErrToStdOut,poParentStreams})
+    pid = p.processID()
+  except:
+    echoMsg(bgRed, "[FAILED] Build error")
+    echo getCurrentExceptionMsg()
+    quit 1
 
 proc serve*() =
-  runCommand(cmds)
+  runCommand()
   while true:
     sleep sleepTime * 1000
     for f in walkDirRec(currentDir, {pcFile}):
@@ -30,5 +52,9 @@ proc serve*() =
           # debugEcho &"Skip {f} because of the file has not modified"
           continue
         # modified
-        runCommand(cmds)
+        isModified = true
         files[f] = modTime
+      
+    if isModified:
+      isModified = false
+      runCommand()
