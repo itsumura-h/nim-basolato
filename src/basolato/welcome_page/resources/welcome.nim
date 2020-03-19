@@ -1,6 +1,4 @@
 import htmlgen, strformat
-# framework
-import ../../view
 
 proc welcomeHtml*(name:string): string  =
   html(

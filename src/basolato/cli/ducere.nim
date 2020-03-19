@@ -1,10 +1,11 @@
 import
   functions/newImpl,
   functions/makeImpl,
-  functions/serveImpl
+  functions/serveImpl,
+  functions/buildImpl
 
 when isMainModule:
   import cligen
   dispatchMulti(
-    [newImpl.new],[make],[serve]
+    [newImpl.new],[make],[serve],[build]
   )
