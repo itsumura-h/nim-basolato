@@ -4,7 +4,7 @@ View
 
 ## Introduction
 There are 4 ways to render HTML in Basolato. Although each library has it's own benefits and drawbacks, every library can be used.  
-Although Karax is installed by Basolato automatidcally, `nim-templates` is not installed. If you want to use `nim-templates`, please install by yourself.
+Basolato use `nim-templates` as a default template engin. It can be used by importing `basolato/view`.
 
 - [htmlgen](https://nim-lang.org/docs/htmlgen.html)
 - [SCF](https://nim-lang.org/docs/filters.html)
@@ -78,6 +78,19 @@ Views file should be in `resources` dir.
 # Csrf Token
 To send POST request from `form`, you have to set `csrf token`. You can use helper function from `basolato/view`
 
+## nim-templates
+```nim
+import basolato/view
+import templates
+
+proc index*():string = tmpli html"""
+<form>
+  $(csrfToken())
+  <input type="text", name="name">
+</form>
+"""
+```
+
 ## htmlgen
 ```nim
 import htmlgen
@@ -113,20 +126,6 @@ proc index*():string =
   return $vnode
 ```
 
-## nim-templates
-```nim
-import basolato/view
-import templates
-
-proc index*():string = tmpli html"""
-<form>
-  $(csrfToken())
-  <input type="text", name="name">
-</form>
-"""
-```
-
-
 # Block components example
 
 Controller and result is same for each example.
@@ -148,6 +147,30 @@ result
     <p>Basolato</p>
   </body>
 </html>
+```
+
+## nim-templates
+
+```nim
+import tamplates
+
+proc baseImpl(content:string): string = tmpli html"""
+<html>
+  <heade>
+    <title>Basolato</title>
+  </head>
+  <body>
+    $(content)
+  </body>
+</html>
+"""
+
+proc indexImpl(message:string): string = tmpli html"""
+<p>$message</p>
+"""
+
+proc indexHtml*(message:string): string =
+  baseImpl(indexImpl(message))
 ```
 
 ## htmlgen
@@ -222,30 +245,6 @@ proc indexImpl(message:string): string =
   var vnode = buildHtml(p):
     text(message)
   return $vnode
-
-proc indexHtml*(message:string): string =
-  baseImpl(indexImpl(message))
-```
-
-## nim-templates
-
-```nim
-import tamplates
-
-proc baseImpl(content:string): string = tmpli html"""
-<html>
-  <heade>
-    <title>Basolato</title>
-  </head>
-  <body>
-    $(content)
-  </body>
-</html>
-"""
-
-proc indexImpl(message:string): string = tmpli html"""
-<p>$message</p>
-"""
 
 proc indexHtml*(message:string): string =
   baseImpl(indexImpl(message))

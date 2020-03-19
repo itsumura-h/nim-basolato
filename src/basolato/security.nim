@@ -303,7 +303,7 @@ proc toTimestamp*(this:Token): int =
   return this.getToken().decryptCtr().parseInt()
 
 # ========== CsrfToken ====================
-import karax / [karaxdsl, vdom]
+# import karax / [karaxdsl, vdom]
 
 type CsrfToken* = ref object
   token:Token
@@ -319,9 +319,9 @@ proc csrfToken*(token=""):string =
   var token = newCsrfToken(token).getToken()
   return &"""<input type="hidden" name="csrf_token" value="{token}">"""
 
-proc csrfTokenKarax*(token=""):VNode =
-  var token = newCsrfToken(token).getToken()
-  return buildHtml(input(type="hidden", name="csrf_token", value=token))
+# proc csrfTokenKarax*(token=""):VNode =
+#   var token = newCsrfToken(token).getToken()
+#   return buildHtml(input(type="hidden", name="csrf_token", value=token))
 
 proc checkCsrfTimeout*(this:CsrfToken):bool =
   var timestamp:int

@@ -1,9 +1,12 @@
 import json
 # framework
 import base, security
+# 3rd party
+import templates
 
 # framework
 export base, security
+export templates
 
 
 proc get*(val:JsonNode):string =

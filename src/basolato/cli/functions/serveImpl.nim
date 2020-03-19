@@ -12,12 +12,12 @@ var
   pid = 0
 
 proc echoMsg(bg: BackgroundColor, msg: string) =
-  styledEcho(fgBlack, bg, msg, resetStyle)
+  styledEcho(fgBlack, bg, &"{msg} ", resetStyle)
 
 proc ctrlC() {.noconv.} =
   if pid > 0:
     discard execShellCmd(&"kill {pid}")
-  echoMsg(bgGreen, " [SUCCESS] Stop dev server ")
+  echoMsg(bgGreen, "[SUCCESS] Stop dev server")
   quit 0
 setControlCHook(ctrlC)
 
@@ -28,12 +28,12 @@ proc runCommand() =
     discard tryRemoveFile("./main")
     if execShellCmd("nim c main") > 0:
       raise newException(Exception, "")
-    echoMsg(bgGreen, " [SUCCESS] Start running dev server ")
+    echoMsg(bgGreen, "[SUCCESS] Start running dev server")
     p = startProcess("./main", currentDir, ["&"],
                     options={poStdErrToStdOut,poParentStreams})
     pid = p.processID()
   except:
-    echoMsg(bgRed, " [FAILED] Build error ")
+    echoMsg(bgRed, "[FAILED] Build error")
     echo getCurrentExceptionMsg()
     # quit 1
 
