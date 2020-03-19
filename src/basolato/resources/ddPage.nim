@@ -1,8 +1,7 @@
 #? stdtmpl | standard
-#import httpcore
-## framework
-#import base
 #import strutils
+## framework
+#import ../base
 #proc ddPage*(msg:string): string =
   <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
@@ -39,7 +38,7 @@
         <pre><code class="nimrod">${msg.indent(2)}</code></pre>
         <footer>
           <hr>
-          <p style="text-align: center;">👑Nim ⬟Basolato ${basolatoVersion}</p>
+          <p style="text-align: center;">👑Nim ${NimVersion} ⬟Basolato ${basolatoVersion}</p>
         </footer>
       </div>
       <script>hljs.initHighlightingOnLoad();</script>

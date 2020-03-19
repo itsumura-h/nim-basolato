@@ -13,16 +13,17 @@ import basolato/controller
 
 type {targetCaptalized}Controller* = ref object of Controller
 
-proc new{targetCaptalized}Controller(request:Request):{targetCaptalized}Controller =
+proc new{targetCaptalized}Controller*(request:Request):{targetCaptalized}Controller =
   return {targetCaptalized}Controller.newController(request)
 
 
 proc index*(this:{targetCaptalized}Controller):Response =
   return render("index")
 
-proc show*(this:{targetCaptalized}Controller, idArg:string):Response =
-  let id = idArg.parseInt
-  return render("show")
+proc show*(this:{targetCaptalized}Controller, id:string):Response =
+  block:
+    let id = id.parseInt
+    return render("show")
 
 proc create*(this:{targetCaptalized}Controller):Response =
   return render("create")
@@ -30,16 +31,20 @@ proc create*(this:{targetCaptalized}Controller):Response =
 proc store*(this:{targetCaptalized}Controller):Response =
   return render("store")
 
-proc edit*(this:{targetCaptalized}Controller, idArg:string):Response =
-  let id = idArg.parseInt
-  return render("edit")
+proc edit*(this:{targetCaptalized}Controller, id:string):Response =
+  block:
+    let id = id.parseInt
+    return render("edit")
 
-proc update*(this:{targetCaptalized}Controller):Response =
-  return render("update")
+proc update*(this:{targetCaptalized}Controller, id:string):Response =
+  block:
+    let id = id.parseInt
+    return render("update")
 
-proc destroy*(this:{targetCaptalized}Controller, idArg:string):Response =
-  let id = idArg.parseInt
-  return render("destroy")
+proc destroy*(this:{targetCaptalized}Controller, id:string):Response =
+  block:
+    let id = id.parseInt
+    return render("destroy")
 """
 
   if isFileExists(targetPath): return 1
