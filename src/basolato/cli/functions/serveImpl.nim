@@ -2,7 +2,7 @@ import
   os, tables, times, re, strformat, osproc, terminal
 
 let
-  sleepTime = 1
+  sleepTime = 2
   currentDir = getCurrentDir()
 
 var
@@ -15,9 +15,9 @@ proc echoMsg(bg: BackgroundColor, msg: string) =
   styledEcho(fgBlack, bg, msg, resetStyle)
 
 proc ctrlC() {.noconv.} =
-  kill(p)
-  discard execShellCmd(&"kill {pid}")
-  echoMsg(bgGreen, "[SUCCESS] Stop dev server")
+  if pid > 0:
+    discard execShellCmd(&"kill {pid}")
+  echoMsg(bgGreen, " [SUCCESS] Stop dev server ")
   quit 0
 setControlCHook(ctrlC)
 
@@ -28,14 +28,14 @@ proc runCommand() =
     discard tryRemoveFile("./main")
     if execShellCmd("nim c main") > 0:
       raise newException(Exception, "")
-    echoMsg(bgGreen, "[SUCCESS] Start running dev server")
+    echoMsg(bgGreen, " [SUCCESS] Start running dev server ")
     p = startProcess("./main", currentDir, ["&"],
                     options={poStdErrToStdOut,poParentStreams})
     pid = p.processID()
   except:
-    echoMsg(bgRed, "[FAILED] Build error")
+    echoMsg(bgRed, " [FAILED] Build error ")
     echo getCurrentExceptionMsg()
-    quit 1
+    # quit 1
 
 proc serve*() =
   runCommand()
@@ -43,7 +43,16 @@ proc serve*() =
     sleep sleepTime * 1000
     for f in walkDirRec(currentDir, {pcFile}):
       if f.find(re"\.nim$") > -1:
-        let modTime = getFileInfo(f).lastWriteTime
+
+        var modTime: Time
+        try:
+          modTime = getFileInfo(f).lastWriteTime
+        except:
+          # file is deleted
+          files.del(f)
+          isModified = true
+          break
+
         if not files.hasKey(f):
           files[f] = modTime
           # debugEcho &"Skip {f} because of first checking"

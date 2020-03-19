@@ -36,8 +36,10 @@ proc edit*(this:{targetCaptalized}Controller, id:string):Response =
     let id = id.parseInt
     return render("edit")
 
-proc update*(this:{targetCaptalized}Controller):Response =
-  return render("update")
+proc update*(this:{targetCaptalized}Controller, id:string):Response =
+  block:
+    let id = id.parseInt
+    return render("update")
 
 proc destroy*(this:{targetCaptalized}Controller, id:string):Response =
   block:

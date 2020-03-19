@@ -39,12 +39,12 @@ proc render*(status:HttpCode, body:JsonNode):Response =
   return Response(status:status, bodyJson:body, responseType:Json)
 
 
-proc redirect*(url:string) : Response =
+proc redirect*(url:string):Response =
   return Response(
     status:Http303, url:url, responseType: Redirect
   )
 
-proc errorRedirect*(url:string): Response =
+proc errorRedirect*(url:string):Response =
   return Response(
     status:Http302, url:url, responseType: Redirect
   )
