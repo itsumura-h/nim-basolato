@@ -1,4 +1,5 @@
 nimble install -y
+nimble install https://github.com/pragmagic/karax -y
 cd /home/www/tests/server
 nim c main
 nohup ./main > /dev/null &
