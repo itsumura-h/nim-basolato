@@ -26,14 +26,14 @@ To references
 ## Dependencies
 This framework depends on following libralies
 - [Jester](https://github.com/dom96/jester), Micro web framework.
-- [Karax](https://github.com/pragmagic/karax), Single page applications for Nim, as view.
+- [nim-templates](https://github.com/onionhammer/nim-templates), A simple string templating library
 - [allographer](https://github.com/itsumura-h/nim-allographer), Query builder library.
 - [flatdb](https://github.com/enthus1ast/flatdb), a small flatfile, inprocess database for nim-lang, as session DB.
 - [bcrypt](https://github.com/runvnc/bcryptnim), useful for hashing passwords.
 - [nimAES](https://github.com/jangko/nimAES), Advanced Encryption Standard.
 
 Following libralies are another options to create view.
-- [nim-templates](https://github.com/onionhammer/nim-templates), A simple string templating library
+- [Karax](https://github.com/pragmagic/karax), Single page applications for Nim, as view.
 - [react.nim](https://github.com/andreaferretti/react.nim), React.js bindings for Nim.
 - [react-16.nim](https://github.com/kristianmandrup/react-16.nim), React 16.x bindings for Nim 1.0 with example app (WIP).
 
