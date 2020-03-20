@@ -2,7 +2,7 @@ import os
 
 # DB Connection
 putEnv("DB_DRIVER", "sqlite")
-putEnv("DB_CONNECTION", "/home/www/tests/server/db.sqlite3")
+putEnv("DB_CONNECTION", "/root/project/tests/server/db.sqlite3")
 #putEnv("DB_DRIVER", "mysql")
 #putEnv("DB_CONNECTION", "mysql:3306")
 # putEnv("DB_DRIVER", "postgres")
@@ -14,11 +14,11 @@ putEnv("DB_DATABASE", "allographer")
 # Logging
 putEnv("LOG_IS_DISPLAY", "true")
 putEnv("LOG_IS_FILE", "true")
-putEnv("LOG_DIR", "/home/www/tests/server/logs")
+putEnv("LOG_DIR", "/root/project/tests/server/logs")
 
 # Security
 putEnv("SECRET_KEY", "s40q834uc0mq4ur834u3874u843r734r")
 putEnv("CSRF_TIME", "525600") # minutes 1 year
 putEnv("SESSION_TIME", "20160") # minutes 2 weeks
-putEnv("SESSION_DB_PATH", "/home/www/tests/server/session.db")
+putEnv("SESSION_DB_PATH", "/root/project/tests/server/session.db")
 putEnv("IS_SESSION_MEMORY", "false")
