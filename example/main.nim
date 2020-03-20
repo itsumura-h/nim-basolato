@@ -3,9 +3,9 @@ import asyncdispatch, httpcore, re, tables
 import ../src/basolato/routing
 import ../src/basolato/middleware
 # middleware
-import middleware/framework_middleware
-import middleware/custom_headers_middleware
-import middleware/check_login_middleware
+import middlewares/framework_middleware
+import middlewares/custom_headers_middleware
+import middlewares/check_login_middleware
 # controller
 import app/controllers/sample_controller
 
