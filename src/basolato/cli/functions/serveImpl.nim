@@ -17,7 +17,7 @@ proc echoMsg(bg: BackgroundColor, msg: string) =
 proc ctrlC() {.noconv.} =
   if pid > 0:
     discard execShellCmd(&"kill {pid}")
-  echoMsg(bgGreen, "[SUCCESS] Stop dev server")
+  echoMsg(bgGreen, "[SUCCESS] Stoped dev server")
   quit 0
 setControlCHook(ctrlC)
 
@@ -28,7 +28,7 @@ proc runCommand() =
     discard tryRemoveFile("./main")
     if execShellCmd("nim c main") > 0:
       raise newException(Exception, "")
-    echoMsg(bgGreen, "[SUCCESS] Start running dev server")
+    echoMsg(bgGreen, "[SUCCESS] Started running dev server")
     p = startProcess("./main", currentDir, ["&"],
                     options={poStdErrToStdOut,poParentStreams})
     pid = p.processID()

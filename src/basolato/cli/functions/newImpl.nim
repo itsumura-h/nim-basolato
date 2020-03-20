@@ -12,11 +12,13 @@ proc createMVC(dirPath:string):int =
   git clone {tmplateGitUrl} tmp
   """)
     # get from tmp/MVC
-    moveDir(&"{dirpath}/tmp/MVC/middleware", &"{dirpath}/middleware")
+    moveDir(&"{dirpath}/tmp/MVC/app", &"{dirpath}/app")
+    moveDir(&"{dirpath}/tmp/MVC/middlewares", &"{dirpath}/middlewares")
     moveDir(&"{dirpath}/tmp/MVC/migrations", &"{dirpath}/migrations")
+    moveDir(&"{dirpath}/tmp/MVC/public", &"{dirpath}/public")
+    moveDir(&"{dirpath}/tmp/MVC/resources", &"{dirpath}/resources")
     moveFile(&"{dirpath}/tmp/MVC/main.nim", &"{dirpath}/main.nim")
     # move static files
-    createDir(&"{dirPath}/public")
     moveFile(&"{dirpath}/tmp/assets/basolato.svg", &"{dirpath}/public/basolato.svg")
     moveFile(&"{dirpath}/tmp/assets/favicon.ico", &"{dirpath}/public/favicon.ico")
     # remove tmp
@@ -27,12 +29,9 @@ proc createMVC(dirPath:string):int =
   ducere make config
   """)
     # create empty dirs
-    createDir(&"{dirPath}/app")
-    createDir(&"{dirPath}/app/controllers")
-    createDir(&"{dirPath}/app/models")
     createDir(&"{dirPath}/public/js")
     createDir(&"{dirPath}/public/css")
-    createDir(&"{dirPath}/resources")
+    styledEcho(fgBlack, bgGreen, &"[Success] Created project in {dirpath} ", resetStyle)
     return 0
   except:
     echo getCurrentExceptionMsg()
