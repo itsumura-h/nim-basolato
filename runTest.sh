@@ -1,8 +1,8 @@
 nimble install -y
-cd /home/www/tests/server
+cd /root/project/tests/server
 nim c main
 nohup ./main > /dev/null &
-cd /home/www/
+cd /root/project/
 nimble test
 
 killall main
