@@ -1,4 +1,4 @@
-decere command
+ducere command
 ===
 [back](../README.md)
 
