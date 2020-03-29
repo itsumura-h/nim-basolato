@@ -5,6 +5,17 @@ Controller
 Table of Contents
 
 <!--ts-->
+   * [Controller](#controller)
+      * [Creating a Controller](#creating-a-controller)
+      * [Constructor &amp; DI](#constructor--di)
+      * [Returning string](#returning-string)
+      * [Returning HTML file](#returning-html-file)
+      * [Returning template](#returning-template)
+      * [Returning JSON](#returning-json)
+      * [Response status](#response-status)
+
+<!-- Added by: jiro4989, at: 2020年  3月 30日 月曜日 07:59:33 JST -->
+
 <!--te-->
 
 ## Creating a Controller
