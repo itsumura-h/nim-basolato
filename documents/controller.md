@@ -2,6 +2,11 @@ Controller
 ===
 [back](../README.md)
 
+Table of Contents
+
+<!--ts-->
+<!--te-->
+
 ## Creating a Controller
 Use `ducere` command  
 [ducere make controller](./ducere.md#controller)
