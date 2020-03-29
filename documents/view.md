@@ -2,6 +2,11 @@ View
 ===
 [back](../README.md)
 
+Table of Contents
+
+<!--ts-->
+<!--te-->
+
 ## Introduction
 There are 4 ways to render HTML in Basolato. Although each library has it's own benefits and drawbacks, every library can be used.  
 Basolato use `nim-templates` as a default template engin. It can be used by importing `basolato/view`.

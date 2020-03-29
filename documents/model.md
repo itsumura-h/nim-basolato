@@ -2,6 +2,11 @@ Model
 ===
 [back](../README.md)
 
+Table of Contents
+
+<!--ts-->
+<!--te-->
+
 ## Introduction
 Model is a layer to difine which table to connect and access database.
 

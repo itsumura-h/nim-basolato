@@ -4,6 +4,11 @@ ducere command
 
 `ducere` is a CLI tool for Basolato framework such as `rails new`/`php artisan`.
 
+Table of Contents
+
+<!--ts-->
+<!--te-->
+
 ## new
 Create new project
 ```

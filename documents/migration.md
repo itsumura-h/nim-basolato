@@ -2,6 +2,11 @@ Migration
 ===
 [back](../README.md)
 
+Table of Contents
+
+<!--ts-->
+<!--te-->
+
 ## Introduction
 Use `ducere` command  
 [`ducere make migration`](./ducere.md#migration)

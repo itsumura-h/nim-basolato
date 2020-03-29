@@ -2,6 +2,11 @@ Middleware
 ===
 [back](../README.md)
 
+Table of Contents
+
+<!--ts-->
+<!--te-->
+
 ## Routing middleware
 You can run middleware methods before calling controller.  
 In following example, `hasLoginId(request)` and `hasLoginToken()` definded in `middleware/check_login_middleware.nim` are called

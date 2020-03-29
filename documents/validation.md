@@ -2,6 +2,11 @@ Validation
 ===
 [back](../README.md)
 
+Table of Contents
+
+<!--ts-->
+<!--te-->
+
 Basolato has it's own validation function. It recieves request and check request params.
 
 # sample

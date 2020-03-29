@@ -2,6 +2,11 @@ Error
 ===
 [back](../README.md)
 
+Table of Contents
+
+<!--ts-->
+<!--te-->
+
 ## Introduction
 When exception raised, Basolato will catch excepton and return Exception status response.  
 

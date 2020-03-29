@@ -2,6 +2,11 @@ Healper
 ===
 [back](../README.md)
 
+Table of Contents
+
+<!--ts-->
+<!--te-->
+
 # dd()
 ```
 proc dd(outputs:varges[string])

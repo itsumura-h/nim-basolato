@@ -23,6 +23,11 @@ To references
 |Java/Scala|Play|
 |Go|Revel|
 
+Table of Contents
+
+<!--ts-->
+<!--te-->
+
 ## Dependencies
 This framework depends on following libralies
 - [Jester](https://github.com/dom96/jester), Micro web framework.

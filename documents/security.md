@@ -2,6 +2,11 @@ Security
 ===
 [back](../README.md)
 
+Table of Contents
+
+<!--ts-->
+<!--te-->
+
 # Check in middleware
 Basolato check whether value is valid in middleware. `checkCsrfToken()` and `checkAuthToken()` are available.  
 These procs return `Check` object. `catch()` defines what to do if value is invalid.
