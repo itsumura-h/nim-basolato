@@ -3,7 +3,7 @@
   <img src="./documents/basolato.svg" style="width:160px">
 </p>
 <div align="center">
-  <h2>Basolato Framework</h2>
+  <h1>Basolato Framework</h1>
   <img src="https://github.com/itsumura-h/nim-basolato/workflows/Build%20and%20test%20Nim/badge.svg">
 </div>
 
@@ -43,20 +43,20 @@ Following libralies are another options to create view.
 - [react-16.nim](https://github.com/kristianmandrup/react-16.nim), React 16.x bindings for Nim 1.0 with example app (WIP).
 
 
-# Introduction
-## Install
+## Introduction
+### Install
 ```sh
 nimble install https://github.com/itsumura-h/nim-basolato
 ```
 
-## Set up
+### Set up
 First of all, add nim binary path
 ```sh
 export PATH=$PATH:~/.nimble/bin
 ```
 After install basolato, "ducere" command is going to be available.
 
-## Create project
+### Create project
 ```sh
 cd /your/project/dir
 ducere new
@@ -93,7 +93,7 @@ ducere serve # hot reload available
 nim c -r main
 ```
 
-# Documents
+## Documents
 - [ducere CLI tool](./documents/ducere.md)
 - [Routing](./documents/routing.md)
 - [Controller](./documents/controller.md)
@@ -107,7 +107,7 @@ nim c -r main
 - [Security(CsrfToken, Cookie, Session, Auth)](./documents/security.md)
 - [Helper](./documents/helper.md)
 
-## Dev roadmap
+### Dev roadmap
 
 |Version|Content|
 |---|---|

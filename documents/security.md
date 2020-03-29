@@ -7,11 +7,11 @@ Table of Contents
 <!--ts-->
 <!--te-->
 
-# Check in middleware
+## Check in middleware
 Basolato check whether value is valid in middleware. `checkCsrfToken()` and `checkAuthToken()` are available.  
 These procs return `Check` object. `catch()` defines what to do if value is invalid.
 
-## CSRF Token
+### CSRF Token
 Basolato can check whether csrf token is valid if request metod is `post`, `put`, `patch`, `delete`.
 
 When you use SCF,Set `${csrfToken()}` in view.
@@ -56,7 +56,7 @@ checkCsrfToken(request).catch(Error403, "Error message")
 checkCsrfToken(request).catch(Error302, "/login")
 ```
 
-# Cookie
+## Cookie
 
 ```nim
 type
@@ -138,7 +138,7 @@ proc index(this:Controller): Response =
 ```
 
 
-# Session
+## Session
 Basolato use [nimAES](https://github.com/jangko/nimAES) as session DB. We have a plan to be able to choose Redis in the future.
 
 If you set `sessionId` in arg of `newSession()`, it return existing session otherwise create new session.
@@ -208,7 +208,7 @@ proc destroy(this:Controller): Response =
 ```
 
 
-# Auth
+## Auth
 Basolato has Auth system. it conceal inconvenient cookie and session process.
 
 ```nim
