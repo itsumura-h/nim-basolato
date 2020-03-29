@@ -89,7 +89,7 @@ nim c -r main
 ```
 
 # Documents
-- [decere CLI tool](./documents/ducere.md)
+- [ducere CLI tool](./documents/ducere.md)
 - [Routing](./documents/routing.md)
 - [Controller](./documents/controller.md)
 - [Middleware](./documents/middleware.md)
