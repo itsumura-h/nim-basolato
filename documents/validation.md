@@ -5,6 +5,28 @@ Validation
 Table of Contents
 
 <!--ts-->
+   * [Validation](#validation)
+      * [sample](#sample)
+      * [Custom Validation](#custom-validation)
+      * [Available Rules](#available-rules)
+         * [accepted](#accepted)
+         * [contains](#contains)
+         * [email, strictEmail](#email-strictemail)
+         * [equals](#equals)
+         * [exists](#exists)
+         * [gratorThan](#gratorthan)
+         * [inRange](#inrange)
+         * [ip](#ip)
+         * [isIn](#isin)
+         * [lessThan](#lessthan)
+         * [numeric](#numeric)
+         * [oneOf](#oneof)
+         * [password](#password)
+         * [required](#required)
+         * [unique](#unique)
+
+<!-- Added by: jiro4989, at: 2020年  3月 30日 月曜日 08:22:38 JST -->
+
 <!--te-->
 
 Basolato has it's own validation function. It recieves request and check request params.

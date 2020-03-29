@@ -7,6 +7,16 @@ ducere command
 Table of Contents
 
 <!--ts-->
+   * [ducere command](#ducere-command)
+      * [new](#new)
+      * [serve](#serve)
+      * [make](#make)
+         * [config](#config)
+         * [controller](#controller)
+         * [migration](#migration)
+
+<!-- Added by: jiro4989, at: 2020年  3月 30日 月曜日 08:16:04 JST -->
+
 <!--te-->
 
 ## new

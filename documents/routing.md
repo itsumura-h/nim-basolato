@@ -20,6 +20,13 @@ routes:
 Table of Contents
 
 <!--ts-->
+   * [Routing](#routing)
+      * [HTTP_Verbs](#http_verbs)
+      * [Routing group](#routing-group)
+      * [Getting response in sepecific URL groups](#getting-response-in-sepecific-url-groups)
+
+<!-- Added by: jiro4989, at: 2020年  3月 30日 月曜日 08:20:18 JST -->
+
 <!--te-->
 
 

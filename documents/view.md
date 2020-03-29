@@ -5,6 +5,21 @@ View
 Table of Contents
 
 <!--ts-->
+   * [View](#view)
+      * [Introduction](#introduction)
+      * [Csrf Token](#csrf-token)
+         * [nim-templates](#nim-templates)
+         * [htmlgen](#htmlgen)
+         * [SCF](#scf)
+         * [Karax](#karax)
+      * [Block components example](#block-components-example)
+         * [nim-templates](#nim-templates-1)
+         * [htmlgen](#htmlgen-1)
+         * [SCF](#scf-1)
+         * [Karax](#karax-1)
+
+<!-- Added by: jiro4989, at: 2020年  3月 30日 月曜日 08:24:28 JST -->
+
 <!--te-->
 
 ## Introduction
