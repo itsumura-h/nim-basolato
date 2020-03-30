@@ -38,6 +38,8 @@ jobs:
           ./gh-md-toc --insert *.md documents/*.md
       - name: Git commit documents
         run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
           git add *.md documents/*.md
           git commit -m ":memo: [CI] update TOC"
 
