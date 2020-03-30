@@ -2,6 +2,17 @@ Error
 ===
 [back](../README.md)
 
+Table of Contents
+
+<!--ts-->
+   * [Error](#error)
+      * [Introduction](#introduction)
+      * [How to display custom error page](#how-to-display-custom-error-page)
+
+<!-- Added by: jiro4989, at: 2020年  3月 30日 月曜日 08:16:37 JST -->
+
+<!--te-->
+
 ## Introduction
 When exception raised, Basolato will catch excepton and return Exception status response.  
 

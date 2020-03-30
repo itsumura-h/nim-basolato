@@ -2,7 +2,6 @@ Routing
 ===
 [back](../README.md)
 
-
 Routing is written in `main.nim`. it is the entrypoint file of Basolato.  
 Routing of Basolato is exactory the same as `Jester`, although you can call controller method by `route()`
 ```nim
@@ -17,6 +16,19 @@ routes:
   get "/@id":
     route(newSomeController(request).show(@"id"))
 ```
+
+Table of Contents
+
+<!--ts-->
+   * [Routing](#routing)
+      * [HTTP_Verbs](#http_verbs)
+      * [Routing group](#routing-group)
+      * [Getting response in sepecific URL groups](#getting-response-in-sepecific-url-groups)
+
+<!-- Added by: jiro4989, at: 2020年  3月 30日 月曜日 08:20:18 JST -->
+
+<!--te-->
+
 
 ## HTTP_Verbs
 Following HTTP Verbs are valid.
