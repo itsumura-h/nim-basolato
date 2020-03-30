@@ -6,6 +6,7 @@ import middlewares/framework_middleware
 # controller
 import app/controllers/application_controller
 import app/controllers/static_page_controller
+import app/controllers/users_controller
 
 routes:
   # Framework
@@ -15,8 +16,10 @@ routes:
 
   # get "/": route(newApplicationController(request).hello())
   get "/": route(newStaticPageController(request).home())
-  get "/static_pages/help": route(newStaticPageController(request).help())
-  get "/static_pages/about": route(newStaticPageController(request).about())
-  get "/static_pages/contact": route(newStaticPageController(request).contact())
+  get "/help": route(newStaticPageController(request).help())
+  get "/about": route(newStaticPageController(request).about())
+  get "/contact": route(newStaticPageController(request).contact())
+
+  get "/users/create": route(newUsersController(request).create())
 
 runForever()
