@@ -166,9 +166,9 @@ template http404Route*(pagePath="") =
   if not request.path.contains("favicon"):
     echoErrorMsg(&"{$Http404}  {request.ip}  {request.path}")
   if pagePath == "":
-    route(render(errorPage(Http404, "route not match")))
+    route(render(Http404, errorPage(Http404, "route not match")))
   else:
-    route(render(html(pagePath)))
+    route(render(Http404, html(pagePath)))
 
 
 template middleware*(procs:varargs[Response]) =

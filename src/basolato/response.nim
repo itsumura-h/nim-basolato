@@ -96,7 +96,7 @@ proc response*(arg:ResponseData):Response =
     body: arg[3],
     match: arg[4]
   )
-  
+
 proc response*(status:HttpCode, body:string): Response =
   return Response(
     status:status,

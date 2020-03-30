@@ -29,6 +29,7 @@ proc createMVC(dirPath:string):int =
   ducere make config
   """)
     # create empty dirs
+    createDir(&"{dirPath}/tests")
     createDir(&"{dirPath}/public/js")
     createDir(&"{dirPath}/public/css")
     styledEcho(fgBlack, bgGreen, &"[Success] Created project in {dirpath} ", resetStyle)
