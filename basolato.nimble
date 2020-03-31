@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.2.7"
+version       = "0.2.8" # https://github.com/itsumura-h/nim-basolato/issues/51
 author        = "Hidenobu Itsumura @dumblepytech1 as 'medy'"
 description   = "A fullstack web framework library for Nim"
 license       = "MIT"
@@ -16,8 +16,6 @@ skipDirs      = @["basolato/cli"]
 requires "nim >= 1.0.0"
 requires "cligen >= 0.9.41"
 requires "https://github.com/dom96/jester#4c39652"
-# requires "karax >= 1.1.0"
-# requires "https://github.com/pragmagic/karax#7440393"
 requires "templates >= 0.5"
 requires "bcrypt >= 0.2.1"
 requires "nimAES >= 0.1.2"

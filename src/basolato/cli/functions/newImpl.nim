@@ -1,8 +1,8 @@
-import os, strformat, terminal
+import os, strformat, terminal, strutils
+from ../../base import basolatoVersion
 from make/utils import isDirExists
 
-
-proc createMVC(dirPath:string):int =
+proc createMVC(dirPath:string, packageDir:string):int =
   try:
     createDir(dirPath)
     # download from github as dir name tmp
@@ -32,6 +32,36 @@ proc createMVC(dirPath:string):int =
     createDir(&"{dirPath}/tests")
     createDir(&"{dirPath}/public/js")
     createDir(&"{dirPath}/public/css")
+    # create nimble file
+    var nimble = &"""
+# Package
+
+version       = "0.1.0"
+author        = "Anonymous"
+description   = "A new awesome nimble package"
+license       = "MIT"
+srcDir        = "."
+bin           = @["main"]
+
+backend       = "c"
+
+# Dependencies
+
+requires "nim >= {NimVersion}"
+requires "basolato >= {basolatoVersion}"
+requires "cligen >= 0.9.41"
+requires "https://github.com/dom96/jester#4c39652"
+requires "templates >= 0.5"
+requires "bcrypt >= 0.2.1"
+requires "nimAES >= 0.1.2"
+requires "https://github.com/enthus1ast/flatdb >= 0.2.4"
+requires "allographer >= 0.8.0"
+"""
+    block:
+      var f = open(&"{dirPath}/{packageDir}.nimble", fmWrite)
+      defer: f.close()
+      f.write(nimble)
+
     styledEcho(fgBlack, bgGreen, &"[Success] Created project in {dirpath} ", resetStyle)
     return 0
   except:
@@ -61,7 +91,7 @@ proc new*(args:seq[string], architecture="MVC"):int =
   of "MVC":
     message.add("\ncreate as MVC")
     styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
-    return createMVC(dirPath)
+    return createMVC(dirPath, packageDir)
   # of "DDD":
   #   message.add("\ncreate as DDD")
   #   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)

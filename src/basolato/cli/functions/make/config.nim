@@ -32,8 +32,8 @@ putEnv("IS_SESSION_MEMORY", "false")
 """
 
   var f = open(targetPath, fmWrite)
-  f.write(CONFIG)
   defer: f.close()
+  f.write(CONFIG)
 
   var message = &"created {targetPath}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
