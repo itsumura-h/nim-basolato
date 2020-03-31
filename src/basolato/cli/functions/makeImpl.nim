@@ -1,7 +1,6 @@
 import os, terminal
-import make/controller
-import make/migration
-import make/config
+import
+  make/controller, make/migration, make/view, make/config
 
 
 template getTarget() =
@@ -40,6 +39,9 @@ proc make*(args:seq[string]):int =
   of "migration":
     getTarget
     return makeMigration(target, message)
+  of "view":
+    getTarget
+    return makeView(target, message)
   of "config":
     return makeConfig()
   else:
