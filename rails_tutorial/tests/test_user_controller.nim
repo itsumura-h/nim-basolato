@@ -7,6 +7,6 @@ suite "users controller":
     var client = newHttpClient()
 
   test "should get create":
-    var response = client.get(&"{HOST}/users/create")
+    var response = client.get(&"{HOST}/signup")
     echo response.code()
     check response.code() == Http200

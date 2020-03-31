@@ -19,6 +19,7 @@ routes:
   get "/help": route(newStaticPageController(request).help())
   get "/about": route(newStaticPageController(request).about())
   get "/contact": route(newStaticPageController(request).contact())
+  get "/signup": route(newUsersController(request).create())
 
   get "/users/create": route(newUsersController(request).create())
 

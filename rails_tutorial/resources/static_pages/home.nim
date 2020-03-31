@@ -11,7 +11,7 @@ proc impl():string = tmpli html"""
     sample application.
   </h2>
 
-  <a href="#" class="btn btn-lg btn-primary">Sign up now!</a>
+  <a href="/signup" class="btn btn-lg btn-primary">Sign up now!</a>
 </div>
 
 <a href="http://rubyonrails.org/"><img src="https://railstutorial.jp/rails.png" alt="Rails logo"></img></a>
