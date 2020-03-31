@@ -1,15 +1,7 @@
 import unittest, strformat, strutils, httpclient, htmlparser, xmltree
+import basolato/test
 
 include ../resources/layouts/application
-
-proc assertSelect(response:httpclient.Response, elm:string): seq[XmlNode] =
-  var html = parseHtml(response.body())
-  var s = newSeq[XmlNode]()
-  html.findAll(elm, s)
-  var r = newSeq[XmlNode](s.len())
-  for i, v in s:
-    r[i] = v
-  return r
 
 const HOST = "http://0.0.0.0:5000"
 
