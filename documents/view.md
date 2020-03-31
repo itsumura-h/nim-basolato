@@ -2,6 +2,26 @@ View
 ===
 [back](../README.md)
 
+Table of Contents
+
+<!--ts-->
+   * [View](#view)
+      * [Introduction](#introduction)
+      * [Csrf Token](#csrf-token)
+         * [nim-templates](#nim-templates)
+         * [htmlgen](#htmlgen)
+         * [SCF](#scf)
+         * [Karax](#karax)
+      * [Block components example](#block-components-example)
+         * [nim-templates](#nim-templates-1)
+         * [htmlgen](#htmlgen-1)
+         * [SCF](#scf-1)
+         * [Karax](#karax-1)
+
+<!-- Added by: jiro4989, at: 2020年  3月 30日 月曜日 08:24:28 JST -->
+
+<!--te-->
+
 ## Introduction
 There are 4 ways to render HTML in Basolato. Although each library has it's own benefits and drawbacks, every library can be used.  
 Basolato use `nim-templates` as a default template engin. It can be used by importing `basolato/view`.
@@ -75,10 +95,10 @@ Basolato use `nim-templates` as a default template engin. It can be used by impo
 
 Views file should be in `resources` dir.
 
-# Csrf Token
+## Csrf Token
 To send POST request from `form`, you have to set `csrf token`. You can use helper function from `basolato/view`
 
-## nim-templates
+### nim-templates
 ```nim
 import basolato/view
 import templates
@@ -91,7 +111,7 @@ proc index*():string = tmpli html"""
 """
 ```
 
-## htmlgen
+### htmlgen
 ```nim
 import htmlgen
 import basolato/view
@@ -103,7 +123,7 @@ proc index*():string =
   )
 ```
 
-## SCF
+### SCF
 ```nim
 #? stdtmpl | standard
 #import basolato/view
@@ -114,7 +134,7 @@ proc index*():string =
 </form>
 ```
 
-## Karax
+### Karax
 ```nim
 import basolato/view
 import karax / [karaxdsl, vdom]
@@ -126,7 +146,7 @@ proc index*():string =
   return $vnode
 ```
 
-# Block components example
+## Block components example
 
 Controller and result is same for each example.
 
@@ -149,7 +169,7 @@ result
 </html>
 ```
 
-## nim-templates
+### nim-templates
 
 ```nim
 import tamplates
@@ -173,7 +193,7 @@ proc indexHtml*(message:string): string =
   baseImpl(indexImpl(message))
 ```
 
-## htmlgen
+### htmlgen
 
 ```nim
 import htmlgen
@@ -194,7 +214,7 @@ proc indexHtml*(message:string): string =
 ```
 
 
-## SCF
+### SCF
 
 SCF should divide procs for each file
 
@@ -228,7 +248,7 @@ indexHtml.nim
 ${baseImpl(indexImpl(message))}
 ```
 
-## Karax
+### Karax
 This usage is **Server Side HTML Rendering**
 
 ```nim

@@ -2,6 +2,16 @@ Middleware
 ===
 [back](../README.md)
 
+Table of Contents
+
+<!--ts-->
+   * [Middleware](#middleware)
+      * [Routing middleware](#routing-middleware)
+
+<!-- Added by: jiro4989, at: 2020年  3月 30日 月曜日 08:18:34 JST -->
+
+<!--te-->
+
 ## Routing middleware
 You can run middleware methods before calling controller.  
 In following example, `hasLoginId(request)` and `hasLoginToken()` definded in `middleware/check_login_middleware.nim` are called

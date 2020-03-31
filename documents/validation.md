@@ -2,9 +2,36 @@ Validation
 ===
 [back](../README.md)
 
+Table of Contents
+
+<!--ts-->
+   * [Validation](#validation)
+      * [sample](#sample)
+      * [Custom Validation](#custom-validation)
+      * [Available Rules](#available-rules)
+         * [accepted](#accepted)
+         * [contains](#contains)
+         * [email, strictEmail](#email-strictemail)
+         * [equals](#equals)
+         * [exists](#exists)
+         * [gratorThan](#gratorthan)
+         * [inRange](#inrange)
+         * [ip](#ip)
+         * [isIn](#isin)
+         * [lessThan](#lessthan)
+         * [numeric](#numeric)
+         * [oneOf](#oneof)
+         * [password](#password)
+         * [required](#required)
+         * [unique](#unique)
+
+<!-- Added by: jiro4989, at: 2020年  3月 30日 月曜日 08:22:38 JST -->
+
+<!--te-->
+
 Basolato has it's own validation function. It recieves request and check request params.
 
-# sample
+## sample
 
 Controller
 ```nim
@@ -53,7 +80,7 @@ proc createHtmlImpl(name:string, email:string, errors:JsonNode): string = tmpli 
     .
 ```
 
-# Custom Validation
+## Custom Validation
 You can also create your own validation middleware. It should recieve `Validation` object and return it.  
 `putValidate()` proc is useful to create/add error in `Validation` object.
 
@@ -79,9 +106,9 @@ proc checkPassword*(this:Validation, key:string): Validation =
   return this
 ```
 
-# Available Rules
+## Available Rules
 
-## accepted
+### accepted
 This will add errors if not checked in checkbox. Default checked value is `on` and if you want overwrite it, set in arg.
 
 ```html
@@ -98,7 +125,7 @@ validate()
   .accepted("sample2", "checked")
 ```
 
-## contains
+### contains
 This will add errors if value in request doesn't contain a expected string.
 
 ```json
@@ -109,7 +136,7 @@ This will add errors if value in request doesn't contain a expected string.
 validate().contains("email", "user")
 ```
 
-## email, strictEmail
+### email, strictEmail
 This will add errors if value is not match a style of email address.  
 `strictEmail` supports [RFC5321](https://tools.ietf.org/html/rfc5321) and [RFC5322](https://tools.ietf.org/html/rfc5322) completely. References this Python code https://gist.github.com/frodo821/681869a36148b5214632166e0ad293a9
 
@@ -122,7 +149,7 @@ validate().email("address")
 validate().strictEmail("address")
 ```
 
-## equals
+### equals
 This will add errors if value is not same against expectd string.
 
 ```json
@@ -133,7 +160,7 @@ This will add errors if value is not same against expectd string.
 validate().equals("name", "John")
 ```
 
-## exists
+### exists
 This will add errors if key is not exist in request params.
 
 ```json
@@ -144,7 +171,7 @@ This will add errors if key is not exist in request params.
 validate().exists("name")
 ```
 
-## gratorThan
+### gratorThan
 This will add errors if value is not grater/larger than expected value.
 
 ```json
@@ -155,7 +182,7 @@ This will add errors if value is not grater/larger than expected value.
 validate().gratorThan("age", 26)
 ```
 
-## inRange
+### inRange
 This will add errors if value is not in rage of expected value.
 
 ```json
@@ -166,7 +193,7 @@ This will add errors if value is not in rage of expected value.
 validate().inRange("age", min=20, max=60)
 ```
 
-## ip
+### ip
 This will add errors if value is not match a style of IP address.
 
 ```json
@@ -177,7 +204,7 @@ This will add errors if value is not match a style of IP address.
 validate().ip("ip_address")
 ```
 
-## isIn
+### isIn
 This will add errors if value is not match for one of expected values.
 
 ```json
@@ -188,7 +215,7 @@ This will add errors if value is not match for one of expected values.
 validate().isIn("name", ["John", "Paul", "George", "Ringo"])
 ```
 
-## lessThan
+### lessThan
 This will add errors if value is not less/smaller than expected value.
 
 ```json
@@ -200,7 +227,7 @@ validate().gratorThan("age", 24)
 ```
 
 
-## numeric
+### numeric
 This will add errors if value is not number.
 
 ```json
@@ -211,7 +238,7 @@ This will add errors if value is not number.
 validate().numeric("num")
 ```
 
-## oneOf
+### oneOf
 This will add errors if one of expected keys is not present in request.
 
 ```json
@@ -222,7 +249,7 @@ This will add errors if one of expected keys is not present in request.
 validate().oneOf(["name", "birth_date", "job"])
 ```
 
-## password
+### password
 This will add errors if value is not match a style of password.  
 It needs at least 8 chars, one upper and lower letter, symbol(ex: @-_?!) is available.
 
@@ -234,7 +261,7 @@ It needs at least 8 chars, one upper and lower letter, symbol(ex: @-_?!) is avai
 validate().password("pass")
 ```
 
-## required
+### required
 This will add errors if all of expected keys is not present in request.
 
 ```json
@@ -245,7 +272,7 @@ This will add errors if all of expected keys is not present in request.
 validate().required(["name", "email"])
 ```
 
-## unique
+### unique
 This will add errors if expected value is not unique in database.
 
 table: users

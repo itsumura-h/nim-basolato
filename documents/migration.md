@@ -2,6 +2,17 @@ Migration
 ===
 [back](../README.md)
 
+Table of Contents
+
+<!--ts-->
+   * [Migration](#migration)
+      * [Introduction](#introduction)
+      * [Example](#example)
+
+<!-- Added by: jiro4989, at: 2020年  3月 30日 月曜日 08:19:28 JST -->
+
+<!--te-->
+
 ## Introduction
 Use `ducere` command  
 [`ducere make migration`](./ducere.md#migration)
