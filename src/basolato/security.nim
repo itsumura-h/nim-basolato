@@ -1,6 +1,6 @@
 import httpcore, json, strutils, times, random, strformat
 # framework
-import base
+import baseEnv
 # 3rd party
 import flatdb, nimAES
 import jester/request
