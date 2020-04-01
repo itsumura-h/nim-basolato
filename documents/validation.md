@@ -29,7 +29,52 @@ Table of Contents
 
 <!--te-->
 
-Basolato has it's own validation function. It recieves request and check request params.
+Basolato has it's own validation function. It recieves request and check request params.  
+There are two validation type. One is used in controller that recieve request and return errors array.
+Another is more simple. Recieve value and return `bool`.
+
+```
+import basolato/request_validation
+```
+
+# Simple Validation
+```
+import basolato/validation
+```
+## Available Rules
+### email
+```nim
+echo Validate().email("sample@example.com")
+>> true / false
+```
+
+### domain
+### email
+```nim
+echo Validate().domain("example.com")
+>> true / false
+```
+
+### strictEmail
+```nim
+echo Validate().strictEmail("sample@example.com")
+>> true / false
+```
+
+### equals
+```nim
+echo Validate().equals("a", "a")
+>> true / false
+```
+### gratorThan
+### inRange
+### ip
+### lessThan
+### numeric
+### password
+
+
+# Request Validation
 
 ## sample
 
@@ -89,7 +134,7 @@ middleware/custom_validate_middleware.nim
 import json, tables
 import bcrypt
 import allographer/query_builder
-import basolato/validation
+import basolato/request_validation
 
 proc checkPassword*(this:Validation, key:string): Validation =
   let password = this.params["password"]
