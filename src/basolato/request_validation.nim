@@ -59,7 +59,7 @@ proc domain*(this:RequestValidation, key="domain"):RequestValidation =
   return this
 
 proc strictEmail*(this:RequestValidation, key="email"):RequestValidation =
-  let error = %email(this.params[key])
+  let error = %strictEmail(this.params[key])
   if error.len > 0:
     this.putValidate(key, error)
   return this

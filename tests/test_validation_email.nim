@@ -130,6 +130,7 @@ suite "email valid":
                           errors: newJObject())
                         .strictEmail("email")
       echo address["email"]
+      echo v.errors
       check v.errors.len == 0
 
   test "strictEmail invalid":

@@ -88,15 +88,21 @@ proc domain*(this:Validation, value:string):bool =
   else:
     return true
 
+proc validateDomain(value:string) =
+  let r = domain(value)
+  if r.len > 0:
+    raise newException(Exception, r[0])
+
 proc strictEmail(value:string):seq[string] =
   var r = newSeq[string]()
-  block:
+  var value = value
+  try:
     let valid = "abcdefghijklmnopqrstuvwxyz1234567890!#$%&\'*+-/=?^_`{}|~"
     if value.len == 0:
-      r.add("invalid email format 1")
-    var value = value.toLowerAscii()
+      raise newException(Exception, "invalid email format 1")
+    value = value.toLowerAscii()
     if not value.contains("@"):
-      r.add("email should have '@'")
+      raise newException(Exception, "email should have '@'")
     var i:int
     if value.startsWith("\""):
       i = 1
@@ -108,14 +114,14 @@ proc strictEmail(value:string):seq[string] =
           if value[i+1..^1].len > 0 and (valid & """()<>[]:;@,.\\" """).contains($value[i+1]):
             i.inc(2)
             continue
-          r.add("invalid email format 2")
+          raise newException(Exception, "invalid email format 2")
         if value[i] == '"':
           break
       if i == 64:
         i.dec()
       if not (value[i+1..^1].len > 0 and $value[i+1] == "@"):
-        r.add("invalid email local-part")
-      r = r & domain(value[i+2..^1])
+        raise newException(Exception, "invalid email local-part")
+      validateDomain(value[i+2..^1])
     else:
       i = 0
       while i < min(64, value.len):
@@ -124,20 +130,22 @@ proc strictEmail(value:string):seq[string] =
           continue
         if $value[i] == ".":
           if i == 0 or value[i+1..^1].len == 0 or ".@".contains(value[i+1]):
-            r.add("invalid email local-part")
+            raise newException(Exception, "invalid email local-part")
           i.inc()
           continue
         if $value[i] == "@":
           if i == 0:
-            r.add("email has no local-part")
+            raise newException(Exception, "email has no local-part")
           i.dec()
           break
-        r.add("email includes invalid char")
+        raise newException(Exception, "email includes invalid char")
       if i == 64:
         i.dec
       if not (value[i+1..^1].len > 0 and "@".contains(value[i+1])):
-        r.add("email local-part should be shorter than 64")
-      r = r & domain(value[i+2..^1])
+        raise newException(Exception, "email local-part should be shorter than 64")
+      validateDomain(value[i+2..^1])
+  except:
+    r.add(getCurrentExceptionMsg())
   return r
 
 proc strictEmail*(this:Validation, value:string):bool =
