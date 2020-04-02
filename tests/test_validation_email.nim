@@ -1,5 +1,5 @@
 import unittest, tables, json, times, strutils, strformat
-import ../src/basolato/validation
+import ../src/basolato/request_validation
 
 const valid_addresses = [
   {"email": "email@domain.com"}.toTable(),
@@ -126,15 +126,16 @@ const invalid_addresses = [
 suite "email valid":
   test "strictEmail":
     for address in valid_addresses:
-      let v = Validation(params: address,
+      let v = RequestValidation(params: address,
                           errors: newJObject())
                         .strictEmail("email")
       echo address["email"]
+      echo v.errors
       check v.errors.len == 0
 
   test "strictEmail invalid":
     for address in invalid_addresses:
-      let v = Validation(params: address,
+      let v = RequestValidation(params: address,
                           errors: newJObject())
                         .strictEmail("email")
       echo address["email"]
@@ -145,10 +146,10 @@ suite "email valid":
     for n in 5..12:
       var s = "username@host" & ".abcde".repeat(n) & "."
       var start = now()
-      discard Validation(params: {"email": s}.toTable,
+      discard RequestValidation(params: {"email": s}.toTable,
                           errors: newJObject())
                           .strictEmail("email")
       var diff = now() - start
       debugEcho "--------------"
       debugEcho s
-      debugEcho &"{s.len}: {diff.seconds}.{diff.milliseconds:04}{diff.microseconds:04}"
+      echo &"{s.len}: {diff.seconds}.{diff.milliseconds:04}{diff.microseconds:04}"
