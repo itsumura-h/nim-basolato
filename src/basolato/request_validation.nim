@@ -1,5 +1,4 @@
 import json, re, tables, strformat, strutils, unicode
-from net import isIpAddress
 from jester import Request, params
 include validation
 import allographer/query_builder

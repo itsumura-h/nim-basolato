@@ -1,5 +1,4 @@
 import json, re, tables, strformat, strutils, unicode
-from net import isIpAddress
 
 type Validation* = ref object
 
@@ -20,66 +19,69 @@ proc email*(this:Validation, value:string):bool =
 
 proc domain(value:string):seq[string] =
   var r = newSeq[string]()
-  block:
-    let fqdn = re"^(([a-z0-9]{1,2}|[a-z0-9][a-z0-9-]{0,61}[a-z0-9])\.)*([a-z0-9]{1,2}|[a-z0-9][a-z0-9-]{0,61}?[a-z0-9])$"
-    let addr4 = re"(([01]?[0-9]{1,2}|2(?:[0-4]?[0-9]|5[0-5]))\.){3}([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))"
-    let addr4Start = re"^(([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))\.){3}([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))$"
-    if value.len == 0 or value.len > 255:
-      r.add("domain length is 0")
-    if not value.startsWith("["):
-      if not (not value.match(addr4) and value.match(fqdn)):
-        r.add("invalid domain format")
-      elif value.find(re"\.[0-9]$|^[0-9]+$") > -1:
-        r.add("the last label of domain should not number")
-      else:
-        break
-    if not value.endsWith("]"):
-      r.add("domain lacks ']'")
-    var value = value
-    value.removePrefix("[")
-    value.removeSuffix("]")
-    if value.match(addr4Start):
-      if value != "0.0.0.0":
-        break
-      else:
-        r.add("domain 0.0.0.0 is invalid")
-    if value.endsWith("::"):
-      r.add("IPv6 should not end with '::'")
-    var v4_flg = false
-    var last = ""
-    try:
-      last = value.rsplit(":", maxsplit=1)[^1]
-    except:
-      r.add("invalid domain")
-    if last.match(addr4):
-      if value == "0.0.0.0":
-        r.add("domain 0.0.0.0 is invalid")
-      value = value.replace(last, "0:0")
-      v4_flg = true
-    var oc:int
-    if value.contains("::"):
-      oc = 8 - value.count(":")
-      if oc < 1:
-        r.add("8 blocks is required for IPv6")
-      var ocStr = "0:"
-      value = value.replace("::", &":{ocStr.repeat(oc)}")
-      if value.startsWith(":"):
-        value = &"0{value}"
-      if value.endsWith(":"):
-        value = &"{value}0"
-    var elems = value.split(":")
-    if elems.len != 8:
-      r.add("invalid IP address")
-    var res = 0
-    for i, a in elems:
-      if a.len > 4:
-        r.add("each blick of IP address should be shorter than 4")
+  try:
+    block:
+      let fqdn = re"^(([a-z0-9]{1,2}|[a-z0-9][a-z0-9-]{0,61}[a-z0-9])\.)*([a-z0-9]{1,2}|[a-z0-9][a-z0-9-]{0,61}?[a-z0-9])$"
+      let addr4 = re"(([01]?[0-9]{1,2}|2(?:[0-4]?[0-9]|5[0-5]))\.){3}([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))"
+      let addr4Start = re"^(([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))\.){3}([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))$"
+      if value.len == 0 or value.len > 255:
+        raise newException(Exception, "domain length is 0")
+      if not value.startsWith("["):
+        if not (not value.match(addr4) and value.match(fqdn)):
+          raise newException(Exception, "invalid domain format")
+        elif value.find(re"\.[0-9]$|^[0-9]+$") > -1:
+          raise newException(Exception, "the last label of domain should not number")
+        else:
+          break
+      if not value.endsWith("]"):
+        raise newException(Exception, "domain lacks ']'")
+      var value = value
+      value.removePrefix("[")
+      value.removeSuffix("]")
+      if value.match(addr4Start):
+        if value != "0.0.0.0":
+          break
+        else:
+          raise newException(Exception, "domain 0.0.0.0 is invalid")
+      if value.endsWith("::"):
+        raise newException(Exception, "IPv6 should not end with '::'")
+      var v4_flg = false
+      var last = ""
       try:
-        res += a.parseHexInt shl ((7 - i) * 16)
+        last = value.rsplit(":", maxsplit=1)[^1]
       except:
-        r.add("invalid IPv6 address")
-    if not (res != 0 and (not v4_flg or res shr 32 == 0xffff)):
-      r.add("invalid IPv4-Mapped IPv6 address")
+        raise newException(Exception, "invalid domain")
+      if last.match(addr4):
+        if value == "0.0.0.0":
+          raise newException(Exception, "domain 0.0.0.0 is invalid")
+        value = value.replace(last, "0:0")
+        v4_flg = true
+      var oc:int
+      if value.contains("::"):
+        oc = 8 - value.count(":")
+        if oc < 1:
+          raise newException(Exception, "8 blocks is required for IPv6")
+        var ocStr = "0:"
+        value = value.replace("::", &":{ocStr.repeat(oc)}")
+        if value.startsWith(":"):
+          value = &"0{value}"
+        if value.endsWith(":"):
+          value = &"{value}0"
+      var elems = value.split(":")
+      if elems.len != 8:
+        raise newException(Exception, "invalid IP address")
+      var res = 0
+      for i, a in elems:
+        if a.len > 4:
+          raise newException(Exception, "each blick of IP address should be shorter than 4")
+        try:
+          res += a.parseHexInt shl ((7 - i) * 16)
+        except:
+          raise newException(Exception, "invalid IPv6 address")
+      if not (res != 0 and (not v4_flg or res shr 32 == 0xffff)):
+        raise newException(Exception, "invalid IPv4-Mapped IPv6 address")
+  except:
+    r.add(getCurrentExceptionMsg())
   return r
 
 proc domain*(this:Validation, value:string):bool =

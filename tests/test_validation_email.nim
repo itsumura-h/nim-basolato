@@ -152,4 +152,4 @@ suite "email valid":
       var diff = now() - start
       debugEcho "--------------"
       debugEcho s
-      debugEcho &"{s.len}: {diff.seconds}.{diff.milliseconds:04}{diff.microseconds:04}"
+      echo &"{s.len}: {diff.seconds}.{diff.milliseconds:04}{diff.microseconds:04}"
