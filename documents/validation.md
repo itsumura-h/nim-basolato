@@ -29,7 +29,110 @@ Table of Contents
 
 <!--te-->
 
-Basolato has it's own validation function. It recieves request and check request params.
+Basolato has it's own validation function. It recieves request and check request params.  
+There are two validation type. One is used in controller that recieve request and return errors array.
+Another is more simple. Recieve value and return `bool`.
+
+# Simple Validation
+```
+import basolato/validation
+```
+## Available Rules
+### email
+```nim
+echo Validation().email("sample@example.com")
+>> true
+
+echo Validation().email("sample@example")
+>> false
+```
+
+### domain
+```nim
+echo Validation().domain("example.com")
+>> true
+
+echo Validation().domain("example")
+>> false
+```
+
+### strictEmail
+```nim
+echo Validation().strictEmail("sample@example.com")
+>> true
+
+echo Validation().strictEmail("sample@example")
+>> false
+```
+
+### equals
+```nim
+echo Validation().equals("a", "a")
+>> true
+
+echo Validation().equals(1, 2)
+>> false
+```
+
+### gratorThan
+```nim
+echo Validation().gratorThan(1.2, 1.1)
+>> true
+
+echo Validation().gratorThan(3, 2)
+>> false
+```
+
+### inRange
+```nim
+echo Validation().inRange(2, 1, 3)
+>> true
+
+echo Validation().gratorThan(1.5, 1, 1.4)
+>> false
+```
+
+### ip
+```nim
+echo Validation().ip("12.0.0.1")
+>> true
+
+echo Validation().ip("255.255.255.256")
+>> false
+```
+
+### lessThan
+```nim
+echo Validation().lessThan(1.1, 1.2)
+>> true
+
+echo Validation().lessThan(3, 2)
+>> false
+```
+
+### numeric
+```nim
+echo Validation().numeric("1")
+>> true
+
+echo Validation().numeric("a")
+>> false
+```
+
+### password
+```nim
+echo Validation().password("Password1")
+>> true
+
+echo Validation().password("pass")
+>> false
+```
+
+
+# Request Validation
+```
+import basolato/request_validation
+```
 
 ## sample
 
@@ -81,17 +184,17 @@ proc createHtmlImpl(name:string, email:string, errors:JsonNode): string = tmpli 
 ```
 
 ## Custom Validation
-You can also create your own validation middleware. It should recieve `Validation` object and return it.  
-`putValidate()` proc is useful to create/add error in `Validation` object.
+You can also create your own validation middleware. It should recieve `RequestValidation` object and return it.  
+`putValidate()` proc is useful to create/add error in `RequestValidation` object.
 
 middleware/custom_validate_middleware.nim
 ```nim
 import json, tables
 import bcrypt
 import allographer/query_builder
-import basolato/validation
+import basolato/request_validation
 
-proc checkPassword*(this:Validation, key:string): Validation =
+proc checkPassword*(this:RequestValidation, key:string): RequestValidation =
   let password = this.params["password"]
   let response = RDB().table("users")
                   .select("password")
@@ -120,7 +223,7 @@ This will add errors if not checked in checkbox. Default checked value is `on` a
 ```
 
 ```nim
-validate()
+validate(request)
   .accepted("sample")
   .accepted("sample2", "checked")
 ```
@@ -133,7 +236,7 @@ This will add errors if value in request doesn't contain a expected string.
 ```
 
 ```nim
-validate().contains("email", "user")
+validate(request).contains("email", "user")
 ```
 
 ### email, strictEmail
@@ -145,8 +248,8 @@ This will add errors if value is not match a style of email address.
 ```
 
 ```nim
-validate().email("address")
-validate().strictEmail("address")
+validate(request).email("address")
+validate(request).strictEmail("address")
 ```
 
 ### equals
@@ -157,7 +260,7 @@ This will add errors if value is not same against expectd string.
 ```
 
 ```nim
-validate().equals("name", "John")
+validate(request).equals("name", "John")
 ```
 
 ### exists
@@ -168,7 +271,7 @@ This will add errors if key is not exist in request params.
 ```
 
 ```nim
-validate().exists("name")
+validate(request).exists("name")
 ```
 
 ### gratorThan
@@ -179,7 +282,7 @@ This will add errors if value is not grater/larger than expected value.
 ```
 
 ```nim
-validate().gratorThan("age", 26)
+validate(request).gratorThan("age", 26)
 ```
 
 ### inRange
@@ -190,7 +293,7 @@ This will add errors if value is not in rage of expected value.
 ```
 
 ```nim
-validate().inRange("age", min=20, max=60)
+validate(request).inRange("age", min=20, max=60)
 ```
 
 ### ip
@@ -201,7 +304,7 @@ This will add errors if value is not match a style of IP address.
 ```
 
 ```nim
-validate().ip("ip_address")
+validate(request).ip("ip_address")
 ```
 
 ### isIn
@@ -212,7 +315,7 @@ This will add errors if value is not match for one of expected values.
 ```
 
 ```nim
-validate().isIn("name", ["John", "Paul", "George", "Ringo"])
+validate(request).isIn("name", ["John", "Paul", "George", "Ringo"])
 ```
 
 ### lessThan
@@ -223,7 +326,7 @@ This will add errors if value is not less/smaller than expected value.
 ```
 
 ```nim
-validate().gratorThan("age", 24)
+validate(request).gratorThan("age", 24)
 ```
 
 
@@ -235,7 +338,7 @@ This will add errors if value is not number.
 ```
 
 ```nim
-validate().numeric("num")
+validate(request).numeric("num")
 ```
 
 ### oneOf
@@ -246,7 +349,7 @@ This will add errors if one of expected keys is not present in request.
 ```
 
 ```nim
-validate().oneOf(["name", "birth_date", "job"])
+validate(request).oneOf(["name", "birth_date", "job"])
 ```
 
 ### password
@@ -258,7 +361,7 @@ It needs at least 8 chars, one upper and lower letter, symbol(ex: @-_?!) is avai
 ```
 
 ```nim
-validate().password("pass")
+validate(request).password("pass")
 ```
 
 ### required
@@ -269,7 +372,7 @@ This will add errors if all of expected keys is not present in request.
 ```
 
 ```nim
-validate().required(["name", "email"])
+validate(request).required(["name", "email"])
 ```
 
 ### unique
@@ -289,7 +392,7 @@ table: users
 ```
 
 ```nim
-validate().unique("mail", "users", "email")
+validate(request).unique("mail", "users", "email")
 ```
 |arg position|example|content|
 |---|---|---|
