@@ -22,5 +22,6 @@ routes:
   get "/signup": route(newUsersController(request).create())
 
   get "/users/create": route(newUsersController(request).create())
+  get "/users/@id": route(newUsersController(request).show(@"id"))
 
 runForever()
