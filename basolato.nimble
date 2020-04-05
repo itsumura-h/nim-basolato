@@ -20,7 +20,7 @@ requires "templates >= 0.5"
 requires "bcrypt >= 0.2.1"
 requires "nimAES >= 0.1.2"
 requires "https://github.com/enthus1ast/flatdb >= 0.2.4"
-requires "allographer >= 0.8.0"
+requires "allographer >= 0.9.0"
 
 # import strformat
 # from os import `/`

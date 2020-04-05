@@ -8,7 +8,8 @@ proc migration20200331065251users*() =
     table("users", [
       Column().increments("id"),
       Column().string("name"),
-      Column().string("email"),
+      Column().string("email").unique(),
+      Column().string("password_digest"),
       Column().timestamps()
-    ])
+    ], reset=true)
   ])
