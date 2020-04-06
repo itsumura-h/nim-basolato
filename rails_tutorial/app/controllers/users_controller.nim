@@ -2,10 +2,8 @@ import json
 from strutils import parseInt
 # framework
 import basolato/controller
-# entity
-import ../../domain/entities/users_entity
-# repository
-import ../../domain/repositories/users_repository
+# services
+import ../../domain/services/users_service
 # view
 import ../views/users_view
 
@@ -19,10 +17,11 @@ proc index*(this:UsersController):Response =
   return render("index")
 
 proc show*(this:UsersController, id:string):Response =
-  block:
-    let id = id.parseInt
-    let userData = usersShowRepository(id)
-    return render(usersShowView(userData))
+  let id = id.parseInt
+  let user = newUserService().show(id)
+  if user.kind == JNull:
+    raise newException(Error404, "")
+  return render(usersShowView(user))
 
 proc create*(this:UsersController):Response =
   return render(usersCreateView())

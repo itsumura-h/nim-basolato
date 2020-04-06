@@ -2,6 +2,14 @@ import strutils, re, json
 import bcrypt
 import allographer/query_builder
 
+type UserId = ref object
+  value:int
+
+proc newUserId(value:int):UserId =
+  return UserId(value:value)
+
+proc get(this:UserId):int =
+  return this.value
 
 type Name = ref object
   value:string
@@ -54,12 +62,14 @@ proc get*(this:Password):string =
 # ==============================
 
 type User* = ref object
+  id*:UserId
   name*:Name
   email*:Email
   password*:Password
 
-proc newUser*(name="", email="", password=""):User =
+proc newUser*(id=0, name="", email="", password=""):User =
   return User(
+    id:newUserId(id),
     name:newName(name),
     email:newEmail(email),
     password:newPassword(password)

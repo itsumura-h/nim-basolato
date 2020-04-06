@@ -2,7 +2,8 @@ import json, strformat
 
 import allographer/schema_builder
 import allographer/query_builder
-import ../app/models/users
+import ../domain/entities/users_entity
+import ../domain/repositories/rdb/users_repository
 
 proc migration20200331065251users*() =
   schema([
@@ -10,13 +11,14 @@ proc migration20200331065251users*() =
       Column().increments("id"),
       Column().string("name"),
       Column().string("email").unique(),
-      Column().string("password_digest"),
+      Column().string("password"),
       Column().timestamps()
     ], reset=true)
   ])
 
-  newUser(
+  let user = newUser(
     name="Michael Hartl",
     email="mhartl@example.com",
     password="foobar"
-  ).save()
+  )
+  newUserRepository().store(user)
