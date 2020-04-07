@@ -3,6 +3,18 @@ import json, re, tables, strformat, strutils, unicode
 type Validation* = ref object
 
 
+proc digits(value:string, digit:int):seq[string] =
+  var r = newSeq[string]()
+  if value.len > digit:
+    r.add(&"the number of digits in {value} should less than {digit}")
+  return r
+
+proc digits*(this:Validation, value:string, digit:int):bool =
+  if digits(value, digit).len > 0:
+    return false
+  else:
+    return true
+
 proc email(value:string):seq[string] =
   var r = newSeq[string]()
   if value.len == 0:
@@ -195,6 +207,34 @@ proc inRange*(this:Validation, value, min, max:int|float):bool =
 
 proc ip*(this:Validation, value:string):bool =
   if domain(&"[{value}]").len > 0:
+    return false
+  else:
+    return true
+
+proc isFloat(value:string):seq[string] =
+  var r = newSeq[string]()
+  try:
+    discard value.parseFloat()
+  except:
+    r.add(&"{value} is not float")
+  return r
+
+proc isFloat*(this:Validation, value:string):bool =
+  if isFloat(value).len > 0:
+    return false
+  else:
+    return true
+
+proc isInt(value:string):seq[string] =
+  var r = newSeq[string]()
+  try:
+    discard value.parseInt()
+  except:
+    r.add(&"{value} is not integer")
+  return r
+
+proc isInt*(this:Validation, value:string):bool =
+  if isInt(value).len > 0:
     return false
   else:
     return true

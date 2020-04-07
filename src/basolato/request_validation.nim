@@ -45,6 +45,12 @@ proc contains*(this: RequestValidation, key: string, val: string): RequestValida
       this.putValidate(key, &"{key} should contain {val}")
   return this
 
+proc digits*(this: RequestValidation, key:string, digit:int): RequestValidation =
+  let error = %digits(this.params[key], digit)
+  if error.len > 0:
+    this.putValidate(key, error)
+  return this
+
 proc email*(this: RequestValidation, key="email"): RequestValidation =
   let error = %email(this.params[key])
   if error.len > 0:
@@ -93,6 +99,12 @@ proc ip*(this: RequestValidation, key: string): RequestValidation =
     this.putValidate(key, error)
   return this
 
+proc isFloat*(this:RequestValidation, key:string): RequestValidation =
+  let error = %isFloat(this.params[key])
+  if error.len > 0:
+    this.putValidate(key, error)
+  return this
+
 proc isIn*(this:RequestValidation, key:string,
             vals:openArray[int|float|string]): RequestValidation =
   if this.params.hasKey(key):
@@ -102,6 +114,12 @@ proc isIn*(this:RequestValidation, key:string,
         count.inc
     if count == 0:
       this.putValidate(key, &"{key} should be in {vals}")
+  return this
+
+proc isInt*(this:RequestValidation, key:string): RequestValidation =
+  let error = %isInt(this.params[key])
+  if error.len > 0:
+    this.putValidate(key, error)
   return this
 
 proc lessThan*(this: RequestValidation, key: string, val: float): RequestValidation =

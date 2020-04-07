@@ -1,11 +1,19 @@
+import json, strutils
+import basolato/model
 import allographer/query_builder
 
-proc show*(this:User, id:int):JsonNode =
-  echo this.db.get()
+type User = ref object of Model
 
-proc save*(this:User) =
+proc newUser*():User =
+  return User.newModel()
+
+
+proc show*(this:User, id:int):JsonNode =
+  return this.db.find(id)
+
+proc store*(this:User, name:string, email:string, password:string) =
   this.db.insert(%*{
-    "name": this.name.get,
-    "email": this.email.get,
-    "password_digest": this.password.get
+    "name": name,
+    "email": email,
+    "password": password
   })
