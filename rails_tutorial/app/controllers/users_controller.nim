@@ -4,7 +4,9 @@ from strutils import parseInt
 import basolato/controller
 import basolato/validation
 # model
-import ../models/users
+# import ../active_records/rdb
+# domain
+import ../../domain/users/users
 # view
 import ../../resources/users/create
 import ../../resources/users/show
@@ -25,7 +27,7 @@ proc show*(this:UsersController, id:string):Response =
     return render(Http404, "")
   # business logic
   let id = id.parseInt
-  let user = newUser().show(id)
+  let user = newUser().db.find(id)
   if user.kind == JNull:
     return render(Http404, "")
   # response
