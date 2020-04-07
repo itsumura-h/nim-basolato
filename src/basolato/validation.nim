@@ -3,6 +3,18 @@ import json, re, tables, strformat, strutils, unicode
 type Validation* = ref object
 
 
+proc digits(value:string, digit:int):seq[string] =
+  var r = newSeq[string]()
+  if value.len > digit:
+    r.add(&"the number of digits in {value} should less than {digit}")
+  return r
+
+proc digits*(this:Validation, value:string, digit:int):bool =
+  if digits(value, digit).len > 0:
+    return false
+  else:
+    return true
+
 proc email(value:string):seq[string] =
   var r = newSeq[string]()
   if value.len == 0:
@@ -199,10 +211,65 @@ proc ip*(this:Validation, value:string):bool =
   else:
     return true
 
+proc isBool(value:string):seq[string] =
+  var r = newSeq[string]()
+  try:
+    discard value.parseBool()
+  except:
+    r.add(&"{value} is not float")
+  return r
+
+proc isBool*(this:Validation, value:string):bool =
+  if isBool(value).len > 0:
+    return false
+  else:
+    return true
+
+proc isFloat(value:string):seq[string] =
+  var r = newSeq[string]()
+  try:
+    discard value.parseFloat()
+  except:
+    r.add(&"{value} is not float")
+  return r
+
+proc isFloat*(this:Validation, value:string):bool =
+  if isFloat(value).len > 0:
+    return false
+  else:
+    return true
+
+proc isInt(value:string):seq[string] =
+  var r = newSeq[string]()
+  try:
+    discard value.parseInt()
+  except:
+    r.add(&"{value} is not integer")
+  return r
+
+proc isInt*(this:Validation, value:string):bool =
+  if isInt(value).len > 0:
+    return false
+  else:
+    return true
+
+proc isString(value:string):seq[string] =
+  var r = newSeq[string]()
+  if not value.match(re"^(?=[a-zA-Z]+)(?!.*(true|false)).*$"):
+    r.add(&"{value} is not a string")
+  return r
+
+proc isString*(this:Validation, value:string):bool =
+  if isString(value).len > 0:
+    return false
+  else:
+    return true
+
 proc lessThan(sub, target:int|float):seq[string] =
   var r = newSeq[string]()
   if sub >= target:
     r.add(&"{sub} should be less than {target}")
+  return r
 
 proc lessThan*(this:Validation, sub, target:int|float):bool =
   if lessThan(sub, target).len > 0:

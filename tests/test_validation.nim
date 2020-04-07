@@ -41,6 +41,21 @@ suite "validation":
     check v.errors.len > 0
 
   # ==========================================================================
+  test "digits":
+    var params = {"key": "111"}.toTable()
+    var v = RequestValidation(params: params,
+                        errors: newJObject())
+                        .digits("key", 3)
+    check v.errors.len == 0
+
+  test "digits invalid":
+    var params = {"key": "111"}.toTable()
+    var v = RequestValidation(params: params,
+                        errors: newJObject())
+                        .digits("key", 2)
+    check v.errors.len > 0
+
+  # ==========================================================================
   test "email":
     let valid_addresses = [
       {"email": "user@example.com"}.toTable(),
@@ -176,6 +191,42 @@ suite "validation":
       check v.errors.len > 0
 
   # ==========================================================================
+  test "isBool":
+    var params = {"key": "true"}.toTable()
+    var v = RequestValidation(params: params,
+                        errors: newJObject())
+                        .isBool("key")
+    check v.errors.len == 0
+
+    params = {"key": "false"}.toTable()
+    v = RequestValidation(params: params,
+                        errors: newJObject())
+                        .isBool("key")
+    check v.errors.len == 0
+
+  test "isBool invalid":
+    var params = {"key": "111"}.toTable()
+    var v = RequestValidation(params: params,
+                        errors: newJObject())
+                        .isBool("key")
+    check v.errors.len > 0
+
+  # ==========================================================================
+  test "isFloat":
+    var params = {"key": "1.1"}.toTable()
+    var v = RequestValidation(params: params,
+                        errors: newJObject())
+                        .isFloat("key")
+    check v.errors.len == 0
+
+  test "isFloat invalid":
+    var params = {"key": "a"}.toTable()
+    var v = RequestValidation(params: params,
+                        errors: newJObject())
+                        .isFloat("key")
+    check v.errors.len > 0
+
+  # ==========================================================================
   test "isIn":
     var params = {"name": "John"}.toTable()
     var v = RequestValidation(params: params,
@@ -188,6 +239,48 @@ suite "validation":
     var v = RequestValidation(params: params,
                         errors: newJObject())
                         .isIn("name", ["John", "Paul", "George", "Ringo"])
+    check v.errors.len > 0
+
+  # ==========================================================================
+  test "isInt":
+    var params = {"key": "1"}.toTable()
+    var v = RequestValidation(params: params,
+                        errors: newJObject())
+                        .isInt("key")
+    check v.errors.len == 0
+
+  test "isInt invalid":
+    var params = {"key": "a"}.toTable()
+    var v = RequestValidation(params: params,
+                        errors: newJObject())
+                        .isInt("key")
+    check v.errors.len > 0
+
+  # ==========================================================================
+  test "isString":
+    var params = {"key": "aa"}.toTable()
+    var v = RequestValidation(params: params,
+                        errors: newJObject())
+                        .isString("key")
+    check v.errors.len == 0
+
+  test "isString invalid":
+    var params = {"key": "1"}.toTable()
+    var v = RequestValidation(params: params,
+                        errors: newJObject())
+                        .isString("key")
+    check v.errors.len > 0
+
+    params = {"key": "1.1"}.toTable()
+    v = RequestValidation(params: params,
+                        errors: newJObject())
+                        .isString("key")
+    check v.errors.len > 0
+
+    params = {"key": "true"}.toTable()
+    v = RequestValidation(params: params,
+                        errors: newJObject())
+                        .isString("key")
     check v.errors.len > 0
 
   # ==========================================================================
