@@ -1,19 +1,13 @@
-import typetraits
+import typetraits, strutils
 import allographer/query_builder
 
 type Model* = ref object of RootObj
   db*:RDB
-  name*:string
 
 proc newModel*(this:typedesc, table=""):this.type =
+  var table = table
   if table.len == 0:
-    var table = this.type.name.toLowerAscii & "s"
-    return this.type(
-      db:RDB().table(table),
-      name:table
-    )
-  else:
-    return this.type(
-      db:RDB().table(table),
-      name:table
-    )
+    table = this.type.name.toLowerAscii & "s"
+  return this.type(
+    db:RDB().table(table)
+  )

@@ -51,14 +51,14 @@ proc digits*(this: RequestValidation, key:string, digit:int): RequestValidation 
     this.putValidate(key, error)
   return this
 
-proc email*(this: RequestValidation, key="email"): RequestValidation =
-  let error = %email(this.params[key])
+proc domain*(this:RequestValidation, key="domain"):RequestValidation =
+  let error = %domain(this.params[key])
   if error.len > 0:
     this.putValidate(key, error)
   return this
 
-proc domain*(this:RequestValidation, key="domain"):RequestValidation =
-  let error = %domain(this.params[key])
+proc email*(this: RequestValidation, key="email"): RequestValidation =
+  let error = %email(this.params[key])
   if error.len > 0:
     this.putValidate(key, error)
   return this
@@ -99,6 +99,12 @@ proc ip*(this: RequestValidation, key: string): RequestValidation =
     this.putValidate(key, error)
   return this
 
+proc isBool*(this:RequestValidation, key:string): RequestValidation =
+  let error = %isBool(this.params[key])
+  if error.len > 0:
+    this.putValidate(key, error)
+  return this
+
 proc isFloat*(this:RequestValidation, key:string): RequestValidation =
   let error = %isFloat(this.params[key])
   if error.len > 0:
@@ -118,6 +124,12 @@ proc isIn*(this:RequestValidation, key:string,
 
 proc isInt*(this:RequestValidation, key:string): RequestValidation =
   let error = %isInt(this.params[key])
+  if error.len > 0:
+    this.putValidate(key, error)
+  return this
+
+proc isString*(this:RequestValidation, key:string): RequestValidation =
+  let error = %isString(this.params[key])
   if error.len > 0:
     this.putValidate(key, error)
   return this

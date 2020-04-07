@@ -211,6 +211,20 @@ proc ip*(this:Validation, value:string):bool =
   else:
     return true
 
+proc isBool(value:string):seq[string] =
+  var r = newSeq[string]()
+  try:
+    discard value.parseBool()
+  except:
+    r.add(&"{value} is not float")
+  return r
+
+proc isBool*(this:Validation, value:string):bool =
+  if isBool(value).len > 0:
+    return false
+  else:
+    return true
+
 proc isFloat(value:string):seq[string] =
   var r = newSeq[string]()
   try:
@@ -239,10 +253,23 @@ proc isInt*(this:Validation, value:string):bool =
   else:
     return true
 
+proc isString(value:string):seq[string] =
+  var r = newSeq[string]()
+  if not value.match(re"^(?=[a-zA-Z]+)(?!.*(true|false)).*$"):
+    r.add(&"{value} is not a string")
+  return r
+
+proc isString*(this:Validation, value:string):bool =
+  if isString(value).len > 0:
+    return false
+  else:
+    return true
+
 proc lessThan(sub, target:int|float):seq[string] =
   var r = newSeq[string]()
   if sub >= target:
     r.add(&"{sub} should be less than {target}")
+  return r
 
 proc lessThan*(this:Validation, sub, target:int|float):bool =
   if lessThan(sub, target).len > 0:
