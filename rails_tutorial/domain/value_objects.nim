@@ -43,7 +43,6 @@ proc newEmail*(value:string):Email =
     raise newException(Exception, "Email should be shorter than 255")
   if not value.match(re"\A[\w+\-.]+@[a-zA-Z\d\-]+(\.[a-zA-Z\d\-]+)*\.[a-zA-Z]+\Z"):
     raise newException(Exception, "Invalid Email format")
-  echo %*RDB().table("users").get()
   if RDB().table("users").where("email", "=", value).count() > 0:
     raise newException(Exception, "email should unique")
   return Email(value:value)

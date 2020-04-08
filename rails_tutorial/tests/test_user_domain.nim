@@ -105,6 +105,9 @@ suite "user entity":
     let duplicate_user = user.deepCopy()
     newIUserRepository().repository.store(duplicate_user)
     try:
+      let nameType = newUserName(name)
+      let emailType = newEmail(email)
+      let passwordType = newPassword(password)
       discard newUser(name=nameType, email=emailType, password=passwordType)
       check false
     except:
