@@ -36,7 +36,26 @@ proc create*(this:UsersController):Response =
   return render(createHtml())
 
 proc store*(this:UsersController):Response =
-  return render("store")
+  # request
+  let name = this.request.params["name"]
+  let email = this.request.params["email"]
+  let password = this.request.params["password"]
+  let password_confirm = this.request.params["password_confirm"]
+  let user = %*{"name": name, "email": email}
+  # validation
+  var errors = newSeq[string]()
+  if password != password_confirm:
+    errors.add("password is not match")
+    return render(Http500, createHtml(user, errors))
+  try:
+    # business logig
+    newUserService().store(name=name, email=email, password=password)
+    # response
+    return render("store")
+  except:
+    # response
+    errors.add(getCurrentExceptionMsg())
+    return render(Http500, createHtml(user, errors))
 
 proc edit*(this:UsersController, id:string):Response =
   let id = id.parseInt

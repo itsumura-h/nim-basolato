@@ -15,6 +15,6 @@ proc migration20200331065251users*() =
 
   newUserService().store(
     name="Michael Hartl",
-    email="mhartl@example.com",
+    email="example@railstutorial.org",
     password="foobar"
   )

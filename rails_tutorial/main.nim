@@ -23,5 +23,6 @@ routes:
 
   get "/users/create": route(newUsersController(request).create())
   get "/users/@id": route(newUsersController(request).show(@"id"))
+  post "/users": route(newUsersController(request).store())
 
 runForever()

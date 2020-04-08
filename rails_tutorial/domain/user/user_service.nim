@@ -8,7 +8,7 @@ type UserService* = ref object
 
 proc newUserService*():UserService =
   return UserService(
-    repository:IUserRepository().repository
+    repository:newIUserRepository()
   )
 
 

@@ -7,10 +7,5 @@ export user_rdb_repository
 type IUserRepository* = ref object of RootObj
   repository*:UserRepository
 
-proc newIUserRepository*():IUserRepository =
-  return IUserRepository(
-    repository:newUserRepository()
-  )
-
-# proc newIUserRepository*():UserRepository =
-#   return newUserRepository()
+proc newIUserRepository*():UserRepository =
+  return newUserRepository()

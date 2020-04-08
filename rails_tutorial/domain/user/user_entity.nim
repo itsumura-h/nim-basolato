@@ -19,9 +19,7 @@ proc getHashedPassword*(this:User):string =
   return this.password.getHashed
 
 proc newUser*(id:Id):User =
-  return User(
-    id:id
-  )
+  return User(id:id)
 
 proc newUser*(name:UserName, email:Email, password:Password):User =
   return User(

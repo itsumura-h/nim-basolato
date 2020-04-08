@@ -55,9 +55,9 @@ type Password* = ref object
 
 proc newPassword*(value:string):Password =
   if value.len < 6:
-    raise newException(Exception, "email should at least 6 chard")
+    raise newException(Exception, "password should at least 6 chard")
   if value.match(re"\s"):
-    raise newException(Exception, "email should not blank")
+    raise newException(Exception, "password should not be blank")
   return Password(value:value)
 
 proc get*(this:Password):string =

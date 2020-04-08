@@ -1,3 +1,4 @@
+/* mixins, variables, etc. */
 /* universal */
 body {
   padding-top: 60px;
@@ -37,7 +38,7 @@ h2 {
   margin-bottom: 30px;
   text-align: center;
   font-weight: normal;
-  color: #777;
+  color: #777777;
 }
 
 p {
@@ -50,7 +51,7 @@ p {
   float: left;
   margin-right: 10px;
   font-size: 1.7em;
-  color: #fff;
+  color: white;
   text-transform: uppercase;
   letter-spacing: -1px;
   padding-top: 9px;
@@ -58,7 +59,7 @@ p {
 }
 
 #logo:hover {
-  color: #fff;
+  color: white;
   text-decoration: none;
 }
 
@@ -67,15 +68,15 @@ footer {
   margin-top: 45px;
   padding-top: 5px;
   border-top: 1px solid #eaeaea;
-  color: #777;
+  color: #777777;
 }
 
 footer a {
-  color: #555;
+  color: #555555;
 }
 
 footer a:hover {
-  color: #222;
+  color: #222222;
 }
 
 footer small {
@@ -90,5 +91,66 @@ footer ul {
 footer ul li {
   float: left;
   margin-left: 15px;
+}
+
+/* miscellaneous */
+.debug_dump {
+  clear: both;
+  float: left;
+  width: 100%;
+  margin-top: 45px;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+/* sidebar */
+aside section.user_info {
+  margin-top: 20px;
+}
+
+aside section {
+  padding: 10px 0;
+  margin-top: 20px;
+}
+
+aside section:first-child {
+  border: 0;
+  padding-top: 0;
+}
+
+aside section span {
+  display: block;
+  margin-bottom: 3px;
+  line-height: 1;
+}
+
+aside section h1 {
+  font-size: 1.4em;
+  text-align: left;
+  letter-spacing: -1px;
+  margin-bottom: 3px;
+  margin-top: 0px;
+}
+
+.gravatar {
+  float: left;
+  margin-right: 10px;
+}
+
+.gravatar_edit {
+  margin-top: 15px;
+}
+
+/* forms */
+input, textarea, select, .uneditable-input {
+  border: 1px solid #bbb;
+  width: 100%;
+  margin-bottom: 15px;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+input {
+  height: auto !important;
 }
 /*# sourceMappingURL=custom.css.map */
