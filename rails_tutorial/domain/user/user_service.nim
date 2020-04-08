@@ -1,7 +1,7 @@
 import json
 import ../value_objects
 import user_entity
-import repositories/user_repository_interface
+import user_repository_interface
 
 type UserService* = ref object
   repository:UserRepository

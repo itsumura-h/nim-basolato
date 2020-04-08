@@ -1,4 +1,8 @@
+import strutils, re
 import bcrypt
+import allographer/query_builder
+
+import json
 
 type Id* = ref object
   value:int
@@ -15,6 +19,12 @@ type UserName* = ref object
   value:string
 
 proc newUserName*(value:string):UserName =
+  if isNilOrWhitespace(value):
+    raise newException(Exception, "Name can't be blank")
+  if value.len == 0:
+    raise newException(Exception, "Name can't be blank")
+  if value.len > 50:
+    raise newException(Exception, "Name should be shorter than 50")
   return UserName(value:value)
 
 proc get*(this:UserName):string =
@@ -24,6 +34,18 @@ type Email* = ref object
   value:string
 
 proc newEmail*(value:string):Email =
+  var value = value.toLowerAscii
+  if isNilOrWhitespace(value):
+    raise newException(Exception, "Email can't be blank")
+  if value.len == 0:
+    raise newException(Exception, "Email can't be blank")
+  if value.len > 255:
+    raise newException(Exception, "Email should be shorter than 255")
+  if not value.match(re"\A[\w+\-.]+@[a-zA-Z\d\-]+(\.[a-zA-Z\d\-]+)*\.[a-zA-Z]+\Z"):
+    raise newException(Exception, "Invalid Email format")
+  echo %*RDB().table("users").get()
+  if RDB().table("users").where("email", "=", value).count() > 0:
+    raise newException(Exception, "email should unique")
   return Email(value:value)
 
 proc get*(this:Email):string =
@@ -34,7 +56,9 @@ type Password* = ref object
 
 proc newPassword*(value:string):Password =
   if value.len < 6:
-    raise newException(Exception, "password should at least 6 chars")
+    raise newException(Exception, "email should at least 6 chard")
+  if value.match(re"\s"):
+    raise newException(Exception, "email should not blank")
   return Password(value:value)
 
 proc get*(this:Password):string =
