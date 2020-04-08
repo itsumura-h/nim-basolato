@@ -1,11 +1,25 @@
 import json
-import users_repository
+import ../value_objects
+import user_entity
+import repositories/user_repository_interface
 
 type UserService* = ref object
+  repository:UserRepository
 
-proc newUserService():UserService =
-  return UserService()
+proc newUserService*():UserService =
+  return UserService(
+    repository:IUserRepository().repository
+  )
 
 
 proc show*(this:UserService, id:int):JsonNode =
-  return newUserRepository().show(id)
+  let id = newId(id)
+  let user = newUser(id)
+  return this.repository.show(user)
+
+proc store*(this:UserService, name="", email="", password="") =
+  let name = newUserName(name)
+  let email = newEmail(email)
+  let password = newPassword(password)
+  let user = newUser(name=name, email=email, password=password)
+  this.repository.store(user)

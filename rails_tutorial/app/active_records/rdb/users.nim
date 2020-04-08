@@ -1,7 +1,7 @@
 import strutils
-import basolato/model
+import basolato/active_record
 
-type User = ref object of Model
+type User = ref object of ActiveRecord
 
-proc newUser*():User =
-  return User.newModel()
+proc newUser*():RDB =
+  return User.newActiveRecord()

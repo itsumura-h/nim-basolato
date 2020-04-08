@@ -1,12 +1,10 @@
-import json, typeinfo
+import json
 from strutils import parseInt
 # framework
 import basolato/controller
 import basolato/validation
-# model
-# import ../active_records/rdb
-# domain
-import ../../domain/users/users
+# service
+import ../../domain/user/user_service
 # view
 import ../../resources/users/create
 import ../../resources/users/show
@@ -25,12 +23,13 @@ proc show*(this:UsersController, id:string):Response =
   let v = Validation()
   if not v.isInt(id):
     return render(Http404, "")
-  # business logic
+  # request
   let id = id.parseInt
-  let user = newUser().db.find(id)
+  # business logic
+  let user = newUserService().show(id)
+  # response
   if user.kind == JNull:
     return render(Http404, "")
-  # response
   return render(showHtml(user))
 
 proc create*(this:UsersController):Response =
@@ -40,9 +39,8 @@ proc store*(this:UsersController):Response =
   return render("store")
 
 proc edit*(this:UsersController, id:string):Response =
-  block:
-    let id = id.parseInt
-    return render("edit")
+  let id = id.parseInt
+  return render("edit")
 
 proc update*(this:UsersController, id:string):Response =
   let id = id.parseInt

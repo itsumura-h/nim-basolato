@@ -1,9 +1,6 @@
-import json, strformat
-import bcrypt
-
 import allographer/schema_builder
 import allographer/query_builder
-import ../app/models/users
+import ../domain/user/user_service
 
 proc migration20200331065251users*() =
   schema([
@@ -16,8 +13,8 @@ proc migration20200331065251users*() =
     ], reset=true)
   ])
 
-  newUser().store(
+  newUserService().store(
     name="Michael Hartl",
     email="mhartl@example.com",
-    password="foobar".hash(genSalt(10))
+    password="foobar"
   )

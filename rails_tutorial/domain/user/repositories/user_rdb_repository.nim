@@ -1,0 +1,19 @@
+import json
+import ../../../app/active_records/rdb
+import ../user_entity
+
+type UserRepository* = ref object
+
+proc newUserRepository*():UserRepository =
+  return UserRepository()
+
+
+proc show*(this:UserRepository, user:User):JsonNode =
+  return newUser().find(user.getId)
+
+proc store*(this:UserRepository, user:User) =
+  newUser().insert(%*{
+    "name": user.getName(),
+    "email": user.getEmail(),
+    "password": user.getHashedPassword()
+  })
