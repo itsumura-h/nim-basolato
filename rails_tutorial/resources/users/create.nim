@@ -5,11 +5,18 @@ import ../layouts/application
 proc impl(user:JsonNode, errors:seq[string]):string = tmpli html"""
 <h1>Sign up</h1>
 <div class="row">
-  <ul>
-    $for error in errors {
-      <li>$error</li>
-    }
-  </ul
+  $if errors.len > 0{
+    <div id="error_explanation">
+      <div class="alert alert-danger">
+        The form contains $(errors.len) erros
+      </div>
+      <ul>
+        $for error in errors {
+          <li>$error</li>
+        }
+      </ul>
+    </div>
+  }
   <div class="col-md-6 col-md-offset-3">
     <form method="post" action="/users">
       $(csrf_token())

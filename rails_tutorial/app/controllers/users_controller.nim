@@ -42,16 +42,15 @@ proc store*(this:UsersController):Response =
   let password = this.request.params["password"]
   let password_confirm = this.request.params["password_confirm"]
   let user = %*{"name": name, "email": email}
-  # validation
   var errors = newSeq[string]()
-  if password != password_confirm:
-    errors.add("password is not match")
-    return render(Http500, createHtml(user, errors))
   try:
+    # validation
+    if password != password_confirm:
+      raise newException(Exception, "password is not match")
     # business logig
     newUserService().store(name=name, email=email, password=password)
     # response
-    return render("store")
+    return redirect("/users")
   except:
     # response
     errors.add(getCurrentExceptionMsg())

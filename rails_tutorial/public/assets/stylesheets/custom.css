@@ -153,4 +153,13 @@ input, textarea, select, .uneditable-input {
 input {
   height: auto !important;
 }
+
+#error_explanation {
+  color: red;
+}
+
+#error_explanation ul {
+  color: red;
+  margin: 0 0 30px 0;
+}
 /*# sourceMappingURL=custom.css.map */
