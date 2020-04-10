@@ -309,7 +309,7 @@ type CsrfToken* = ref object
   token:Token
 
 
-proc newCsrfToken*(token:string):CsrfToken =
+proc newCsrfToken*(token=""):CsrfToken =
   return CsrfToken(token: newToken(token))
 
 proc getToken*(this:CsrfToken): string =
