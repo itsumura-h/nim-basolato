@@ -1,7 +1,7 @@
 import os, json, httpcore, strutils
 
 const
-  basolatoVersion* = "0.3.0"
+  basolatoVersion* = "0.3.1"
   IS_DISPLAY* = getEnv("LOG_IS_DISPLAY").string.parseBool
   IS_FILE* = getEnv("LOG_IS_FILE").string.parseBool
   LOG_DIR* = getEnv("LOG_DIR").string
