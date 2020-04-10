@@ -1,7 +1,15 @@
 import json, httpcore
 
 const
-  basolatoVersion* = "0.3.0"
+  basolatoVersion* = "0.3.1"
+  IS_DISPLAY* = getEnv("LOG_IS_DISPLAY").string.parseBool
+  IS_FILE* = getEnv("LOG_IS_FILE").string.parseBool
+  LOG_DIR* = getEnv("LOG_DIR").string
+  SECRET_KEY* = getEnv("SECRET_KEY").string
+  CSRF_TIME* = getEnv("CSRF_TIME").string.parseInt
+  SESSION_TIME* = getEnv("SESSION_TIME").string.parseInt
+  SESSION_DB_PATH* = getEnv("SESSION_DB_PATH").string
+  IS_SESSION_MEMORY* = getEnv("IS_SESSION_MEMORY").string.parseBool
 
 type
   Response* = ref object
