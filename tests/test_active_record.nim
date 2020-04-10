@@ -1,7 +1,7 @@
 import unittest, json
 import allographer/schema_builder
 import allographer/query_builder
-import ../src/basolato/model
+import ../src/basolato/active_record
 
 schema([
   table("samples", [
@@ -16,12 +16,12 @@ RDB().table("samples").insert([
   %*{"name": "Ringo"},
 ])
 
-suite "model":
+suite "active record":
   test "success":
-    type Sample = ref object of Model
+    type Sample = ref object of ActiveRecord
 
-    proc newSample():Sample =
-      return Sample.newModel()
+    proc newSample():RDB =
+      return Sample.newActiveRecord()
 
     let sample = newSample()
-    check "John" == sample.db.find(1)["name"].getStr
+    check "John" == sample.find(1)["name"].getStr
