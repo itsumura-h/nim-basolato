@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.2.9" # https://github.com/itsumura-h/nim-basolato/issues/53
+version       = "0.3.0" # https://github.com/itsumura-h/nim-basolato/issues/62
 author        = "Hidenobu Itsumura @dumblepytech1 as 'medy'"
 description   = "A fullstack web framework library for Nim"
 license       = "MIT"
