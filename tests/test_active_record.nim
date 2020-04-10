@@ -9,6 +9,7 @@ schema([
     Column().string("name")
   ], reset=true)
 ])
+
 RDB().table("samples").insert([
   %*{"name": "John"},
   %*{"name": "Paul"},

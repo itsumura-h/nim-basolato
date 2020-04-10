@@ -18,7 +18,7 @@ proc impl(user:JsonNode, errors:seq[string]):string = tmpli html"""
     </div>
   }
   <div class="col-md-6 col-md-offset-3">
-    <form method="post" action="/users">
+    <form method="post" action="/signup">
       $(csrf_token())
       <label>Name</label>
       <input type="text" name="name" value="$(user["name"].get)" class="form-control">

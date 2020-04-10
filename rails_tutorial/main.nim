@@ -20,6 +20,7 @@ routes:
   get "/about": route(newStaticPageController(request).about())
   get "/contact": route(newStaticPageController(request).contact())
   get "/signup": route(newUsersController(request).create())
+  post "/signup": route(newUsersController(request).store())
 
   get "/users/create": route(newUsersController(request).create())
   get "/users/@id": route(newUsersController(request).show(@"id"))
