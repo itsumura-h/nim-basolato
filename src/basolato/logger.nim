@@ -1,5 +1,5 @@
 import logging, os, terminal
-import base
+import baseEnv
 
 proc logger*(output: any, args:varargs[string]) =
   if IS_DISPLAY:

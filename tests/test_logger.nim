@@ -1,5 +1,5 @@
 import unittest, os, strformat, strutils
-import ../src/basolato/base
+import ../src/basolato/baseEnv
 import ../src/basolato/logger
 
 
