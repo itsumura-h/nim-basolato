@@ -1,5 +1,5 @@
 # framework
-import basolato/routing
+import ../src/basolato/routing
 # middleware
 import middlewares/custom_headers_middleware
 import middlewares/framework_middleware

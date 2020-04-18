@@ -1,6 +1,6 @@
 from strutils import parseInt
 # framework
-import basolato/controller
+import ../../../src/basolato/controller
 # view
 import ../../resources/static_pages/home
 import ../../resources/static_pages/help

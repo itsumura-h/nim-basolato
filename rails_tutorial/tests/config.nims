@@ -1,3 +1,3 @@
 import os
 
-putEnv("DB_CONNECTION", "/root/project/rails_tutorial/db.test.sqlite3")
+putEnv("DB_CONNECTION", "/root/project/rails_tutorial/db.sqlite3")

@@ -1,6 +1,6 @@
 from strutils import parseInt
 # framework
-import basolato/controller
+import ../../../src/basolato/controller
 
 
 type ApplicationController* = ref object of Controller

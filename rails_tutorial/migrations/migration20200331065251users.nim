@@ -13,7 +13,7 @@ proc migration20200331065251users*() =
     ], reset=true)
   ])
 
-  newUserService().store(
+  discard newUserService().store(
     name="Michael Hartl",
     email="example@railstutorial.org",
     password="foobar"

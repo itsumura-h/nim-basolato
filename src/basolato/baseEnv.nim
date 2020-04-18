@@ -7,5 +7,5 @@ const
   SECRET_KEY* = getEnv("SECRET_KEY").string
   CSRF_TIME* = getEnv("CSRF_TIME").string.parseInt
   SESSION_TIME* = getEnv("SESSION_TIME").string.parseInt
-  SESSION_DB_PATH* = getEnv("SESSION_DB_PATH").string
+  SESSION_DB_PATH* = getEnv("SESSION_DB").string
   IS_SESSION_MEMORY* = getEnv("IS_SESSION_MEMORY").string.parseBool

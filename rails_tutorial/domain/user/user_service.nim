@@ -17,9 +17,11 @@ proc show*(this:UserService, id:int):JsonNode =
   let user = newUser(id)
   return this.repository.show(user)
 
-proc store*(this:UserService, name="", email="", password="") =
+proc store*(this:UserService, name="", email="", password=""):int =
   let name = newUserName(name)
   let email = newEmail(email)
   let password = newPassword(password)
   let user = newUser(name=name, email=email, password=password)
-  this.repository.store(user)
+  let id = this.repository.store(user)
+  let userId = newId(id).get()
+  return userId

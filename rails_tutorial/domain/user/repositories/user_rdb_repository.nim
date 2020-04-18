@@ -11,8 +11,8 @@ proc newUserRepository*():UserRepository =
 proc show*(this:UserRepository, user:User):JsonNode =
   return newUser().find(user.getId)
 
-proc store*(this:UserRepository, user:User) =
-  newUser().insert(%*{
+proc store*(this:UserRepository, user:User):int =
+  newUser().insertID(%*{
     "name": user.getName(),
     "email": user.getEmail(),
     "password": user.getHashedPassword()

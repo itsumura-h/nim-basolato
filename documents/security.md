@@ -171,9 +171,11 @@ proc newSession*(token="", typ:SessionType=File):Session =
 
 proc getToken*(this:Session):string =
 
-proc get*(this:Session, key:string):string =
-
 proc set*(this:Session, key, value:string):Session =
+
+proc some*(this:SessionDb, key:string):bool =
+
+proc get*(this:Session, key:string):string =
 
 proc delete*(this:Session, key:string): Session =
 
@@ -186,20 +188,23 @@ proc index(this:Controller): Response =
   let sessionId = newSession().getToken()
 ```
 
-get value in session
-```nim
-proc index(this:Controller): Response =
-  let sessionId = newCookie(this.request).get("session_id")
-  let key = this.request.params["key"]
-  let value = newSession(sessionId).get(key)
-```
-
 set value in session
 ```nim
 proc store(this:Controller): Response =
   let key = this.request.params["key"]
   let value = this.request.params["value"]
   discard newSession().set(key, value)
+```
+
+check and get value in session
+```nim
+proc index(this:Controller): Response =
+  let sessionId = newCookie(this.request).get("session_id")
+  let key = this.request.params["key"]
+  let session = newSession(sessionId)
+  var value:string
+  if session.some(key):
+    value = session.get(key)
 ```
 
 delete one key-value pair of session
@@ -237,9 +242,11 @@ proc isLogin*(this:Auth):bool =
 
 proc getToken*(this:Auth):string =
 
-proc get*(this:Auth, key:string):string =
-
 proc set*(this:Auth, key, value:string):Auth =
+
+proc some*(this:Auth, key:string):bool =
+
+proc get*(this:Auth, key:string):string =
 
 proc delete*(this:Auth, key:string):AUth =
 
@@ -263,6 +270,14 @@ proc index(this:Controller): Response =
   let name = this.request.params["name"]
   let auth = this.auth.set("login_name", name)
   return render("auth").setAuth(auth)
+```
+
+check and get value in auth
+```nim
+proc index(this:Controller): Response =
+  var loginName:string
+  if this.auth.some("login_name"):
+    loginName = this.auth.get("login_name")
 ```
 
 delete one key-value pair of session

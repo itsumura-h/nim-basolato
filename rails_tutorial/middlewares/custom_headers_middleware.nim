@@ -1,5 +1,5 @@
 from strutils import join
-import basolato/middleware
+import ../../src/basolato/middleware
 
 
 proc corsHeader*(): Headers =

@@ -103,7 +103,7 @@ suite "user entity":
     let passwordType = newPassword(password)
     let user = newUser(name=nameType, email=emailType, password=passwordType)
     let duplicate_user = user.deepCopy()
-    newIUserRepository().repository.store(duplicate_user)
+    newIUserRepository().store(duplicate_user)
     try:
       let nameType = newUserName(name)
       let emailType = newEmail(email)

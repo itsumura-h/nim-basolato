@@ -111,6 +111,12 @@ suite "SessionDb":
     echo result
     check result == "value1"
 
+  test "some":
+    let result = sessionDb
+                  .set("key1", "value1")
+    check result.some("key1") == true
+    check result.some("key2") == false
+
   test "delete":
     let result = sessionDb
                   .set("key2", "value2")
@@ -120,7 +126,7 @@ suite "SessionDb":
 
   test "destroy":
     let sessionDb = newSessionDb()
-                      .set("key_sessionDb", "value sessionDb")
+      .set("key_sessionDb", "value sessionDb")
     sessionDb.destroy()
     var result = ""
     try:
@@ -138,8 +144,17 @@ suite "Session":
   test "set":
     let token = sessionDb.getToken()
     echo token
-    discard newSession(token)
-              .set("key_session", "value_session")
+    try:
+      discard newSession(token)
+                .set("key_session", "value_session")
+      check true
+    except:
+      check false
+
+  test "some":
+    let token = sessionDb.getToken()
+    check newSession(token).some("key_session") == true
+    check newSession(token).some("false") == false
 
   test "get":
     let token = sessionDb.getToken()

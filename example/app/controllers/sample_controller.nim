@@ -87,6 +87,7 @@ proc customHeaders*(this:SampleController): Response =
                 .set("Controller-Header-Key1", "Controller-Header-Val1")
                 .set("Controller-Header-Key1", "Controller-Header-Val2")
                 .set("Controller-Header-Key2", ["val1", "val2", "val3"])
+                .set("setHeaderTest", "aaaa")
   return render("with header").setHeader(header)
 
 # ========== Cookie ==================== 
@@ -126,7 +127,6 @@ proc indexLogin*(this:SampleController): Response =
 proc storeLogin*(this:SampleController): Response =
   let name = this.request.params["name"]
   let password = this.request.params["password"]
-  echo name, password
   # auth
   let auth = newAuth().set("name", name)
   return redirect("/sample/login").setAuth(auth)

@@ -65,6 +65,13 @@ proc set*(this:SessionDb, key, value:string):SessionDb =
   db.flush()
   return this
 
+proc some*(this:SessionDb, key:string):bool =
+  let db = this.conn
+  if db[this.token].getOrDefault(key).isNil():
+    return false
+  else:
+    return true
+
 proc get*(this:SessionDb, key:string): string =
   let db = this.conn
   return db[this.token].getOrDefault(key).getStr("")
@@ -104,6 +111,9 @@ proc set*(this:Session, key, value:string):Session =
   discard this.db.set(key, value)
   return this
 
+proc some*(this:Session, key:string):bool =
+  this.db.some(key)
+
 proc get*(this:Session, key:string):string =
   this.db.get(key)
 
@@ -113,6 +123,7 @@ proc delete*(this:Session, key:string): Session =
 
 proc destroy*(this:Session) =
   this.db.destroy()
+
 
 # ========== Cookie ====================
 type
@@ -265,20 +276,26 @@ proc isLogin*(this:Auth):bool =
 proc getToken*(this:Auth):string =
   this.session.getToken()
 
+proc set*(this:Auth, key, value:string):Auth =
+  if this.isLogin:
+    discard this.session.set(key, value)
+  return this
+
+proc some*(this:Auth, key:string):bool =
+  if this.session.isNil:
+    return false
+  else:
+    return this.session.some(key)
+
 proc get*(this:Auth, key:string):string =
   if this.isLogin:
     return this.session.get(key)
   else:
     return ""
 
-proc set*(this:Auth, key, value:string):Auth =
-  if this.isLogin:
-    discard this.session.set(key, value)
+proc delete*(this:Auth, key:string):AUth =
+  discard this.session.delete(key)
   return this
-
-# proc delete*(this:Auth, key:string):AUth =
-#   discard this.session.delete(key)
-#   return this
 
 proc destroy*(this:Auth) =
   this.session.destroy()
@@ -302,9 +319,8 @@ proc getToken*(this:Token):string =
 proc toTimestamp*(this:Token): int =
   return this.getToken().decryptCtr().parseInt()
 
-# ========== CsrfToken ====================
-# import karax / [karaxdsl, vdom]
 
+# ========== CsrfToken ====================
 type CsrfToken* = ref object
   token:Token
 
@@ -318,10 +334,6 @@ proc getToken*(this:CsrfToken): string =
 proc csrfToken*(token=""):string =
   var token = newCsrfToken(token).getToken()
   return &"""<input type="hidden" name="csrf_token" value="{token}">"""
-
-# proc csrfTokenKarax*(token=""):VNode =
-#   var token = newCsrfToken(token).getToken()
-#   return buildHtml(input(type="hidden", name="csrf_token", value=token))
 
 proc checkCsrfTimeout*(this:CsrfToken):bool =
   var timestamp:int

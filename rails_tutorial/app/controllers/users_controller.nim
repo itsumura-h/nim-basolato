@@ -1,8 +1,12 @@
-import json
+import json, strformat
 from strutils import parseInt
 # framework
-import basolato/controller
-import basolato/validation
+import ../../../src/basolato/controller
+# import ../../../src/basolato/security
+# import basolato/validation
+import ../../../src/basolato/request_validation
+# middleware
+import ../../middlewares/custom_validate_middleware
 # service
 import ../../domain/user/user_service
 # view
@@ -12,8 +16,9 @@ import ../../resources/users/show
 type UsersController* = ref object of Controller
 
 proc newUsersController*(request:Request):UsersController =
-  return UsersController.newController(request)
-
+  let c = UsersController.newController(request)
+  c.auth = newAuth(request)
+  return c
 
 proc index*(this:UsersController):Response =
   return render("index")
@@ -27,34 +32,51 @@ proc show*(this:UsersController, id:string):Response =
   let id = id.parseInt
   # business logic
   let user = newUserService().show(id)
-  # response
-  if user.kind == JNull:
-    return render(Http404, "")
-  return render(showHtml(user))
+  # flash
+  if this.auth.some("flash_success"):
+    let flash = %*{"success": this.auth.get("flash_success")}
+    let auth = this.auth.delete("flash_success")
+    return render(showHtml(user, flash=flash)).setAuth(auth)
+  else:
+    # response
+    if user.kind == JNull:
+      return render(Http404, "")
+    return render(showHtml(user))
 
 proc create*(this:UsersController):Response =
   return render(createHtml())
 
 proc store*(this:UsersController):Response =
   # request
-  let name = this.request.params["name"]
-  let email = this.request.params["email"]
-  let password = this.request.params["password"]
-  let password_confirm = this.request.params["password_confirm"]
-  let user = %*{"name": name, "email": email}
-  var errors = newSeq[string]()
+  let params = this.request.params()
+  let name = params["name"]
+  let email = params["email"]
+  let password = params["password"]
+  
+  var v = this.request.validate()
   try:
     # validation
-    if password != password_confirm:
-      raise newException(Exception, "password is not match")
-    # business logig
-    newUserService().store(name=name, email=email, password=password)
+    v = v.filled(["name", "email", "password", "password_confirm"])
+      .length("name", 0, 50)
+      .length("email", 0, 255)
+      .length("password", 6, 1000)
+      .password("password")
+      .equalInput("password", "password_confirm")
+    # business logic
+    if v.errors.len > 0:
+      raise newException(Exception, "")
+    let userId = newUserService().store(name=name, email=email, password=password)
+    # flash
+    let auth = newAuth()
+      .set("name", name)
+      .set("flash_success", "Welcome to the Sample App!")
     # response
-    return redirect("/users")
+    return redirect( &"/users/{userId}" ).setAuth(auth)
   except:
     # response
-    errors.add(getCurrentExceptionMsg())
-    return render(Http500, createHtml(user, errors))
+    v.errors["exception"] = %[getCurrentExceptionMsg()]
+    let user = %*{"name": name, "email": email}
+    return render(Http500, createHtml(user, v.errors))
 
 proc edit*(this:UsersController, id:string):Response =
   let id = id.parseInt

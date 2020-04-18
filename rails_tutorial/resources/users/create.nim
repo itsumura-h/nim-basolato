@@ -1,24 +1,14 @@
 import json
 import basolato/view
 import ../layouts/application
+import ../shared/error_messages
 
-proc impl(user:JsonNode, errors:seq[string]):string = tmpli html"""
+proc impl(user:JsonNode, errors:JsonNode):string = tmpli html"""
 <h1>Sign up</h1>
 <div class="row">
-  $if errors.len > 0{
-    <div id="error_explanation">
-      <div class="alert alert-danger">
-        The form contains $(errors.len) erros
-      </div>
-      <ul>
-        $for error in errors {
-          <li>$error</li>
-        }
-      </ul>
-    </div>
-  }
   <div class="col-md-6 col-md-offset-3">
     <form method="post" action="/signup">
+      $(error_messages(errors))
       $(csrf_token())
       <label>Name</label>
       <input type="text" name="name" value="$(user["name"].get)" class="form-control">
@@ -38,7 +28,7 @@ proc impl(user:JsonNode, errors:seq[string]):string = tmpli html"""
 </div>
 """
 
-proc createHtml*(user:JsonNode=newJNull(), errors=newSeq[string]()):string =
+proc createHtml*(user:JsonNode=newJNull(), errors=newJNull()):string =
   var user = user
   if user.kind == JNull:
     user = %*{"name": "", "email": ""}
