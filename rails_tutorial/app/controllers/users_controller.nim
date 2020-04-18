@@ -33,15 +33,11 @@ proc show*(this:UsersController, id:string):Response =
   # business logic
   let user = newUserService().show(id)
   # flash
-  if this.auth.some("flash_success"):
-    let flash = %*{"success": this.auth.get("flash_success")}
-    let auth = this.auth.delete("flash_success")
-    return render(showHtml(user, flash=flash)).setAuth(auth)
-  else:
-    # response
-    if user.kind == JNull:
-      return render(Http404, "")
-    return render(showHtml(user))
+  let flash = this.auth.getFlash()
+  # response
+  if user.kind == JNull:
+    return render(Http404, "")
+  return render(showHtml(user, flash=flash))
 
 proc create*(this:UsersController):Response =
   return render(createHtml())
@@ -62,14 +58,14 @@ proc store*(this:UsersController):Response =
       .length("password", 6, 1000)
       .password("password")
       .equalInput("password", "password_confirm")
-    # business logic
     if v.errors.len > 0:
       raise newException(Exception, "")
+    # business logic
     let userId = newUserService().store(name=name, email=email, password=password)
     # flash
     let auth = newAuth()
-      .set("name", name)
-      .set("flash_success", "Welcome to the Sample App!")
+    auth.set("name", name)
+    auth.setFlash("success", "Welcome to the Sample App!")
     # response
     return redirect( &"/users/{userId}" ).setAuth(auth)
   except:

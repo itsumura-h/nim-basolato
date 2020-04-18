@@ -16,5 +16,5 @@ proc impl(user:JsonNode):string = tmpli html"""
 </div>
 """
 
-proc showHtml*(user:JsonNode, flash=newJObject()):string =
+proc showHtml*(user:JsonNode, flash:JsonNode):string =
   applicationHtml(user["name"].getStr, impl(user), flash)

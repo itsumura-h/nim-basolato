@@ -271,15 +271,14 @@ proc newAuth*():Auth =
   )
 
 proc isLogin*(this:Auth):bool =
-  this.isLogin
+  return this.isLogin
 
 proc getToken*(this:Auth):string =
   this.session.getToken()
 
-proc set*(this:Auth, key, value:string):Auth =
+proc set*(this:Auth, key, value:string) =
   if this.isLogin:
     discard this.session.set(key, value)
-  return this
 
 proc some*(this:Auth, key:string):bool =
   if this.session.isNil:
@@ -293,12 +292,27 @@ proc get*(this:Auth, key:string):string =
   else:
     return ""
 
-proc delete*(this:Auth, key:string):AUth =
+proc delete*(this:Auth, key:string) =
   discard this.session.delete(key)
-  return this
 
 proc destroy*(this:Auth) =
   this.session.destroy()
+
+
+# ========== Flash ====================
+proc setFlash*(this:Auth, key, value:string) =
+  let key = "flash_" & key
+  this.set(key, value)
+
+proc getFlash*(this:Auth):JsonNode =
+  result = newJObject()
+  if this.isLogin:
+    for key, val in this.session.db.conn[this.session.db.token].pairs:
+      if key.contains("flash_"):
+        var newKey = key
+        newKey.delete(0, 5)
+        result[newKey] = val
+        this.delete(key)
 
 
 # ========== Token ====================

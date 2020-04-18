@@ -256,6 +256,10 @@ proc setAuth*(response:Response, auth:Auth):Response =
   # expire of session_id is updated.
 
 proc destroyAuth*(response:Response, auth:Auth):Response =
+
+proc setFlash*(this:Auth, key, value:string) =
+
+proc getFlash*(this:Auth):JsonNode =
 ```
 
 get auth
@@ -291,4 +295,19 @@ destroy auth
 ```nim
 proc destroy(this:Controller): Response =
   return render("auth").destroyAuth(this.auth)
+```
+
+set flash message
+```nim
+proc store*(this:Controller):Response =
+  let auth = newAuth()
+  auth.setFlash("success", "Welcome to the Sample App!")
+  return redirect("/auth").setAuth(auth)
+```
+
+get flash message
+```nim
+proc show*(this:Controller):Response =
+  let flash = this.auth.getFlash()
+  return render(showHtml(user, flash=flash))
 ```
