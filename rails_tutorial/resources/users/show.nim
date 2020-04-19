@@ -1,4 +1,4 @@
-import json, md5
+import json
 import basolato/view
 import ../layouts/application
 import ../helper

@@ -17,3 +17,10 @@ proc store*(this:UserRepository, user:User):int =
     "email": user.getEmail(),
     "password": user.getHashedPassword()
   })
+
+proc getPasswordByEmail*(this:UserRepository, user:User):string =
+  return newUser()
+    .select("password")
+    .where("email", "=", user.getEmail())
+    .first()["password"]
+    .getStr()

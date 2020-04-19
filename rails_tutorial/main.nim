@@ -7,6 +7,7 @@ import middlewares/framework_middleware
 import app/controllers/application_controller
 import app/controllers/static_page_controller
 import app/controllers/users_controller
+import app/controllers/login_controller
 
 routes:
   # Framework
@@ -25,5 +26,9 @@ routes:
   get "/users/create": route(newUsersController(request).create())
   get "/users/@id": route(newUsersController(request).show(@"id"))
   post "/users": route(newUsersController(request).store())
+
+  get "/login": route(newLoginController(request).create())
+  post "/login": route(newLoginController(request).store())
+  get "/logout": route(newLoginController(request).destroy())
 
 runForever()

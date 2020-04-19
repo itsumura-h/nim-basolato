@@ -2,8 +2,6 @@ import json, strformat
 from strutils import parseInt
 # framework
 import ../../../src/basolato/controller
-# import ../../../src/basolato/security
-# import basolato/validation
 import ../../../src/basolato/request_validation
 # middleware
 import ../../middlewares/custom_validate_middleware
@@ -16,9 +14,7 @@ import ../../resources/users/show
 type UsersController* = ref object of Controller
 
 proc newUsersController*(request:Request):UsersController =
-  let c = UsersController.newController(request)
-  c.auth = newAuth(request)
-  return c
+  return UsersController.newController(request)
 
 proc index*(this:UsersController):Response =
   return render("index")
@@ -64,6 +60,7 @@ proc store*(this:UsersController):Response =
     let userId = newUserService().store(name=name, email=email, password=password)
     # flash
     let auth = newAuth()
+    auth.login()
     auth.set("name", name)
     auth.setFlash("success", "Welcome to the Sample App!")
     # response

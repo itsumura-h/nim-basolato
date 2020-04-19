@@ -107,9 +107,8 @@ proc db*(this:Session):SessionDb =
 proc getToken*(this:Session):string =
   this.db.getToken()
 
-proc set*(this:Session, key, value:string):Session =
+proc set*(this:Session, key, value:string) =
   discard this.db.set(key, value)
-  return this
 
 proc some*(this:Session, key:string):bool =
   this.db.some(key)
@@ -249,36 +248,29 @@ proc destroy*(this:Cookie, path="/"):Cookie =
 
 # ========== Auth ====================
 type Auth* = ref object
-  isLogin*:bool
   session*:Session
 
 proc newAuth*(request:Request):Auth =
   ## use in constructor
   var sessionId = newCookie(request).get("session_id")
-  if sessionId.len > 0:
-    return Auth(
-      isLogin: true,
-      session:newSession(sessionId)
-    )
-  else:
-    return Auth(isLogin:false)
+  return Auth(session:newSession(sessionId))
+  # if sessionId.len > 0:
+  #   return Auth(session:newSession(sessionId))
+  # else:
+  #   return Auth(session:newSession())
 
 proc newAuth*():Auth =
   ## use in action method
-  return Auth(
-    isLogin: true,
-    session:newSession()
-  )
-
-proc isLogin*(this:Auth):bool =
-  return this.isLogin
+  let session = newSession()
+  session.set("isLogin", "false")
+  session.set("created_at", $getTime())
+  return Auth(session:session)
 
 proc getToken*(this:Auth):string =
   this.session.getToken()
 
 proc set*(this:Auth, key, value:string) =
-  if this.isLogin:
-    discard this.session.set(key, value)
+  this.session.set(key, value)
 
 proc some*(this:Auth, key:string):bool =
   if this.session.isNil:
@@ -287,16 +279,27 @@ proc some*(this:Auth, key:string):bool =
     return this.session.some(key)
 
 proc get*(this:Auth, key:string):string =
-  if this.isLogin:
+  if this.session.get("isLogin").parseBool():
     return this.session.get(key)
   else:
-    return ""
+    ""
 
 proc delete*(this:Auth, key:string) =
   discard this.session.delete(key)
 
 proc destroy*(this:Auth) =
   this.session.destroy()
+
+proc login*(this:Auth) =
+  this.set("isLogin", "true")
+
+proc logout*(this:Auth) =
+  this.set("isLogin", "false")
+
+proc isLogin*(this:Auth):bool =
+  if this.some("isLogin"):
+    return this.get("isLogin").parseBool
+  return false
 
 
 # ========== Flash ====================

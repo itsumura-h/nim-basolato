@@ -15,9 +15,11 @@ type Controller* = ref object of RootObj
   auth*:Auth
 
 proc newController*(this:typedesc, request:Request): this.type =
-  var auth = Auth(isLogin:false)
+  var auth = Auth()
   if request.cookies.hasKey("session_id"):
-    auth = request.newAuth()
+    auth = newAuth(request)
+  else:
+    auth = newAuth()
   return this.type(
     request:request,
     auth: auth

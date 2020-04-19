@@ -25,3 +25,13 @@ proc store*(this:UserService, name="", email="", password=""):int =
   let id = this.repository.store(user)
   let userId = newId(id).get()
   return userId
+
+proc login*(this:UserService, email="", password="") =
+  let email = newEmail(email)
+  let password = newPassword(password)
+  let user = newUser(email=email, password=password)
+  let hashedPassword = this.repository.getPasswordByEmail(user)
+  if hashedPassword.len == 0:
+    raise newException(Exception, "Invalid email")
+  if not user.isMatchPassword(hashedPassword):
+    raise newException(Exception, "password is not match")

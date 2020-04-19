@@ -3,7 +3,7 @@ import utils
 
 proc makeView*(target:string, message:var string):int =
   let targetPath = &"{getCurrentDir()}/resources/{target}Html.nim"
-  let targetName = target.split("/").max()
+  let targetName = target.split("/")[^1]
   let targetCaptalized = capitalizeAscii(targetName)
 
   var VIEW = &"""

@@ -1,3 +1,4 @@
+import bcrypt
 import ../value_objects
 
 type User* = ref object
@@ -15,9 +16,14 @@ proc getName*(this:User):string =
 proc getEmail*(this:User):string =
   return this.email.get
 
+proc getPassword*(this:User):string =
+  return this.password.get
+
 proc getHashedPassword*(this:User):string =
   return this.password.getHashed
 
+
+# =============================================================================
 proc newUser*(id:Id):User =
   return User(id:id)
 
@@ -28,5 +34,14 @@ proc newUser*(name:UserName, email:Email, password:Password):User =
     password:password
   )
 
-# =============================================================================
+proc newUser*(email:Email, password:Password):User =
+  # Login
+  return User(
+    email:email,
+    password:password
+  )
 
+# =============================================================================
+proc isMatchPassword*(this:User, hashedPasswod:string):bool =
+  let password = this.getPassword()
+  return compare(hashedPasswod, password)

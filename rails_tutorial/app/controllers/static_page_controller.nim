@@ -15,7 +15,7 @@ proc newStaticPageController*(request:Request):StaticPageController =
 
 
 proc home*(this:StaticPageController):Response =
-  return render(homeHtml())
+  return render(homeHtml()).setAuth(this.auth)
 
 proc help*(this:StaticPageController):Response =
   return render(helpHtml())

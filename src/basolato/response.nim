@@ -52,16 +52,11 @@ proc setCookie*(response:Response, cookie:Cookie):Response =
 
 # ========== Auth ====================
 proc setAuth*(response:Response, auth:Auth):Response =
-  ## If not logged in, do nothing.
-  ## If logged in but not updated any session value,
-  ## expire of session_id is updated.
-
-  if auth.isLogin:
-    let sessionId = auth.getToken()
-    let cookie = newCookieData("session_id", sessionId,
-                      timeForward(SESSION_TIME, Minutes))
-                  .toCookieStr()
-    response.headers.add(("Set-cookie", cookie))
+  let sessionId = auth.getToken()
+  let cookie = newCookieData("session_id", sessionId,
+                timeForward(SESSION_TIME, Minutes))
+                .toCookieStr()
+  response.headers.add(("Set-cookie", cookie))
   return response
 
 
