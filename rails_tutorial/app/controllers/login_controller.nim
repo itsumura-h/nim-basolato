@@ -1,12 +1,12 @@
-import json
+import json, strformat
 from strutils import parseInt
 # framework
 import ../../../src/basolato/controller
 import ../../../src/basolato/request_validation
 # middleware
 import ../../middlewares/custom_validate_middleware
-# service
-import ../../domain/user/user_service
+# usecase
+import ../../domain/usecases/login_usecase
 # view
 import ../../resources/login/createHtml
 
@@ -35,10 +35,10 @@ proc store*(this:LoginController):Response =
     if v.errors.len > 0:
       raise newException(Exception, "")
     # business logic
-    newUserService().login(email=email, password=password)
+    let userId = newLoginUsecase().login(email, password)
     # response
     this.auth.login()
-    return redirect("/")
+    return redirect(&"/users/{userId}")
   except:
     # response
     v.errors["exception"] = %[getCurrentExceptionMsg()]

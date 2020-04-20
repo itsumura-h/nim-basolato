@@ -1,6 +1,6 @@
 import allographer/schema_builder
 import allographer/query_builder
-import ../domain/user/user_service
+import ../domain/usecases/users_usecase
 
 proc migration20200331065251users*() =
   schema([
@@ -13,7 +13,7 @@ proc migration20200331065251users*() =
     ], reset=true)
   ])
 
-  discard newUserService().store(
+  discard newUsersUsecase().store(
     name="Michael Hartl",
     email="example@railstutorial.org",
     password="foobar"

@@ -5,8 +5,8 @@ import ../../../src/basolato/controller
 import ../../../src/basolato/request_validation
 # middleware
 import ../../middlewares/custom_validate_middleware
-# service
-import ../../domain/user/user_service
+# usecase
+import ../../domain/usecases/users_usecase
 # view
 import ../../resources/users/create
 import ../../resources/users/show
@@ -27,7 +27,7 @@ proc show*(this:UsersController, id:string):Response =
   # request
   let id = id.parseInt
   # business logic
-  let user = newUserService().show(id)
+  let user = newUsersUsecase().show(id)
   # flash
   let flash = this.auth.getFlash()
   # response
@@ -57,7 +57,7 @@ proc store*(this:UsersController):Response =
     if v.errors.len > 0:
       raise newException(Exception, "")
     # business logic
-    let userId = newUserService().store(name=name, email=email, password=password)
+    let userId = newUsersUsecase().store(name=name, email=email, password=password)
     # flash
     let auth = newAuth()
     auth.login()
@@ -67,7 +67,9 @@ proc store*(this:UsersController):Response =
     return redirect( &"/users/{userId}" ).setAuth(auth)
   except:
     # response
-    v.errors["exception"] = %[getCurrentExceptionMsg()]
+    let msg = getCurrentExceptionMsg()
+    if msg.len > 0:
+      v.errors["exception"] = %[msg]
     let user = %*{"name": name, "email": email}
     return render(Http500, createHtml(user, v.errors))
 

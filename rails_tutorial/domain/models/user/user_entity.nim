@@ -1,4 +1,5 @@
 import bcrypt
+import allographer/query_builder
 import ../value_objects
 
 type User* = ref object
@@ -28,6 +29,10 @@ proc newUser*(id:Id):User =
   return User(id:id)
 
 proc newUser*(name:UserName, email:Email, password:Password):User =
+  # signin
+  if not email.isUnique():
+    raise newException(Exception, "email should unique")
+
   return User(
     name:name,
     email:email,
@@ -40,8 +45,3 @@ proc newUser*(email:Email, password:Password):User =
     email:email,
     password:password
   )
-
-# =============================================================================
-proc isMatchPassword*(this:User, hashedPasswod:string):bool =
-  let password = this.getPassword()
-  return compare(hashedPasswod, password)

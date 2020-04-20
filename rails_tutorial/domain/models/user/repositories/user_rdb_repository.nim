@@ -1,6 +1,7 @@
 import json
-import ../../../app/active_records/rdb
+import ../../../../app/active_records/rdb
 import ../user_entity
+import ../../value_objects
 
 type UserRepository* = ref object
 
@@ -18,9 +19,7 @@ proc store*(this:UserRepository, user:User):int =
     "password": user.getHashedPassword()
   })
 
-proc getPasswordByEmail*(this:UserRepository, user:User):string =
+proc getUserDataByEmail*(this:UserRepository, email:Email):JsonNode =
   return newUser()
-    .select("password")
-    .where("email", "=", user.getEmail())
-    .first()["password"]
-    .getStr()
+    .where("email", "=", email.get())
+    .first()
