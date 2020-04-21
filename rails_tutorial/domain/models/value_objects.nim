@@ -1,5 +1,6 @@
 import strutils, re
 import bcrypt
+import ../../../src/basolato/baseEnv
 import allographer/query_builder
 
 import json
@@ -19,7 +20,7 @@ type UserName* = ref object
   value:string
 
 proc newUserName*(value:string):UserName =
-  if isNilOrWhitespace(value):
+  if isEmptyOrWhitespace(value):
     raise newException(Exception, "Name can't be blank")
   if value.len == 0:
     raise newException(Exception, "Name can't be blank")
@@ -35,7 +36,7 @@ type Email* = ref object
 
 proc newEmail*(value:string):Email =
   var value = value.toLowerAscii
-  if isNilOrWhitespace(value):
+  if isEmptyOrWhitespace(value):
     raise newException(Exception, "Email can't be blank")
   if value.len == 0:
     raise newException(Exception, "Email can't be blank")
@@ -68,5 +69,5 @@ proc get*(this:Password):string =
   return this.value
 
 proc getHashed*(this:Password):string =
-  return this.value.hash(genSalt(8))
+  return this.value.hash(SALT)
 # =============================================================================

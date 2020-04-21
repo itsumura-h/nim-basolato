@@ -41,7 +41,9 @@ proc store*(this:LoginController):Response =
     return redirect(&"/users/{userId}")
   except:
     # response
-    v.errors["exception"] = %[getCurrentExceptionMsg()]
+    let msg = getCurrentExceptionMsg()
+    if msg.len > 0:
+      v.errors["exception"] = %[msg]
     let user = %*{"email": email}
     return render(Http500, createHtml(user, v.errors))
 

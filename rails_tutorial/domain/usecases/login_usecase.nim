@@ -18,10 +18,11 @@ proc newLoginUsecase*():LoginUsecase =
 proc login*(this:LoginUsecase, email="", inputPassword=""):int =
   let email = newEmail(email)
   let inputPassword = newPassword(inputPassword)
-  let user = newUser(email=email, password=inputPassword)
+  let draftUser = newUser(email=email, password=inputPassword)
   let userData = this.repository.getUserDataByEmail(email)
   let dbPassword = userData["password"].getStr()
   if dbPassword.len == 0:
-    raise newException(Exception, "Invalid email")
-  if not this.service.isMatchPassword(user, dbPassword):
-    raise newException(Exception, "password is not match")
+    raise newException(Exception, "Invalid email or password")
+  if not this.service.isMatchPassword(draftUser, dbPassword):
+    raise newException(Exception, "Invalid email or password")
+  return userData["id"].getInt()

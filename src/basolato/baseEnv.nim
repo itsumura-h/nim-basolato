@@ -4,6 +4,7 @@ const
   IS_DISPLAY* = getEnv("LOG_IS_DISPLAY").string.parseBool
   IS_FILE* = getEnv("LOG_IS_FILE").string.parseBool
   LOG_DIR* = getEnv("LOG_DIR").string
+  SALT* = getEnv("SALT").string
   SECRET_KEY* = getEnv("SECRET_KEY").string
   CSRF_TIME* = getEnv("CSRF_TIME").string.parseInt
   SESSION_TIME* = getEnv("SESSION_TIME").string.parseInt
