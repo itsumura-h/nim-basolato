@@ -66,6 +66,7 @@ proc destroyAuth*(response:Response, auth:Auth):Response =
     let cookie = newCookieData("session_id", sessionId, timeForward(-1, Days))
                   .toCookieStr()
     response.headers.add(("Set-cookie", cookie))
+    auth.destroy()
   else:
     echoErrorMsg("Tried to destroy auth but not logged in")
   return response

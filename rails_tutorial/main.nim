@@ -29,6 +29,6 @@ routes:
 
   get "/login": route(newLoginController(request).create())
   post "/login": route(newLoginController(request).store())
-  get "/logout": route(newLoginController(request).destroy())
+  post "/logout": route(newLoginController(request).destroy())
 
 runForever()

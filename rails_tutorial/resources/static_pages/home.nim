@@ -1,5 +1,7 @@
-import basolato/view
+import json
+import ../../../src/basolato/view
 import ../layouts/application
+
 
 proc impl():string = tmpli html"""
 <div class="center jumbotron">
@@ -17,5 +19,5 @@ proc impl():string = tmpli html"""
 <a href="http://rubyonrails.org/"><img src="https://railstutorial.jp/rails.png" alt="Rails logo"></img></a>
 """
 
-proc homeHtml*():string =
-  applicationHtml("", impl())
+proc homeHtml*(this:View):string =
+  this.applicationHtml("", impl())

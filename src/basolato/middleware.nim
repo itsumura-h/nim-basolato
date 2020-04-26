@@ -41,7 +41,7 @@ proc checkCsrfToken*(request:Request):Check =
 proc checkAuthToken*(request:Request):Check =
   result = Check(status:true)
   try:
-    var sessionId = newCookie(request).get("session_id")
+    let sessionId = newCookie(request).get("session_id")
     if sessionId.len > 0:
       discard newAuth(request).getToken()
   except:

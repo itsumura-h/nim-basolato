@@ -16,6 +16,7 @@ type UsersController* = ref object of Controller
 proc newUsersController*(request:Request):UsersController =
   return UsersController.newController(request)
 
+
 proc index*(this:UsersController):Response =
   return render("index")
 
@@ -33,10 +34,10 @@ proc show*(this:UsersController, id:string):Response =
   # response
   if user.kind == JNull:
     return render(Http404, "")
-  return render(showHtml(user, flash=flash))
+  return render(this.view.showHtml(user, flash))
 
 proc create*(this:UsersController):Response =
-  return render(createHtml())
+  return render(this.view.createHtml())
 
 proc store*(this:UsersController):Response =
   # request
@@ -58,20 +59,21 @@ proc store*(this:UsersController):Response =
       raise newException(Exception, "")
     # business logic
     let userId = newUsersUsecase().store(name=name, email=email, password=password)
+    # auth
+    this.auth.login()
+    this.auth.set("id", $userId)
+    this.auth.set("name", name)
     # flash
-    let auth = newAuth()
-    auth.login()
-    auth.set("name", name)
-    auth.setFlash("success", "Welcome to the Sample App!")
+    this.auth.setFlash("success", "Welcome to the Sample App!")
     # response
-    return redirect( &"/users/{userId}" ).setAuth(auth)
+    return redirect( &"/users/{userId}" )
   except:
     # response
     let msg = getCurrentExceptionMsg()
     if msg.len > 0:
       v.errors["exception"] = %[msg]
     let user = %*{"name": name, "email": email}
-    return render(Http500, createHtml(user, v.errors))
+    return render(Http500, this.view.createHtml(user, v.errors))
 
 proc edit*(this:UsersController, id:string):Response =
   let id = id.parseInt

@@ -50,6 +50,9 @@ proc newSessionDb*(token=""):SessionDb =
   discard db.load()
   if token.len > 0:
     var token = token.decryptCtr()
+    echo "=============="
+    echo token
+
     checkTokenValid(db, token)
     return SessionDb(conn: db, token:token)
   else:
@@ -57,7 +60,7 @@ proc newSessionDb*(token=""):SessionDb =
     return SessionDb(conn: db, token:token)
 
 proc getToken*(this:SessionDb): string =
-  this.token.encryptCtr()
+  return this.token.encryptCtr()
 
 proc set*(this:SessionDb, key, value:string):SessionDb =
   let db = this.conn
@@ -67,14 +70,14 @@ proc set*(this:SessionDb, key, value:string):SessionDb =
 
 proc some*(this:SessionDb, key:string):bool =
   let db = this.conn
-  if db[this.token].getOrDefault(key).isNil():
+  if db[this.token]{key}.isNil():
     return false
   else:
     return true
 
 proc get*(this:SessionDb, key:string): string =
   let db = this.conn
-  return db[this.token].getOrDefault(key).getStr("")
+  return db[this.token]{key}.getStr("")
 
 proc delete*(this:SessionDb, key:string):SessionDb =
   let db = this.conn
@@ -102,19 +105,19 @@ proc newSession*(token="", typ:SessionType=File):Session =
     return Session(db:newSessionDb(token))
 
 proc db*(this:Session):SessionDb =
-  this.db
+  return this.db
 
 proc getToken*(this:Session):string =
-  this.db.getToken()
+  return this.db.getToken()
 
 proc set*(this:Session, key, value:string) =
   discard this.db.set(key, value)
 
 proc some*(this:Session, key:string):bool =
-  this.db.some(key)
+  return this.db.some(key)
 
 proc get*(this:Session, key:string):string =
-  this.db.get(key)
+  return this.db.get(key)
 
 proc delete*(this:Session, key:string): Session =
   discard this.db.delete(key)
@@ -254,10 +257,6 @@ proc newAuth*(request:Request):Auth =
   ## use in constructor
   var sessionId = newCookie(request).get("session_id")
   return Auth(session:newSession(sessionId))
-  # if sessionId.len > 0:
-  #   return Auth(session:newSession(sessionId))
-  # else:
-  #   return Auth(session:newSession())
 
 proc newAuth*():Auth =
   ## use in action method
@@ -267,7 +266,7 @@ proc newAuth*():Auth =
   return Auth(session:session)
 
 proc getToken*(this:Auth):string =
-  this.session.getToken()
+  return this.session.getToken()
 
 proc set*(this:Auth, key, value:string) =
   this.session.set(key, value)
@@ -282,7 +281,7 @@ proc get*(this:Auth, key:string):string =
   if this.session.get("isLogin").parseBool():
     return this.session.get(key)
   else:
-    ""
+    return ""
 
 proc delete*(this:Auth, key:string) =
   discard this.session.delete(key)
@@ -298,8 +297,9 @@ proc logout*(this:Auth) =
 
 proc isLogin*(this:Auth):bool =
   if this.some("isLogin"):
-    return this.get("isLogin").parseBool
-  return false
+    return this.session.get("isLogin").parseBool()
+  else:
+    return false
 
 
 # ========== Flash ====================

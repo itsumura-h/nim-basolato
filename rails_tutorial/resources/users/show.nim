@@ -1,5 +1,5 @@
 import json
-import basolato/view
+import ../../../src/basolato/view
 import ../layouts/application
 import ../helper
 
@@ -16,5 +16,5 @@ proc impl(user:JsonNode):string = tmpli html"""
 </div>
 """
 
-proc showHtml*(user:JsonNode, flash:JsonNode):string =
-  applicationHtml(user["name"].getStr, impl(user), flash)
+proc showHtml*(this:View, user=newJObject(), flash=newJObject()):string =
+  this.applicationHtml(user["name"].getStr, impl(user), flash)

@@ -11,6 +11,6 @@ proc newUserService*():UserService =
   )
 
 
-proc isMatchPassword*(this:UserService, user:User, dbPassword:string):bool =
-  let inputPassword = user.getHashedPassword()
+proc isMatchPassword*(this:UserService, draftUser:User, dbPassword:string):bool =
+  let inputPassword = draftUser.getHashedPassword()
   return compare(inputPassword, dbPassword)

@@ -8,7 +8,7 @@ import ../../middlewares/custom_validate_middleware
 # usecase
 import ../../domain/usecases/login_usecase
 # view
-import ../../resources/login/createHtml
+import ../../resources/login/create
 
 type LoginController* = ref object of Controller
 
@@ -17,7 +17,7 @@ proc newLoginController*(request:Request):LoginController =
 
 
 proc create*(this:LoginController):Response =
-  return render(createHtml())
+  return render(this.view.createHtml())
 
 proc store*(this:LoginController):Response =
   # request
@@ -35,9 +35,17 @@ proc store*(this:LoginController):Response =
     if v.errors.len > 0:
       raise newException(Exception, "")
     # business logic
-    let userId = newLoginUsecase().login(email, password)
-    # response
+    let user = newLoginUsecase().login(email, password)
+    # auth
+    let userId = user["id"].getInt()
+    let userName = user["name"].getStr()
+    if this.auth.isNil():
+      this.auth = newAuth()
     this.auth.login()
+    this.auth.set("id", $userId)
+    this.auth.set("name", userName)
+    this.auth.setFlash("success", "Success to login")
+    # response
     return redirect(&"/users/{userId}")
   except:
     # response
@@ -45,10 +53,10 @@ proc store*(this:LoginController):Response =
     if msg.len > 0:
       v.errors["exception"] = %[msg]
     let user = %*{"email": email}
-    return render(Http500, createHtml(user, v.errors))
+    return render(Http500, this.view.createHtml(user, v.errors))
 
 proc destroy*(this:LoginController):Response =
-  return render("destroy")
+  return redirect("/").destroyAuth(this.auth)
 
 
 

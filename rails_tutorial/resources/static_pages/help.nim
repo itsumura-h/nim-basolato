@@ -1,4 +1,5 @@
-import basolato/view
+import json
+import ../../../src/basolato/view
 import ../layouts/application
 
 proc impl*():string = tmpli html"""
@@ -11,5 +12,5 @@ proc impl*():string = tmpli html"""
 </p>
 """
 
-proc helpHtml*():string =
-  applicationHtml("Help", impl())
+proc helpHtml*(this:View):string =
+  this.applicationHtml("Help", impl())

@@ -14,7 +14,7 @@ proc impl(user:JsonNode, errors:JsonNode):string = tmpli html"""
       <input type="text" name="email" value="$(user["email"].get)" class="form-control">
 
       <label>Password</label>
-      <input type="text" name="password" class="form-control">
+      <input type="password" name="password" class="form-control">
 
       <button type="submit" class="btn btn-primary form-control">Log in</button>
     </form>
@@ -23,8 +23,8 @@ proc impl(user:JsonNode, errors:JsonNode):string = tmpli html"""
 </div>
 """
 
-proc createHtml*(user=newJNull(), errors=newJNull()):string =
+proc createHtml*(this:View, user=newJNull(), errors=newJNull()):string =
   var user = user
   if user.kind == JNull:
     user = %*{"name": "", "email": ""}  
-  applicationHtml("Log in", impl(user, errors))
+  this.applicationHtml("Log in", impl(user, errors))

@@ -15,16 +15,20 @@ proc newStaticPageController*(request:Request):StaticPageController =
 
 
 proc home*(this:StaticPageController):Response =
-  return render(homeHtml()).setAuth(this.auth)
+  if this.auth.isNil():
+    let auth = newAuth()
+    return render(this.view.homeHtml()).setAuth(auth)
+  else:
+    return render(this.view.homeHtml())
 
 proc help*(this:StaticPageController):Response =
-  return render(helpHtml())
+  return render(this.view.helpHtml())
 
 proc about*(this:StaticPageController):Response =
-  return render(aboutHtml())
+  return render(this.view.aboutHtml())
 
 proc contact*(this:StaticPageController):Response =
-  return render(contactHtml())
+  return render(this.view.contactHtml())
 
 
 

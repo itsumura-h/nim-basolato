@@ -1,6 +1,6 @@
 import json
 # framework
-import base, security, response, header
+import base, security, response, header, view
 # 3rd party
 import jester except redirect, setCookie, setHeader, resp
 
@@ -13,17 +13,21 @@ export jester except redirect, setCookie, setHeader, resp
 type Controller* = ref object of RootObj
   request*:Request
   auth*:Auth
+  view*:View
 
 proc newController*(this:typedesc, request:Request): this.type =
-  var auth = Auth()
   if request.cookies.hasKey("session_id"):
-    auth = newAuth(request)
+    let auth = newAuth(request)
+    return this.type(
+      request:request,
+      auth: auth,
+      view: newView(auth)
+    )
   else:
-    auth = newAuth()
-  return this.type(
-    request:request,
-    auth: auth
-  )
+    return this.type(
+      request:request,
+      view:newView()
+    )
 
 # String
 proc render*(body:string):Response =

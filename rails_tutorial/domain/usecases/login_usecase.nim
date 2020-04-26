@@ -14,15 +14,19 @@ proc newLoginUsecase*():LoginUsecase =
     repository:newIUserRepository(),
   )
 
-
-proc login*(this:LoginUsecase, email="", inputPassword=""):int =
+proc login*(this:LoginUsecase, email="", inputPassword=""):JsonNode =
   let email = newEmail(email)
   let inputPassword = newPassword(inputPassword)
   let draftUser = newUser(email=email, password=inputPassword)
   let userData = this.repository.getUserDataByEmail(email)
-  let dbPassword = userData["password"].getStr()
-  if dbPassword.len == 0:
+  # user not found
+  if userData.kind == JNull:
     raise newException(Exception, "Invalid email or password")
+  let dbPassword = userData["password"].getStr()
+  # password not match
   if not this.service.isMatchPassword(draftUser, dbPassword):
     raise newException(Exception, "Invalid email or password")
-  return userData["id"].getInt()
+  return %*{
+    "id":userData["id"].getInt(),
+    "name":userData["name"].getStr()
+  }

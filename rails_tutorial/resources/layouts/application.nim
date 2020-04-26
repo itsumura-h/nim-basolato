@@ -1,5 +1,5 @@
 import strformat, json
-import basolato/view
+import ../../../src/basolato/view
 
 import head, shim, header, footer
 
@@ -10,7 +10,7 @@ proc fullTitle*(title:string):string =
   else:
     return &"{title} | {baseTitle}"
 
-proc applicationHtml*(title:string, body:string, flash=newJObject()):string = tmpli html"""
+proc applicationHtml*(this:View, title:string, body:string, flash=newJObject()):string = tmpli html"""
 <!DOCTYPE html>
 <html>
   <head>
@@ -19,7 +19,7 @@ proc applicationHtml*(title:string, body:string, flash=newJObject()):string = tm
     $(shimHtml())
   </head>
   <body>
-    $(headerHtml())
+    $(headerHtml(this.auth))
     <div class="container">
       $for key, val in flash{
         <div class="alert alert-$key">$(val.get())</div>
