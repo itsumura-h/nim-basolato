@@ -1,6 +1,6 @@
-import httpcore, json, options, os, times
+import httpcore, json, options, os, times, strutils
 # framework
-import base, baseEnv, header, security, logger
+import ./base, ./baseEnv, ./header, ./security, ./logger
 # 3rd party
 import httpbeast
 from jester import RawHeaders, CallbackAction, ResponseData
@@ -53,9 +53,16 @@ proc setCookie*(response:Response, cookie:Cookie):Response =
 # ========== Auth ====================
 proc setAuth*(response:Response, auth:Auth):Response =
   let sessionId = auth.getToken()
-  let cookie = newCookieData("session_id", sessionId,
-                timeForward(SESSION_TIME, Minutes))
-                .toCookieStr()
+  let cookie = if SESSION_TIME.len > 0:
+    newCookieData(
+      "session_id",
+      sessionId,
+      timeForward(SESSION_TIME.parseInt, Minutes)
+    )
+    .toCookieStr()
+  else:
+    newCookieData("session_id", sessionId).toCookieStr()
+
   response.headers.add(("Set-cookie", cookie))
   return response
 
@@ -80,6 +87,7 @@ proc response*(arg:ResponseData):Response =
     status: arg[1],
     headers: arg[2].get,
     body: arg[3],
+    bodyString: arg[3],
     match: arg[4]
   )
 
@@ -92,8 +100,7 @@ proc response*(status:HttpCode, body:string): Response =
 
 proc html*(r_path:string):string =
   ## arg r_path is relative path from /resources/
-  block:
-    let path = getCurrentDir() & "/resources/" & r_path
-    let f = open(path, fmRead)
-    result = $(f.readAll)
-    defer: f.close()
+  let path = getCurrentDir() & "/resources/" & r_path
+  let f = open(path, fmRead)
+  result = $(f.readAll)
+  defer: f.close()
