@@ -1,7 +1,7 @@
 import unittest, strutils
-import ../domain/value_objects
-import ../domain/user/user_entity
-import ../domain/user/user_repository_interface
+import ../domain/models/value_objects
+import ../domain/models/user/user_entity
+import ../domain/models/user/user_repository_interface
 import allographer/schema_builder
 import allographer/query_builder
 
@@ -103,7 +103,7 @@ suite "user entity":
     let passwordType = newPassword(password)
     let user = newUser(name=nameType, email=emailType, password=passwordType)
     let duplicate_user = user.deepCopy()
-    newIUserRepository().store(duplicate_user)
+    discard newIUserRepository().store(duplicate_user)
     try:
       let nameType = newUserName(name)
       let emailType = newEmail(email)

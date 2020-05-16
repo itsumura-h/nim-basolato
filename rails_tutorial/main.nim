@@ -1,8 +1,10 @@
+import re
 # framework
 import ../src/basolato/routing
 # middleware
 import middlewares/custom_headers_middleware
 import middlewares/framework_middleware
+import middlewares/always_create_cookie_middleware
 # controller
 import app/controllers/application_controller
 import app/controllers/static_page_controller
@@ -14,6 +16,7 @@ routes:
   error Http404: http404Route
   error Exception: exceptionRoute
   before: framework
+  after re"^(?!.*\.).*$": always_create_cookie
 
   # get "/": route(newApplicationController(request).hello())
   get "/": route(newStaticPageController(request).home())

@@ -1,6 +1,6 @@
 import unittest, strformat, httpclient, strutils, httpcore, json
 import basolato/security
-import ../../src/basolato/test/helper
+import ../../src/basolato/test
 import allographer/query_builder
 import ../migrations/migration20200331065251users
 
@@ -22,4 +22,5 @@ suite "form sign up":
     }
     var response = client.formpost(&"{HOST}/users", data)
     check response.status == Http500
+    echo response.body
     check response.body.contains("password is not match")

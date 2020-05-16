@@ -15,11 +15,7 @@ proc newStaticPageController*(request:Request):StaticPageController =
 
 
 proc home*(this:StaticPageController):Response =
-  if this.auth.isNil():
-    let auth = newAuth()
-    return render(this.view.homeHtml()).setAuth(auth)
-  else:
-    return render(this.view.homeHtml())
+  return render(this.view.homeHtml())
 
 proc help*(this:StaticPageController):Response =
   return render(this.view.helpHtml())

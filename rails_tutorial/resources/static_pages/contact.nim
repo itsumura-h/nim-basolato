@@ -1,4 +1,3 @@
-import json
 import ../../../src/basolato/view
 import ../layouts/application
 
@@ -11,4 +10,4 @@ proc impl():string = tmpli html"""
 """
 
 proc contactHtml*(this:View):string =
-  this.applicationHtml("Content", impl())
+  this.applicationHtml("Contact", impl())

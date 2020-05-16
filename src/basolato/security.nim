@@ -1,6 +1,6 @@
 import httpcore, json, strutils, times, random, strformat
 # framework
-import baseEnv
+import ./baseEnv
 # 3rd party
 import flatdb, nimAES
 import jester/request
@@ -50,9 +50,6 @@ proc newSessionDb*(token=""):SessionDb =
   discard db.load()
   if token.len > 0:
     var token = token.decryptCtr()
-    echo "=============="
-    echo token
-
     checkTokenValid(db, token)
     return SessionDb(conn: db, token:token)
   else:
@@ -147,7 +144,7 @@ type
 proc timeForward*(num:int, timeUnit:TimeUnit):DateTime =
   case timeUnit
   of Years:
-    return getTime().utc + initTimeInterval(hours = num)
+    return getTime().utc + initTimeInterval(years = num)
   of Months:
     return getTime().utc + initTimeInterval(months = num)
   of Weeks:
@@ -168,8 +165,8 @@ proc timeForward*(num:int, timeUnit:TimeUnit):DateTime =
     return getTime().utc + initTimeInterval(nanoseconds = num)
 
 proc toCookieStr*(this:CookieData):string =
-  makeCookie(this.name, this.value,this.expire,this.domain, this.path,
-              this.secure,this.httpOnly, this.sameSite)
+  makeCookie(this.name, this.value, this.expire, this.domain, this.path,
+              this.secure, this.httpOnly, this.sameSite)
 
 
 proc newCookieData*(name, value:string, expire:DateTime, sameSite: SameSite=Lax,
@@ -272,10 +269,12 @@ proc set*(this:Auth, key, value:string) =
   this.session.set(key, value)
 
 proc some*(this:Auth, key:string):bool =
-  if this.session.isNil:
+  if this.isNil:
+    return false
+  elif this.session.isNil:
     return false
   else:
-    return this.session.some(key)
+    this.session.some(key)
 
 proc get*(this:Auth, key:string):string =
   if this.session.get("isLogin").parseBool():
