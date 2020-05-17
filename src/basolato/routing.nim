@@ -5,12 +5,12 @@ import
   header
 from controller import redirect, render, errorRedirect
 # 3rd party
-import jester except redirect, setCookie, resp
+import ./core/core except redirect, setCookie, resp
 
 # framework
 export base, response, middleware, redirect, render, errorRedirect
 # 3rd party
-export jester except redirect, setCookie, resp
+export core except redirect, setCookie, resp
 
 
 template route*(responseArg: Response) =
