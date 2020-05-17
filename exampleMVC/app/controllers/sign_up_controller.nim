@@ -1,7 +1,7 @@
 import tables, json, times
 # framework
 import ../../../src/basolato/controller
-import ../../../src/basolato/validation
+import ../../../src/basolato/request_validation
 # model
 import ../models/users
 # view

@@ -3,8 +3,8 @@ import httpcore, json, options, os, times, strutils
 import ./base, ./baseEnv, ./header, ./security, ./logger
 # 3rd party
 import httpbeast
-from jester import RawHeaders, CallbackAction, ResponseData
-import jester/request
+from ./core/core import RawHeaders, CallbackAction, ResponseData
+import ./core/core/request
 
 
 template setHeader(headers: var Option[RawHeaders], key, value: string) =

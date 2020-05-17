@@ -2,12 +2,12 @@
 import base, security, header
 from controller import render, redirect, errorRedirect
 # 3rd party
-import jester except redirect, setCookie
+import ./core/core except redirect, setCookie
 
 # framework
 export base, security, header, render, redirect, errorRedirect
 # 3rd party
-export jester.request
+export core.request
 
 type Check* = ref object
   status*:bool

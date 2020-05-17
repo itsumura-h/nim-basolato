@@ -1,9 +1,9 @@
 import json, tables
 import bcrypt
 import allographer/query_builder
-import ../../src/basolato/validation
+import ../../src/basolato/request_validation
 
-proc checkPassword*(this:Validation, key:string): Validation =
+proc checkPassword*(this:RequestValidation, key:string): RequestValidation =
   let password = this.params["password"]
   let response = RDB().table("users")
                   .select("password")

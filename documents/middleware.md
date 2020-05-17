@@ -74,7 +74,7 @@ proc hasLoginToken*(request: Request):Response =
     echo "loginToken =======" & loginToken
   except:
     raise newException(Error403, "Can't get login token")
-    
+
 proc isLogin*(request: Request):Response =
   try:
     discard hasLoginId(request)
@@ -89,3 +89,31 @@ routes:
     middleware([isLogin(request)])
     route(sample_controller.index())
 ```
+
+## How to update responce in middleware
+The following sample is to set session cookie if `session_id` is not in cookies.
+
+```nim
+# main.nim
+import middlewares/middlewares_always_create_cookie_middleware
+
+routes:
+  after: always_create_cookie
+```
+
+```nim
+# middlewares_always_create_cookie_middleware.nim
+import ../../src/basolato/response
+
+template always_create_cookie*() =
+  var response = response(result)
+  if request.cookies.hasKey("session_id"):
+    route(response)
+  else:
+    let auth = newAuth()
+    response = response.setAuth(auth)
+    route(response)
+```
+
+`responce(result)` return `Responce` type object.  
+And, `route(response)` 
