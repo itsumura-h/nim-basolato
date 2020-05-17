@@ -15,7 +15,7 @@ skipDirs      = @["basolato/cli"]
 
 requires "nim >= 1.0.0"
 requires "cligen >= 0.9.41"
-requires "https://github.com/dom96/jester#4c39652"
+# requires "https://github.com/dom96/jester#4c39652"
 # requires "karax >= 1.1.0"
 # requires "https://github.com/pragmagic/karax#7440393"
 requires "templates >= 0.5"

@@ -2,12 +2,11 @@ import json
 # framework
 import base, security, response, header
 # 3rd party
-import jester except redirect, setCookie, setHeader, resp
+import core/core except redirect, setCookie, setHeader, resp
 
 # framework
+export core except redirect, setCookie, setHeader, resp
 export base, security, response, header
-# 3rd party
-export jester except redirect, setCookie, setHeader, resp
 
 
 type Controller* = ref object of RootObj

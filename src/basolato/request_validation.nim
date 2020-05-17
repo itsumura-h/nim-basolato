@@ -1,5 +1,5 @@
 import json, re, tables, strformat, strutils, unicode
-from jester import Request, params
+from ./core/core import Request, params
 include validation
 import allographer/query_builder
 

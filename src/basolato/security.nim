@@ -3,8 +3,8 @@ import httpcore, json, strutils, times, random, strformat
 import baseEnv
 # 3rd party
 import flatdb, nimAES
-import jester/request
-import jester/private/utils
+import ./core/core/request
+import ./core/core/private/utils
 
 
 # ========= Encrypt ==================
