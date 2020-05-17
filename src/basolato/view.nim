@@ -2,7 +2,6 @@ import json
 # framework
 import base, security
 # 3rd party
-import ./core/core except redirect, setCookie, setHeader, resp
 import templates
 
 # framework

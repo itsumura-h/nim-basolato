@@ -2,7 +2,7 @@
 import base, security, header
 from controller import render, redirect, errorRedirect
 # 3rd party
-import ./core/core except redirect, setCookie
+import ./core/core
 
 # framework
 export base, security, header, render, redirect, errorRedirect
