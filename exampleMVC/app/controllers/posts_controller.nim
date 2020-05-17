@@ -1,6 +1,7 @@
 import strutils, json, strformat, tables, times
 # framework
 import ../../../src/basolato/controller
+import ../../../src/basolato/request_validation
 # model
 import ../models/posts
 # view

@@ -3,7 +3,7 @@ import json
 import bcrypt
 # framework
 import ../../../src/basolato/controller
-import ../../../src/basolato/validation
+import ../../../src/basolato/request_validation
 # middleware
 import ../../middleware/custom_validation_middleware
 # model
