@@ -238,6 +238,10 @@ proc newAuth*(request:Request):Auth =
 
 proc newAuth*():Auth =
 
+proc login*(this:Auth) =
+
+proc logout*(this:Auth) =
+
 proc isLogin*(this:Auth):bool =
 
 proc getToken*(this:Auth):string =
@@ -260,6 +264,22 @@ proc destroyAuth*(response:Response, auth:Auth):Response =
 proc setFlash*(this:Auth, key, value:string) =
 
 proc getFlash*(this:Auth):JsonNode =
+```
+
+login
+```nim
+proc index(this:Controller): Response =
+  if this.auth.isNil():
+    this.auth = newAuth()
+  this.auth.login()
+```
+
+logout
+```nim
+proc index(this:Controller): Response =
+  if this.auth.isLogin():
+    this.auth.logout()
+  redirect("/")
 ```
 
 get auth

@@ -74,7 +74,3 @@ proc edit*(this:LoginController, id:string):Response =
 proc update*(this:LoginController, id:string):Response =
   let id = id.parseInt
   return render("update")
-
-proc destroy*(this:LoginController, id:string):Response =
-  let id = id.parseInt
-  return render("destroy")
