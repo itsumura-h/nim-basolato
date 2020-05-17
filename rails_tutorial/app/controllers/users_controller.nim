@@ -45,7 +45,7 @@ proc store*(this:UsersController):Response =
   let name = params["name"]
   let email = params["email"]
   let password = params["password"]
-  
+
   var v = this.request.validate()
   try:
     # validation

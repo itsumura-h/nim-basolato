@@ -2,7 +2,7 @@ import json
 # framework
 import base, security
 # 3rd party
-import jester except redirect, setCookie, setHeader, resp
+import ./core/core except redirect, setCookie, setHeader, resp
 import templates
 
 # framework

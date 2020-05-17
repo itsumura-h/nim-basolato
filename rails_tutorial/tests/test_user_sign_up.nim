@@ -22,5 +22,4 @@ suite "form sign up":
     }
     var response = client.formpost(&"{HOST}/users", data)
     check response.status == Http500
-    echo response.body
     check response.body.contains("password is not match")
