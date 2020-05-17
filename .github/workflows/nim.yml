@@ -27,7 +27,7 @@ jobs:
           # Need sqlite3_64.dll
           # - windows-latest
     env:
-      NIM_VERSION: 1.0.4
+      NIM_VERSION: 1.2.0
     steps:
     - uses: actions/checkout@v1
     - name: Cache choosenim
