@@ -1,6 +1,6 @@
-import httpcore, json, strutils, times, random, strformat
+import httpcore, json, strutils, times, random, strformat, tables
 # framework
-import ./baseEnv
+import ./base, ./baseEnv
 # 3rd party
 import flatdb, nimAES
 import ./core/core/request
@@ -39,6 +39,18 @@ type SessionDb = ref object
   conn: FlatDb
   token: string
 
+proc clean(this:SessionDb) =
+  if not IS_SESSION_MEMORY and SESSION_TIME.len > 0:
+    var buffer = newSeq[string]()
+    for line in SESSION_DB_PATH.lines:
+      if line.len == 0: break
+      let lineJson = line.parseJson()
+      let createdAt = lineJson["created_at"].getStr().parse("yyyy-MM-dd\'T\'HH:mm:sszzz")
+      let expireAt = createdAt + SESSION_TIME.parseInt().minutes
+      if now() <= expireAt:
+        buffer.add(line)
+    writeFile(SESSION_DB_PATH, buffer.join("\n"))
+
 proc checkTokenValid(db:FlatDb, token:string) =
   try:
     discard db[token]
@@ -47,14 +59,36 @@ proc checkTokenValid(db:FlatDb, token:string) =
 
 proc newSessionDb*(token=""):SessionDb =
   let db = newFlatDb(SESSION_DB_PATH, IS_SESSION_MEMORY)
+  var sessionDb: SessionDb
+  # clean expired session 1/100
+  randomize()
+  if rand(1..100) == 1:
+    sessionDb.clean()
+  discard db.load()
+  if token.len > 0:
+    var token = token.decryptCtr()
+    sessionDb = SessionDb(conn: db, token:token)
+  else:
+    let token = db.append(newJObject())
+    sessionDb = SessionDb(conn: db, token:token)
+  return sessionDb
+
+proc newSessionDbCheck*(token=""):SessionDb =
+  let db = newFlatDb(SESSION_DB_PATH, IS_SESSION_MEMORY)
+  var sessionDb: SessionDb
+  # clean expired session 1/100
+  randomize()
+  if rand(1..100) == 1:
+    sessionDb.clean()
   discard db.load()
   if token.len > 0:
     var token = token.decryptCtr()
     checkTokenValid(db, token)
-    return SessionDb(conn: db, token:token)
+    sessionDb = SessionDb(conn: db, token:token)
   else:
     let token = db.append(newJObject())
-    return SessionDb(conn: db, token:token)
+    sessionDb = SessionDb(conn: db, token:token)
+  return sessionDb
 
 proc getToken*(this:SessionDb): string =
   return this.token.encryptCtr()
@@ -89,7 +123,7 @@ proc destroy*(this:SessionDb) =
 
 
 # ========= Session ==================
-type 
+type
   SessionType* = enum
     File
     Redis
@@ -250,17 +284,33 @@ proc destroy*(this:Cookie, path="/"):Cookie =
 type Auth* = ref object
   session*:Session
 
-proc newAuth*(request:Request):Auth =
-  ## use in constructor
-  var sessionId = newCookie(request).get("session_id")
-  return Auth(session:newSession(sessionId))
-
 proc newAuth*():Auth =
   ## use in action method
+  echo "=== newAuth*()"
   let session = newSession()
   session.set("isLogin", "false")
   session.set("created_at", $getTime())
   return Auth(session:session)
+
+proc newAuth*(request:Request):Auth =
+  ## use in constructor constructor
+  echo "=== newAuth*(request:Request)"
+  var sessionId = newCookie(request).get("session_id")
+  return Auth(session:newSession(sessionId))
+
+proc newAuthIfInvalid*(request:Request):Auth =
+  echo "=== newAuthIfInvalid"
+  var auth:Auth
+  if not request.cookies.hasKey("session_id"):
+    auth = newAuth()
+  else:
+    var sessionId = newCookie(request).get("session_id")
+    try:
+      auth = Auth(session:newSession(sessionId))
+    except:
+      auth = newAuth()
+  return auth
+
 
 proc getToken*(this:Auth):string =
   return this.session.getToken()
@@ -292,7 +342,7 @@ proc login*(this:Auth) =
   this.set("isLogin", "true")
 
 proc logout*(this:Auth) =
-  this.set("isLogin", "false")
+  this.destroy()
 
 proc isLogin*(this:Auth):bool =
   if this.some("isLogin"):
