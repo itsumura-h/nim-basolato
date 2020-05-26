@@ -15,8 +15,11 @@ routes:
   # Framework
   error Http404: http404Route
   error Exception: exceptionRoute
-  before: framework
-  after re"^(?!.*\.).*$": always_create_cookie
+  before re"^(?!.*\.).*$":
+    framework
+  after re"^(?!.*\.).*$":
+    discard
+    # always_create_cookie
 
   # get "/": route(newApplicationController(request).hello())
   get "/": route(newStaticPageController(request).home())

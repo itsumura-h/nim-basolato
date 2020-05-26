@@ -39,12 +39,15 @@ proc checkCsrfToken*(request:Request):Check =
       )
 
 proc checkAuthToken*(request:Request):Check =
+  echo "=== checkAuthToken"
   result = Check(status:true)
   try:
-    let sessionId = newCookie(request).get("session_id")
-    if sessionId.len > 0:
-      discard newAuth(request).getToken()
+    # let sessionId = newCookie(request).get("session_id")
+    # if sessionId.len > 0:
+    discard newAuth(request).getToken()
+    echo "=== checkAuthToken"
   except:
+    echo "=== checkAuthToken except"
     result = Check(
       status:false,
       msg:getCurrentExceptionMsg()

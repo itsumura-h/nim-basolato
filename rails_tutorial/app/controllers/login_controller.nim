@@ -46,7 +46,7 @@ proc store*(this:LoginController):Response =
     this.auth.set("name", userName)
     this.auth.setFlash("success", "Success to login")
     # response
-    return redirect(&"/users/{userId}")
+    return redirect(&"/users/{userId}").setAuth(this.auth)
   except:
     # response
     let msg = getCurrentExceptionMsg()

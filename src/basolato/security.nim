@@ -45,6 +45,12 @@ proc checkTokenValid(db:FlatDb, token:string) =
   except:
     raise newException(Exception, "Invalid session id")
 
+proc newSessionDb*():SessionDb =
+  let db = newFlatDb(SESSION_DB_PATH, IS_SESSION_MEMORY)
+  discard db.load()
+  let token = db.append(newJObject())
+  return SessionDb(conn: db, token:token)
+
 proc newSessionDb*(token=""):SessionDb =
   let db = newFlatDb(SESSION_DB_PATH, IS_SESSION_MEMORY)
   discard db.load()
@@ -98,6 +104,7 @@ type
     db: SessionDb
 
 proc newSession*(token="", typ:SessionType=File):Session =
+  echo "=== newSession()"
   if typ == File:
     return Session(db:newSessionDb(token))
 
@@ -252,11 +259,13 @@ type Auth* = ref object
 
 proc newAuth*(request:Request):Auth =
   ## use in constructor
+  echo "=== newAuth*(request:Request)"
   var sessionId = newCookie(request).get("session_id")
   return Auth(session:newSession(sessionId))
 
 proc newAuth*():Auth =
   ## use in action method
+  echo "=== newAuth()"
   let session = newSession()
   session.set("isLogin", "false")
   session.set("created_at", $getTime())
