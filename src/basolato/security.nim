@@ -106,11 +106,14 @@ proc set*(this:SessionDb, key, value:string):SessionDb =
   return this
 
 proc some*(this:SessionDb, key:string):bool =
-  let db = this.conn
-  if db[this.token]{key}.isNil():
+  try:
+    let db = this.conn
+    if db[this.token]{key}.isNil():
+      return false
+    else:
+      raise newException(Exception, "")
+  except:
     return false
-  else:
-    return true
 
 proc get*(this:SessionDb, key:string): string =
   let db = this.conn
@@ -304,12 +307,6 @@ proc newAuth*():Auth =
   session.set("isLogin", "false")
   session.set("created_at", $getTime())
   return Auth(session:session)
-
-proc newAuth*(request:Request):Auth =
-  ## use in constructor constructor
-  echo "=== newAuth*(request:Request)"
-  var sessionId = newCookie(request).get("session_id")
-  return Auth(session:newSession(sessionId))
 
 proc newAuthIfInvalid*(request:Request):Auth =
   echo "=== newAuthIfInvalid"
