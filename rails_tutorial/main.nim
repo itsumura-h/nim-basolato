@@ -1,6 +1,7 @@
 import re
 # framework
 import ../src/basolato/routing
+import ../src/basolato/middleware
 # middleware
 import middlewares/custom_headers_middleware
 import middlewares/framework_middleware
@@ -29,7 +30,9 @@ routes:
   post "/signup": route(newUsersController(request).store())
 
   get "/users/create": route(newUsersController(request).create())
-  get "/users/@id": route(newUsersController(request).show(@"id"))
+  get "/users/@id":
+    checkAuthToken(request).catch(Error303, "/")
+    route(newUsersController(request).show(@"id"))
   post "/users": route(newUsersController(request).store())
 
   get "/login": route(newLoginController(request).create())

@@ -15,28 +15,19 @@ type Controller* = ref object of RootObj
   view*:View
 
 proc newController*(this:typedesc, request:Request): this.type =
-  echo "=== newController()"
   if request.cookies.hasKey("session_id"):
-    try:
-      let auth = newAuth(request)
-      return this.type(
-        request:request,
-        auth: auth,
-        view: newView(auth)
-      )
-    except:
-      echo "=== newController() except"  
-      let auth = newAuth()
-      return this.type(
-        request:request,
-        auth: auth,
-        view: newView(auth)
-      )
-  else:
-    echo "=== newController() no session id"  
+    echo "=== newController() with session_id"
+    let auth = newAuth(request)
     return this.type(
       request:request,
-      view:newView()
+      auth: auth,
+      view: newView(auth)
+    )
+  else:
+    echo "=== newController() without session_id"
+    return this.type(
+      request:request,
+      view: newView()
     )
 
 # String

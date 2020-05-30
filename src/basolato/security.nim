@@ -57,13 +57,7 @@ proc checkTokenValid(db:FlatDb, token:string) =
   except:
     raise newException(Exception, "Invalid session id")
 
-proc newSessionDb*():SessionDb =
-  let db = newFlatDb(SESSION_DB_PATH, IS_SESSION_MEMORY)
-  discard db.load()
-  let token = db.append(newJObject())
-  return SessionDb(conn: db, token:token)
-
-proc newSessionDb*(token=""):SessionDb =
+proc newSessionDb*(sessionId=""):SessionDb =
   let db = newFlatDb(SESSION_DB_PATH, IS_SESSION_MEMORY)
   var sessionDb: SessionDb
   # clean expired session 1/100
@@ -71,30 +65,28 @@ proc newSessionDb*(token=""):SessionDb =
   if rand(1..100) == 1:
     sessionDb.clean()
   discard db.load()
-  if token.len > 0:
-    var token = token.decryptCtr()
+  try:
+    var token = sessionId.decryptCtr()
+    db.checkTokenValid(token)
+    echo "=== newSessionDb tokenあり"
     sessionDb = SessionDb(conn: db, token:token)
-  else:
+  except:
+    echo "=== newSessionDb tokenなし"
     let token = db.append(newJObject())
     sessionDb = SessionDb(conn: db, token:token)
   return sessionDb
 
-proc newSessionDbCheck*(token=""):SessionDb =
+proc checkSessionIdValid*(sessionId=""):bool =
   let db = newFlatDb(SESSION_DB_PATH, IS_SESSION_MEMORY)
-  var sessionDb: SessionDb
-  # clean expired session 1/100
-  randomize()
-  if rand(1..100) == 1:
-    sessionDb.clean()
   discard db.load()
-  if token.len > 0:
-    var token = token.decryptCtr()
-    checkTokenValid(db, token)
-    sessionDb = SessionDb(conn: db, token:token)
-  else:
-    let token = db.append(newJObject())
-    sessionDb = SessionDb(conn: db, token:token)
-  return sessionDb
+  try:
+    var token = sessionId.decryptCtr()
+    db.checkTokenValid(token)
+    echo "=== checkSessionIdValid true"
+    return true
+  except:
+    echo "=== checkSessionIdValid false"
+    return false
 
 proc getToken*(this:SessionDb): string =
   return this.token.encryptCtr()
@@ -111,7 +103,7 @@ proc some*(this:SessionDb, key:string):bool =
     if db[this.token]{key}.isNil():
       return false
     else:
-      raise newException(Exception, "")
+      return true
   except:
     return false
 
@@ -298,7 +290,10 @@ proc newAuth*(request:Request):Auth =
   ## use in constructor
   echo "=== newAuth*(request:Request)"
   var sessionId = newCookie(request).get("session_id")
-  return Auth(session:newSession(sessionId))
+  if checkSessionIdValid(sessionId):
+    return Auth(session:newSession(sessionId))
+  else:
+    return Auth()
 
 proc newAuth*():Auth =
   ## use in action method
@@ -330,10 +325,13 @@ proc set*(this:Auth, key, value:string) =
 
 proc some*(this:Auth, key:string):bool =
   if this.isNil:
+    echo "=== auth.some() auth === isNil"
     return false
   elif this.session.isNil:
+    echo "=== auth.some() session === isNil"
     return false
   else:
+    echo "=== this.session.some(key)"
     this.session.some(key)
 
 proc get*(this:Auth, key:string):string =

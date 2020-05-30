@@ -39,8 +39,7 @@ proc store*(this:LoginController):Response =
     # auth
     let userId = user["id"].getInt()
     let userName = user["name"].getStr()
-    if this.auth.isNil():
-      this.auth = newAuth()
+    this.auth = newAuth()
     this.auth.login()
     this.auth.set("id", $userId)
     this.auth.set("name", userName)

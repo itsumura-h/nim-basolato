@@ -43,8 +43,10 @@ proc checkAuthToken*(request:Request):Check =
   result = Check(status:true)
   try:
     let sessionId = newCookie(request).get("session_id")
-    if sessionId.len > 0:
-      discard newAuth(request).getToken()
+    if sessionId.len == 0:
+      raise newException(Exception, "")
+    if not checkSessionIdValid(sessionId):
+      raise newException(Exception, "")
   except:
     echo "=== checkAuthToken except"
     result = Check(
