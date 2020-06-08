@@ -269,3 +269,49 @@ proc indexImpl(message:string): string =
 proc indexHtml*(message:string): string =
   baseImpl(indexImpl(message))
 ```
+
+## Auth
+
+You can access `auth` in view like bellow.
+
+controller
+```nim
+proc home*(this:StaticPageController):Response =
+  return render(this.view.homeHtml())
+```
+
+view
+```html
+import basolato/view
+
+proc headerHtml*(auth:Auth):string = tmpli html"""
+<header>
+  <ul>
+    $if auth.isLogin(){
+      <li>$(auth.get("id"))</li>
+    }
+    $else{
+      <li><a href="/login">Log In</a></li>
+    }
+  </ul>
+</header>
+
+
+proc applicationHtml*(this:View, title:string, body:string, flash=newJObject()):string = tmpli html"""
+<!DOCTYPE html>
+<html>
+  <head>
+  </head>
+  <body>
+    $(headerHtml(this.auth))
+    .
+    .
+    .
+  </body>
+</html>
+
+proc homeHtml*(this:View):string =
+  this.applicationHtml("Title", impl())
+"""
+
+```

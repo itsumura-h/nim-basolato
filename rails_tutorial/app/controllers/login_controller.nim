@@ -29,7 +29,7 @@ proc store*(this:LoginController):Response =
   try:
     # validation
     v = v.filled(["email", "password"])
-      .length("email", 0, 255)
+      .length("email", 1, 255)
       .length("password", 6, 1000)
       .password("password")
     if v.errors.len > 0:
@@ -45,7 +45,11 @@ proc store*(this:LoginController):Response =
     this.auth.set("name", userName)
     this.auth.setFlash("success", "Success to login")
     # response
-    return redirect(&"/users/{userId}").setAuth(this.auth)
+    if params.hasKey("redirect"):
+      let url = params["redirect"]
+      return redirect(url).setAuth(this.auth)
+    else:
+      return redirect(&"/users/{userId}").setAuth(this.auth)
   except:
     # response
     let msg = getCurrentExceptionMsg()

@@ -1,4 +1,4 @@
-import re
+import re, strformat
 # framework
 import ../src/basolato/routing
 import ../src/basolato/middleware
@@ -31,7 +31,7 @@ routes:
 
   get "/users/create": route(newUsersController(request).create())
   get "/users/@id":
-    checkAuthToken(request).catch(Error303, "/")
+    checkAuthToken(request).catch(Error303, &"/login?redirect={request.path}")
     route(newUsersController(request).show(@"id"))
   post "/users": route(newUsersController(request).store())
 
