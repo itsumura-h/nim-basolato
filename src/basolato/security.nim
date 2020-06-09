@@ -68,10 +68,8 @@ proc newSessionDb*(sessionId=""):SessionDb =
   try:
     var token = sessionId.decryptCtr()
     db.checkTokenValid(token)
-    echo "=== newSessionDb tokenあり"
     sessionDb = SessionDb(conn: db, token:token)
   except:
-    echo "=== newSessionDb tokenなし"
     let token = db.append(newJObject())
     sessionDb = SessionDb(conn: db, token:token)
   return sessionDb
@@ -82,10 +80,8 @@ proc checkSessionIdValid*(sessionId=""):bool =
   try:
     var token = sessionId.decryptCtr()
     db.checkTokenValid(token)
-    echo "=== checkSessionIdValid true"
     return true
   except:
-    echo "=== checkSessionIdValid false"
     return false
 
 proc getToken*(this:SessionDb): string =
@@ -133,7 +129,6 @@ type
     db: SessionDb
 
 proc newSession*(token="", typ:SessionType=File):Session =
-  echo "=== newSession()"
   if typ == File:
     return Session(db:newSessionDb(token))
 
@@ -231,6 +226,12 @@ proc get*(this:Cookie, name:string):string =
       result = rowArr[1]
       break
 
+proc hasKey*(this:Cookie, name:string):bool =
+  if this.get(name).len > 0:
+    return true
+  else:
+    return false
+
 proc set*(this:Cookie, name, value: string, expire:DateTime,
       sameSite: SameSite=Lax, secure = false, httpOnly = false, domain = "",
       path = "/"):Cookie =
@@ -288,7 +289,6 @@ type Auth* = ref object
 
 proc newAuth*(request:Request):Auth =
   ## use in constructor
-  echo "=== newAuth*(request:Request)"
   var sessionId = newCookie(request).get("session_id")
   if checkSessionIdValid(sessionId):
     return Auth(session:newSession(sessionId))
@@ -297,14 +297,12 @@ proc newAuth*(request:Request):Auth =
 
 proc newAuth*():Auth =
   ## use in action method
-  echo "=== newAuth()"
   let session = newSession()
   session.set("isLogin", "false")
   session.set("created_at", $getTime())
   return Auth(session:session)
 
 proc newAuthIfInvalid*(request:Request):Auth =
-  echo "=== newAuthIfInvalid"
   var auth:Auth
   if not request.cookies.hasKey("session_id"):
     auth = newAuth()
@@ -325,13 +323,10 @@ proc set*(this:Auth, key, value:string) =
 
 proc some*(this:Auth, key:string):bool =
   if this.isNil:
-    echo "=== auth.some() auth === isNil"
     return false
   elif this.session.isNil:
-    echo "=== auth.some() session === isNil"
     return false
   else:
-    echo "=== this.session.some(key)"
     this.session.some(key)
 
 proc get*(this:Auth, key:string):string =

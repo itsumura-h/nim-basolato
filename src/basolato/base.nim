@@ -1,7 +1,7 @@
 import json, httpcore
 
 const
-  basolatoVersion* = "0.3.3"
+  basolatoVersion* = "0.4.0"
 
 type
   Response* = ref object
@@ -19,46 +19,46 @@ type
     Json
     Redirect
 
-  Error505* = object of Exception
-  Error504* = object of Exception
-  Error503* = object of Exception
-  Error502* = object of Exception
-  Error501* = object of Exception
-  Error500* = object of Exception
-  Error451* = object of Exception
-  Error431* = object of Exception
-  Error429* = object of Exception
-  Error428* = object of Exception
-  Error426* = object of Exception
-  Error422* = object of Exception
-  Error421* = object of Exception
-  Error418* = object of Exception
-  Error417* = object of Exception
-  Error416* = object of Exception
-  Error415* = object of Exception
-  Error414* = object of Exception
-  Error413* = object of Exception
-  Error412* = object of Exception
-  Error411* = object of Exception
-  Error410* = object of Exception
-  Error409* = object of Exception
-  Error408* = object of Exception
-  Error407* = object of Exception
-  Error406* = object of Exception
-  Error405* = object of Exception
-  Error404* = object of Exception
-  Error403* = object of Exception
-  Error401* = object of Exception
-  Error400* = object of Exception
-  Error307* = object of Exception
-  Error305* = object of Exception
-  Error304* = object of Exception
-  Error303* = object of Exception
-  Error302* = object of Exception
-  Error301* = object of Exception
-  Error300* = object of Exception
-  ErrorAuthRedirect* = object of Exception
-  DD* = object of Exception
+  Error505* = object of CatchableError
+  Error504* = object of CatchableError
+  Error503* = object of CatchableError
+  Error502* = object of CatchableError
+  Error501* = object of CatchableError
+  Error500* = object of CatchableError
+  Error451* = object of CatchableError
+  Error431* = object of CatchableError
+  Error429* = object of CatchableError
+  Error428* = object of CatchableError
+  Error426* = object of CatchableError
+  Error422* = object of CatchableError
+  Error421* = object of CatchableError
+  Error418* = object of CatchableError
+  Error417* = object of CatchableError
+  Error416* = object of CatchableError
+  Error415* = object of CatchableError
+  Error414* = object of CatchableError
+  Error413* = object of CatchableError
+  Error412* = object of CatchableError
+  Error411* = object of CatchableError
+  Error410* = object of CatchableError
+  Error409* = object of CatchableError
+  Error408* = object of CatchableError
+  Error407* = object of CatchableError
+  Error406* = object of CatchableError
+  Error405* = object of CatchableError
+  Error404* = object of CatchableError
+  Error403* = object of CatchableError
+  Error401* = object of CatchableError
+  Error400* = object of CatchableError
+  Error307* = object of CatchableError
+  Error305* = object of CatchableError
+  Error304* = object of CatchableError
+  Error303* = object of CatchableError
+  Error302* = object of CatchableError
+  Error301* = object of CatchableError
+  Error300* = object of CatchableError
+  ErrorAuthRedirect* = object of CatchableError
+  DD* = object of CatchableError
 
 const errorStatusArray* = [505, 504, 503, 502, 501, 500, 451, 431, 429, 428, 426,
   422, 421, 418, 417, 416, 415, 414, 413, 412, 411, 410, 409, 408, 407, 406,

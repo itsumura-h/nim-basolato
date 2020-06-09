@@ -2,7 +2,7 @@ import os, strformat, terminal, strutils
 from ../../base import basolatoVersion
 from make/utils import isDirExists
 
-proc createMVC(dirPath:string, packageDir:string):int =
+proc create(dirPath:string, packageDir:string):int =
   try:
     createDir(dirPath)
     # download from github as dir name tmp
@@ -13,7 +13,6 @@ proc createMVC(dirPath:string, packageDir:string):int =
   """)
     # get from tmp/MVC
     moveDir(&"{dirpath}/tmp/MVC/app", &"{dirpath}/app")
-    moveDir(&"{dirpath}/tmp/MVC/middlewares", &"{dirpath}/middlewares")
     moveDir(&"{dirpath}/tmp/MVC/migrations", &"{dirpath}/migrations")
     moveDir(&"{dirpath}/tmp/MVC/public", &"{dirpath}/public")
     moveDir(&"{dirpath}/tmp/MVC/resources", &"{dirpath}/resources")
@@ -38,7 +37,7 @@ proc createMVC(dirPath:string, packageDir:string):int =
 
 version       = "0.1.0"
 author        = "Anonymous"
-description   = "A new awesome nimble package"
+description   = "A new awesome baspolato package"
 license       = "MIT"
 srcDir        = "."
 bin           = @["main"]
@@ -49,13 +48,13 @@ backend       = "c"
 
 requires "nim >= {NimVersion}"
 requires "basolato >= {basolatoVersion}"
+requires "httpbeast >= 0.2.2"
 requires "cligen >= 0.9.41"
-requires "https://github.com/dom96/jester#4c39652"
 requires "templates >= 0.5"
 requires "bcrypt >= 0.2.1"
 requires "nimAES >= 0.1.2"
 requires "https://github.com/enthus1ast/flatdb >= 0.2.4"
-requires "allographer >= 0.8.0"
+requires "allographer >= 0.9.0"
 """
     block:
       var f = open(&"{dirPath}/{packageDir}.nimble", fmWrite)
@@ -68,10 +67,7 @@ requires "allographer >= 0.8.0"
     echo getCurrentExceptionMsg()
     return 1
 
-proc createDDD():int =
-  return 0
-
-proc new*(args:seq[string], architecture="MVC"):int =
+proc new*(args:seq[string]):int =
   ## create new project
   var
     message:string
@@ -87,19 +83,4 @@ proc new*(args:seq[string], architecture="MVC"):int =
     dirPath = getCurrentDir()
     message = &"create project {getCurrentDir()}"
 
-  case architecture:
-  of "MVC":
-    message.add("\ncreate as MVC")
-    styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
-    return createMVC(dirPath, packageDir)
-  # of "DDD":
-  #   message.add("\ncreate as DDD")
-  #   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
-  #   return createDDD()
-  else:
-    message = """
-invalid architecture.
-MVC is only available.
-MVC is set by default."""
-    styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)
-    return 1
+  return create(dirPath, packageDir)
