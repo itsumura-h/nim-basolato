@@ -76,13 +76,18 @@ ducere new
 project directory will be created!
 ```
 ├── app
+│   ├── active_records
+│   │   └── rdb.nim
 │   ├── controllers
-│   └── models
-├── config.nims
+│   ├── domain
+│   │   ├── models
+│   │   │   └── value_objects.nim
+│   │   └── usecases
+│   └── middlewares
+│       ├── README.md
+│       ├── custom_headers_middleware.nim
+│       └── framework_middleware.nim
 ├── main.nim
-├── middleware
-│   ├── custom_headers_middleware.nim
-│   └── framework_middleware.nim
 ├── migrations
 │   ├── migrate.nim
 │   └── migration0001.nim

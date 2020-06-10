@@ -48,8 +48,8 @@ proc destroy*(this:{targetCaptalized}Controller, id:string):Response =
   createDir(parentDir(targetPath))
 
   var f = open(targetPath, fmWrite)
-  f.write(CONTROLLER)
   defer: f.close()
+  f.write(CONTROLLER)
 
   message = &"created controller {target}_controller.nim"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)

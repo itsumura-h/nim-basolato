@@ -13,4 +13,5 @@ routes:
   before: framework
 
   get "/":
-    route(newWelcomeController(request).index(),[corsHeader(), secureHeader()])
+    # route(newWelcomeController(request).index(),[corsHeader(), secureHeader()])
+    

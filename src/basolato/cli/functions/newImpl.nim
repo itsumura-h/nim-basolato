@@ -28,6 +28,8 @@ proc create(dirPath:string, packageDir:string):int =
   ducere make config
   """)
     # create empty dirs
+    createDir(&"{dirPath}/resources/pages")
+    createDir(&"{dirPath}/resources/layouts")
     createDir(&"{dirPath}/tests")
     createDir(&"{dirPath}/public/js")
     createDir(&"{dirPath}/public/css")
