@@ -1,5 +1,5 @@
 from strutils import parseInt
-import ../../resources/pages/loginHtml
+import ../../resources/pages/loginView
 # framework
 import basolato/controller
 
