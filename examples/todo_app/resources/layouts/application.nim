@@ -5,8 +5,8 @@ proc applicationView*(this:View, title:string, body:string):string = tmpli html"
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>$title</title>
   $(headView())
+  <title>$title</title>
 </head>
 <body>
   $body
