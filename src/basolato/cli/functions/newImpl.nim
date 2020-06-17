@@ -11,12 +11,12 @@ proc create(dirPath:string, packageDir:string):int =
   cd {dirPath}
   git clone {tmplateGitUrl} tmp
   """)
-    # get from tmp/MVC
-    moveDir(&"{dirpath}/tmp/MVC/app", &"{dirpath}/app")
-    moveDir(&"{dirpath}/tmp/MVC/migrations", &"{dirpath}/migrations")
-    moveDir(&"{dirpath}/tmp/MVC/public", &"{dirpath}/public")
-    moveDir(&"{dirpath}/tmp/MVC/resources", &"{dirpath}/resources")
-    moveFile(&"{dirpath}/tmp/MVC/main.nim", &"{dirpath}/main.nim")
+    # get from tmp/DDD
+    moveDir(&"{dirpath}/tmp/DDD/app", &"{dirpath}/app")
+    moveDir(&"{dirpath}/tmp/DDD/migrations", &"{dirpath}/migrations")
+    moveDir(&"{dirpath}/tmp/DDD/public", &"{dirpath}/public")
+    moveDir(&"{dirpath}/tmp/DDD/resources", &"{dirpath}/resources")
+    moveFile(&"{dirpath}/tmp/DDD/main.nim", &"{dirpath}/main.nim")
     # move static files
     moveFile(&"{dirpath}/tmp/assets/basolato.svg", &"{dirpath}/public/basolato.svg")
     moveFile(&"{dirpath}/tmp/assets/favicon.ico", &"{dirpath}/public/favicon.ico")
@@ -57,6 +57,7 @@ requires "bcrypt >= 0.2.1"
 requires "nimAES >= 0.1.2"
 requires "https://github.com/enthus1ast/flatdb >= 0.2.4"
 requires "allographer >= 0.9.0"
+requires "faker >= 0.12.1"
 """
     block:
       var f = open(&"{dirPath}/{packageDir}.nimble", fmWrite)

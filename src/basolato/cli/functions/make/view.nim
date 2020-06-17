@@ -2,7 +2,7 @@ import os, strformat, terminal, strutils
 import utils
 
 proc makeView*(target:string, message:var string):int =
-  let targetPath = &"{getCurrentDir()}/resources/{target}View.nim"
+  let targetPath = &"{getCurrentDir()}/resources/{target}_view.nim"
   let targetName = target.split("/")[^1]
   let targetCaptalized = capitalizeAscii(targetName)
   let reativeToApplicationPath = "../".repeat(target.split("/").len-1) & "layouts/application"
@@ -29,6 +29,6 @@ proc {targetName}View*(this:View):string =
   f.write(VIEW)
   defer: f.close()
 
-  message = &"created view {target}View.nim"
+  message = &"created view {target}_view.nim"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
   return 0

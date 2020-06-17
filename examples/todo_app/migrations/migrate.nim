@@ -1,10 +1,7 @@
-import migration0001
-import migration20200610090827aaa
-import migration20200610090856aaa
+import migration20200617151816users
 
 proc main() =
-  migration0001()
-  migration20200610090827aaa()
-  migration20200610090856aaa()
+  migration20200617151816users_todo()
+
 
 main()

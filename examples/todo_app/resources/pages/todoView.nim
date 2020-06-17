@@ -2,7 +2,11 @@ import ../../../../src/basolato/view
 import ../layouts/application
 
 proc impl():string = tmpli html"""
-<h1>todo</h1>
+<form method="POST">
+  $(csrfToken())
+  <input type="text" name="todo">
+  <button type="submit">add</button>
+</form>
 """
 
 proc todoView*(this:View):string =
