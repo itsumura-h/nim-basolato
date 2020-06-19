@@ -24,7 +24,6 @@ putEnv("LOG_IS_FILE", "true")
 putEnv("LOG_DIR", "{getCurrentDir()}/logs")
 
 # Security
-putEnv("SALT", "{genSalt(10)}") # bcrypt salt
 putEnv("SECRET_KEY", "{rundStr([24])}") # 24 length
 putEnv("CSRF_TIME", "525600") # minutes of 1 year
 putEnv("SESSION_TIME", "20160") # minutes of 2 weeks

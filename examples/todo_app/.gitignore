@@ -1,0 +1,13 @@
+# Binaries
+*
+!*.*
+!*/
+
+# Test coverage
+coverage/*
+lcov.info
+
+*.sqlite3
+*.db
+config.nims
+logs/*

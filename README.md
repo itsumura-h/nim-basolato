@@ -79,20 +79,32 @@ project directory will be created!
 │   ├── active_records
 │   │   └── rdb.nim
 │   ├── controllers
+│   │   └── welcome_controller.nim
 │   ├── domain
 │   │   ├── models
 │   │   │   └── value_objects.nim
 │   │   └── usecases
 │   └── middlewares
-│       ├── README.md
 │       ├── custom_headers_middleware.nim
 │       └── framework_middleware.nim
+├── config.nims
 ├── main.nim
 ├── migrations
 │   ├── migrate.nim
-│   └── migration0001.nim
+│   └── migration0001sample.nim
 ├── public
-└── resources
+│   ├── basolato.svg
+│   ├── css
+│   ├── favicon.ico
+│   └── js
+├── resources
+│   ├── layouts
+│   │   ├── application.nim
+│   │   └── head.nim
+│   └── pages
+│       └── welcome_view.nim
+├── {project_name}.nimble
+└── tests
 ```
 
 You can specify project direcotry name
@@ -121,12 +133,12 @@ nim c -r main
 - [Error](./documents/error.md)
 - [Validation](./documents/validation.md)
 - [Security(CsrfToken, Cookie, Session, Auth)](./documents/security.md)
+- [Password](./documents/password.md)
 - [Helper](./documents/helper.md)
 
 ### Dev roadmap
 
 |Version|Content|
 |---|---|
-|v1.0|Support Three-layer architecture (generally called as MVC)|
-|v2.0|Support Clean architecture, Tactical DDD|
-|v3.0|Support GraphQL|
+|v1.0|Support Clean architecture, Tactical DDD|
+|v2.0|Support GraphQL|
