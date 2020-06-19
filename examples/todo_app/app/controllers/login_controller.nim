@@ -1,7 +1,7 @@
 from strutils import parseInt
-import ../../resources/pages/loginView
+import ../../resources/pages/login_view
 # framework
-import basolato/controller
+import ../../../../src/basolato/controller
 
 
 type LoginController* = ref object of Controller
@@ -11,7 +11,7 @@ proc newLoginController*(request:Request):LoginController =
 
 
 proc index*(this:LoginController):Response =
-  return render("index")
+  return render(this.view.loginView())
 
 proc show*(this:LoginController, id:string):Response =
   let id = id.parseInt

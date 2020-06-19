@@ -2,7 +2,7 @@ from strutils import parseInt
 # framework
 import ../../../../src/basolato/controller
 # view
-import ../../resources/pages/todoView
+import ../../resources/pages/todo_view
 
 
 type TodoController* = ref object of Controller

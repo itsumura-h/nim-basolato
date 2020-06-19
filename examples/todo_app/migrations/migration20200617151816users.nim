@@ -1,9 +1,9 @@
 import json, strformat
 import ../../../src/basolato/baseEnv
+import ../../../src/basolato/password
 import allographer/schema_builder
 import allographer/query_builder
 import faker
-import bcrypt
 
 proc migration20200617151816users_todo*() =
   schema([
@@ -13,7 +13,7 @@ proc migration20200617151816users_todo*() =
       Column().string("email"),
       Column().string("password"),
       Column().timestamps()
-    ]),
+    ], reset=true),
     table("todo", [
       Column().increments("id"),
       Column().string("todo"),
@@ -27,6 +27,6 @@ proc migration20200617151816users_todo*() =
     users.add(%*{
       "name": fake.name(),
       "email": &"user{i}@gmail.com",
-      "password": hash( &"user{i}", SALT)
+      "password": genHashedPassword(&"user{i}password")
     })
   RDB().table("users").insert(users)
