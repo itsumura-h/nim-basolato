@@ -7,8 +7,3 @@ template framework*() =
   checkAuthToken(request).catch(Error301, "/login")
   if request.reqMethod == HttpOptions:
     route(render(""), [corsHeader()])
-
-template hasSessionId*() =
-  echo "=== hasSessionId"
-  if not request.headers().hasKey("session_id"):
-    raise newException(Error301, "/login")

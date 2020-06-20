@@ -5,16 +5,9 @@ import ../../src/basolato/routing
 import app/middlewares/custom_headers_middleware
 import app/middlewares/framework_middleware
 # controller
-# import basolato/welcome_page/controllers/welcome_controller
 # import app/controllers/welcome_controller
-import app/controllers/todo_controller
 import app/controllers/login_controller
-
-
-router application_router:
-  # middleware: hasSessionId
-  get "/":
-    route(newTodoController(request).index())
+import app/controllers/todo_controller
 
 routes:
   # Framework
@@ -22,7 +15,9 @@ routes:
   error Exception: exceptionRoute
   before: framework
 
-  get "/login": route(newLoginController(request).index())
 
-  # before re"^(?!\/login).*": hasSessionId
-  extend application_router, ""
+  get "/login": route(newLoginController(request).loginPage())
+  get "/signin": route(newLoginController(request).signinPage())
+  post "/signin": route(newLoginController(request).signin())
+
+  get "/": route(newTodoController(request).index())

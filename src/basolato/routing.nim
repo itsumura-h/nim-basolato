@@ -178,5 +178,6 @@ template middleware*(procs:varargs[Response]) =
       # echo getCurrentExceptionMsg()
       discard
     else:
+      echo repr(p)
       route(p)
       break

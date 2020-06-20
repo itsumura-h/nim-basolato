@@ -1,6 +1,8 @@
 from strutils import parseInt
 # framework
 import ../../../../src/basolato/controller
+# middleware
+import ../middlewares/controller_middlewares
 # view
 import ../../resources/pages/todo_view
 
@@ -8,6 +10,8 @@ import ../../resources/pages/todo_view
 type TodoController* = ref object of Controller
 
 proc newTodoController*(request:Request):TodoController =
+  # middleware
+  hasSessionId(request)
   return TodoController.newController(request)
 
 
