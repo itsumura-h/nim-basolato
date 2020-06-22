@@ -22,7 +22,6 @@ proc {targetName}View*(this:View):string =
   VIEW = VIEW.replace("'", "\"")
 
   if isFileExists(targetPath): return 1
-
   createDir(parentDir(targetPath))
 
   var f = open(targetPath, fmWrite)

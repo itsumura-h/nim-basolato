@@ -2,12 +2,17 @@ import json
 import ../../../../src/basolato/view
 import ../layouts/application
 
-proc impl(user, errors=newJObject()):string = tmpli html"""
+proc impl(params, errors=newJObject()):string = tmpli html"""
 <h1>Sign In</h1>
 <form method="POST">
   $(csrf_token())
+  $if errors.hasKey("exception"){
+    <div>
+      $(errors["exception"].get)
+    </div>
+  }
   <div>
-    <input type="text" name="name" placeholder="name" value="$(user["name"].get)">
+    <input type="text" name="name" placeholder="name" value="$(old(params["name"]))">
       $if errors.hasKey("name"){
         <ul>
           $for error in errors["name"]{
@@ -18,7 +23,7 @@ proc impl(user, errors=newJObject()):string = tmpli html"""
   </div>
 
   <div>
-    <input type="text" name="email" placeholder="email" value="$(user["email"].get)">
+    <input type="text" name="email" placeholder="email" value="$(old(params["email"]))">
       $if errors.hasKey("email"){
         <ul>
           $for error in errors["email"]{
@@ -44,9 +49,6 @@ proc impl(user, errors=newJObject()):string = tmpli html"""
 <a href="/login">Log in here</a>
 """
 
-proc signinView*(this:View, user, errors=newJObject()):string =
+proc signinView*(this:View, params, errors=newJObject()):string =
   let title = "SignIn"
-  var user = user
-  if user.len == 0:
-    user = %*{"name": "", "email": ""}
-  return this.applicationView(title, impl(user, errors))
+  return this.applicationView(title, impl(params, errors))

@@ -32,3 +32,9 @@ proc get*(val:JsonNode):string =
     return ""
   else:
     raise newException(JsonKindError, "val is array")
+
+proc old*(val:JsonNode):string =
+  try:
+    return val.get()
+  except:
+    return ""

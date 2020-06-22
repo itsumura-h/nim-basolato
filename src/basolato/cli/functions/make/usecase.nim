@@ -1,18 +1,24 @@
 import os, strformat, terminal, strutils
 import utils
 
+
 proc makeUsecase*(target:string, message:var string):int =
-  let targetName = target.split("/").max()
-  let targetCaptalized = capitalizeAscii(targetName)
+  var targetPath = &"{getCurrentDir()}/app/domain/usecases/{target}_usecase.nim"
+  let targetName = target.split("/")[^1]
+  let targetCaptalized = targetName.snake_to_camel()
+  let reativeToValueObjectPath = "../".repeat(target.split("/").len) & "models/value_objects"
   let USECASE = &"""
+import {reativeToValueObjectPath}
+
 type {targetCaptalized}Usecase* = ref object
 
 proc new{targetCaptalized}Usecase*():{targetCaptalized}Usecase =
   return {targetCaptalized}Usecase()
 """
 
-  var targetPath = &"{getCurrentDir()}/app/domain/usecases/{targetName}_usecase.nim"
   if isFileExists(targetPath): return 1
+  createDir(parentDir(targetPath))
+
   var f = open(targetPath, fmWrite)
   defer: f.close()
   f.write(USECASE)

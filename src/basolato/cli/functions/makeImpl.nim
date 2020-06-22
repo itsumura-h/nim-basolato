@@ -1,6 +1,6 @@
 import os, terminal
 import
-  make/controller, make/migration, make/view, make/config, make/domainModel, make/usecase
+  make/controller, make/migration, make/view, make/config, make/model, make/usecase
 
 
 template getTarget() =
@@ -36,9 +36,9 @@ proc make*(args:seq[string]):int =
   of "controller":
     getTarget
     return makeController(target, message)
-  of "domainModel":
+  of "model":
     getTarget
-    return makeDomainModel(target, message)
+    return makeModel(target, message)
   of "usecase":
     getTarget
     return makeUsecase(target, message)

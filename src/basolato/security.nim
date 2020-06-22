@@ -8,7 +8,7 @@ import ./core/core/private/utils
 
 
 # ========= Encrypt ==================
-proc randStr*(n:openArray[int]):string =
+proc randStr(n:varargs[int]):string =
   randomize()
   var n = n.sample()
   for _ in 1..n:
@@ -25,7 +25,7 @@ proc commonCtr(input:string):string =
   return ctx.cryptCTR(offset, nonce, input)
 
 proc encryptCtr*(input:string):string =
-  var input = randStr([16]) & input
+  var input = randStr(16) & input
   input.commonCtr().toHex()
 
 proc decryptCtr*(input:string):string =

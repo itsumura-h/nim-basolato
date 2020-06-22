@@ -13,7 +13,7 @@ suite "CTR encrypt":
     check input == output
 
   test "16bit":
-    let input = randStr([16])
+    let input = randStr(16)
     echo input
     let hashed = encryptCtr(input)
     echo hashed
@@ -22,7 +22,7 @@ suite "CTR encrypt":
     check input == output
 
   test "24bit":
-    let input = randStr([24])
+    let input = randStr(24)
     echo input
     let hashed = encryptCtr(input)
     echo hashed
@@ -31,7 +31,7 @@ suite "CTR encrypt":
     check input == output
 
   test "32bit":
-    let input = randStr([32])
+    let input = randStr(32)
     echo input
     let hashed = encryptCtr(input)
     echo hashed

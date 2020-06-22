@@ -9,8 +9,10 @@ type RequestValidation* = ref object
   params*: Table[string, string]
   errors*: JsonNode # JObject
 
+type ValidationError* = object of CatchableError
 
-proc validate*(request: Request):RequestValidation =
+
+proc newValidation*(request: Request):RequestValidation =
   return RequestValidation(
     params: request.params,
     errors: newJObject()
@@ -30,6 +32,10 @@ proc putValidate*(this: var RequestValidation, key: string, msg: string) =
     this.errors[key].add(%(msg))
   else:
     this.errors[key] = %[(msg)]
+
+proc valid*(this:RequestValidation) =
+  if this.errors.len > 0:
+    raise newException(ValidationError, "")
 
 # =============================================================================
 

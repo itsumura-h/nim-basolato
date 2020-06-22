@@ -138,6 +138,8 @@ import basolato/request_validation
 
 Controller
 ```nim
+import json
+
 type SignUpController = ref object
   request:Request
   auth: Auth
@@ -153,17 +155,19 @@ proc store*(this:SignUpController): Response =
   let email = this.request.params["email"]
   let password = this.request.params["password"]
   # validation
-  let v = this.request.validate()
-            .required(["name", "email", "password"])
-            .email("email")
-            .unique("email", "users", "email")
-            .password("password")
+  var v = this.request.validate()
+  v.required(["name", "email", "password"])
+  v.email("email")
+  v.unique("email", "users", "email")
+  v.password("password")
   if v.errors.len > 0:
     return render(createHtml(this.auth, name, email, v.errors))
 ```
 
 View
 ```html
+import json
+
 proc createHtmlImpl(name:string, email:string, errors:JsonNode): string = tmpli html"""
   <form method="post">
     $(csrfToken())
@@ -223,9 +227,9 @@ This will add errors if not checked in checkbox. Default checked value is `on` a
 ```
 
 ```nim
-validate(request)
-  .accepted("sample")
-  .accepted("sample2", "checked")
+var v = validate(request)
+v.accepted("sample")
+v.accepted("sample2", "checked")
 ```
 
 ### contains
@@ -236,20 +240,27 @@ This will add errors if value in request doesn't contain a expected string.
 ```
 
 ```nim
-validate(request).contains("email", "user")
+var v = validate(request)
+v.contains("email", "user")
 ```
 
 ### email, strictEmail
 This will add errors if value is not match a style of email address.  
-`strictEmail` supports [RFC5321](https://tools.ietf.org/html/rfc5321) and [RFC5322](https://tools.ietf.org/html/rfc5322) completely. References this Python code https://gist.github.com/frodo821/681869a36148b5214632166e0ad293a9
+`strictEmail` supports [RFC5321](https://tools.ietf.org/html/rfc5321) and [RFC5322](https://tools.ietf.org/html/rfc5322) completely. References this Python code https://gist.github.com/frodo821/681869a36148b5214632166e0ad293a9  
+
+Original articles
+[メイルアドレス正規表現ふたたび](https://www.nslabs.jp/email-address-regular-expression.rhtml)  
+[正規表現でのメールアドレスチェックは見直すべき – ReDoS](https://blog.ohgaki.net/redos-must-review-mail-address-validation)
+
 
 ```json
 {"address": "user1@gmail.com"}
 ```
 
 ```nim
-validate(request).email("address")
-validate(request).strictEmail("address")
+var v = validate(request)
+v.email("address")
+v.strictEmail("address")
 ```
 
 ### equals
@@ -260,7 +271,8 @@ This will add errors if value is not same against expectd string.
 ```
 
 ```nim
-validate(request).equals("name", "John")
+var v = validate(request)
+v.equals("name", "John")
 ```
 
 ### exists
@@ -271,7 +283,8 @@ This will add errors if key is not exist in request params.
 ```
 
 ```nim
-validate(request).exists("name")
+var v = validate(request)
+v.exists("name")
 ```
 
 ### gratorThan
@@ -282,7 +295,8 @@ This will add errors if value is not grater/larger than expected value.
 ```
 
 ```nim
-validate(request).gratorThan("age", 26)
+var v = validate(request)
+v.gratorThan("age", 26)
 ```
 
 ### inRange
@@ -293,7 +307,8 @@ This will add errors if value is not in rage of expected value.
 ```
 
 ```nim
-validate(request).inRange("age", min=20, max=60)
+var v = validate(request)
+v.inRange("age", min=20, max=60)
 ```
 
 ### ip
@@ -304,7 +319,8 @@ This will add errors if value is not match a style of IP address.
 ```
 
 ```nim
-validate(request).ip("ip_address")
+var v = validate(request)
+v.ip("ip_address")
 ```
 
 ### isIn
@@ -315,7 +331,8 @@ This will add errors if value is not match for one of expected values.
 ```
 
 ```nim
-validate(request).isIn("name", ["John", "Paul", "George", "Ringo"])
+var v = validate(request)
+v.isIn("name", ["John", "Paul", "George", "Ringo"])
 ```
 
 ### lessThan
@@ -326,7 +343,8 @@ This will add errors if value is not less/smaller than expected value.
 ```
 
 ```nim
-validate(request).gratorThan("age", 24)
+var v = validate(request)
+v.gratorThan("age", 24)
 ```
 
 
@@ -338,7 +356,8 @@ This will add errors if value is not number.
 ```
 
 ```nim
-validate(request).numeric("num")
+var v = validate(request)
+v.numeric("num")
 ```
 
 ### oneOf
@@ -349,7 +368,8 @@ This will add errors if one of expected keys is not present in request.
 ```
 
 ```nim
-validate(request).oneOf(["name", "birth_date", "job"])
+var v = validate(request)
+v.oneOf(["name", "birth_date", "job"])
 ```
 
 ### password
@@ -361,7 +381,8 @@ It needs at least 8 chars, one upper and lower letter, symbol(ex: @-_?!) is avai
 ```
 
 ```nim
-validate(request).password("pass")
+var v = validate(request)
+v.password("pass")
 ```
 
 ### required
@@ -372,7 +393,8 @@ This will add errors if all of expected keys is not present in request.
 ```
 
 ```nim
-validate(request).required(["name", "email"])
+var v = validate(request)
+v.required(["name", "email"])
 ```
 
 ### unique
@@ -392,7 +414,8 @@ table: users
 ```
 
 ```nim
-validate(request).unique("mail", "users", "email")
+var v = validate(request)
+v.unique("mail", "users", "email")
 ```
 |arg position|example|content|
 |---|---|---|

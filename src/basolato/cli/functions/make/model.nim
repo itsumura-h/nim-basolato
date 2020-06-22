@@ -1,9 +1,9 @@
 import os, strformat, terminal, strutils
 import utils
 
-proc makeDomainModel*(target:string, message:var string):int =
+proc makeModel*(target:string, message:var string):int =
   let targetName = target.split("/").max()
-  let targetCaptalized = capitalizeAscii(targetName)
+  let targetCaptalized = targetName.snake_to_camel()
   let ENTITY = &"""
 import ../value_objects
 

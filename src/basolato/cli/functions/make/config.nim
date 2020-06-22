@@ -24,7 +24,7 @@ putEnv("LOG_IS_FILE", "true")
 putEnv("LOG_DIR", "{getCurrentDir()}/logs")
 
 # Security
-putEnv("SECRET_KEY", "{rundStr([24])}") # 24 length
+putEnv("SECRET_KEY", "{randStr(24)}") # 24 length
 putEnv("CSRF_TIME", "525600") # minutes of 1 year
 putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
 putEnv("SESSION_DB", "{getCurrentDir()}/session.db")
@@ -37,4 +37,4 @@ putEnv("IS_SESSION_MEMORY", "false")
 
   var message = &"created {targetPath}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
-  return 1
+  return 0

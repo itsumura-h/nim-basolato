@@ -5,6 +5,8 @@ import ../../resources/pages/signin_view
 # framework
 import ../../../../src/basolato/controller
 import ../../../../src/basolato/request_validation
+# usecase
+import ../domain/usecases/login_usecase
 
 
 type LoginController* = ref object of Controller
@@ -26,24 +28,22 @@ proc signin*(this:LoginController):Response =
   let email = params["email"]
   let password = params["password"]
 
-  var v = this.request.validate()
+  var v = this.request.newValidation()
   try:
     # validation
     v.required(["name", "email", "password"])
     v.password("password")
     v.strictEmail("email")
-    echo v.errors
-    echo v.errors.len
-    if v.errors.len > 0:
-      raise newException(Exception, "")
-    raise newException(Exception, "")
-    # return redirect("/signin")
+    v.valid()
+    # bussines logic
+    newLoginUsecase().signin(name, email, password)
+    # response
+    return redirect("/signin")
+  except ValidationError:
+    return render(Http422, this.view.signinView(%params, v.errors))
   except:
-    let msg = getCurrentExceptionMsg()
-    if msg.len > 0:
-      v.errors["exception"] = %[msg]
-    let user = %*{"name":name, "email": email}
-    return render(Http422, this.view.signinView(user, v.errors))
+    v.errors["exception"] = %getCurrentExceptionMsg()
+    return render(Http500, this.view.signinView(%params, v.errors))
 
 
 proc index*(this:LoginController):Response =
