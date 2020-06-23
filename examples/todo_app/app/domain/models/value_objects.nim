@@ -1,5 +1,15 @@
 import ../../../../../src/basolato/password
 
+type UserId* = ref object
+  value:int
+
+proc newUserId*(value:int):UserId =
+  return UserId(value:value)
+
+proc get*(this:UserId):int =
+  return this.value
+
+# =============================================================================
 type UserName* = ref object
   value:string
 

@@ -475,17 +475,17 @@ proc serve*(
     setLogFilter(when defined(release): lvlInfo else: lvlDebug)
 
   if self.settings.bindAddr.len > 0:
-    logging.info("Jester is making jokes at http://$1:$2$3" %
+    logging.info("Basolato is running at http://$1:$2$3" %
       [
         self.settings.bindAddr, $self.settings.port, self.settings.appName
       ]
     )
   else:
     when defined(windows):
-      logging.info("Jester is making jokes at http://127.0.0.1:$1$2 (all interfaces)" %
+      logging.info("Basolato is running at http://127.0.0.1:$1$2 (all interfaces)" %
                    [$self.settings.port, self.settings.appName])
     else:
-      logging.info("Jester is making jokes at http://0.0.0.0:$1$2" %
+      logging.info("Basolato is running at http://0.0.0.0:$1$2" %
                    [$self.settings.port, self.settings.appName])
 
   var jes = self

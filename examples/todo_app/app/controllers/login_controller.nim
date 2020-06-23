@@ -36,7 +36,7 @@ proc signin*(this:LoginController):Response =
     v.strictEmail("email")
     v.valid()
     # bussines logic
-    newLoginUsecase().signin(name, email, password)
+    let newUserId = newLoginUsecase().signin(name, email, password)
     # response
     return redirect("/signin")
   except ValidationError:

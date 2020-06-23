@@ -28,6 +28,7 @@ proc newI{targetCaptalized}Repository*():{targetCaptalized}Repository =
 """
 
   let REPOSITORY = &"""
+import json, options
 import ../../../../active_records/rdb
 import ../{targetName}_entity
 import ../../value_objects

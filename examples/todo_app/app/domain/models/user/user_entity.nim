@@ -2,10 +2,18 @@ import ../value_objects
 import ../../../../../../src/basolato/password
 
 type User* = ref object
-  name:UserName
-  email:Email
-  password:Password
-  hashedPassword:HashedPassword
+  id*:UserId
+  name*:UserName
+  email*:Email
+  password*:Password
+  hashedPassword*:HashedPassword
+
+proc newUser*(id:UserId, name:UserName, email:Email):User =
+  return User(
+    id:id,
+    name:name,
+    email:email
+  )
 
 proc newDraftUser*(name:UserName, email:Email, password:Password):User =
   return User(
