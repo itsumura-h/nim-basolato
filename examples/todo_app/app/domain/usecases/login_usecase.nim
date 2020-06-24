@@ -4,7 +4,7 @@ import ../models/user/user_service
 import ../models/user/user_repository_interface
 
 type LoginUsecase* = ref object
-  user_repository:UserRepository
+  user_repository:IUserRepository
 
 proc newLoginUsecase*():LoginUsecase =
   return LoginUsecase(

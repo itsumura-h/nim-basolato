@@ -4,9 +4,9 @@ import user_entity
 import user_repository_interface
 
 type UserService* = ref object
-  repository:UserRepository
+  repository:IUserRepository
 
-proc newUserService*(user_repository_interface:UserRepository):UserService =
+proc newUserService*(user_repository_interface:IUserRepository):UserService =
   return UserService(
     repository:user_repository_interface
   )

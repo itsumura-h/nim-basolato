@@ -8,6 +8,10 @@ type UserRepository* = ref object
 proc newUserRepository*():UserRepository =
   return UserRepository()
 
+
+proc print*(this:UserRepository, value:string) =
+  echo "user_rdb_repository"
+
 proc find*(this:UserRepository, email:string):Option[User] =
   let userData = newUserTable().select("id", "name", "email").where("email", "=", email).first()
   if userData.len > 0:
