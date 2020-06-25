@@ -2,7 +2,7 @@
 
 version       = "0.1.0"
 author        = "Anonymous"
-description   = "A new awesome baspolato package"
+description   = "A new awesome basolato package"
 license       = "MIT"
 srcDir        = "."
 bin           = @["main"]

@@ -33,8 +33,8 @@ proc get*(val:JsonNode):string =
   else:
     raise newException(JsonKindError, "val is array")
 
-proc old*(val:JsonNode):string =
+proc old*(params:JsonNode, key:string):string =
   try:
-    return val.get()
+    return params[key].get()
   except:
     return ""

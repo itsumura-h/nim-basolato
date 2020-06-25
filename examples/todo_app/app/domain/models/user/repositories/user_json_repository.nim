@@ -8,7 +8,8 @@ type UserRepository* = ref object
 proc newUserRepository*():UserRepository =
   return UserRepository()
 
-proc print*(this:UserRepository, value:string) =
+
+proc print*(this:UserRepository) =
   echo "user_json_repository"
 
 proc find*(this:UserRepository, email:string):Option[User] =
@@ -17,3 +18,6 @@ proc find*(this:UserRepository, email:string):Option[User] =
       email: newEmail(email)
     )
   )
+
+proc save*(this:UserRepository, user:User):int =
+  return 0

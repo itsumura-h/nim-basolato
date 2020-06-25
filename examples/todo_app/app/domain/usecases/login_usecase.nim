@@ -4,11 +4,11 @@ import ../models/user/user_service
 import ../models/user/user_repository_interface
 
 type LoginUsecase* = ref object
-  user_repository:IUserRepository
+  userRepository:IUserRepository
 
 proc newLoginUsecase*():LoginUsecase =
   return LoginUsecase(
-    user_repository:newIUserRepository()
+    userRepository:newIUserRepository()
   )
 
 
@@ -17,8 +17,8 @@ proc signin*(this:LoginUsecase, name, email, password:string):int =
   let email = newEmail(email)
   let password = newPassword(password)
   let user = newDraftUser(name, email, password)
-  let user_service = newUserService(this.user_repository)
-  if user_service.isExists(user):
+  let userService = newUserService(this.user_repository)
+  if userService.isExists(user):
     raise newException(Exception, "This email is already used")
-  let newUserId = user_service.save(user)
+  let newUserId = userService.save(user)
   return newUserId

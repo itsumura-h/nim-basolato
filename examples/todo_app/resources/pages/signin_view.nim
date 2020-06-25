@@ -12,7 +12,7 @@ proc impl(params, errors=newJObject()):string = tmpli html"""
     </div>
   }
   <div>
-    <input type="text" name="name" placeholder="name" value="$(old(params["name"]))">
+    <input type="text" name="name" placeholder="name" value="$(old(params, "name"))">
       $if errors.hasKey("name"){
         <ul>
           $for error in errors["name"]{
@@ -23,7 +23,7 @@ proc impl(params, errors=newJObject()):string = tmpli html"""
   </div>
 
   <div>
-    <input type="text" name="email" placeholder="email" value="$(old(params["email"]))">
+    <input type="text" name="email" placeholder="email" value="$(old(params, "email"))">
       $if errors.hasKey("email"){
         <ul>
           $for error in errors["email"]{

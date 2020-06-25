@@ -9,7 +9,7 @@ proc newUserRepository*():UserRepository =
   return UserRepository()
 
 
-proc print*(this:UserRepository, value:string) =
+proc print*(this:UserRepository) =
   echo "user_rdb_repository"
 
 proc find*(this:UserRepository, email:string):Option[User] =

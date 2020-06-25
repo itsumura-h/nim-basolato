@@ -6,10 +6,14 @@ import user_repository_interface
 type UserService* = ref object
   repository:IUserRepository
 
-proc newUserService*(user_repository_interface:IUserRepository):UserService =
+proc newUserService*(userRepositoryInterface:IUserRepository):UserService =
   return UserService(
-    repository:user_repository_interface
+    repository:userRepositoryInterface
   )
+
+
+proc print*(this:UserService) =
+  this.repository.print()
 
 proc isExists*(this:UserService, user:User):bool =
   var duplicateUser = this.repository.find(user.email.get())
@@ -20,3 +24,4 @@ proc isExists*(this:UserService, user:User):bool =
 
 proc save*(this:UserService, user:User):int =
   return this.repository.save(user)
+

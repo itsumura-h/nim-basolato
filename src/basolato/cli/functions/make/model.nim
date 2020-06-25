@@ -14,11 +14,10 @@ proc new{targetCaptalized}*():{targetCaptalized} =
 """
 
   let REPOSITORY_INTERFACE = &"""
-import repositories/{targetName}_rdb_repository
-export {targetName}_rdb_repository
+import options
 
+import repositories/{targetName}_rdb_repository
 # import repositories/{targetName}_json_repository
-# export {targetName}_json_repository
 
 type I{targetCaptalized}Repository* = ref object of RootObj
   repository*:{targetCaptalized}Repository
@@ -44,7 +43,7 @@ import {targetName}_entity
 import {targetName}_repository_interface
 
 type {targetCaptalized}Service* = ref object
-  repository:{targetCaptalized}Repository
+  repository:I{targetCaptalized}Repository
 
 proc new{targetCaptalized}Service*():{targetCaptalized}Service =
   return {targetCaptalized}Service(
