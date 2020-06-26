@@ -138,7 +138,7 @@ template exceptionRoute*(pagePath="") =
   defer: GCunref exception
 
   if exception.name == "ErrorAuthRedirect".cstring:
-    let cookie = newCookie(request).destroy()
+    let cookie = newCookie(request).delete("session_id")
     route(errorRedirect(exception.msg).setCookie(cookie))
 
   if exception.name == "DD".cstring:
@@ -153,7 +153,7 @@ template exceptionRoute*(pagePath="") =
       &"  {request.reqMethod}  {request.ip}  {request.path}  {exception.msg}")
     if pagePath == "":
       if exception.msg == "Invalid session id":
-        let cookie = newCookie(request).destroy()
+        let cookie = newCookie(request).delete("session_id")
         route(render(status, errorPage(status, exception.msg)).setCookie(cookie))
       else:
         route(render(status, errorPage(status, exception.msg)))

@@ -9,19 +9,15 @@ proc newUserRepository*():UserRepository =
   return UserRepository()
 
 
-proc print*(this:UserRepository) =
-  echo "user_rdb_repository"
-
-proc find*(this:UserRepository, email:string):Option[User] =
-  let userData = newUserTable().select("id", "name", "email").where("email", "=", email).first()
+proc find*(this:UserRepository, email:Email):Option[User] =
+  let userData = newUserTable().select("*").where("email", "=", email.get()).first()
   if userData.len > 0:
-    return some(
-      newUser(
-        newUserId(userData["id"].getInt),
-        newUserName(userData["name"].getStr),
-        newEmail(userData["email"].getStr)
-      )
-    )
+    return some(newUser(
+      newUserId(userData["id"].getInt),
+      newUserName(userData["name"].getStr),
+      newEmail(userData["email"].getStr),
+      newHashedPassword(userData["password"].getStr)
+    ))
   else:
     return none(User)
 

@@ -1,4 +1,5 @@
 import options
+import ../value_objects
 
 import repositories/user_rdb_repository
 # import repositories/user_json_repository
@@ -13,11 +14,7 @@ proc newIUserRepository*():IUserRepository =
     repository:newUserRepository()
   )
 
-
-proc print*(this:IUserRepository) =
-  this.repository.print()
-
-proc find*(this:IUserRepository, email:string):Option[User] =
+proc find*(this:IUserRepository, email:Email):Option[User] =
   return this.repository.find(email)
 
 proc save*(this:IUserRepository, user:User):int =

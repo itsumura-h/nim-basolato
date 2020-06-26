@@ -18,7 +18,7 @@ proc migration20200617151816users_todo*() =
       Column().increments("id"),
       Column().string("todo"),
       Column().foreign("user_id").reference("id").on("users").onDelete(SET_NULL)
-    ])
+    ], reset=true)
   ])
 
   var users = newSeq[JsonNode]()

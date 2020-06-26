@@ -19,6 +19,14 @@ proc signin*(this:LoginUsecase, name, email, password:string):int =
   let user = newDraftUser(name, email, password)
   let userService = newUserService(this.user_repository)
   if userService.isExists(user):
-    raise newException(Exception, "This email is already used")
-  let newUserId = userService.save(user)
-  return newUserId
+    raise newException(CatchableError, "This email is already used")
+  let userId = userService.save(user)
+  return userId
+
+proc login*(this:LoginUsecase, email, password:string):int =
+  let email = newEmail(email)
+  let password = newPassword(password)
+  let userService = newUserService(this.userRepository)
+  let user = userService.find(email)
+  userService.checkPasswordValid(user, password)
+  return user.id.get()

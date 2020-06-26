@@ -15,9 +15,6 @@ proc newLoginController*(request:Request):LoginController =
   return LoginController.newController(request)
 
 
-proc loginPage*(this:LoginController):Response =
-  return render(this.view.loginView())
-
 proc signinPage*(this:LoginController):Response =
   return render(this.view.signinView())
 
@@ -36,14 +33,52 @@ proc signin*(this:LoginController):Response =
     v.strictEmail("email")
     v.valid()
     # bussines logic
-    let newUserId = newLoginUsecase().signin(name, email, password)
+    let userId = newLoginUsecase().signin(name, email, password)
+    let auth = newAuth()
+    auth.login()
+    auth.set("user_id", $user_id)
     # response
-    return redirect("/signin")
+    return redirect("/").setAuth(auth)
   except ValidationError:
     return render(Http422, this.view.signinView(%params, v.errors))
   except:
     v.errors["exception"] = %getCurrentExceptionMsg()
     return render(Http500, this.view.signinView(%params, v.errors))
+
+proc loginPage*(this:LoginController):Response =
+  return render(this.view.loginView())
+
+proc login*(this:LoginController):Response =
+  #params
+  let params = this.request.params()
+  let email = params["email"]
+  let password = params["password"]
+
+  var v = this.request.newValidation()
+  try:
+    # validation
+    v.required(["email", "password"])
+    v.email("email")
+    v.valid()
+    # bussiness logic
+    let userId = newLoginUsecase().login(email, password)
+    # auth
+    let auth = newAuth()
+    auth.login()
+    auth.set("id", $userId)
+    return redirect("/").setAuth(auth)
+  except ValidationError, CatchableError:
+    return render(Http412, this.view.loginView(%params, v.errors))
+  except:
+    v.errors["exception"] = %getCurrentExceptionMsg()
+    return render(Http500, this.view.loginView(%params, v.errors))
+
+proc logout*(this:LoginController):Response =
+  let auth = this.request.newAuth()
+  if not auth.isLogin():
+    return redirect("/")
+  auth.logout()
+  return redirect("/").setAuth(auth)
 
 
 proc index*(this:LoginController):Response =

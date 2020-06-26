@@ -2,7 +2,7 @@ import json
 import ../../../../src/basolato/view
 import ../layouts/application
 
-proc impl(params, errors=newJObject()):string = tmpli html"""
+proc impl(params, errors:JsonNode):string = tmpli html"""
 <h1>Sign In</h1>
 <form method="POST">
   $(csrf_token())

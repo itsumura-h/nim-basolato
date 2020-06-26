@@ -17,7 +17,9 @@ routes:
 
 
   get "/login": route(newLoginController(request).loginPage())
+  post "/login": route(newLoginController(request).login())
   get "/signin": route(newLoginController(request).signinPage())
   post "/signin": route(newLoginController(request).signin())
+  get "/logout": route(newLoginController(request).logout())
 
   get "/": route(newTodoController(request).index())

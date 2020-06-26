@@ -2,6 +2,7 @@ import ../../../../src/basolato/view
 import ../layouts/application
 
 proc impl():string = tmpli html"""
+<a href="/logout">logout</a>
 <form method="POST">
   $(csrfToken())
   <input type="text" name="todo">
