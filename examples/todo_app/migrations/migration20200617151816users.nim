@@ -22,11 +22,11 @@ proc migration20200617151816users_todo*() =
   ])
 
   var users = newSeq[JsonNode]()
-  let fake = newFaker("ja_JP")
   for i in 1..5:
+    let name = &"user{i}"
     users.add(%*{
-      "name": fake.name(),
-      "email": &"user{i}@gmail.com",
-      "password": genHashedPassword(&"user{i}password")
+      "name": name,
+      "email": &"{name}@gmail.com",
+      "password": genHashedPassword(&"{name}Password")
     })
   RDB().table("users").insert(users)

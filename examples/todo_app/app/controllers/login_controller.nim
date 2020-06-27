@@ -1,17 +1,21 @@
 import json
 from strutils import parseInt
-import ../../resources/pages/login_view
-import ../../resources/pages/signin_view
 # framework
 import ../../../../src/basolato/controller
 import ../../../../src/basolato/request_validation
+# middleware
+import ../middlewares/controller_middlewares
 # usecase
 import ../domain/usecases/login_usecase
+# view
+import ../../resources/pages/login_view
+import ../../resources/pages/signin_view
 
 
 type LoginController* = ref object of Controller
 
 proc newLoginController*(request:Request):LoginController =
+  redirectIfLogedIn(request)
   return LoginController.newController(request)
 
 

@@ -1,11 +1,10 @@
 # framework
 import base, security, header
-from controller import render, redirect, errorRedirect
 # 3rd party
 import ./core/core
 
 # framework
-export base, security, header, render, redirect, errorRedirect
+export base, security, header
 # 3rd party
 export core.request
 
@@ -53,3 +52,6 @@ proc checkAuthToken*(request:Request):Check =
         status:false,
         msg:getCurrentExceptionMsg()
       )
+
+proc redirect*(url:string) =
+  raise newException(Error302, url)
