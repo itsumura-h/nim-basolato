@@ -38,12 +38,13 @@ proc signin*(this:LoginController):Response =
     v.valid()
     # bussines logic
     let userId = newLoginUsecase().signin(name, email, password)
+    # auth
     let auth = newAuth()
     auth.login()
     auth.set("user_id", $user_id)
     # response
     return redirect("/").setAuth(auth)
-  except ValidationError:
+  except ValidationError, CatchableError:
     return render(Http422, this.view.signinView(%params, v.errors))
   except:
     v.errors["exception"] = %getCurrentExceptionMsg()

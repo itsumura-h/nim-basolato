@@ -9,5 +9,6 @@ lcov.info
 
 *.sqlite3
 *.db
+*.db.*
 config.nims
 logs/*
