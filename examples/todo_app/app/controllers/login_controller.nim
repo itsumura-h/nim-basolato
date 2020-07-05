@@ -45,6 +45,7 @@ proc signin*(this:LoginController):Response =
     # response
     return redirect("/").setAuth(auth)
   except ValidationError, CatchableError:
+    v.errors["exception"] = %getCurrentExceptionMsg()
     return render(Http422, this.view.signinView(%params, v.errors))
   except:
     v.errors["exception"] = %getCurrentExceptionMsg()
@@ -73,6 +74,7 @@ proc login*(this:LoginController):Response =
     auth.set("id", $userId)
     return redirect("/").setAuth(auth)
   except ValidationError, CatchableError:
+    v.errors["exception"] = %getCurrentExceptionMsg()
     return render(Http412, this.view.loginView(%params, v.errors))
   except:
     v.errors["exception"] = %getCurrentExceptionMsg()

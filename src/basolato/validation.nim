@@ -113,7 +113,7 @@ proc strictEmail(value:string):seq[string] =
   try:
     let valid = "abcdefghijklmnopqrstuvwxyz1234567890!#$%&\'*+-/=?^_`{}|~"
     if value.len == 0:
-      raise newException(Exception, "invalid email format 1")
+      raise newException(Exception, "email is empty")
     value = value.toLowerAscii()
     if not value.contains("@"):
       raise newException(Exception, "email should have '@'")
@@ -128,7 +128,7 @@ proc strictEmail(value:string):seq[string] =
           if value[i+1..^1].len > 0 and (valid & """()<>[]:;@,.\\" """).contains($value[i+1]):
             i.inc(2)
             continue
-          raise newException(Exception, "invalid email format 2")
+          raise newException(Exception, "invalid email format")
         if value[i] == '"':
           break
       if i == 64:

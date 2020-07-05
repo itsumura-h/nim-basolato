@@ -7,14 +7,14 @@ proc impl(params, errors:JsonNode):string = tmpli html"""
 <form method="POST">
   $(csrf_token())
   $if errors.hasKey("exception"){
-    <div>
+    <div class="errors">
       $(errors["exception"].get)
     </div>
   }
   <div>
     <input type="text" name="name" placeholder="name" value="$(old(params, "name"))">
       $if errors.hasKey("name"){
-        <ul>
+        <ul class="errors">
           $for error in errors["name"]{
             <li>$(error.get)</li>
           }
@@ -25,7 +25,7 @@ proc impl(params, errors:JsonNode):string = tmpli html"""
   <div>
     <input type="text" name="email" placeholder="email" value="$(old(params, "email"))">
       $if errors.hasKey("email"){
-        <ul>
+        <ul class="errors">
           $for error in errors["email"]{
             <li>$(error.get)</li>
           }
@@ -36,7 +36,7 @@ proc impl(params, errors:JsonNode):string = tmpli html"""
   <div>
     <input type="password" name="password" placeholder="password">
       $if errors.hasKey("password"){
-        <ul>
+        <ul class="errors">
           $for error in errors["password"]{
             <li>$(error.get)</li>
           }
