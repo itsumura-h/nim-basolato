@@ -5,7 +5,7 @@ import ../../value_objects
 
 type UserRepository* = ref object
 
-proc newUserRepository*():UserRepository =
+proc newUserJsonRepository*():UserRepository =
   return UserRepository()
 
 
