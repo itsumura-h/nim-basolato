@@ -2,14 +2,15 @@ import options
 import ../../../../../../src/basolato/password
 import ../value_objects
 import user_entity
-import user_repository_interface
+import repositories/user_repository
+import ../di_container
 
 type UserService* = ref object
-  repository:IUserRepository
+  repository:UserRepository
 
-proc newUserService*(userRepositoryInterface:IUserRepository):UserService =
+proc newUserService*(userRepository:UserRepository):UserService =
   return UserService(
-    repository:userRepositoryInterface
+    repository: userRepository
   )
 
 

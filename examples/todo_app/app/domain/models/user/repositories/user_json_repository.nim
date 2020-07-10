@@ -1,9 +1,10 @@
 import options
 
+import user_repository
+
 import ../user_entity
 import ../../value_objects
 
-type UserRepository* = ref object
 
 proc newUserJsonRepository*():UserRepository =
   return UserRepository()

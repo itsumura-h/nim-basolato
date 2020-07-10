@@ -1,14 +1,17 @@
+import tables
+
 import ../models/value_objects
 import ../models/user/user_entity
 import ../models/user/user_service
-import ../models/user/user_repository_interface
+import ../models/user/repositories/user_repository
+import ../models/di_container
 
 type LoginUsecase* = ref object
-  userRepository:IUserRepository
+  userRepository:UserRepository
 
 proc newLoginUsecase*():LoginUsecase =
   return LoginUsecase(
-    userRepository:newIUserRepository()
+    userRepository:dependencies["userRepository"]
   )
 
 
