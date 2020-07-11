@@ -22,4 +22,8 @@ routes:
   post "/signin": route(newLoginController(request).signin())
   get "/logout": route(newLoginController(request).logout())
 
+  # todo
   get "/": route(newTodoController(request).index())
+  post "/": route(newTodoController(request).store())
+  get "/@id": route(newTodoController(request).show(@"id"))
+  post "/@id/delete": route(newTodoController(request).destroy(@"id"))

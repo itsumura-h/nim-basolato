@@ -1,5 +1,9 @@
 import ../../../../../src/basolato/password
 
+
+# =============================================================================
+# User
+# =============================================================================
 type UserId* = ref object
   value:int
 
@@ -53,3 +57,30 @@ proc get*(this:Password):string =
 
 proc getHashed*(this:Password):HashedPassword =
   return newHashedPassword(this.value.genHashedPassword())
+
+
+# =============================================================================
+# Todo
+# =============================================================================
+type TodoId* = ref object
+  value:int
+
+proc newTodoId*(value:int):TodoId =
+  if value < 1:
+    raise newException(Exception, "TdoId should grater than 1")
+  return TodoId(value:value)
+
+proc get*(this:TodoId):int =
+  return this.value
+
+# =============================================================================
+type TodoContent* = ref object
+  value:string
+
+proc newTodoContent*(value:string):TodoContent =
+  if value.len < 1:
+    raise newException(Exception, "Content of Todo cannot be empty")
+  return TodoContent(value: value)
+
+proc get*(this:TodoContent):string =
+  return this.value

@@ -10,3 +10,9 @@ type User = ref object of ActiveRecord
 
 proc newUserTable*():RDB =
   return User.newActiveRecord()
+
+
+type Todo = ref object of ActiveRecord
+
+proc newTodoTable*():RDB =
+  return Todo.newActiveRecord()
