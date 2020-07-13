@@ -7,9 +7,9 @@ type TodoUsecase* = ref object
 proc newTodoUsecase*():TodoUsecase =
   return TodoUsecase()
 
-proc getTodos*(this:TodoUsecase):seq[JsonNode] =
+proc index*(this:TodoUsecase):seq[JsonNode] =
   let todoService = newTodoService()
-  return todoService.getTodos()
+  return todoService.index()
 
 proc show*(this:TodoUsecase, id:int):JsonNode =
   let todoService = newTodoService()

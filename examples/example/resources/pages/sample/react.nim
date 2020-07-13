@@ -1,5 +1,5 @@
-#? stdtmpl | standard
-#proc reactHtml*(users:string): string =
+import basolato/view
+proc reactHtml*(users:string): string = tmpli html"""
 <main></main>
 <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
@@ -31,15 +31,15 @@
       <h1>index</h1>
       <button onClick={function(){setCount(count+1)}}>add</button>
       <p>{count}</p>
-      <table>
+      <table border="1">
         <tr>
           <th>id</th><th>name</th><th>email</th><th>auth</th>
         </tr>
-        users.map(user=>{
-          <tr>
-            <td>{user.id}</td><td>{user.name}</td><td>{user.email}</td><td>{user.auth}</td>
-          </tr>
-        })
+          {users.map(user=>{
+            return <tr>
+              <td>{user.id}</td><td>{user.name}</td><td>{user.email}</td><td>{user.auth}</td>
+            </tr>
+          })}
       </table>
     </div>
   }
@@ -68,3 +68,4 @@
 
   ReactDOM.render(<App/>,document.querySelector('main'))
 </script>
+"""

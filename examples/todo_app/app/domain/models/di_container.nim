@@ -1,17 +1,19 @@
-import tables
+#[
+Sample
 
 import user/repositories/user_rdb_repository
-export user_rdb_repository
+import user/repositories/user_json_repository
 
+type DiContainer* = tuple
+  userRepository: UserRdbRepository
+  # userRepository: UserJsonRepository
 
-let dependencies* = {
-  "userRepository": newUserRdbRepository(),
-}.toTable()
+]#
 
+import todo/repositories/todo_rdb_repository
+import user/repositories/user_rdb_repository
+import user/repositories/user_json_repository
 
-# import user/repositories/user_json_repository
-# export user_json_repository
-
-# let dependencies* = {
-#   "userRepository": newUserJsonRepository(),
-# }.toTable()
+type DiContainer* = tuple
+  userRepository: UserRdbRepository
+  todoRepository: TodoRdbRepository

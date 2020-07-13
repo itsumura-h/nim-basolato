@@ -43,7 +43,7 @@ proc signin*(this:LoginController):Response =
     auth.login()
     auth.set("user_id", $user_id)
     # response
-    return redirect("/").setAuth(auth)
+    return redirect("/todo").setAuth(auth)
   except ValidationError, CatchableError:
     v.errors["exception"] = %getCurrentExceptionMsg()
     return render(Http422, this.view.signinView(%params, v.errors))
@@ -72,8 +72,9 @@ proc login*(this:LoginController):Response =
     let auth = newAuth()
     auth.login()
     auth.set("id", $userId)
-    return redirect("/").setAuth(auth)
+    return redirect("/todo").setAuth(auth)
   except ValidationError, CatchableError:
+    echo getCurrentException().type
     v.errors["exception"] = %getCurrentExceptionMsg()
     return render(Http412, this.view.loginView(%params, v.errors))
   except:
@@ -83,9 +84,9 @@ proc login*(this:LoginController):Response =
 proc logout*(this:LoginController):Response =
   let auth = this.request.newAuth()
   if not auth.isLogin():
-    return redirect("/")
+    return redirect("/todo")
   auth.logout()
-  return redirect("/").setAuth(auth)
+  return redirect("/todo").setAuth(auth)
 
 
 proc index*(this:LoginController):Response =

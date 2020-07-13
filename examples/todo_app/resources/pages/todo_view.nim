@@ -17,10 +17,10 @@ proc impl(todos:seq[JsonNode]):string = tmpli html"""
           <tr>
             <td>$(todo["todo"].get)</td>
             <td>
-              <a href="/$(todo["id"].get)">detail</a>
+              <a href="/todo/$(todo["id"].get)">detail</a>
             </td>
             <td>
-              <form method="post" action="/$(todo["id"].get)/delete">
+              <form method="post" action="/todo/$(todo["id"].get)/delete">
                 $(csrfToken())
                 <button type="submit">delete</button>
               </form>

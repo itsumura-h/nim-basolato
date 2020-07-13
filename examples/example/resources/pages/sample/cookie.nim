@@ -1,29 +1,29 @@
 #? stdtmpl | standard
 # import json
 # # framework
-# import ../../../src/basolato/view
+# import basolato/view
 # proc cookieHtml*(auth:Auth, errors=newJObject()): string =
 <a href="/">go back</a>
 <form method="post">
   ${csrfToken()}
-  <input type="text" name="key">
-  <input type="text" name="value">
+  <input type="text" name="key" placeholder="key">
+  <input type="text" name="value" placeholder="value">
   <button type="submit">send</button>
 </form>
 <form method="post" action="/sample/cookie/update">
   ${csrfToken()}
-  <input type="text" name="key">
+  <input type="text" name="key" placeholder="key">
   <input type="text" name="days" placeholder="days">
   <button type="submit">update expire</button>
 </form>
 <form method="post" action="/sample/cookie/delete">
   ${csrfToken()}
-  <input type="text" name="key">
+  <input type="text" name="key" placeholder="key">
   <button type="submit">delete</button>
 </form>
 <form method="post" action="/sample/cookie/delete-all">
   ${csrfToken()}
-  <button type="submit">deleteAll</button>
+  <button type="submit">delete all</button>
 </form>
 
 <div id="display"></div>

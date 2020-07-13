@@ -1,16 +1,16 @@
 import json, strformat, strutils, times
-import ../../../src/basolato/controller
+import basolato/controller
 
 import allographer/query_builder
 
 # html
-import ../../../src/basolato/welcome_page/resources/welcome
-import ../../resources/sample/karax
-import ../../resources/sample/react
-import ../../resources/sample/material_ui
-import ../../resources/sample/vuetify
-import ../../resources/sample/cookie
-import ../../resources/sample/login
+import ../../resources/pages/welcome_view
+import ../../resources/pages/sample/karax
+import ../../resources/pages/sample/react
+import ../../resources/pages/sample/material_ui
+import ../../resources/pages/sample/vuetify
+import ../../resources/pages/sample/cookie
+import ../../resources/pages/sample/login
 
 type SampleController = ref object of Controller
 
@@ -19,12 +19,12 @@ proc newSampleController*(request:Request): SampleController =
 
 
 proc index*(this:SampleController): Response =
-  return render(html("sample/index.html"))
+  return render(html("pages/sample/index.html"))
 
 
 proc welcome*(this:SampleController): Response =
   let name = "Basolato " & basolatoVersion
-  return render(welcomeHtml(name))
+  return render(this.view.welcomeView(name))
 
 
 proc karaxIndex*(this:SampleController): Response =
@@ -56,6 +56,7 @@ proc react*(this:SampleController): Response =
               .select("users.id", "users.name", "users.email", "auth.auth")
               .join("auth", "auth.id", "=", "users.auth_id")
               .get()
+  # dd($users)
   return render(reactHtml($users))
 
 proc materialUi*(this:SampleController): Response =
@@ -122,13 +123,16 @@ proc destroyCookies*(this:SampleController): Response =
 
 # ========== Login ====================
 proc indexLogin*(this:SampleController): Response =
-  return render(loginHtml(this.auth))
+  let auth = newAuth(this.request)
+  return render(loginHtml(auth))
 
 proc storeLogin*(this:SampleController): Response =
   let name = this.request.params["name"]
   let password = this.request.params["password"]
   # auth
-  let auth = newAuth().set("name", name)
+  let auth = newAuth()
+  auth.login()
+  auth.set("name", name)
   return redirect("/sample/login").setAuth(auth)
 
 proc destroyLogin*(this:SampleController): Response =
@@ -146,7 +150,4 @@ proc presentDd*(this:SampleController): Response =
     "abc",
     # this.request.repr,
   )
-  echo "a"
-  echo "b"
-  # dd("abc")
   return render("dd")

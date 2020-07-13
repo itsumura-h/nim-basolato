@@ -14,31 +14,31 @@ proc new{targetCaptalized}*():{targetCaptalized} =
 """
 
   let REPOSITORY_INTERFACE = &"""
-import options
+import ../value_objects
+include ../di_container
 
-import repositories/{targetName}_rdb_repository
-# import repositories/{targetName}_json_repository
+type I{targetCaptalized}Repository* = ref object
 
-type I{targetCaptalized}Repository* = ref object of RootObj
-  repository*:{targetCaptalized}Repository
-
-proc newI{targetCaptalized}Repository*():{targetCaptalized}Repository =
-  return new{targetCaptalized}Repository()
+proc newI{targetCaptalized}Repository*():I{targetCaptalized}Repository =
+  return newI{targetCaptalized}Repository()
 """
 
   let REPOSITORY = &"""
-import json, options
-import ../../../../active_records/rdb
+import allographer/query_builder
 import ../{targetName}_entity
 import ../../value_objects
 
-type {targetCaptalized}Repository* = ref object
+type {targetCaptalized}RdbRepository* = ref object
 
-proc new{targetCaptalized}Repository*():{targetCaptalized}Repository =
-  return {targetCaptalized}Repository()
+proc new{targetCaptalized}Repository*():{targetCaptalized}RdbRepository =
+  return {targetCaptalized}RdbRepository()
+
+proc sampleProc*(this:{targetCaptalized}RdbRepository) =
+  echo "{targetCaptalized}RdbRepository sampleProc"
 """
 
   let SERVICE = &"""
+import ../value_objects
 import {targetName}_entity
 import {targetName}_repository_interface
 
@@ -85,6 +85,26 @@ proc new{targetCaptalized}Service*():{targetCaptalized}Service =
   if isFileExists(targetPath): return 1
   f = open(targetPath, fmWrite)
   f.write(SERVICE)
+
+    # update di_container.nim
+  targetPath = &"{getCurrentDir()}/app/domain/models/di_container.nim"
+  f = open(targetPath, fmRead)
+  let text = f.readAll()
+  var textArr = text.splitLines()
+  # get offset where column is empty string
+  var offsets:seq[int]
+  for i, row in textArr:
+    if row == "":
+      offsets.add(i)
+  # insert array
+  textArr.insert(&"import {targetName}/repositories/{targetName}_rdb_repository", offsets[0])
+  textArr.insert(&"  {targetName}Repository: {targetCaptalized}RdbRepository", offsets[1]+1)
+  # write in file
+  f = open(targetPath, fmWrite)
+  for i in 0..textArr.len-2:
+    f.writeLine(textArr[i])
+  message = &"updated di_container.nim"
+  styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
 
   message = &"created domain model in {getCurrentDir()}/app/domain/models/{targetName}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)

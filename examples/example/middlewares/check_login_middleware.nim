@@ -1,5 +1,5 @@
 import httpcore
-import ../../src/basolato/middleware
+import basolato/middleware
 
 proc hasLoginId*(request: Request):Response =
   try:
@@ -20,4 +20,4 @@ proc isLogin*(request: Request):Response =
     discard hasLoginId(request)
     discard hasLoginToken(request)
   except:
-    return errorRedirect("/login")
+    return errorRedirect("/")

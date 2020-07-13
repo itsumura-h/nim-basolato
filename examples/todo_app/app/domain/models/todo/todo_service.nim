@@ -1,19 +1,18 @@
 import json
 import ../value_objects
 import todo_entity
-import repositories/todo_rdb_repository
 import todo_repository_interface
 
 type TodoService* = ref object
-  repository:TodoRepository
+  repository:ITodoRepository
 
 proc newTodoService*():TodoService =
   return TodoService(
-    repository:newITodoRepository()
+    repository: newITodoRepository()
   )
 
-proc getTodos*(this:TodoService):seq[JsonNode] =
-  return this.repository.getTodos()
+proc index*(this:TodoService):seq[JsonNode] =
+  return this.repository.index()
 
 proc show*(this:TodoService, id:TodoId):JsonNode =
   return this.repository.show(id)

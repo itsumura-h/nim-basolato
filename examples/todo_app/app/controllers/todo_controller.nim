@@ -21,7 +21,7 @@ proc newTodoController*(request:Request):TodoController =
 
 proc index*(this:TodoController):Response =
   let todoUsecase = newTodoUsecase()
-  let todos = todoUsecase.getTodos()
+  let todos = todoUsecase.index()
   return render(this.view.todoView(todos))
 
 proc show*(this:TodoController, id:string):Response =
@@ -37,7 +37,7 @@ proc store*(this:TodoController):Response =
   let todo = this.request.params["todo"]
   let todoUsecase = newTodoUsecase()
   todoUsecase.insert(todo)
-  return redirect("/")
+  return redirect("/todo")
 
 proc edit*(this:TodoController, id:string):Response =
   let id = id.parseInt
@@ -51,4 +51,4 @@ proc destroy*(this:TodoController, id:string):Response =
   let id = id.parseInt
   let todoUsecase = newTodoUsecase()
   todoUsecase.destroy(id)
-  return redirect("/")
+  return redirect("/todo")

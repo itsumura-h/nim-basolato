@@ -1,21 +1,21 @@
 import json
-import ../../../../active_records/rdb
+import allographer/query_builder
 import ../todo_entity
 import ../../value_objects
 
-type TodoRepository* = ref object
+type TodoRdbRepository* = ref object
 
-proc newTodoRepository*():TodoRepository =
-  return TodoRepository()
+proc newTodoRepository*():TodoRdbRepository =
+  return TodoRdbRepository()
 
-proc getTodos*(this:TodoRepository):seq[JsonNode] =
-  return newTodoTable().get()
+proc index*(this:TodoRdbRepository):seq[JsonNode] =
+  return RDB().table("todos").get()
 
-proc show*(this:TodoRepository, id:TodoId):JsonNode =
-  return newTodoTable().find(id.get)
+proc show*(this:TodoRdbRepository, id:TodoId):JsonNode =
+  return RDB().table("todos").find(id.get)
 
-proc insert*(this:TodoRepository, todo:TodoContent) =
-  newTodoTable().insert(%*{"todo": todo.get()})
+proc insert*(this:TodoRdbRepository, todo:TodoContent) =
+  RDB().table("todos").insert(%*{"todo": todo.get()})
 
-proc destroy*(this:TodoRepository, id:TodoId) =
-  newTodoTable().delete(id.get)
+proc destroy*(this:TodoRdbRepository, id:TodoId) =
+  RDB().table("todos").delete(id.get)

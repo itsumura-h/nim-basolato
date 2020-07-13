@@ -330,7 +330,7 @@ proc some*(this:Auth, key:string):bool =
     this.session.some(key)
 
 proc get*(this:Auth, key:string):string =
-  if this.session.get("isLogin").parseBool():
+  if this.session.some("isLogin"):
     return this.session.get(key)
   else:
     return ""

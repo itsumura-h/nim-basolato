@@ -3,10 +3,10 @@ import ../../../../src/basolato/view
 import ../layouts/application
 
 proc impl(todo:JsonNode):string = tmpli html"""
-<p><a href="/">back</a></p>
-<textarea readonly>$(todo["todo"].get)</textarea>
+<p><a href="/todo">back</a></p>
+<div>$(todo["todo"].get)</div>
 """
 
 proc todoDetailView*(this:View, todo:JsonNode):string =
-  let title = ""
+  let title = "todo detail"
   return this.applicationView(title, impl(todo))

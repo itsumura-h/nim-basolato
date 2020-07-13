@@ -23,7 +23,7 @@ routes:
   get "/logout": route(newLoginController(request).logout())
 
   # todo
-  get "/": route(newTodoController(request).index())
-  post "/": route(newTodoController(request).store())
-  get "/@id": route(newTodoController(request).show(@"id"))
-  post "/@id/delete": route(newTodoController(request).destroy(@"id"))
+  get "/todo": route(newTodoController(request).index())
+  post "/todo": route(newTodoController(request).store())
+  get "/todo/@id": route(newTodoController(request).show(@"id"))
+  post "/todo/@id/delete": route(newTodoController(request).destroy(@"id"))

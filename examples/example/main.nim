@@ -1,7 +1,7 @@
 import asyncdispatch, httpcore, re, tables
 # framework
-import ../src/basolato/routing
-import ../src/basolato/middleware
+import basolato/routing
+import basolato/middleware
 # middleware
 import middlewares/framework_middleware
 import middlewares/custom_headers_middleware
@@ -44,6 +44,7 @@ router api:
     route(render("api2"))
 
 # =============================================================================
+# router main_router:
 routes:
   # Framework
   error Http404: http404Route
@@ -67,7 +68,6 @@ routes:
 #   let port = 5000.Port
 #   let settings = newSettings(port=port)
 #   var jester = initJester(main_router, settings=settings)
-#   performCodeReload()
 #   jester.serve()
 
 # when isMainModule:

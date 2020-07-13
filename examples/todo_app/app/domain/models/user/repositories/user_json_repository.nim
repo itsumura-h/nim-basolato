@@ -1,21 +1,20 @@
 import options
 
-import user_repository
-
 import ../user_entity
 import ../../value_objects
 
+type UserJsonRepository = ref object
 
-proc newUserJsonRepository*():UserRepository =
-  return UserRepository()
+proc newUserJsonRepository*():UserJsonRepository =
+  return UserJsonRepository()
 
 
-proc find*(this:UserRepository, email:string):Option[User] =
+proc find*(this:UserJsonRepository, email:string):Option[User] =
   return some(
     User(
       email: newEmail(email)
     )
   )
 
-proc save*(this:UserRepository, user:User):int =
+proc save*(this:UserJsonRepository, user:User):int =
   return 0

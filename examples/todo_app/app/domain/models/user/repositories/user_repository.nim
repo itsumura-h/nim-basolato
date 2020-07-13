@@ -1,2 +1,0 @@
-type UserRepository* = ref object
-

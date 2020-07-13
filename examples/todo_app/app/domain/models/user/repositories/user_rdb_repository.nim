@@ -1,18 +1,17 @@
 import json, options
-
-import user_repository
-
-import ../../../../active_records/rdb
+import allographer/query_builder
 import ../user_entity
 import ../../value_objects
 
+type UserRdbRepository* = ref object
 
-proc newUserRdbRepository*():UserRepository =
-  return UserRepository()
+proc newUserRepository*():UserRdbRepository =
+  return UserRdbRepository()
 
 
-proc find*(this:UserRepository, email:Email):Option[User] =
-  let userData = newUserTable().select("*").where("email", "=", email.get()).first()
+proc find*(this:UserRdbRepository, email:Email):Option[User] =
+  let userData = RDB().table("users").select("*").where("email", "=", email.get()).first()
+  echo userData
   if userData.len > 0:
     return some(newUser(
       newUserId(userData["id"].getInt),
@@ -23,8 +22,8 @@ proc find*(this:UserRepository, email:Email):Option[User] =
   else:
     return none(User)
 
-proc save*(this:UserRepository, user:User):int =
-  return newUserTable().insertID(%*{
+proc save*(this:UserRdbRepository, user:User):int =
+  return RDB().table("users").insertID(%*{
     "name":user.name.get(),
     "email":user.email.get(),
     "password":user.password.getHashed()

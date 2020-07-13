@@ -1,7 +1,7 @@
 import tables, json
 from strutils import join
 # framework
-import ../../src/basolato/middleware
+import basolato/middleware
 
 
 proc customHeader*():Headers =

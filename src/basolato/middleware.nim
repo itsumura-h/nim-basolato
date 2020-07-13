@@ -1,10 +1,10 @@
 # framework
-import base, security, header
+import base, security, header, controller
 # 3rd party
 import ./core/core
 
 # framework
-export base, security, header
+export base, security, header, controller.errorRedirect
 # 3rd party
 export core.request
 
