@@ -72,35 +72,26 @@ routes
 
 app/controllers/sample_controller.nim
 ```nim
-import ../models/users
-
 type SampleController = ref object of Controller
-  user:User
 
 proc newSampleController*(request:Request): SampleController =
-  var sampleController = SampleController.newController(request)
-  this.user = newUser()
-  return this
+  return SampleController.newController(request)
 
 proc index*(this:SampleController): Response =
   this.request # Request
   this.auth # Auth
-  this.user # User(DB model)
 ```
-DI(Dependency Injection) is a technique whereby one object supplies the dependencies of another object.  
-In this example, `request`, `auth` and `user` userd in controller action method is initialized in `newSampleController` constructor.  
-When you define controller object extends `Controller`, `request` and `auth` is initialized. You can add object by yourself.(ex: DB model object)
 
+When you define controller object extends `Controller`, `request` and `auth` is initialized.
 
-
-
-## Returning string
+## Response
+### Returning string
 If you set string in `render` proc, controller returns string.
 ```nim
 return render("index")
 ```
 
-## Returning HTML file
+### Returning HTML file
 If you set html file path in `html` proc, controller returns HTML.  
 This file path should be relative path from `resources` dir
 
@@ -110,7 +101,7 @@ return render(html("sample/index.html"))
 >> display /resources/sample/index.html
 ```
 
-## Returning template
+### Returning template
 Call template proc with args in `render` will return template
 
 resources/sample/index.nim
@@ -127,7 +118,7 @@ main.nim
 return render(indexHtml("John"))
 ```
 
-## Returning JSON
+### Returning JSON
 If you set JsonNode in `render` proc, controller returns JSON.
 
 ```nim
@@ -136,7 +127,7 @@ return render(
 )
 ```
 
-## Response status
+### Response status
 Put response status code arge1 and response body arge2
 ```nim
 return render(HTTP500, "It is a response body")

@@ -41,7 +41,7 @@ proc index*(this:SampleController): Response =
 `toHeaders()` generate `Header` object from `array`, `seq`, `table` and `JsonNode`.
 
 ```nim
-import ../../src/basolato/middleware
+import basolato/middleware
 
 proc secureHeader*(): Headers =
   return [

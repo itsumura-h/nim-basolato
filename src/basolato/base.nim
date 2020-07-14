@@ -1,4 +1,4 @@
-import json, httpcore
+import json, httpcore, typeinfo
 
 const
   basolatoVersion* = "0.4.0"

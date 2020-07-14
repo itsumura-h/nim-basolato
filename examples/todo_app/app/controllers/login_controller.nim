@@ -74,7 +74,7 @@ proc login*(this:LoginController):Response =
     auth.set("id", $userId)
     return redirect("/todo").setAuth(auth)
   except ValidationError, CatchableError:
-    echo getCurrentException().type
+    echo getCurrentException().repr
     v.errors["exception"] = %getCurrentExceptionMsg()
     return render(Http412, this.view.loginView(%params, v.errors))
   except:
