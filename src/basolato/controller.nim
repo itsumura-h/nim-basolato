@@ -25,6 +25,7 @@ proc newController*(this:typedesc, request:Request): this.type =
   else:
     return this.type(
       request:request,
+      auth:newAuth(),
       view: newView()
     )
 

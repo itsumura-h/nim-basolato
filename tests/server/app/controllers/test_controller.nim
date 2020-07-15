@@ -1,8 +1,9 @@
 import json
-import ../../src/basolato/controller
-import ../../src/basolato/security
+import ../../../../src/basolato/controller
+import ../../../../src/basolato/security
 # template
-import resources/test_template
+import ../../resources/pages/test_view
+
 
 type TestController = ref object of Controller
   name*:string
@@ -17,10 +18,10 @@ proc renderStr*(this:TestController):Response =
   return render("test")
 
 proc renderHtml*(this:TestController):Response =
-  return render(html("test.html"))
+  return render(html("pages/test.html"))
 
 proc renderTemplate*(this:TestController):Response =
-  return render(test_template())
+  return render(this.view.testView())
 
 proc renderJson*(this:TestController):Response =
   return render(%*{"key": "test"})
@@ -60,14 +61,12 @@ proc setCookie*(this:TestController):Response =
   return render("setCookie").setCookie(cookie)
 
 proc setAuth*(this:TestController):Response =
-  var auth = newAuth()
-              .set("key1", "value1")
-              .set("key2", "value2")
-  return render("setAuth").setAuth(auth)
+  this.auth.set("key1", "value1")
+  this.auth.set("key2", "value2")
+  return render("setAuth").setAuth(this.auth)
 
 proc destroyAuth*(this:TestController):Response =
-  let auth = newAuth()
-  return render("setAuth").destroyAuth(auth)
+  return render("setAuth").destroyAuth(this.auth)
 
 
 # test routing

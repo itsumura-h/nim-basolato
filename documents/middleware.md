@@ -93,9 +93,8 @@ routes:
 ## Controller middleware
 If you want to run middleware in controller, set middleware in contructor of controller.
 
+app/middlewares/controller_middleware.nim
 ```nim
-# app/middlewares/controller_middleware.nim
-
 import httpcore
 import basolato/middleware
 
@@ -103,9 +102,9 @@ proc hasSessionId*(request:Request) =
   if not request.headers().hasKey("session_id"):
     raise newException(Error302, "/login")
 ```
-```nim
-# app/controllers/todo_controller.nim
 
+app/controllers/todo_controller.nim
+```nim
 import basolato/controller
 # import middleware
 import ../middlewares/controller_middlewares
@@ -118,9 +117,9 @@ proc newTodoController*(request:Request):TodoController =
   hasSessionId(request)
   return TodoController.newController(request)
 ```
-```nim
-# main.nim
 
+main.nim
+```nim
 import app/controllers/todo_controller
 import app/controllers/login_controller
 

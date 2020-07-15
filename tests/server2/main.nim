@@ -1,21 +1,16 @@
 import asyncdispatch, httpcore, re, tables
 # framework
 import ../../src/basolato/routing
-# middleware
-import app/middlewares/custom_headers_middleware
-import app/middlewares/framework_middleware
-# controller
-import app/controllers/test_controller
+import middleware
+
+import controller
 
 router withMiddleware:
   # test middleware
   post "/test_routing": route(newTestController(request).postAction())
 
 routes:
-  # Framework
-  error Http404: http404Route
   error Exception: exceptionRoute
-  before: framework
 
   # test controller
   get "/renderStr": route(newTestController(request).renderStr())
@@ -45,12 +40,3 @@ routes:
 
   before re"/with_middleware.*": framework
   extend withMiddleware, "/with_middleware"
-
-# proc main() =
-#   let port = 5000.Port
-#   let settings = newSettings(port=port)
-#   var jester = initJester(main_router, settings=settings)
-#   jester.serve()
-
-# when isMainModule:
-#   main()

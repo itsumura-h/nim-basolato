@@ -39,11 +39,10 @@ proc signin*(this:LoginController):Response =
     # bussines logic
     let userId = newLoginUsecase().signin(name, email, password)
     # auth
-    let auth = newAuth()
-    auth.login()
-    auth.set("user_id", $user_id)
+    this.auth.login()
+    this.auth.set("user_id", $user_id)
     # response
-    return redirect("/todo").setAuth(auth)
+    return redirect("/todo").setAuth(this.auth)
   except ValidationError, CatchableError:
     v.errors["exception"] = %getCurrentExceptionMsg()
     return render(Http422, this.view.signinView(%params, v.errors))
@@ -69,10 +68,9 @@ proc login*(this:LoginController):Response =
     # bussiness logic
     let userId = newLoginUsecase().login(email, password)
     # auth
-    let auth = newAuth()
-    auth.login()
-    auth.set("id", $userId)
-    return redirect("/todo").setAuth(auth)
+    this.auth.login()
+    this.auth.set("id", $userId)
+    return redirect("/todo").setAuth(this.auth)
   except ValidationError, CatchableError:
     echo getCurrentException().repr
     v.errors["exception"] = %getCurrentExceptionMsg()
@@ -82,11 +80,10 @@ proc login*(this:LoginController):Response =
     return render(Http500, this.view.loginView(%params, v.errors))
 
 proc logout*(this:LoginController):Response =
-  let auth = this.request.newAuth()
-  if not auth.isLogin():
+  if not this.auth.isLogin():
     return redirect("/todo")
-  auth.logout()
-  return redirect("/todo").setAuth(auth)
+  this.auth.logout()
+  return redirect("/todo").setAuth(this.auth)
 
 
 proc index*(this:LoginController):Response =

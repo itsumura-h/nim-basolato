@@ -127,7 +127,6 @@ nim c -r main
 - [Controller](./documents/controller.md)
 - [Middleware](./documents/middleware.md)
 - [Headers](./documents/headers.md)
-- [Model](./documents/model.md)
 - [Migration](./documents/migration.md)
 - [View](./documents/view.md)
 - [Error](./documents/error.md)

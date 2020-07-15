@@ -269,9 +269,13 @@ proc getFlash*(this:Auth):JsonNode =
 login
 ```nim
 proc index(this:Controller): Response =
-  if this.auth.isNil():
-    this.auth = newAuth()
-  this.auth.login()
+  let email = params["email"]
+  let password = params["password"]
+  let userId = newLoginUsecase().login(email, password)
+  let auth = newAuth()
+  auth.login()
+  auth.set("id", $userId)
+  return redirect("/").setAuth(auth)
 ```
 
 logout

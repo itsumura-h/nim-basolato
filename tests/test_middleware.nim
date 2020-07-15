@@ -30,37 +30,37 @@ suite "middleware":
     let response = client.post(&"{HOST}/with_middleware/test_routing", body = $params)
     check response.code == Http200
 
-  test "checkCsrfToken invalid":
-    client.headers = newHttpHeaders({"Content-Type": "application/x-www-form-urlencoded"})
-    var params = &"csrf_token=invalid_token"
-    let response = client.post(&"{HOST}/with_middleware/test_routing", body = $params)
-    # echo response.body
-    check response.code == Http403
-    check response.body.contains("Invalid csrf token")
+  # test "checkCsrfToken invalid":
+  #   client.headers = newHttpHeaders({"Content-Type": "application/x-www-form-urlencoded"})
+  #   var params = &"csrf_token=invalid_token"
+  #   let response = client.post(&"{HOST}/with_middleware/test_routing", body = $params)
+  #   # echo response.body
+  #   check response.code == Http403
+  #   check response.body.contains("Invalid csrf token")
 
-  test "checkAuthToken":
-    let auth_id = newAuth().getToken()
-    echo auth_id
-    client.headers = newHttpHeaders({
-      "Cookie": &"session_id={auth_id}",
-      "Content-Type": "application/x-www-form-urlencoded"
-    })
-    let csrf_token = newCsrfToken("").getToken()
-    var params = &"csrf_token={csrf_token}"
-    let response = client.post(&"{HOST}/with_middleware/test_routing", body = $params)
-    # echo response.body
-    check response.code == Http200
+  # test "checkAuthToken":
+  #   let auth_id = newAuth().getToken()
+  #   echo auth_id
+  #   client.headers = newHttpHeaders({
+  #     "Cookie": &"session_id={auth_id}",
+  #     "Content-Type": "application/x-www-form-urlencoded"
+  #   })
+  #   let csrf_token = newCsrfToken("").getToken()
+  #   var params = &"csrf_token={csrf_token}"
+  #   let response = client.post(&"{HOST}/with_middleware/test_routing", body = $params)
+  #   # echo response.body
+  #   check response.code == Http200
 
-  test "checkAuthToken invalid":
-    let auth_id = "invalid_auth_id".encryptCtr()
-    echo auth_id
-    client.headers = newHttpHeaders({
-      "Cookie": &"session_id={auth_id}",
-      "Content-Type": "application/x-www-form-urlencoded"
-    })
-    let csrf_token = newCsrfToken("").getToken()
-    var params = &"csrf_token={csrf_token}"
-    let response = client.post(&"{HOST}/with_middleware/test_routing", body = $params)
-    # echo response.body
-    check response.code == Http403
-    check response.body.contains("Invalid session id")
+  # test "checkAuthToken invalid":
+  #   let auth_id = "invalid_auth_id".encryptCtr()
+  #   echo auth_id
+  #   client.headers = newHttpHeaders({
+  #     "Cookie": &"session_id={auth_id}",
+  #     "Content-Type": "application/x-www-form-urlencoded"
+  #   })
+  #   let csrf_token = newCsrfToken("").getToken()
+  #   var params = &"csrf_token={csrf_token}"
+  #   let response = client.post(&"{HOST}/with_middleware/test_routing", body = $params)
+  #   # echo response.body
+  #   check response.code == Http403
+  #   check response.body.contains("Invalid session id")

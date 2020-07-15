@@ -14,7 +14,7 @@ proc randStr(n:varargs[int]):string =
   for _ in 1..n:
     add(result, char(rand(int('0')..int('z'))))
 
-proc commonCtr(input:string):string =
+proc commonCtr*(input:string):string =
   var ctx: AESContext
   zeroMem(addr(ctx), sizeof(ctx))
   discard ctx.setEncodeKey(SECRET_KEY)
@@ -26,11 +26,12 @@ proc commonCtr(input:string):string =
 
 proc encryptCtr*(input:string):string =
   var input = randStr(16) & input
-  input.commonCtr().toHex()
+  input = input.commonCtr().toHex()
+  return input
 
 proc decryptCtr*(input:string):string =
-  var input = input.parseHexStr()
-  var output = input.commonCtr()
+  let input = input.parseHexStr()
+  let output = input.commonCtr()
   return output[16..high(output)]
 
 
