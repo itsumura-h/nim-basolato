@@ -17,8 +17,8 @@ putEnv("LOG_IS_FILE", "true")
 putEnv("LOG_DIR", "/root/project/tests/server/logs")
 
 # Security
-putEnv("SECRET_KEY", "s40q834uc0mq4ur834u3874u843r734r")
-putEnv("CSRF_TIME", "525600") # minutes 1 year
-putEnv("SESSION_TIME", "20160") # minutes 2 weeks
-putEnv("SESSION_DB_PATH", "/root/project/tests/server/session.db")
+putEnv("SECRET_KEY", "h6G?>V3_K}_x^&R*L4^2luH$") # 24 length
+putEnv("CSRF_TIME", "525600") # minutes of 1 year
+putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
+putEnv("SESSION_DB", "/root/project/tests/server/session.db")
 putEnv("IS_SESSION_MEMORY", "false")

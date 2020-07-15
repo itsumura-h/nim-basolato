@@ -14,7 +14,7 @@ proc randStr(n:varargs[int]):string =
   for _ in 1..n:
     add(result, char(rand(int('0')..int('z'))))
 
-proc commonCtr*(input:string):string =
+proc commonCtr(input:string):string =
   var ctx: AESContext
   zeroMem(addr(ctx), sizeof(ctx))
   discard ctx.setEncodeKey(SECRET_KEY)
@@ -30,9 +30,8 @@ proc encryptCtr*(input:string):string =
   return input
 
 proc decryptCtr*(input:string):string =
-  let input = input.parseHexStr()
-  let output = input.commonCtr()
-  return output[16..high(output)]
+  let input = input.parseHexStr().commonCtr()
+  return input[16..high(input)]
 
 
 # ========= Flat DB ==================
