@@ -21,9 +21,8 @@ proc index*(this:{targetCaptalized}Controller):Response =
   return render("index")
 
 proc show*(this:{targetCaptalized}Controller, id:string):Response =
-  block:
-    let id = id.parseInt
-    return render("show")
+  let id = id.parseInt
+  return render("show")
 
 proc create*(this:{targetCaptalized}Controller):Response =
   return render("create")
@@ -32,19 +31,16 @@ proc store*(this:{targetCaptalized}Controller):Response =
   return render("store")
 
 proc edit*(this:{targetCaptalized}Controller, id:string):Response =
-  block:
-    let id = id.parseInt
-    return render("edit")
+  let id = id.parseInt
+  return render("edit")
 
 proc update*(this:{targetCaptalized}Controller, id:string):Response =
-  block:
-    let id = id.parseInt
-    return render("update")
+  let id = id.parseInt
+  return render("update")
 
 proc destroy*(this:{targetCaptalized}Controller, id:string):Response =
-  block:
-    let id = id.parseInt
-    return render("destroy")
+  let id = id.parseInt
+  return render("destroy")
 """
 
   if isFileExists(targetPath): return 1
@@ -52,8 +48,8 @@ proc destroy*(this:{targetCaptalized}Controller, id:string):Response =
   createDir(parentDir(targetPath))
 
   var f = open(targetPath, fmWrite)
-  f.write(CONTROLLER)
   defer: f.close()
+  f.write(CONTROLLER)
 
   message = &"created controller {target}_controller.nim"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)

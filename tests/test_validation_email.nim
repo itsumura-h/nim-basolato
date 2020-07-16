@@ -126,30 +126,37 @@ const invalid_addresses = [
 suite "email valid":
   test "strictEmail":
     for address in valid_addresses:
-      let v = RequestValidation(params: address,
+      var v = RequestValidation(params: address,
                           errors: newJObject())
-                        .strictEmail("email")
+      v.strictEmail("email")
+      v.valid()
       echo address["email"]
       echo v.errors
       check v.errors.len == 0
 
   test "strictEmail invalid":
     for address in invalid_addresses:
-      let v = RequestValidation(params: address,
+      var v = RequestValidation(params: address,
                           errors: newJObject())
-                        .strictEmail("email")
-      echo address["email"]
-      echo v.errors["email"]
-      check v.errors.len > 0
+      v.strictEmail("email")
+      try:
+        v.valid()
+      except:
+        echo address["email"]
+        echo v.errors["email"]
+        check v.errors.len > 0
 
   test "DOS Attack":
     for n in 5..12:
       var s = "username@host" & ".abcde".repeat(n) & "."
       var start = now()
-      discard RequestValidation(params: {"email": s}.toTable,
+      var v = RequestValidation(params: {"email": s}.toTable,
                           errors: newJObject())
-                          .strictEmail("email")
-      var diff = now() - start
-      debugEcho "--------------"
-      debugEcho s
-      echo &"{s.len}: {diff.seconds}.{diff.milliseconds:04}{diff.microseconds:04}"
+      v.strictEmail("email")
+      try:
+        v.valid()
+      except:
+        var diff = now() - start
+        debugEcho "--------------"
+        debugEcho s
+        echo &"{s.len}: {diff.seconds}.{diff.milliseconds:04}{diff.microseconds:04}"

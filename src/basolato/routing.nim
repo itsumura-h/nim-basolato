@@ -5,12 +5,13 @@ import
   header
 from controller import redirect, render, errorRedirect
 # 3rd party
-import ./core/core except redirect, setCookie, resp
+import ./core/core
 
 # framework
 export base, response, middleware, redirect, render, errorRedirect
 # 3rd party
-export core except redirect, setCookie, resp
+# export core except redirect, setCookie, resp
+export core
 
 
 template route*(responseArg: Response) =
@@ -137,7 +138,7 @@ template exceptionRoute*(pagePath="") =
   defer: GCunref exception
 
   if exception.name == "ErrorAuthRedirect".cstring:
-    let cookie = newCookie(request).destroy()
+    let cookie = newCookie(request).delete("session_id")
     route(errorRedirect(exception.msg).setCookie(cookie))
 
   if exception.name == "DD".cstring:
@@ -152,7 +153,7 @@ template exceptionRoute*(pagePath="") =
       &"  {request.reqMethod}  {request.ip}  {request.path}  {exception.msg}")
     if pagePath == "":
       if exception.msg == "Invalid session id":
-        let cookie = newCookie(request).destroy()
+        let cookie = newCookie(request).delete("session_id")
         route(render(status, errorPage(status, exception.msg)).setCookie(cookie))
       else:
         route(render(status, errorPage(status, exception.msg)))
@@ -166,9 +167,9 @@ template http404Route*(pagePath="") =
   if not request.path.contains("favicon"):
     echoErrorMsg(&"{$Http404}  {request.ip}  {request.path}")
   if pagePath == "":
-    route(render(errorPage(Http404, "route not match")))
+    route(render(Http404, errorPage(Http404, "route not match")))
   else:
-    route(render(html(pagePath)))
+    route(render(Http404, html(pagePath)))
 
 
 template middleware*(procs:varargs[Response]) =
@@ -177,5 +178,6 @@ template middleware*(procs:varargs[Response]) =
       # echo getCurrentExceptionMsg()
       discard
     else:
+      echo repr(p)
       route(p)
       break

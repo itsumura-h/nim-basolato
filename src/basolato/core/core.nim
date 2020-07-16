@@ -1,7 +1,7 @@
 # Copyright (C) 2015 Dominik Picheta
 # MIT License - Look at license.txt for details.
 import net, strtabs, re, tables, os, strutils, uri,
-       times, mimetypes, asyncnet, asyncdispatch, macros, md5,
+       times, mimetypes, asyncdispatch, macros, md5,
        logging, httpcore, asyncfile, macrocache, json, options,
        strformat
 
@@ -475,17 +475,17 @@ proc serve*(
     setLogFilter(when defined(release): lvlInfo else: lvlDebug)
 
   if self.settings.bindAddr.len > 0:
-    logging.info("Jester is making jokes at http://$1:$2$3" %
+    logging.info("Basolato is running at http://$1:$2$3" %
       [
         self.settings.bindAddr, $self.settings.port, self.settings.appName
       ]
     )
   else:
     when defined(windows):
-      logging.info("Jester is making jokes at http://127.0.0.1:$1$2 (all interfaces)" %
+      logging.info("Basolato is running at http://127.0.0.1:$1$2 (all interfaces)" %
                    [$self.settings.port, self.settings.appName])
     else:
-      logging.info("Jester is making jokes at http://0.0.0.0:$1$2" %
+      logging.info("Basolato is running at http://0.0.0.0:$1$2" %
                    [$self.settings.port, self.settings.appName])
 
   var jes = self
@@ -509,98 +509,98 @@ proc serve*(
       asyncCheck serveFut
     runForever()
 
-template setHeader(headers: var Option[RawHeaders], key, value: string): typed =
-  bind isNone
-  if isNone(headers):
-    headers = some(@({key: value}))
-  else:
-    block outer:
-      # Overwrite key if it exists.
-      var h = headers.get()
-      for i in 0 ..< h.len:
-        if h[i][0] == key:
-          h[i][1] = value
-          headers = some(h)
-          break outer
+# template setHeader(headers: var Option[RawHeaders], key, value: string) =
+#   bind isNone
+#   if isNone(headers):
+#     headers = some(@({key: value}))
+#   else:
+#     block outer:
+#       # Overwrite key if it exists.
+#       var h = headers.get()
+#       for i in 0 ..< h.len:
+#         if h[i][0] == key:
+#           h[i][1] = value
+#           headers = some(h)
+#           break outer
 
-      # Add key if it doesn't exist.
-      headers = some(h & @({key: value}))
+#       # Add key if it doesn't exist.
+#       headers = some(h & @({key: value}))
 
-template resp*(code: HttpCode,
-               headers: openarray[tuple[key, val: string]],
-               content: string): typed =
-  ## Sets ``(code, headers, content)`` as the response.
-  bind TCActionSend
-  result = (TCActionSend, code, none[RawHeaders](), content, true)
-  for header in headers:
-    setHeader(result[2], header[0], header[1])
-  break route
+# template resp*(code: HttpCode,
+#                headers: openarray[tuple[key, val: string]],
+#                content: string) =
+#   ## Sets ``(code, headers, content)`` as the response.
+#   bind TCActionSend
+#   result = (TCActionSend, code, none[RawHeaders](), content, true)
+#   for header in headers:
+#     setHeader(result[2], header[0], header[1])
+#   break route
 
 
-template resp*(content: string, contentType = "text/html;charset=utf-8"): typed =
-  ## Sets ``content`` as the response; ``Http200`` as the status code
-  ## and ``contentType`` as the Content-Type.
-  bind TCActionSend, newHttpHeaders, strtabs.`[]=`
-  result[0] = TCActionSend
-  result[1] = Http200
-  setHeader(result[2], "Content-Type", contentType)
-  result[3] = content
-  # This will be set by our macro, so this is here for those not using it.
-  result.matched = true
-  break route
+# template resp*(content: string, contentType = "text/html;charset=utf-8") =
+#   ## Sets ``content`` as the response; ``Http200`` as the status code
+#   ## and ``contentType`` as the Content-Type.
+#   bind TCActionSend, newHttpHeaders, strtabs.`[]=`
+#   result[0] = TCActionSend
+#   result[1] = Http200
+#   setHeader(result[2], "Content-Type", contentType)
+#   result[3] = content
+#   # This will be set by our macro, so this is here for those not using it.
+#   result.matched = true
+#   break route
 
-template resp*(content: JsonNode): typed =
-  ## Serializes ``content`` as the response, sets ``Http200`` as status code
-  ## and "application/json" Content-Type.
-  resp($content, contentType="application/json")
+# template resp*(content: JsonNode) =
+#   ## Serializes ``content`` as the response, sets ``Http200`` as status code
+#   ## and "application/json" Content-Type.
+#   resp($content, contentType="application/json")
 
-template resp*(code: HttpCode, content: string,
-               contentType = "text/html;charset=utf-8"): typed =
-  ## Sets ``content`` as the response; ``code`` as the status code
-  ## and ``contentType`` as the Content-Type.
-  bind TCActionSend, newHttpHeaders
-  result[0] = TCActionSend
-  result[1] = code
-  setHeader(result[2], "Content-Type", contentType)
-  result[3] = content
-  result.matched = true
-  break route
+# template resp*(code: HttpCode, content: string,
+#                contentType = "text/html;charset=utf-8") =
+#   ## Sets ``content`` as the response; ``code`` as the status code
+#   ## and ``contentType`` as the Content-Type.
+#   bind TCActionSend, newHttpHeaders
+#   result[0] = TCActionSend
+#   result[1] = code
+#   setHeader(result[2], "Content-Type", contentType)
+#   result[3] = content
+#   result.matched = true
+#   break route
 
-template resp*(code: HttpCode): typed =
-  ## Responds with the specified ``HttpCode``. This ensures that error handlers
-  ## are called.
-  bind TCActionSend, newHttpHeaders
-  result[0] = TCActionSend
-  result[1] = code
-  result.matched = true
-  break route
+# template resp*(code: HttpCode) =
+#   ## Responds with the specified ``HttpCode``. This ensures that error handlers
+#   ## are called.
+#   bind TCActionSend, newHttpHeaders
+#   result[0] = TCActionSend
+#   result[1] = code
+#   result.matched = true
+#   break route
 
-template redirect*(url: string): typed =
-  ## Redirects to ``url``. Returns from this request handler immediately.
-  ## Any set response headers are preserved for this request.
-  bind TCActionSend, newHttpHeaders
-  result[0] = TCActionSend
-  result[1] = Http303
-  setHeader(result[2], "Location", url)
-  result[3] = ""
-  result.matched = true
-  break route
+# template redirect*(url: string) =
+#   ## Redirects to ``url``. Returns from this request handler immediately.
+#   ## Any set response headers are preserved for this request.
+#   bind TCActionSend, newHttpHeaders
+#   result[0] = TCActionSend
+#   result[1] = Http303
+#   setHeader(result[2], "Location", url)
+#   result[3] = ""
+#   result.matched = true
+#   break route
 
-template pass*(): typed =
+template pass*() =
   ## Skips this request handler.
   ##
   ## If you want to stop this request from going further use ``halt``.
   result.action = TCActionPass
   break outerRoute
 
-template cond*(condition: bool): typed =
+template cond*(condition: bool) =
   ## If ``condition`` is ``False`` then ``pass`` will be called,
   ## i.e. this request handler will be skipped.
   if not condition: break outerRoute
 
 template halt*(code: HttpCode,
                headers: openarray[tuple[key, val: string]],
-               content: string): typed =
+               content: string) =
   ## Immediately replies with the specified request. This means any further
   ## code will not be executed after calling this template in the current
   ## route.
@@ -612,21 +612,21 @@ template halt*(code: HttpCode,
   result.matched = true
   break allRoutes
 
-template halt*(): typed =
+template halt*() =
   ## Halts the execution of this request immediately. Returns a 404.
   ## All previously set values are **discarded**.
   halt(Http404, {"Content-Type": "text/html;charset=utf-8"}, error($Http404, jesterVer))
 
-template halt*(code: HttpCode): typed =
+template halt*(code: HttpCode) =
   halt(code, {"Content-Type": "text/html;charset=utf-8"}, error($code, jesterVer))
 
-template halt*(content: string): typed =
+template halt*(content: string) =
   halt(Http404, {"Content-Type": "text/html;charset=utf-8"}, content)
 
-template halt*(code: HttpCode, content: string): typed =
+template halt*(code: HttpCode, content: string) =
   halt(code, {"Content-Type": "text/html;charset=utf-8"}, content)
 
-template attachment*(filename = ""): typed =
+template attachment*(filename = "") =
   ## Instructs the browser that the response should be stored on disk
   ## rather than displayed in the browser.
   var disposition = "attachment"
@@ -639,7 +639,7 @@ template attachment*(filename = ""): typed =
       setHeader(result[2], "Content-Type", getMimetype(request.settings.mimes, ext))
   setHeader(result[2], "Content-Disposition", disposition)
 
-template sendFile*(filename: string): typed =
+template sendFile*(filename: string) =
   ## Sends the file at the specified filename as the response.
   result[0] = TCActionRaw
   let sendFut = sendStaticIfExists(request, @[filename])
@@ -714,30 +714,30 @@ proc daysForward*(days: int): DateTime =
   ## Returns a DateTime object referring to the current time plus ``days``.
   return getTime().utc + initTimeInterval(days = days)
 
-template setCookie*(name, value: string, expires="",
-                    sameSite: SameSite=Lax, secure = false,
-                    httpOnly = false, domain = "", path = "") =
-  ## Creates a cookie which stores ``value`` under ``name``.
-  ##
-  ## The SameSite argument determines the level of CSRF protection that
-  ## you wish to adopt for this cookie. It's set to Lax by default which
-  ## should protect you from most vulnerabilities. Note that this is only
-  ## supported by some browsers:
-  ## https://caniuse.com/#feat=same-site-cookie-attribute
-  let newCookie = makeCookie(name, value, expires, domain, path, secure, httpOnly, sameSite)
-  if isSome(result[2]) and
-     (let headers = result[2].get(); headers.toTable.hasKey("Set-Cookie")):
-    result[2] = some(headers & @({"Set-Cookie": newCookie}))
-  else:
-    setHeader(result[2], "Set-Cookie", newCookie)
+# template setCookie*(name, value: string, expires="",
+#                     sameSite: SameSite=Lax, secure = false,
+#                     httpOnly = false, domain = "", path = "") =
+#   ## Creates a cookie which stores ``value`` under ``name``.
+#   ##
+#   ## The SameSite argument determines the level of CSRF protection that
+#   ## you wish to adopt for this cookie. It's set to Lax by default which
+#   ## should protect you from most vulnerabilities. Note that this is only
+#   ## supported by some browsers:
+#   ## https://caniuse.com/#feat=same-site-cookie-attribute
+#   let newCookie = makeCookie(name, value, expires, domain, path, secure, httpOnly, sameSite)
+#   if isSome(result[2]) and
+#      (let headers = result[2].get(); headers.toTable.hasKey("Set-Cookie")):
+#     result[2] = some(headers & @({"Set-Cookie": newCookie}))
+#   else:
+#     setHeader(result[2], "Set-Cookie", newCookie)
 
-template setCookie*(name, value: string, expires: DateTime,
-                    sameSite: SameSite=Lax, secure = false,
-                    httpOnly = false, domain = "", path = "") =
-  ## Creates a cookie which stores ``value`` under ``name``.
-  setCookie(name, value,
-            format(expires.utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"),
-            sameSite, secure, httpOnly, domain, path)
+# template setCookie*(name, value: string, expires: DateTime,
+#                     sameSite: SameSite=Lax, secure = false,
+#                     httpOnly = false, domain = "", path = "") =
+#   ## Creates a cookie which stores ``value`` under ``name``.
+#   setCookie(name, value,
+#             format(expires.utc, "ddd',' dd MMM yyyy HH:mm:ss 'GMT'"),
+#             sameSite, secure, httpOnly, domain, path)
 
 proc normalizeUri*(uri: string): string =
   ## Remove any trailing ``/``.

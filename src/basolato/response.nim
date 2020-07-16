@@ -1,6 +1,6 @@
-import httpcore, json, options, os, times
+import httpcore, json, options, os, times, strutils
 # framework
-import base, baseEnv, header, security, logger
+import ./base, ./baseEnv, ./header, ./security, ./logger
 # 3rd party
 import httpbeast
 from ./core/core import RawHeaders, CallbackAction, ResponseData
@@ -13,18 +13,8 @@ template setHeader(headers: var Option[RawHeaders], key, value: string) =
   if isNone(headers):
     headers = some(@({key: value}))
   else:
-    block outer:
-      # Overwrite key if it exists.
-      var h = headers.get()
-      if key != "Set-cookie": # multiple cookies should be allowed
-        for i in 0 ..< h.len:
-          if h[i][0] == key:
-            h[i][1] = value
-            headers = some(h)
-            break outer
-
-      # Add key if it doesn't exist.
-      headers = some(h & @({key: value}))
+    let h = headers.get()
+    headers = some(h & @({key: value}))
 
 template resp*(code: HttpCode,
                headers: openarray[tuple[key, val: string]],
@@ -62,16 +52,18 @@ proc setCookie*(response:Response, cookie:Cookie):Response =
 
 # ========== Auth ====================
 proc setAuth*(response:Response, auth:Auth):Response =
-  ## If not logged in, do nothing.
-  ## If logged in but not updated any session value,
-  ## expire of session_id is updated.
+  let sessionId = auth.getToken()
+  let cookie = if SESSION_TIME.len > 0:
+    newCookieData(
+      "session_id",
+      sessionId,
+      timeForward(SESSION_TIME.parseInt, Minutes)
+    )
+    .toCookieStr()
+  else:
+    newCookieData("session_id", sessionId).toCookieStr()
 
-  if auth.isLogin:
-    let sessionId = auth.getToken()
-    let cookie = newCookieData("session_id", sessionId,
-                      timeForward(SESSION_TIME, Minutes))
-                  .toCookieStr()
-    response.headers.add(("Set-cookie", cookie))
+  response.headers.add(("Set-cookie", cookie))
   return response
 
 
@@ -81,6 +73,7 @@ proc destroyAuth*(response:Response, auth:Auth):Response =
     let cookie = newCookieData("session_id", sessionId, timeForward(-1, Days))
                   .toCookieStr()
     response.headers.add(("Set-cookie", cookie))
+    auth.destroy()
   else:
     echoErrorMsg("Tried to destroy auth but not logged in")
   return response
@@ -94,9 +87,10 @@ proc response*(arg:ResponseData):Response =
     status: arg[1],
     headers: arg[2].get,
     body: arg[3],
+    bodyString: arg[3],
     match: arg[4]
   )
-  
+
 proc response*(status:HttpCode, body:string): Response =
   return Response(
     status:status,
@@ -106,8 +100,7 @@ proc response*(status:HttpCode, body:string): Response =
 
 proc html*(r_path:string):string =
   ## arg r_path is relative path from /resources/
-  block:
-    let path = getCurrentDir() & "/resources/" & r_path
-    let f = open(path, fmRead)
-    result = $(f.readAll)
-    defer: f.close()
+  let path = getCurrentDir() & "/resources/" & r_path
+  let f = open(path, fmRead)
+  result = $(f.readAll)
+  defer: f.close()

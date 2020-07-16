@@ -49,7 +49,7 @@ router api:
 
 routes:
   before re"/api.*":
-    middleware([hasLoginId(request), hasLoginToken(request)])
+    middleware(hasLoginId(request), hasLoginToken(request))
   extend api, "/api"
 ```
 
@@ -74,7 +74,7 @@ proc hasLoginToken*(request: Request):Response =
     echo "loginToken =======" & loginToken
   except:
     raise newException(Error403, "Can't get login token")
-    
+
 proc isLogin*(request: Request):Response =
   try:
     discard hasLoginId(request)
@@ -86,6 +86,79 @@ main.nim
 ```nim
 routes:
   get "/index":
-    middleware([isLogin(request)])
+    middleware(isLogin(request))
     route(sample_controller.index())
 ```
+
+## Controller middleware
+If you want to run middleware in controller, set middleware in contructor of controller.
+
+app/middlewares/controller_middleware.nim
+```nim
+import httpcore
+import basolato/middleware
+
+proc hasSessionId*(request:Request) =
+  if not request.headers().hasKey("session_id"):
+    raise newException(Error302, "/login")
+```
+
+app/controllers/todo_controller.nim
+```nim
+import basolato/controller
+# import middleware
+import ../middlewares/controller_middlewares
+
+
+type TodoController* = ref object of Controller
+
+proc newTodoController*(request:Request):TodoController =
+  # run middleware here
+  hasSessionId(request)
+  return TodoController.newController(request)
+```
+
+main.nim
+```nim
+import app/controllers/todo_controller
+import app/controllers/login_controller
+
+
+routes:
+  # Framework
+  error Http404: http404Route
+  error Exception: exceptionRoute
+  before: framework
+
+  get "/": route(newTodoController(request).index())
+  get "/login": route(newLoginController(request).index())
+```
+
+
+
+## How to update responce in middleware
+The following sample is to set session cookie if `session_id` is not in cookies.
+
+```nim
+# main.nim
+import middlewares/middlewares_always_create_cookie_middleware
+
+routes:
+  get "/": newSomeController(request).index()
+  after: always_create_cookie
+```
+
+```nim
+# middlewares_always_create_cookie_middleware.nim
+import basolato/response
+
+template always_create_cookie*() =
+  var response = response(result)
+  if not request.cookies.hasKey("session_id"):
+    let auth = newAuth()
+    response = response.setAuth(auth)
+  route(response)
+```
+
+`responce(result)` return `Responce` type object.  
+And, `route(response)` 

@@ -11,7 +11,7 @@
 
 A Fullstack Web Framework for Nim based on Jester
 
-:warning: This is in development :grimacing::sweat_drops:
+:warning: This is in heavy development :grimacing::sweat_drops:
 
 To references
 
@@ -47,6 +47,7 @@ This framework depends on following libralies
 - [flatdb](https://github.com/enthus1ast/flatdb), a small flatfile, inprocess database for nim-lang, as session DB.
 - [bcrypt](https://github.com/runvnc/bcryptnim), useful for hashing passwords.
 - [nimAES](https://github.com/jangko/nimAES), Advanced Encryption Standard.
+- [faker](https://github.com/jiro4989/faker), generates fake data for you.
 
 Following libralies are another options to create view.
 - [Karax](https://github.com/pragmagic/karax), Single page applications for Nim, as view.
@@ -76,18 +77,35 @@ ducere new
 project directory will be created!
 ```
 ├── app
+│   ├── active_records
+│   │   └── rdb.nim
 │   ├── controllers
-│   └── models
+│   │   └── welcome_controller.nim
+│   ├── domain
+│   │   ├── models
+│   │   │   └── value_objects.nim
+│   │   └── usecases
+│   └── middlewares
+│       ├── custom_headers_middleware.nim
+│       └── framework_middleware.nim
 ├── config.nims
 ├── main.nim
-├── middleware
-│   ├── custom_headers_middleware.nim
-│   └── framework_middleware.nim
 ├── migrations
 │   ├── migrate.nim
-│   └── migration0001.nim
+│   └── migration0001sample.nim
 ├── public
-└── resources
+│   ├── basolato.svg
+│   ├── css
+│   ├── favicon.ico
+│   └── js
+├── resources
+│   ├── layouts
+│   │   ├── application.nim
+│   │   └── head.nim
+│   └── pages
+│       └── welcome_view.nim
+├── {project_name}.nimble
+└── tests
 ```
 
 You can specify project direcotry name
@@ -110,18 +128,17 @@ nim c -r main
 - [Controller](./documents/controller.md)
 - [Middleware](./documents/middleware.md)
 - [Headers](./documents/headers.md)
-- [Model](./documents/model.md)
 - [Migration](./documents/migration.md)
 - [View](./documents/view.md)
 - [Error](./documents/error.md)
 - [Validation](./documents/validation.md)
 - [Security(CsrfToken, Cookie, Session, Auth)](./documents/security.md)
+- [Password](./documents/password.md)
 - [Helper](./documents/helper.md)
 
 ### Dev roadmap
 
 |Version|Content|
 |---|---|
-|v1.0|Support Three-layer architecture (generally called as MVC)|
-|v2.0|Support Clean architecture, Tactical DDD|
-|v3.0|Support GraphQL|
+|v1.0|Support Clean architecture, Tactical DDD|
+|v2.0|Support GraphQL|

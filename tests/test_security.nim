@@ -13,7 +13,7 @@ suite "CTR encrypt":
     check input == output
 
   test "16bit":
-    let input = randStr([16])
+    let input = randStr(16)
     echo input
     let hashed = encryptCtr(input)
     echo hashed
@@ -22,7 +22,7 @@ suite "CTR encrypt":
     check input == output
 
   test "24bit":
-    let input = randStr([24])
+    let input = randStr(24)
     echo input
     let hashed = encryptCtr(input)
     echo hashed
@@ -31,7 +31,7 @@ suite "CTR encrypt":
     check input == output
 
   test "32bit":
-    let input = randStr([32])
+    let input = randStr(32)
     echo input
     let hashed = encryptCtr(input)
     echo hashed
@@ -111,6 +111,12 @@ suite "SessionDb":
     echo result
     check result == "value1"
 
+  test "some":
+    let result = sessionDb
+                  .set("key1", "value1")
+    check result.some("key1") == true
+    check result.some("key2") == false
+
   test "delete":
     let result = sessionDb
                   .set("key2", "value2")
@@ -120,7 +126,7 @@ suite "SessionDb":
 
   test "destroy":
     let sessionDb = newSessionDb()
-                      .set("key_sessionDb", "value sessionDb")
+      .set("key_sessionDb", "value sessionDb")
     sessionDb.destroy()
     var result = ""
     try:
@@ -132,14 +138,22 @@ suite "SessionDb":
 suite "Session":
   test "newSession":
     let session = newSession()
-    echo session.db.token
-    check session.db.token.len > 0
+    echo session.getToken()
+    check session.getToken.len > 0
 
   test "set":
     let token = sessionDb.getToken()
     echo token
-    discard newSession(token)
-              .set("key_session", "value_session")
+    try:
+      newSession(token).set("key_session", "value_session")
+      check true
+    except:
+      check false
+
+  test "some":
+    let token = sessionDb.getToken()
+    check newSession(token).some("key_session") == true
+    check newSession(token).some("false") == false
 
   test "get":
     let token = sessionDb.getToken()
@@ -157,7 +171,7 @@ suite "Session":
   test "destroy":
     let token = sessionDb.getToken()
     let session = newSession(token)
-                    .set("key_session2", "value_session2")
+    session.set("key_session2", "value_session2")
     session.destroy()
     var result = ""
     try:

@@ -140,7 +140,7 @@ import basolato/view
 import karax / [karaxdsl, vdom]
 
 proc index*():string =
-  var vnode = buildHtml(form):
+  var vnode = buildView(form):
     csrfTokenKarax()
     input(type="text", name="name")
   return $vnode
@@ -154,7 +154,7 @@ controller
 ```nim
 proc index*(): Response =
   let message = "Basolato"
-  return render(indexHtml(message))
+  return render(indexView(message))
 ```
 
 result
@@ -189,7 +189,7 @@ proc indexImpl(message:string): string = tmpli html"""
 <p>$message</p>
 """
 
-proc indexHtml*(message:string): string =
+proc indexView*(message:string): string =
   baseImpl(indexImpl(message))
 ```
 
@@ -209,7 +209,7 @@ proc baseImpl(content:string): string =
 proc indexImpl(message:string): string =
   p(message)
 
-proc indexHtml*(message:string): string =
+proc indexView*(message:string): string =
   baseImpl(indexImpl(message))
 ```
 
@@ -239,12 +239,12 @@ indexImpl.nim
 <p>$message</p>
 ```
 
-indexHtml.nim
+index_view.nim
 ```nim
 #? stdtmpl | standard
 #import baseImpl
 #import indexImpl
-#proc indexHtml*(message:string): string =
+#proc indexView*(message:string): string =
 ${baseImpl(indexImpl(message))}
 ```
 
@@ -255,17 +255,94 @@ This usage is **Server Side HTML Rendering**
 import karax / [karasdsl, vdom]
 
 proc baseImpl(content:string): string =
-  var vnode = buildHtml(html):
+  var vnode = buildView(html):
     head:
       title: text("Basolato")
     body: text(content)
   return $vnode
 
 proc indexImpl(message:string): string =
-  var vnode = buildHtml(p):
+  var vnode = buildView(p):
     text(message)
   return $vnode
 
-proc indexHtml*(message:string): string =
+proc indexView*(message:string): string =
   baseImpl(indexImpl(message))
+```
+
+## old helper
+If the user's input value is invalid and you want to back the input page and display the previously entered value, you can use `old` helper function.
+
+controller
+```nim
+# get access
+proc signinPage*(this:LoginController):Response =
+  return render(this.view.signinView())
+
+# post access
+proc signin(this:LoginController):Response =
+  let params = this.request.params()
+  let email = params["email"]
+  try
+    ...
+  except:
+    return render(Http422, this.view.signinView(%params))
+```
+
+view
+```nim
+proc impl(params=newJObject()):string = tmpli html"""
+<input type="text" name="email" value="$(old(params, "email"))">
+<input type="text" name="password">
+"""
+
+proc signinView*(this:View, params=newJObject()):string =
+  let title = "SignIn"
+  return this.applicationView(title, impl(params))
+```
+It display value if `params` has key `email`, otherwise display empty string.
+
+
+## Auth
+
+You can access `auth` in view like bellow.
+
+controller
+```nim
+proc home*(this:StaticPageController):Response =
+  return render(this.view.homeView())
+```
+
+view
+```html
+import basolato/view
+
+proc headerView*(auth:Auth):string = tmpli html"""
+<header>
+  <ul>
+    $if auth.isLogin(){
+      <li>$(auth.get("id"))</li>
+    }
+    $else{
+      <li><a href="/login">Log In</a></li>
+    }
+  </ul>
+</header>
+
+
+proc applicationView*(this:View, title:string, body:string, flash=newJObject()):string = tmpli html"""
+<!DOCTYPE html>
+<html>
+  <head>
+  </head>
+  <body>
+    $(headerView(this.auth))
+    ...
+  </body>
+</html>
+
+proc homeView*(this:View):string =
+  this.applicationView("Title", impl())
+"""
+
 ```

@@ -9,6 +9,15 @@ export base, security
 export templates
 
 
+type View* = ref object
+  auth*:Auth
+
+proc newView*(auth:Auth=nil):View =
+  if auth.isNil:
+    return View(auth:Auth())
+  else:
+    return View(auth:auth)
+
 proc get*(val:JsonNode):string =
   case val.kind
   of JString:
@@ -23,3 +32,9 @@ proc get*(val:JsonNode):string =
     return ""
   else:
     raise newException(JsonKindError, "val is array")
+
+proc old*(params:JsonNode, key:string):string =
+  try:
+    return params[key].get()
+  except:
+    return ""

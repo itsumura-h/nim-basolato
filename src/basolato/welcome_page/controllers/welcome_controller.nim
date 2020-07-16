@@ -1,4 +1,4 @@
-import basolato/controller
+import ../../../basolato/controller
 # view
 import ../resources/welcome
 

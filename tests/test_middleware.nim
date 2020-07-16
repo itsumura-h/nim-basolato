@@ -24,16 +24,15 @@ suite "middleware":
 
   test "checkCsrfToken":
     client.headers = newHttpHeaders({"Content-Type": "application/x-www-form-urlencoded"})
-    let token = newCsrfToken("").getToken()
-    echo token
+    let token = newCsrfToken().getToken()
     var params = &"csrf_token={token}"
-    let response = client.post(&"{HOST}/with_middleware/test_routing", body = $params)
+    let response = client.post(&"{HOST}/test_routing", body = $params)
     check response.code == Http200
 
   test "checkCsrfToken invalid":
     client.headers = newHttpHeaders({"Content-Type": "application/x-www-form-urlencoded"})
     var params = &"csrf_token=invalid_token"
-    let response = client.post(&"{HOST}/with_middleware/test_routing", body = $params)
+    let response = client.post(&"{HOST}/test_routing", body = $params)
     # echo response.body
     check response.code == Http403
     check response.body.contains("Invalid csrf token")
@@ -45,9 +44,9 @@ suite "middleware":
       "Cookie": &"session_id={auth_id}",
       "Content-Type": "application/x-www-form-urlencoded"
     })
-    let csrf_token = newCsrfToken("").getToken()
+    let csrf_token = newCsrfToken().getToken()
     var params = &"csrf_token={csrf_token}"
-    let response = client.post(&"{HOST}/with_middleware/test_routing", body = $params)
+    let response = client.post(&"{HOST}/test_routing", body = $params)
     # echo response.body
     check response.code == Http200
 
@@ -58,9 +57,8 @@ suite "middleware":
       "Cookie": &"session_id={auth_id}",
       "Content-Type": "application/x-www-form-urlencoded"
     })
-    let csrf_token = newCsrfToken("").getToken()
+    let csrf_token = newCsrfToken().getToken()
     var params = &"csrf_token={csrf_token}"
-    let response = client.post(&"{HOST}/with_middleware/test_routing", body = $params)
+    let response = client.post(&"{HOST}/test_routing", body = $params)
     # echo response.body
     check response.code == Http403
-    check response.body.contains("Invalid session id")

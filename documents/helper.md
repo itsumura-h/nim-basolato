@@ -12,7 +12,7 @@ Table of Contents
 
 <!--te-->
 
-## dd()
+## dd
 ```
 proc dd(outputs:varges[string])
 ```
@@ -26,11 +26,7 @@ var a = %*{
   "key3": "value3",
   "key4": "value4",
 }
-dd(
-  $a,
-  "abc",
-  this.request.repr,
-)
+dd($a,　"abc",　this.request.repr)
 ```
 
 ![dd](helper-dd.jpg)

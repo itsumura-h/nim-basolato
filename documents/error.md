@@ -24,6 +24,22 @@ It return `403 response` and 'session timeout' will be in response body.
 Basolato have all response status exception type from `300` to `505`  
 [List of HTTP Status](https://nim-lang.org/docs/httpcore.html#10)
 
+
+## ErrorAuthRedirect
+If session id is invalid then you want to redirect and delete cookie, raise `ErrorAuthRedirect` exception.
+```nim
+if not newAuth(request).isLogin():
+  raise newException(ErrorAuthRedirect, "/login")
+```
+
+## Raise Error and Redirect
+If you want to redirect when error raised, you can use `errorRedirect` proc.  
+This proc is able to used only in `controller` or `middleware`.
+
+```nim
+errorRedirect("/login")
+```
+
 ## How to display custom error page
 These raised exception is caught in framework routing
 

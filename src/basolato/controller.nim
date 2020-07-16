@@ -1,26 +1,33 @@
 import json
 # framework
-import base, security, response, header
+import base, security, response, header, view
 # 3rd party
-import core/core except redirect, setCookie, setHeader, resp
+import core/core
 
 # framework
-export core except redirect, setCookie, setHeader, resp
+export core
 export base, security, response, header
 
 
 type Controller* = ref object of RootObj
   request*:Request
   auth*:Auth
+  view*:View
 
 proc newController*(this:typedesc, request:Request): this.type =
-  var auth = Auth(isLogin:false)
   if request.cookies.hasKey("session_id"):
-    auth = request.newAuth()
-  return this.type(
-    request:request,
-    auth: auth
-  )
+    let auth = newAuth(request)
+    return this.type(
+      request:request,
+      auth: auth,
+      view: newView(auth)
+    )
+  else:
+    return this.type(
+      request:request,
+      auth:newAuth(),
+      view: newView()
+    )
 
 # String
 proc render*(body:string):Response =

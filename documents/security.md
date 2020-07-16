@@ -171,9 +171,11 @@ proc newSession*(token="", typ:SessionType=File):Session =
 
 proc getToken*(this:Session):string =
 
-proc get*(this:Session, key:string):string =
-
 proc set*(this:Session, key, value:string):Session =
+
+proc some*(this:SessionDb, key:string):bool =
+
+proc get*(this:Session, key:string):string =
 
 proc delete*(this:Session, key:string): Session =
 
@@ -186,20 +188,23 @@ proc index(this:Controller): Response =
   let sessionId = newSession().getToken()
 ```
 
-get value in session
-```nim
-proc index(this:Controller): Response =
-  let sessionId = newCookie(this.request).get("session_id")
-  let key = this.request.params["key"]
-  let value = newSession(sessionId).get(key)
-```
-
 set value in session
 ```nim
 proc store(this:Controller): Response =
   let key = this.request.params["key"]
   let value = this.request.params["value"]
   discard newSession().set(key, value)
+```
+
+check and get value in session
+```nim
+proc index(this:Controller): Response =
+  let sessionId = newCookie(this.request).get("session_id")
+  let key = this.request.params["key"]
+  let session = newSession(sessionId)
+  var value:string
+  if session.some(key):
+    value = session.get(key)
 ```
 
 delete one key-value pair of session
@@ -233,13 +238,19 @@ proc newAuth*(request:Request):Auth =
 
 proc newAuth*():Auth =
 
+proc login*(this:Auth) =
+
+proc logout*(this:Auth) =
+
 proc isLogin*(this:Auth):bool =
 
 proc getToken*(this:Auth):string =
 
-proc get*(this:Auth, key:string):string =
-
 proc set*(this:Auth, key, value:string):Auth =
+
+proc some*(this:Auth, key:string):bool =
+
+proc get*(this:Auth, key:string):string =
 
 proc delete*(this:Auth, key:string):AUth =
 
@@ -249,6 +260,30 @@ proc setAuth*(response:Response, auth:Auth):Response =
   # expire of session_id is updated.
 
 proc destroyAuth*(response:Response, auth:Auth):Response =
+
+proc setFlash*(this:Auth, key, value:string) =
+
+proc getFlash*(this:Auth):JsonNode =
+```
+
+login
+```nim
+proc index(this:Controller): Response =
+  let email = params["email"]
+  let password = params["password"]
+  let userId = newLoginUsecase().login(email, password)
+  let auth = newAuth()
+  auth.login()
+  auth.set("id", $userId)
+  return redirect("/").setAuth(auth)
+```
+
+logout
+```nim
+proc index(this:Controller): Response =
+  if this.auth.isLogin():
+    this.auth.logout()
+  redirect("/")
 ```
 
 get auth
@@ -265,6 +300,14 @@ proc index(this:Controller): Response =
   return render("auth").setAuth(auth)
 ```
 
+check and get value in auth
+```nim
+proc index(this:Controller): Response =
+  var loginName:string
+  if this.auth.some("login_name"):
+    loginName = this.auth.get("login_name")
+```
+
 delete one key-value pair of session
 ```nim
 proc destroy(this:Controller): Response =
@@ -276,4 +319,19 @@ destroy auth
 ```nim
 proc destroy(this:Controller): Response =
   return render("auth").destroyAuth(this.auth)
+```
+
+set flash message
+```nim
+proc store*(this:Controller):Response =
+  let auth = newAuth()
+  auth.setFlash("success", "Welcome to the Sample App!")
+  return redirect("/auth").setAuth(auth)
+```
+
+get flash message
+```nim
+proc show*(this:Controller):Response =
+  let flash = this.auth.getFlash()
+  return render(showHtml(user, flash=flash))
 ```

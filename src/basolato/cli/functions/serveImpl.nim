@@ -28,7 +28,7 @@ proc runCommand() =
     discard tryRemoveFile("./main")
     if execShellCmd("nim c main") > 0:
       raise newException(Exception, "")
-    echoMsg(bgGreen, "[SUCCESS] Started running dev server")
+    echoMsg(bgGreen, "[SUCCESS] Running dev server")
     p = startProcess("./main", currentDir, ["&"],
                     options={poStdErrToStdOut,poParentStreams})
     pid = p.processID()
@@ -63,7 +63,7 @@ proc serve*() =
         # modified
         isModified = true
         files[f] = modTime
-      
+
     if isModified:
       isModified = false
       runCommand()

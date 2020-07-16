@@ -25,7 +25,7 @@
         }
         pre {
           /* 62px + 13(margin of pre) + 8(margin of body)*2 + 1 */
-          height: calc(100vh - 92px);          
+          height: calc(100vh - 92px);
         }
         code {
           height: 100%;
@@ -44,4 +44,3 @@
       <script>hljs.initHighlightingOnLoad();</script>
     </body>
   </html>
-  

@@ -1,8 +1,9 @@
 nimble install -y
 cd /root/project/tests/server
 nim c main
-nohup ./main > /dev/null &
+nohup ./main 1>/dev/null 2>/dev/null &
 cd /root/project/
+touch tests/server/session.db
 nimble test
 
 killall main

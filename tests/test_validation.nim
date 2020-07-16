@@ -7,52 +7,66 @@ import allographer/schema_builder
 suite "validation":
   test "accepted":
     var params = {"key": "on"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .accepted("key")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.accepted("key")
     check v.errors.len == 0
 
     params = {"key": "checked"}.toTable()
-    v = RequestValidation(params: params,
-                    errors: newJObject())
-                    .accepted("key", "checked")
+    v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.accepted("key", "checked")
     check v.errors.len == 0
 
   test "accepted invalid":
     var params = {"key": ""}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .accepted("key")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.accepted("key")
     check v.errors.len > 0
 
   # ==========================================================================
   test "contains":
     var params = {"key": "111user222"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .contains("key", "user")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.contains("key", "user")
     check v.errors.len == 0
 
   test "contains invalid":
     var params = {"key": "111user222"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .contains("key", "owner")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.contains("key", "owner")
     check v.errors.len > 0
 
   # ==========================================================================
   test "digits":
     var params = {"key": "111"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .digits("key", 3)
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.digits("key", 3)
     check v.errors.len == 0
 
   test "digits invalid":
     var params = {"key": "111"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .digits("key", 2)
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.digits("key", 2)
     check v.errors.len > 0
 
   # ==========================================================================
@@ -66,9 +80,11 @@ suite "validation":
     ]
 
     for valid_address in valid_addresses:
-      let v = RequestValidation(params: valid_address,
-                          errors: newJObject())
-                        .email("email")
+      var v = RequestValidation(
+        params: valid_address,
+        errors: newJObject()
+      )
+      v.email("email")
       check v.errors.len == 0
 
   test "email invalid":
@@ -81,69 +97,84 @@ suite "validation":
     ]
 
     for valid_address in valid_addresses:
-      let v = RequestValidation(params: valid_address,
-                          errors: newJObject())
-                        .email("email")
+      var v = RequestValidation(
+        params: valid_address,
+        errors: newJObject()
+      )
+      v.email("email")
       check v.errors.len > 0
 
   # ==========================================================================
   test "equals":
     var params = {"key": "John"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .equals("key", "John")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.equals("key", "John")
     check v.errors.len == 0
 
   test "equals invalid":
     var params = {"key": "John"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .equals("key", "Paul")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject())
+    v.equals("key", "Paul")
     check v.errors.len > 0
 
   # ==========================================================================
   test "exists":
     var params = {"name": "John", "age": "10"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .exists("name")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.exists("name")
     check v.errors.len == 0
 
   test "exists invalid":
     var params = {"age": "10"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .exists("name")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject())
+    v.exists("name")
     check v.errors.len > 0
 
   # ==========================================================================
   test "gratorThan":
     var params = {"age": "10"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .gratorThan("age", 9)
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject())
+    v.gratorThan("age", 9)
     check v.errors.len == 0
 
   test "gratorThan invalid":
     var params = {"age": "10"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .gratorThan("age", 11)
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.gratorThan("age", 11)
     check v.errors.len > 0
 
   # ==========================================================================
   test "inRange":
     var params = {"age": "10"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .inRange("age", min=9, max=11)
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.inRange("age", min=9, max=11)
     check v.errors.len == 0
 
   test "inRange invalid":
     var params = {"age": "10"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .inRange("age", min=11, max=15)
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.inRange("age", min=11, max=15)
     check v.errors.len > 0
 
   # ==========================================================================
@@ -162,9 +193,11 @@ suite "validation":
       {"ip_address": "::ffff:255.255.255.255"}.toTable(),
     ]
     for param in params:
-      var v = RequestValidation(params: param,
-                          errors: newJObject())
-                          .ip("ip_address")
+      var v = RequestValidation(
+        params: param,
+        errors: newJObject()
+      )
+      v.ip("ip_address")
       check v.errors.len == 0
 
   test "ip invalid":
@@ -185,177 +218,225 @@ suite "validation":
       {"ip_address": "1111.1111.1111.11111"}.toTable(),
     ]
     for param in params:
-      var v = RequestValidation(params: param,
-                          errors: newJObject())
-                          .ip("ip_address")
+      var v = RequestValidation(
+        params: param,
+        errors: newJObject()
+      )
+      v.ip("ip_address")
       check v.errors.len > 0
 
   # ==========================================================================
   test "isBool":
     var params = {"key": "true"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .isBool("key")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.isBool("key")
     check v.errors.len == 0
 
     params = {"key": "false"}.toTable()
-    v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .isBool("key")
+    v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.isBool("key")
     check v.errors.len == 0
 
   test "isBool invalid":
     var params = {"key": "111"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .isBool("key")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.isBool("key")
     check v.errors.len > 0
 
   # ==========================================================================
   test "isFloat":
     var params = {"key": "1.1"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .isFloat("key")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.isFloat("key")
     check v.errors.len == 0
 
   test "isFloat invalid":
     var params = {"key": "a"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .isFloat("key")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.isFloat("key")
     check v.errors.len > 0
 
   # ==========================================================================
   test "isIn":
     var params = {"name": "John"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .isIn("name", ["John", "Paul", "George", "Ringo"])
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.isIn("name", ["John", "Paul", "George", "Ringo"])
     check v.errors.len == 0
 
   test "isIn invalid":
     var params = {"name": "David"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .isIn("name", ["John", "Paul", "George", "Ringo"])
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.isIn("name", ["John", "Paul", "George", "Ringo"])
     check v.errors.len > 0
 
   # ==========================================================================
   test "isInt":
     var params = {"key": "1"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .isInt("key")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.isInt("key")
     check v.errors.len == 0
 
   test "isInt invalid":
     var params = {"key": "a"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .isInt("key")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.isInt("key")
     check v.errors.len > 0
 
   # ==========================================================================
   test "isString":
     var params = {"key": "aa"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .isString("key")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.isString("key")
     check v.errors.len == 0
 
   test "isString invalid":
     var params = {"key": "1"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .isString("key")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.isString("key")
     check v.errors.len > 0
 
     params = {"key": "1.1"}.toTable()
-    v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .isString("key")
+    v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.isString("key")
     check v.errors.len > 0
 
     params = {"key": "true"}.toTable()
-    v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .isString("key")
+    v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.isString("key")
     check v.errors.len > 0
 
   # ==========================================================================
   test "lessThan":
     var params = {"age": "25"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .gratorThan("age", 24)
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.gratorThan("age", 24)
     check v.errors.len == 0
 
   test "lessThan invalid":
     var params = {"age": "25"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .gratorThan("age", 26)
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.gratorThan("age", 26)
     check v.errors.len > 0
 
   # ==========================================================================
   test "numeric":
     var params = {"num": "36.2"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .numeric("num")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.numeric("num")
     check v.errors.len == 0
 
   test "numeric invalid":
     var params = {"num": "aaaaa"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .numeric("num")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.numeric("num")
     check v.errors.len > 0
 
   # ==========================================================================
   test "oneOf":
     var params = {"name": "John", "email": "John@gmail.com"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .oneOf(["name", "birth_date", "job"])
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.oneOf(["name", "birth_date", "job"])
     check v.errors.len == 0
 
   test "oneOf invalid":
     var params = {"name": "John", "email": "John@gmail.com"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .oneOf(["birth_date", "job"])
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.oneOf(["birth_date", "job"])
     check v.errors.len > 0
 
   # ==========================================================================
   test "password":
     var params = {"pass": "Password1!"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .password("pass")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.password("pass")
     check v.errors.len == 0
 
   test "password invalid":
     var params = {"pass": "pass12"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .password("pass")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.password("pass")
     check v.errors.len > 0
 
   # ==========================================================================
   test "required":
     var params = {"name": "John", "email": "John@gmail.com"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .required(["name", "email"])
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.required(["name", "email"])
     check v.errors.len == 0
 
   test "required invalid":
     var params = {"name": "John", "email": "John@gmail.com"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .required(["name", "email", "job"])
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.required(["name", "email", "job"])
     check v.errors.len > 0
 
   # ==========================================================================
@@ -380,14 +461,18 @@ suite "validation":
     ])
 
     var params = {"mail": "user3@gmail.com"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .unique("mail", "test_users", "email")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.unique("mail", "test_users", "email")
     check v.errors.len == 0
 
   test "unique invalid":
     var params = {"mail": "user2@gmail.com"}.toTable()
-    var v = RequestValidation(params: params,
-                        errors: newJObject())
-                        .unique("mail", "test_users", "email")
+    var v = RequestValidation(
+      params: params,
+      errors: newJObject()
+    )
+    v.unique("mail", "test_users", "email")
     check v.errors.len > 0
