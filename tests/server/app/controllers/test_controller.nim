@@ -67,6 +67,7 @@ proc setAuth*(this:TestController):Response =
   return render("setAuth").setAuth(this.auth)
 
 proc destroyAuth*(this:TestController):Response =
+  this.auth.login()
   return render("setAuth").destroyAuth(this.auth)
 
 

@@ -7,10 +7,6 @@ import app/middlewares/framework_middleware
 # controller
 import app/controllers/test_controller
 
-router withMiddleware:
-  # test middleware
-  post "/test_routing": route(newTestController(request).postAction())
-
 routes:
   # Framework
   error Http404: http404Route
@@ -42,9 +38,6 @@ routes:
   patch "/test_routing": route(newTestController(request).patchAction())
   put "/test_routing": route(newTestController(request).putAction())
   delete "/test_routing": route(newTestController(request).deleteAction())
-
-  before re"/with_middleware.*": framework
-  extend withMiddleware, "/with_middleware"
 
 # proc main() =
 #   let port = 5000.Port

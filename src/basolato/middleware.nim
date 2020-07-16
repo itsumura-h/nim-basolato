@@ -1,3 +1,4 @@
+import strutils
 # framework
 import base, security, header, controller
 # 3rd party
@@ -26,8 +27,7 @@ proc catch*(this:Check, error:typedesc=Error500, msg="") =
 # =============================================================================
 proc checkCsrfToken*(request:Request):Check =
   result = Check(status:true)
-  if request.reqMethod == HttpPost or request.reqMethod == HttpPut or
-        request.reqMethod == HttpPatch or request.reqMethod == HttpDelete:
+  if request.reqMethod == HttpPost and not request.path.contains("api/"):
     try:
       let token = request.params["csrf_token"]
       discard newCsrfToken(token).checkCsrfTimeout()
@@ -36,6 +36,12 @@ proc checkCsrfToken*(request:Request):Check =
         status:false,
         msg:getCurrentExceptionMsg()
       )
+
+proc checkApiToken*(request:Request):Check =
+  if (request.reqMethod == HttpPost or request.reqMethod == HttpPut or
+        request.reqMethod == HttpPatch or request.reqMethod == HttpDelete) and
+        request.path.contains("api/"):
+    result = Check(status:true)
 
 proc checkAuthToken*(request:Request):Check =
   result = Check(status:true)

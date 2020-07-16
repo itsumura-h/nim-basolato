@@ -3,7 +3,6 @@ import tables
 import ../models/value_objects
 import ../models/user/user_entity
 import ../models/user/user_service
-import ../models/user/user_repository_interface
 
 type LoginUsecase* = ref object
 

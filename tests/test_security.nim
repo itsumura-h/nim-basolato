@@ -138,15 +138,14 @@ suite "SessionDb":
 suite "Session":
   test "newSession":
     let session = newSession()
-    echo session.db.token
-    check session.db.token.len > 0
+    echo session.getToken()
+    check session.getToken.len > 0
 
   test "set":
     let token = sessionDb.getToken()
     echo token
     try:
-      discard newSession(token)
-                .set("key_session", "value_session")
+      newSession(token).set("key_session", "value_session")
       check true
     except:
       check false
@@ -172,7 +171,7 @@ suite "Session":
   test "destroy":
     let token = sessionDb.getToken()
     let session = newSession(token)
-                    .set("key_session2", "value_session2")
+    session.set("key_session2", "value_session2")
     session.destroy()
     var result = ""
     try:
