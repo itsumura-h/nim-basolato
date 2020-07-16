@@ -11,7 +11,7 @@
 
 A Fullstack Web Framework for Nim based on Jester
 
-:warning: This is in development :grimacing::sweat_drops:
+:warning: This is in heavy development :grimacing::sweat_drops:
 
 To references
 
@@ -47,6 +47,7 @@ This framework depends on following libralies
 - [flatdb](https://github.com/enthus1ast/flatdb), a small flatfile, inprocess database for nim-lang, as session DB.
 - [bcrypt](https://github.com/runvnc/bcryptnim), useful for hashing passwords.
 - [nimAES](https://github.com/jangko/nimAES), Advanced Encryption Standard.
+- [faker](https://github.com/jiro4989/faker), generates fake data for you.
 
 Following libralies are another options to create view.
 - [Karax](https://github.com/pragmagic/karax), Single page applications for Nim, as view.
