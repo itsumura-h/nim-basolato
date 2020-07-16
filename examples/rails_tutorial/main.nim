@@ -16,10 +16,7 @@ routes:
   # Framework
   error Http404: http404Route
   error Exception: exceptionRoute
-  before re"^(?!.*\.).*$":
-    before_framework
-  after re"^(?!.*\.).*$":
-    discard
+  before: before_framework
 
   # get "/": route(newApplicationController(request).hello())
   get "/": route(newStaticPageController(request).home())
