@@ -1,4 +1,3 @@
-import re
 # framework
 import ../../src/basolato/routing
 # middleware
@@ -14,7 +13,6 @@ routes:
   error Http404: http404Route
   error Exception: exceptionRoute
   before: framework
-
 
   get "/login": route(newLoginController(request).loginPage())
   post "/login": route(newLoginController(request).login())
