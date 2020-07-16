@@ -8,6 +8,9 @@ import app/middlewares/framework_middleware
 import app/controllers/login_controller
 import app/controllers/todo_controller
 
+settings:
+  port = Port(5000)
+
 routes:
   # Framework
   error Http404: http404Route

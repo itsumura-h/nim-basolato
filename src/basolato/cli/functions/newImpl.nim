@@ -17,6 +17,7 @@ proc create(dirPath:string, packageDir:string):int =
     moveDir(&"{dirpath}/tmp/DDD/public", &"{dirpath}/public")
     moveDir(&"{dirpath}/tmp/DDD/resources", &"{dirpath}/resources")
     moveFile(&"{dirpath}/tmp/DDD/main.nim", &"{dirpath}/main.nim")
+    moveFile(&"{dirpath}/tmp/DDD/.gitignore", &"{dirpath}/.gitignore")
     # move static files
     moveFile(&"{dirpath}/tmp/assets/basolato.svg", &"{dirpath}/public/basolato.svg")
     moveFile(&"{dirpath}/tmp/assets/favicon.ico", &"{dirpath}/public/favicon.ico")
@@ -27,6 +28,11 @@ proc create(dirPath:string, packageDir:string):int =
   cd {dirPath}
   ducere make config
   """)
+    # create session.db
+    block:
+      let f = open(&"{dirPath}/session.db", fmWrite)
+      defer: f.close()
+      f.write("")
     # create empty dirs
     createDir(&"{dirPath}/resources/pages")
     createDir(&"{dirPath}/resources/layouts")
@@ -34,7 +40,7 @@ proc create(dirPath:string, packageDir:string):int =
     createDir(&"{dirPath}/public/js")
     createDir(&"{dirPath}/public/css")
     # create nimble file
-    var nimble = &"""
+    let nimble = &"""
 # Package
 
 version       = "0.1.0"
@@ -60,7 +66,7 @@ requires "allographer >= 0.9.0"
 requires "faker >= 0.12.1"
 """
     block:
-      var f = open(&"{dirPath}/{packageDir}.nimble", fmWrite)
+      let f = open(&"{dirPath}/{packageDir}.nimble", fmWrite)
       defer: f.close()
       f.write(nimble)
 
