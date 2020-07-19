@@ -149,7 +149,7 @@ nim c -r main
 - [View](./documents/view.md)
 - [Error](./documents/error.md)
 - [Validation](./documents/validation.md)
-- [Security(CsrfToken, Cookie, Session, Auth)](./documents/security.md)
+- [Security (CsrfToken, Cookie, Session, Auth)](./documents/security.md)
 - [Password](./documents/password.md)
 - [Helper](./documents/helper.md)
 
@@ -157,5 +157,5 @@ nim c -r main
 
 |Version|Content|
 |---|---|
-|v1.0|Support Clean architecture, Tactical DDD|
+|v1.0|Support Clean architecture and Tactical DDD|
 |v2.0|Support GraphQL|
