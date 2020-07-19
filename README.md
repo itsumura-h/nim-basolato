@@ -9,21 +9,11 @@
 
 ---
 
-A Fullstack Web Framework for Nim based on Jester
+A full-stack web framework for Nim, based on [Jester](https://github.com/dom96/jester).
 
-:warning: This is in heavy development :grimacing::sweat_drops:
+:warning: This project is under heavy development, it's not production-ready. :warning:
 
-To references
-
-|Language|Framework|
-|---|---|
-|Ruby|Rails|
-|PHP|Laravel|
-|Python|Masonite|
-|Java/Scala|Play|
-|Go|Revel|
-
-Table of Contents
+## Table of Contents
 
 <!--ts-->
    * [Basolato Framework](#basolato-framework)
@@ -39,42 +29,65 @@ Table of Contents
 
 <!--te-->
 
-## Dependencies
-This framework depends on following libralies
-- [Jester](https://github.com/dom96/jester), Micro web framework.
-- [nim-templates](https://github.com/onionhammer/nim-templates), A simple string templating library
-- [allographer](https://github.com/itsumura-h/nim-allographer), Query builder library.
-- [flatdb](https://github.com/enthus1ast/flatdb), a small flatfile, inprocess database for nim-lang, as session DB.
-- [bcrypt](https://github.com/runvnc/bcryptnim), useful for hashing passwords.
-- [nimAES](https://github.com/jangko/nimAES), Advanced Encryption Standard.
-- [faker](https://github.com/jiro4989/faker), generates fake data for you.
-
-Following libralies are another options to create view.
-- [Karax](https://github.com/pragmagic/karax), Single page applications for Nim, as view.
-- [react.nim](https://github.com/andreaferretti/react.nim), React.js bindings for Nim.
-- [react-16.nim](https://github.com/kristianmandrup/react-16.nim), React 16.x bindings for Nim 1.0 with example app (WIP).
-
 
 ## Introduction
-### Install
+Basolato extends [Jester](), an awesome Sinatra-like framework for Nim, while also adding features for full-stack development. It was also heavily inspired by other frameworks:
+
+|Language|Framework|
+|---|---|
+|Ruby|Rails|
+|PHP|Laravel|
+|Python|Masonite|
+|Java/Scala|Play|
+|Go|Revel|
+
+### Set up your environment
+In order to start using Basolato, you'll first need a working Nim installation. You can find installation instructions for Nim [here](https://nim-lang.org/install.html).
+Once installed, make sure Nimble, Nim's package manager, is already in your PATH. If not, add `.nimble/bin` in your favorite shell.
+
+```sh
+export PATH=$PATH:~/.nimble/bin
+```
+
+
+## Dependencies
+
+The framework depends on several libraries (installed automatically by Nimble):
+- [Jester](https://github.com/dom96/jester), a jester-like web framework.
+- [nim-templates](https://github.com/onionhammer/nim-templates), a simple string templating library.
+- [allographer](https://github.com/itsumura-h/nim-allographer), a library for building queries.
+- [flatdb](https://github.com/enthus1ast/flatdb), a small Flatfile database, used for sessions.
+- [bcrypt](https://github.com/runvnc/bcryptnim), used for hashing passwords.
+- [nimAES](https://github.com/jangko/nimAES), for AES support.
+- [faker](https://github.com/jiro4989/faker), for generating fake data.
+
+The following libraries can be used for making views:
+- [Karax](https://github.com/pragmagic/karax), for single-page applications.
+- [react.nim](https://github.com/andreaferretti/react.nim), React.js bindings.
+- [react-16.nim](https://github.com/kristianmandrup/react-16.nim), React 16.x bindings with an example app (WIP).
+
+
+### Installation
+
+You can install Basolato easily using Nimble:
+
 ```sh
 nimble install https://github.com/itsumura-h/nim-basolato
 ```
 
-### Set up
-First of all, add nim binary path
-```sh
-export PATH=$PATH:~/.nimble/bin
-```
-After install basolato, "ducere" command is going to be available.
+After installing Basolato, you should have access to the `ducere` command on your shell.
 
-### Create project
+### Creating projects
+
+Using `ducere` you can easily create a template project structure to start development right away. Ducere will generate a folder automatically using your project name.
+
 ```sh
 cd /your/project/dir
-ducere new
+ducere new {project-name}
 ```
 
-project directory will be created!
+The overall file structure is as follows:
+
 ```
 ├── app
 │   ├── controllers
@@ -114,21 +127,19 @@ project directory will be created!
 └── tests
 ```
 
-You can specify project direcotry name
+With your project ready, you can start serving requests using `ducere`:
+
 ```sh
-cd /your/project/dir
-ducere new project_name
->> create project to /your/project/dir/project_name
+ducere serve # includes hot reloading
 ```
 
-run server
-```nim
-ducere serve # hot reload available
- or
+Or by compiling through Nim:
+```
 nim c -r main
 ```
 
-## Documents
+## Documentation
+
 - [ducere CLI tool](./documents/ducere.md)
 - [Routing](./documents/routing.md)
 - [Controller](./documents/controller.md)
@@ -142,7 +153,7 @@ nim c -r main
 - [Password](./documents/password.md)
 - [Helper](./documents/helper.md)
 
-### Dev roadmap
+## Roadmap
 
 |Version|Content|
 |---|---|
