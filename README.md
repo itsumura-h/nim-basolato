@@ -50,7 +50,7 @@ export PATH=$PATH:~/.nimble/bin
 ```
 
 
-## Dependencies
+### Dependencies
 
 The framework depends on several libraries (installed automatically by Nimble):
 - [Jester](https://github.com/dom96/jester), a jester-like web framework.
