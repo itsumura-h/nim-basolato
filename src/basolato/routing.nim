@@ -24,7 +24,7 @@ template route*(responseArg: Response) =
         headers.add(("Content-Type", "text/html;charset=utf-8"))
     of Json:
       if not headers.hasKey("Content-Type"):
-        headers.add(("Content-Type", "application/json"))
+        headers.add(("Content-Type", "application/json;charset=utf-8"))
       response.bodyString = $(response.bodyJson)
     of Redirect:
       logger($response.status &
