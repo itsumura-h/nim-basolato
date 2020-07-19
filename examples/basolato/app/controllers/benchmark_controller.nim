@@ -12,7 +12,9 @@ proc newBenchmarkController*(request:Request):BenchmarkController =
 
 
 proc plainText*(this:BenchmarkController):Response =
-  return render("plainText")
+  var header = newHeaders()
+  header.set("Content-Type", "text/plain")
+  return render("plainText").setHeader(header)
 
 proc jsonAccess*(this:BenchmarkController):Response =
   return render(%*{"message": "Hello, World!"})

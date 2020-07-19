@@ -16,5 +16,4 @@ RUN apk update && \
 RUN git config --global http.sslVerify false
 WORKDIR /root/project/
 ADD ./basolato.nimble /root/project/
-RUN nimble install -y bcrypt cligen coco karax
 ENV PATH $PATH:/root/.nimble/bin

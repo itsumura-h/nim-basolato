@@ -17,29 +17,31 @@ export core
 template route*(responseArg: Response) =
   block:
     let response = responseArg
-    var newHeaders = response.headers
+    var headers = response.headers
     case response.responseType:
     of String:
-      newHeaders.add(("Content-Type", "text/html;charset=utf-8"))
+      if not headers.hasKey("Content-Type"):
+        headers.add(("Content-Type", "text/html;charset=utf-8"))
     of Json:
-      newHeaders.add(("Content-Type", "application/json"))
+      if not headers.hasKey("Content-Type"):
+        headers.add(("Content-Type", "application/json"))
       response.bodyString = $(response.bodyJson)
     of Redirect:
       logger($response.status &
         &"  {request.ip}  {request.reqMethod}  {request.path}")
-      newHeaders.add(("Location", response.url))
-      resp response.status, newHeaders, ""
+      headers.add(("Location", response.url))
+      resp response.status, headers, ""
 
     if response.status == Http200:
       logger($response.status &
         &"  {request.ip}  {request.reqMethod}  {request.path}")
-      logger($newHeaders)
+      logger($headers)
     elif response.status.is4xx() or response.status.is5xx():
       echoErrorMsg($request.params)
       echoErrorMsg($response.status &
         &"  {request.ip}  {request.reqMethod}  {request.path}")
-      echoErrorMsg($newHeaders)
-    resp response.status, newHeaders, response.bodyString
+      echoErrorMsg($headers)
+    resp response.status, headers, response.bodyString
 
 proc joinHeader(headers:openArray[Headers]): Headers =
   ## join seq and children tuple if each headers have same key in child tuple
@@ -138,7 +140,8 @@ template exceptionRoute*(pagePath="") =
   defer: GCunref exception
 
   if exception.name == "ErrorAuthRedirect".cstring:
-    let cookie = newCookie(request).delete("session_id")
+    var cookie = newCookie(request)
+    cookie.delete("session_id")
     route(errorRedirect(exception.msg).setCookie(cookie))
 
   if exception.name == "DD".cstring:
@@ -153,7 +156,8 @@ template exceptionRoute*(pagePath="") =
       &"  {request.reqMethod}  {request.ip}  {request.path}  {exception.msg}")
     if pagePath == "":
       if exception.msg == "Invalid session id":
-        let cookie = newCookie(request).delete("session_id")
+        var cookie = newCookie(request)
+        cookie.delete("session_id")
         route(render(status, errorPage(status, exception.msg)).setCookie(cookie))
       else:
         route(render(status, errorPage(status, exception.msg)))

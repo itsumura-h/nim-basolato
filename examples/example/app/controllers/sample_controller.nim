@@ -84,11 +84,11 @@ proc vuetify*(this:SampleController): Response =
 
 
 proc customHeaders*(this:SampleController): Response =
-  let header = newHeaders()
-                .set("Controller-Header-Key1", "Controller-Header-Val1")
-                .set("Controller-Header-Key1", "Controller-Header-Val2")
-                .set("Controller-Header-Key2", ["val1", "val2", "val3"])
-                .set("setHeaderTest", "aaaa")
+  var header = newHeaders()
+  header.set("Controller-Header-Key1", "Controller-Header-Val1")
+  header.set("Controller-Header-Key1", "Controller-Header-Val2")
+  header.set("Controller-Header-Key2", ["val1", "val2", "val3"])
+  header.set("setHeaderTest", "aaaa")
   return render("with header").setHeader(header)
 
 # ========== Cookie ==================== 
@@ -98,27 +98,27 @@ proc indexCookie*(this:SampleController): Response =
 proc storeCookie*(this:SampleController): Response =
   let key = this.request.params["key"]
   let value = this.request.params["value"]
-  let cookie = newCookie(this.request)
-                .set(key, value)
+  var cookie = newCookie(this.request)
+  cookie.set(key, value)
   return render(cookieHtml(this.auth)).setCookie(cookie)
 
 proc updateCookie*(this:SampleController): Response =
   let key = this.request.params["key"]
   let days = this.request.params["days"].parseInt
-  let cookie = newCookie(this.request)
-                .updateExpire(key, days, Days)
+  var cookie = newCookie(this.request)
+  cookie.updateExpire(key, days, Days)
   return redirect("/sample/cookie").setCookie(cookie)
 
 proc destroyCookie*(this:SampleController): Response =
   let key = this.request.params["key"]
-  let cookie = newCookie(this.request)
-                .delete(key)
+  var cookie = newCookie(this.request)
+  cookie.delete(key)
   return redirect("/sample/cookie").setCookie(cookie)
 
 proc destroyCookies*(this:SampleController): Response =
   # TODO: not work until https://github.com/dom96/jester/pull/237 is mearged and release
-  let cookie = newCookie(this.request)
-                .destroy()
+  var cookie = newCookie(this.request)
+  cookie.destroy()
   return redirect("/sample/cookie").setCookie(cookie)
 
 # ========== Login ====================
