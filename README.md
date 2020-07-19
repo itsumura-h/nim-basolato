@@ -11,7 +11,7 @@
 
 A full-stack web framework for Nim, based on [Jester](https://github.com/dom96/jester).
 
-:warning: This project is under heavy development, it's not production-ready. :warning:
+:warning: This project is under heavy development. It's not yet production-ready. :warning:
 
 ## Table of Contents
 
@@ -83,7 +83,7 @@ Using `ducere` you can easily create a template project structure to start devel
 
 ```sh
 cd /your/project/dir
-ducere new {project-name}
+ducere new {project_name}
 ```
 
 The overall file structure is as follows:
