@@ -91,14 +91,14 @@ proc newCookie*(request:Request):Cookie =
 
 proc get*(this:Cookie, name:string):string =
 
-proc set*(this:Cookie, name, value: string, expire:DateTime,
+proc set*(this:var Cookie, name, value: string, expire:DateTime,
       sameSite: SameSite=Lax, secure = false, httpOnly = false, domain = "",
-      path = "/"):Cookie =
+      path = "/") =
 
-proc set*(this:Cookie, name, value: string, sameSite: SameSite=Lax,
-      secure = false, httpOnly = false, domain = "", path = "/"):Cookie =
+proc set*(this:var Cookie, name, value: string, sameSite: SameSite=Lax,
+      secure = false, httpOnly = false, domain = "", path = "/") =
 
-proc updateExpire*(this:Cookie, name:string, days:int, path="/"):Cookie =
+proc updateExpire*(this:var Cookie, name:string, days:int, path="/") =
 
 proc delete*(this:Cookie, key:string, path="/"):Cookie =
 
@@ -117,33 +117,33 @@ set cookie
 ```nim
 proc store*(this:Controller): Response =
   let name = this.request.params["name"]
-  let cookie = newCookie(this.request)
-                .set("name", name)
+  var cookie = newCookie(this.request)
+  cookie.set("name", name)
   return render("with cookie").setCookie(cookie)
 ```
 
 update cookie expire
 ```nim
 proc store*(this:Controller): Response =
-  let cookie = newCookie(this.request)
-                .updateExpire("name", 5)
-                # cookie will be deleted 5 days from now
+  var cookie = newCookie(this.request)
+  cookie.updateExpire("name", 5)
+  # cookie will be deleted 5 days from now
   return render("with cookie").setCookie(cookie)
 ```
 
 delete cookie
 ```nim
 proc index(this:Controller): Response =
-  let cookie = newCookie(this.request)
-                .delete("key")
+  var cookie = newCookie(this.request)
+  cookie.delete("key")
   return render("with cookie").setCookie(cookie)
 ```
 
 destroy all cookies
 ```nim
 proc index(this:Controller): Response =
-  let cookie = newCookie(this.request)
-                .destroy()
+  var cookie = newCookie(this.request)
+  cookie.destroy()
   return render("with cookie").setCookie(cookie)
 ```
 

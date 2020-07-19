@@ -1,7 +1,7 @@
 import json, httpcore, typeinfo
 
 const
-  basolatoVersion* = "0.4.0"
+  basolatoVersion* = "0.5.0"
 
 type
   Response* = ref object

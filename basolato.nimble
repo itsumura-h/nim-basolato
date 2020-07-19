@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.4.0" # https://github.com/itsumura-h/nim-basolato/issues/69
+version       = "0.5.0" # https://github.com/itsumura-h/nim-basolato/issues/69
 author        = "Hidenobu Itsumura @dumblepytech1 as 'medy'"
 description   = "A fullstack web framework library for Nim"
 license       = "MIT"
@@ -20,8 +20,8 @@ requires "templates >= 0.5"
 requires "bcrypt >= 0.2.1"
 requires "nimAES >= 0.1.2"
 requires "https://github.com/enthus1ast/flatdb >= 0.2.4"
-requires "allographer >= 0.9.0"
-requires "faker >= 0.12.1"
+requires "allographer >= 0.12.2"
+requires "faker >= 0.13.2"
 
 # import strformat
 # from os import `/`

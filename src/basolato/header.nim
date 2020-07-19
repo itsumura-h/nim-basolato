@@ -40,14 +40,18 @@ proc toHeaders*(headersArg:JsonNode): Headers =
     i.inc()
   return headers
 
-proc set*(this:Headers, key, val:string):Headers =
-  var this = this
-  this.add((key, val))
-  return this
+proc hasKey*(this:Headers, key:string):bool =
+  var isHeaderHasKey = false
+  for header in this:
+    if header.key.toLowerAscii() == key.toLowerAscii():
+      isHeaderHasKey = true
+      break
+  return isHeaderHasKey
 
-proc set*(this:Headers, key:string, val:openArray[string]):Headers =
-  var this = this
+proc set*(this:var Headers, key, val:string) =
+  this.add((key, val))
+
+proc set*(this:var Headers, key:string, val:openArray[string]) =
   this.add(
     (key, val.join(", "))
   )
-  return this

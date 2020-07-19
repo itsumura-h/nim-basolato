@@ -165,12 +165,12 @@ suite "Session":
   test "delete":
     let token = sessionDb.getToken()
     let session = newSession(token)
-                   .delete("key_session")
+    session.delete("key_session")
     check session.get("key_session") == ""
 
   test "destroy":
     let token = sessionDb.getToken()
-    let session = newSession(token)
+    var session = newSession(token)
     session.set("key_session2", "value_session2")
     session.destroy()
     var result = ""

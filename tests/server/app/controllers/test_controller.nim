@@ -50,14 +50,14 @@ proc dd*(this:TestController):Response =
 # test response
 proc setHeader*(this:TestController):Response =
   var header = newHeaders()
-                .set("key1", "value1")
-                .set("key2", ["value1", "value2"])
+  header.set("key1", "value1")
+  header.set("key2", ["value1", "value2"])
   return render("setHeader").setHeader(header)
 
 proc setCookie*(this:TestController):Response =
   var cookie = newCookie(this.request)
-                .set("key1", "value1")
-                .set("key2", "value2")
+  cookie.set("key1", "value1")
+  cookie.set("key2", "value2")
   return render("setCookie").setCookie(cookie)
 
 proc setAuth*(this:TestController):Response =

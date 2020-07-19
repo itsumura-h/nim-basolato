@@ -45,10 +45,11 @@ proc clean(this:SessionDb) =
     for line in SESSION_DB_PATH.lines:
       if line.len == 0: break
       let lineJson = line.parseJson()
-      let createdAt = lineJson["created_at"].getStr().parse("yyyy-MM-dd\'T\'HH:mm:sszzz")
-      let expireAt = createdAt + SESSION_TIME.parseInt().minutes
-      if now() <= expireAt:
-        buffer.add(line)
+      if lineJson.hasKey("created_at"):
+        let createdAt = lineJson["created_at"].getStr().parse("yyyy-MM-dd\'T\'HH:mm:sszzz")
+        let expireAt = createdAt + SESSION_TIME.parseInt().minutes
+        if now() <= expireAt:
+          buffer.add(line)
     writeFile(SESSION_DB_PATH, buffer.join("\n"))
 
 proc checkTokenValid(db:FlatDb, token:string) =
@@ -147,9 +148,8 @@ proc some*(this:Session, key:string):bool =
 proc get*(this:Session, key:string):string =
   return this.db.get(key)
 
-proc delete*(this:Session, key:string): Session =
+proc delete*(this:Session, key:string) =
   discard this.db.delete(key)
-  return this
 
 proc destroy*(this:Session) =
   this.db.destroy()
@@ -232,9 +232,9 @@ proc hasKey*(this:Cookie, name:string):bool =
   else:
     return false
 
-proc set*(this:Cookie, name, value: string, expire:DateTime,
+proc set*(this:var Cookie, name, value: string, expire:DateTime,
       sameSite: SameSite=Lax, secure = false, httpOnly = false, domain = "",
-      path = "/"):Cookie =
+      path = "/") =
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(expire.utc, f)
   this.cookies.add(
@@ -242,8 +242,8 @@ proc set*(this:Cookie, name, value: string, expire:DateTime,
       secure:secure, httpOnly:httpOnly, domain:domain, path:path)
   )
 
-proc set*(this:Cookie, name, value: string, sameSite: SameSite=Lax,
-      secure = false, httpOnly = false, domain = "", path = "/"):Cookie =
+proc set*(this:var Cookie, name, value: string, sameSite: SameSite=Lax,
+      secure = false, httpOnly = false, domain = "", path = "/") =
   let expires = timeForward(CSRF_TIME, Minutes)
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(expires.utc, f)
@@ -251,10 +251,9 @@ proc set*(this:Cookie, name, value: string, sameSite: SameSite=Lax,
     CookieData(name:name, value:value, expire:expireStr, sameSite:sameSite,
       secure:secure, httpOnly:httpOnly, domain:domain, path:path)
   )
-  return this
 
-proc updateExpire*(this:Cookie, name:string, num:int,
-                    timeUnit:TimeUnit, path="/"):Cookie =
+proc updateExpire*(this:var Cookie, name:string, num:int,
+                    timeUnit:TimeUnit, path="/") =
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(timeForward(num, timeUnit).utc, f)
   if this.request.headers.hasKey("Cookie"):
@@ -264,15 +263,13 @@ proc updateExpire*(this:Cookie, name:string, num:int,
       if rowArr[0] == name:
         this.cookies.add(newCookieData(rowArr[0], rowArr[1], expire=expireStr))
         break
-  return this
 
-proc delete*(this:Cookie, key:string, path="/"):Cookie =
+proc delete*(this:var Cookie, key:string, path="/") =
   this.cookies.add(
     newCookieData(name=key, value="", expire=timeForward(-1, Days), path=path)
   )
-  return this
 
-proc destroy*(this:Cookie, path="/"):Cookie =
+proc destroy*(this:var Cookie, path="/") =
   if this.request.headers.hasKey("Cookie"):
     let cookiesStrArr = this.request.headers["Cookie"].split("; ")
     for row in cookiesStrArr:
@@ -280,7 +277,6 @@ proc destroy*(this:Cookie, path="/"):Cookie =
       this.cookies.add(
         newCookieData(name=name, value="", expire=timeForward(-1, Days), path=path)
       )
-  return this
 
 
 # ========== Auth ====================
@@ -336,7 +332,7 @@ proc get*(this:Auth, key:string):string =
     return ""
 
 proc delete*(this:Auth, key:string) =
-  discard this.session.delete(key)
+  this.session.delete(key)
 
 proc destroy*(this:Auth) =
   this.session.destroy()

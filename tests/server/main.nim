@@ -1,4 +1,4 @@
-import asyncdispatch, httpcore, re, tables
+import asyncdispatch, httpcore, tables
 # framework
 import ../../src/basolato/routing
 # middleware
@@ -6,6 +6,9 @@ import app/middlewares/custom_headers_middleware
 import app/middlewares/framework_middleware
 # controller
 import app/controllers/test_controller
+
+settings:
+  port = Port(5000)
 
 routes:
   # Framework
@@ -38,12 +41,3 @@ routes:
   patch "/test_routing": route(newTestController(request).patchAction())
   put "/test_routing": route(newTestController(request).putAction())
   delete "/test_routing": route(newTestController(request).deleteAction())
-
-# proc main() =
-#   let port = 5000.Port
-#   let settings = newSettings(port=port)
-#   var jester = initJester(main_router, settings=settings)
-#   jester.serve()
-
-# when isMainModule:
-#   main()

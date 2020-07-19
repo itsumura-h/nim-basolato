@@ -82,9 +82,9 @@ extend api, "/api"
 Create header instance by `newHeaders()` and add by `set()`. Finally, set header to response with `setHeader()`
 ```nim
 proc index*(this:SampleController): Response =
-  let header = newHeaders()
-                .set("Controller-Header-Key1", "Controller-Header-Val1")
-                .set("Controller-Header-Key1", "Controller-Header-Val2")
-                .set("Controller-Header-Key2", ["val1", "val2", "val3"])
+  var header = newHeaders()
+  header.set("Controller-Header-Key1", "Controller-Header-Val1")
+  header.set("Controller-Header-Key1", "Controller-Header-Val2")
+  header.set("Controller-Header-Key2", ["val1", "val2", "val3"])
   return render("with header").setHeader(header)
 ```

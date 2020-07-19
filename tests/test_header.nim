@@ -52,10 +52,10 @@ suite "header":
 
   test "set":
     var header = newHeaders()
-    header = header.set("key1", "value1")
+    header.set("key1", "value1")
     check header == @[(key: "key1", val: "value1")]
 
   test "set openarray":
     var header = newHeaders()
-    header = header.set("key1", ["value1", "value2"])
+    header.set("key1", ["value1", "value2"])
     check header == @[(key: "key1", val: "value1, value2")]
