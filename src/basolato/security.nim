@@ -45,10 +45,11 @@ proc clean(this:SessionDb) =
     for line in SESSION_DB_PATH.lines:
       if line.len == 0: break
       let lineJson = line.parseJson()
-      let createdAt = lineJson["created_at"].getStr().parse("yyyy-MM-dd\'T\'HH:mm:sszzz")
-      let expireAt = createdAt + SESSION_TIME.parseInt().minutes
-      if now() <= expireAt:
-        buffer.add(line)
+      if lineJson.hasKey("created_at"):
+        let createdAt = lineJson["created_at"].getStr().parse("yyyy-MM-dd\'T\'HH:mm:sszzz")
+        let expireAt = createdAt + SESSION_TIME.parseInt().minutes
+        if now() <= expireAt:
+          buffer.add(line)
     writeFile(SESSION_DB_PATH, buffer.join("\n"))
 
 proc checkTokenValid(db:FlatDb, token:string) =
