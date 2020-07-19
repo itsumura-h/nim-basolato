@@ -20,4 +20,4 @@ routes:
   get "/plaintext": route(newBenchmarkController(request).plainText())
   get "/json": route(newBenchmarkController(request).jsonAccess())
   get "/db": route(newBenchmarkController(request).dbAccess())
-  get "/queries/@queries": route(newBenchmarkController(request).queryAccess(@"queries"))
+  get "/query": route(newBenchmarkController(request).queryAccess())
