@@ -1,4 +1,4 @@
-import httpcore, json, strutils, times, random, strformat, tables
+import httpcore, json, strutils, times, random, strformat, tables, os
 # framework
 import ./base, ./baseEnv
 # 3rd party
@@ -58,8 +58,13 @@ proc checkTokenValid(db:FlatDb, token:string) =
   except:
     raise newException(Exception, "Invalid session id")
 
+proc createParentFlatDbDir():FlatDb =
+  if not existsDir(SESSION_DB_PATH.parentDir()):
+    createDir(SESSION_DB_PATH.parentDir())
+  return newFlatDb(SESSION_DB_PATH, IS_SESSION_MEMORY)
+
 proc newSessionDb*(sessionId=""):SessionDb =
-  let db = newFlatDb(SESSION_DB_PATH, IS_SESSION_MEMORY)
+  let db = createParentFlatDbDir()
   var sessionDb: SessionDb
   # clean expired session 1/100
   randomize()
@@ -76,7 +81,7 @@ proc newSessionDb*(sessionId=""):SessionDb =
   return sessionDb
 
 proc checkSessionIdValid*(sessionId=""):bool =
-  let db = newFlatDb(SESSION_DB_PATH, IS_SESSION_MEMORY)
+  let db = createParentFlatDbDir()
   discard db.load()
   try:
     var token = sessionId.decryptCtr()
