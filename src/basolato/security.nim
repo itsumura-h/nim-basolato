@@ -298,6 +298,12 @@ proc newAuth*():Auth =
   session.set("created_at", $getTime())
   return Auth(session:session)
 
+proc newLoginAuth*():Auth =
+  let session = newSession()
+  session.set("isLogin", "true")
+  session.set("created_at", $getTime())
+  return Auth(session:session)
+
 proc newAuthIfInvalid*(request:Request):Auth =
   var auth:Auth
   if not request.cookies.hasKey("session_id"):

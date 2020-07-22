@@ -8,4 +8,4 @@ proc hasSessionId*(request:Request) =
 proc redirectIfLogedIn*(request:Request) =
   if request.path() != "/logout":
     if newAuth(request).isLogin():
-      redirect("/")
+      redirect("/todo")
