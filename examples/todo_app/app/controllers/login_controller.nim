@@ -68,7 +68,7 @@ proc login*(this:LoginController):Response =
     # bussiness logic
     let userId = newLoginUsecase().login(email, password)
     # auth
-    this.auth.login()
+    this.auth = newLoginAuth()
     this.auth.set("id", $userId)
     return redirect("/todo").setAuth(this.auth)
   except ValidationError, CatchableError:
