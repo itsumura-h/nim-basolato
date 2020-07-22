@@ -53,7 +53,7 @@ export PATH=$PATH:~/.nimble/bin
 ### Dependencies
 
 The framework depends on several libraries (installed automatically by Nimble):
-- [Jester](https://github.com/dom96/jester), a jester-like web framework.
+- [httpbeast](https://github.com/dom96/httpbeast), a highly performant, multi-threaded HTTP 1.1 server written in Nim.
 - [nim-templates](https://github.com/onionhammer/nim-templates), a simple string templating library.
 - [allographer](https://github.com/itsumura-h/nim-allographer), a library for building queries.
 - [flatdb](https://github.com/enthus1ast/flatdb), a small Flatfile database, used for sessions.
