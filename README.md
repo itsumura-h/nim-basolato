@@ -89,6 +89,7 @@ ducere new {project_name}
 The overall file structure is as follows:
 
 ```
+├── .gitignore
 ├── app
 │   ├── controllers
 │   │   ├── README.md
@@ -123,6 +124,7 @@ The overall file structure is as follows:
 │   │   └── head.nim
 │   └── pages
 │       └── welcome_view.nim
+├── session.db
 ├── {project_name}.nimble
 └── tests
 ```

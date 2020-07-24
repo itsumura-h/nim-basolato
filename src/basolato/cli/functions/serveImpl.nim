@@ -1,5 +1,4 @@
-import
-  os, tables, times, re, strformat, osproc, terminal
+import os, tables, times, re, strformat, osproc, terminal
 
 let
   sleepTime = 2
@@ -25,8 +24,7 @@ proc runCommand() =
   try:
     if pid > 0:
       discard execShellCmd(&"kill {pid}")
-    discard tryRemoveFile("./main")
-    if execShellCmd("nim c main") > 0:
+    if execShellCmd(&"nim c main") > 0:
       raise newException(Exception, "")
     echoMsg(bgGreen, "[SUCCESS] Running dev server")
     p = startProcess("./main", currentDir, ["&"],
@@ -38,12 +36,12 @@ proc runCommand() =
     # quit 1
 
 proc serve*() =
+  ## run application with hot reload
   runCommand()
   while true:
     sleep sleepTime * 1000
     for f in walkDirRec(currentDir, {pcFile}):
-      if f.find(re"\.nim$") > -1:
-
+      if f.find(re"(\.nim.*|\.html)$") > -1:
         var modTime: Time
         try:
           modTime = getFileInfo(f).lastWriteTime
@@ -63,6 +61,7 @@ proc serve*() =
         # modified
         isModified = true
         files[f] = modTime
+        break
 
     if isModified:
       isModified = false

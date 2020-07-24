@@ -1,6 +1,7 @@
 import os, strformat
 
 proc build*(args:seq[string]) =
+  ## Build for production setting
   var outputFileName = "main"
   try:
     outputFileName = args[0]
