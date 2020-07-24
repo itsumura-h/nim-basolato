@@ -3,8 +3,9 @@ import ./baseEnv
 
 proc logger*(output: any, args:varargs[string]) =
   if IS_DISPLAY:
-    let logger = newConsoleLogger()
-    logger.log(lvlInfo, $output & $args)
+    when not defined(release):
+      let logger = newConsoleLogger()
+      logger.log(lvlDebug, $output & $args)
   if IS_FILE:
     let path = LOG_DIR & "/log.log"
     createDir(parentDir(path))
@@ -16,7 +17,8 @@ proc logger*(output: any, args:varargs[string]) =
 proc echoErrorMsg*(msg:string) =
   # console log
   if IS_DISPLAY:
-    styledWriteLine(stdout, fgRed, bgDefault, msg, resetStyle)
+    when not defined(release):
+      styledWriteLine(stdout, fgRed, bgDefault, msg, resetStyle)
   # file log
   if IS_FILE:
     let path = LOG_DIR & "/error.log"

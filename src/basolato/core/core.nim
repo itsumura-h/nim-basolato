@@ -117,8 +117,8 @@ proc statusContent(request: Request, status: HttpCode, content: string,
                    headers: Option[RawHeaders]): Future[void] =
   try:
     result = send(request, status, headers, content)
-    when not defined(release):
-      logging.debug("  $1 $2" % [$status, toStr(headers)])
+    # when not defined(release):
+    #   logging.debug("  $1 $2" % [$status, toStr(headers)])
   except:
     logging.error("Could not send response: $1" % osErrorMsg(osLastError()))
 
@@ -141,7 +141,7 @@ proc sendHeaders*(request: Request, status: HttpCode,
   let headerData = createResponse(status, headers)
   try:
     request.send(headerData)
-    logging.debug("  $1 $2" % [$status, $headers])
+    # logging.debug("  $1 $2" % [$status, $headers])
   except:
     logging.error("Could not send response: $1" % [osErrorMsg(osLastError())])
 
@@ -327,8 +327,8 @@ proc handleFileRequest(
     # Http200 means that the data was sent so there is nothing else to do.
     if status == Http200:
       result[0] = TCActionRaw
-      when not defined(release):
-        logging.debug("  -> $1" % path)
+      # when not defined(release):
+      #   logging.debug("  -> $1" % path)
       return
 
   return (TCActionSend, status, none[seq[(string, string)]](), "", true)
@@ -372,16 +372,17 @@ proc handleRequestSlow(
       respData.headers
     )
   else:
-    when not defined(release):
-      logging.debug("  $1" % [$respData.action])
+    discard
+    # when not defined(release):
+    #   logging.debug("  $1" % [$respData.action])
 
   # Cannot close the client socket. AsyncHttpServer may be keeping it alive.
 
 proc handleRequest(jes: Jester, httpReq: NativeRequest): Future[void] =
   var req = initRequest(httpReq, jes.settings)
   try:
-    when not defined(release):
-      logging.debug("$1 $2" % [$req.reqMethod, req.pathInfo])
+    # when not defined(release):
+    #   logging.debug("$1 $2" % [$req.reqMethod, req.pathInfo])
 
     if likely(jes.matchers.len == 1 and not jes.matchers[0].async):
       let respData = jes.matchers[0].syncProc(req)

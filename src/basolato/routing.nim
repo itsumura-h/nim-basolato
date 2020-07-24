@@ -102,7 +102,6 @@ template route*(respinseArg:Response,
       echoErrorMsg($response.status &
         &"  {request.ip}  {request.reqMethod}  {request.path}")
       echoErrorMsg($newHeaders)
-    echo response.status
     resp response.status, newHeaders, response.bodyString
 
 
@@ -182,6 +181,5 @@ template middleware*(procs:varargs[Response]) =
       # echo getCurrentExceptionMsg()
       discard
     else:
-      echo repr(p)
       route(p)
       break
