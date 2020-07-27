@@ -74,13 +74,13 @@ proc get*(this:TodoId):int =
   return this.value
 
 # =============================================================================
-type TodoContent* = ref object
+type TodoBody* = ref object
   value:string
 
-proc newTodoContent*(value:string):TodoContent =
+proc newTodoBody*(value:string):TodoBody =
   if value.len < 1:
     raise newException(Exception, "Content of Todo cannot be empty")
-  return TodoContent(value: value)
+  return TodoBody(value: value)
 
-proc get*(this:TodoContent):string =
+proc get*(this:TodoBody):string =
   return this.value

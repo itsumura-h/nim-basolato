@@ -20,14 +20,21 @@ proc newTodoController*(request:Request):TodoController =
 
 
 proc index*(this:TodoController):Response =
+  let userId = this.auth.get("user_id").parseInt
   let todoUsecase = newTodoUsecase()
-  let todos = todoUsecase.index()
+  let todos = todoUsecase.index(userId)
   return render(this.view.todoView(todos))
 
 proc show*(this:TodoController, id:string):Response =
   let id = id.parseInt
   let todoUsecase = newTodoUsecase()
   let todo = todoUsecase.show(id)
+  # data not found
+  if todo.kind == JNull:
+    return render(Http404, "")
+  # forbidden
+  if todo["user_id"].getInt != this.auth.get("user_id").parseInt:
+    return render(Http404, "")
   return render(this.view.todoDetailView(todo))
 
 proc create*(this:TodoController):Response =
@@ -35,8 +42,9 @@ proc create*(this:TodoController):Response =
 
 proc store*(this:TodoController):Response =
   let todo = this.request.params["todo"]
+  let userId = this.auth.get("user_id").parseInt
   let todoUsecase = newTodoUsecase()
-  todoUsecase.insert(todo)
+  todoUsecase.insert(todo, userId)
   return redirect("/todo")
 
 proc edit*(this:TodoController, id:string):Response =
