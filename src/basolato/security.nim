@@ -206,14 +206,18 @@ proc toCookieStr*(this:CookieData):string =
 
 
 proc newCookieData*(name, value:string, expire:DateTime, sameSite: SameSite=Lax,
-      secure = false, httpOnly = false, domain = "", path = "/"):CookieData =
+      secure, httpOnly=false, domain = "", path = "/"):CookieData =
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(expire.utc, f)
+  when defined(release):
+    let secure, httpOnly = true
   CookieData(name:name, value:value,expire:expireStr, sameSite:sameSite,
     secure:secure, httpOnly:httpOnly, domain:domain, path:path)
 
 proc newCookieData*(name, value:string, expire="", sameSite: SameSite=Lax,
-      secure = false, httpOnly = false, domain = "", path = "/"):CookieData =
+      secure, httpOnly=false, domain = "", path = "/"):CookieData =
+  when defined(release):
+    let secure, httpOnly = true
   CookieData(name:name, value:value,expire:expire, sameSite:sameSite,
     secure:secure, httpOnly:httpOnly, domain:domain, path:path)
 

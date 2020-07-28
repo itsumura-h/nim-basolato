@@ -39,3 +39,16 @@ requires "faker >= 0.13.2"
 #   for f in srcFiles:
 #     let srcFile = pkgDir / f & ".nim"
 #     exec &"nim doc --hints:off --project --out:{deployDir} --index:on {srcFile}"
+task install, "install":
+  discard
+after install:
+  echo ""
+  echo "|\\ |  |  |\\  /|"
+  echo "| \\|  |  | \\/ |"
+  echo " __        __   __           ___  __"
+  echo "|__)  /\\  (__  /  \\ |    /\\   |  /  \\"
+  echo "|__) /--\\  __) \\__/ |__ /--\\  |  \\__/"
+  echo " __   __                  __           __    __"
+  echo "|__  |__)   /\\   |\\  /|  |__  \\    /  /  \\  |__)  |_／"
+  echo "|    |  \\  /--\\  | \\/ |  |__   \\/\\/   \\__/  |  \\  | ＼"
+  echo ""

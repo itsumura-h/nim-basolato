@@ -127,7 +127,7 @@ update cookie expire
 proc store*(this:Controller): Response =
   var cookie = newCookie(this.request)
   cookie.updateExpire("name", 5)
-  # cookie will be deleted 5 days from now
+  # cookie will be deleted after 5 days from now
   return render("with cookie").setCookie(cookie)
 ```
 
@@ -146,6 +146,8 @@ proc index(this:Controller): Response =
   cookie.destroy()
   return render("with cookie").setCookie(cookie)
 ```
+
+⚠️ Since cookies are set `Secure` and `HttpOnly` in production environment, they will not be read by JavaScript and can only be used in HTTPS.
 
 
 ## Session
