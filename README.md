@@ -16,16 +16,17 @@ A full-stack web framework for Nim, based on [Jester](https://github.com/dom96/j
 ## Table of Contents
 
 <!--ts-->
-   * [Basolato Framework](#basolato-framework)
-      * [Dependencies](#dependencies)
-      * [Introduction](#introduction)
-         * [Install](#install)
-         * [Set up](#set-up)
-         * [Create project](#create-project)
-      * [Documents](#documents)
-         * [Dev roadmap](#dev-roadmap)
+   * [Basolato Framework](README.md#basolato-framework)
+      * [Table of Contents](README.md#table-of-contents)
+      * [Introduction](README.md#introduction)
+         * [Set up your environment](README.md#set-up-your-environment)
+         * [Dependencies](README.md#dependencies)
+         * [Installation](README.md#installation)
+         * [Creating projects](README.md#creating-projects)
+      * [Documentation](README.md#documentation)
+      * [Roadmap](README.md#roadmap)
 
-<!-- Added by: jiro4989, at: 2020年  3月 30日 月曜日 08:13:19 JST -->
+<!-- Added by: runner, at: Wed Jul 29 09:34:25 UTC 2020 -->
 
 <!--te-->
 

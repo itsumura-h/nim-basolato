@@ -5,20 +5,22 @@ View
 Table of Contents
 
 <!--ts-->
-   * [View](#view)
-      * [Introduction](#introduction)
-      * [Csrf Token](#csrf-token)
-         * [nim-templates](#nim-templates)
-         * [htmlgen](#htmlgen)
-         * [SCF](#scf)
-         * [Karax](#karax)
-      * [Block components example](#block-components-example)
-         * [nim-templates](#nim-templates-1)
-         * [htmlgen](#htmlgen-1)
-         * [SCF](#scf-1)
-         * [Karax](#karax-1)
+   * [View](documents/view.md#view)
+      * [Introduction](documents/view.md#introduction)
+      * [Csrf Token](documents/view.md#csrf-token)
+         * [nim-templates](documents/view.md#nim-templates)
+         * [htmlgen](documents/view.md#htmlgen)
+         * [SCF](documents/view.md#scf)
+         * [Karax](documents/view.md#karax)
+      * [Block components example](documents/view.md#block-components-example)
+         * [nim-templates](documents/view.md#nim-templates-1)
+         * [htmlgen](documents/view.md#htmlgen-1)
+         * [SCF](documents/view.md#scf-1)
+         * [Karax](documents/view.md#karax-1)
+      * [old helper](documents/view.md#old-helper)
+      * [Auth](documents/view.md#auth)
 
-<!-- Added by: jiro4989, at: 2020年  3月 30日 月曜日 08:24:28 JST -->
+<!-- Added by: runner, at: Wed Jul 29 09:34:30 UTC 2020 -->
 
 <!--te-->
 
