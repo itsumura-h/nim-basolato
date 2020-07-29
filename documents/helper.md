@@ -5,10 +5,10 @@ Healper
 Table of Contents
 
 <!--ts-->
-   * [Healper](#healper)
-      * [dd()](#dd)
+   * [Healper](documents/helper.md#healper)
+      * [dd](documents/helper.md#dd)
 
-<!-- Added by: jiro4989, at: 2020年  3月 30日 月曜日 08:18:03 JST -->
+<!-- Added by: runner, at: Wed Jul 29 09:34:27 UTC 2020 -->
 
 <!--te-->
 

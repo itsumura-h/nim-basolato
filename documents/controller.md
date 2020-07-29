@@ -5,16 +5,17 @@ Controller
 Table of Contents
 
 <!--ts-->
-   * [Controller](#controller)
-      * [Creating a Controller](#creating-a-controller)
-      * [Constructor &amp; DI](#constructor--di)
-      * [Returning string](#returning-string)
-      * [Returning HTML file](#returning-html-file)
-      * [Returning template](#returning-template)
-      * [Returning JSON](#returning-json)
-      * [Response status](#response-status)
+   * [Controller](documents/controller.md#controller)
+      * [Creating a Controller](documents/controller.md#creating-a-controller)
+      * [Constructor &amp; DI](documents/controller.md#constructor--di)
+      * [Response](documents/controller.md#response)
+         * [Returning string](documents/controller.md#returning-string)
+         * [Returning HTML file](documents/controller.md#returning-html-file)
+         * [Returning template](documents/controller.md#returning-template)
+         * [Returning JSON](documents/controller.md#returning-json)
+         * [Response status](documents/controller.md#response-status)
 
-<!-- Added by: jiro4989, at: 2020年  3月 30日 月曜日 07:59:33 JST -->
+<!-- Added by: runner, at: Wed Jul 29 09:34:26 UTC 2020 -->
 
 <!--te-->
 
