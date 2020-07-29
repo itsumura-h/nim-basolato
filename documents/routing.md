@@ -20,12 +20,12 @@ routes:
 Table of Contents
 
 <!--ts-->
-   * [Routing](#routing)
-      * [HTTP_Verbs](#http_verbs)
-      * [Routing group](#routing-group)
-      * [Getting response in sepecific URL groups](#getting-response-in-sepecific-url-groups)
+   * [Routing](documents/routing.md#routing)
+      * [HTTP_Verbs](documents/routing.md#http_verbs)
+      * [Routing group](documents/routing.md#routing-group)
+      * [Getting response in sepecific URL groups](documents/routing.md#getting-response-in-sepecific-url-groups)
 
-<!-- Added by: jiro4989, at: 2020年  3月 30日 月曜日 08:20:18 JST -->
+<!-- Added by: runner, at: Wed Jul 29 09:34:28 UTC 2020 -->
 
 <!--te-->
 

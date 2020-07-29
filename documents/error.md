@@ -5,11 +5,13 @@ Error
 Table of Contents
 
 <!--ts-->
-   * [Error](#error)
-      * [Introduction](#introduction)
-      * [How to display custom error page](#how-to-display-custom-error-page)
+   * [Error](documents/error.md#error)
+      * [Introduction](documents/error.md#introduction)
+      * [ErrorAuthRedirect](documents/error.md#errorauthredirect)
+      * [Raise Error and Redirect](documents/error.md#raise-error-and-redirect)
+      * [How to display custom error page](documents/error.md#how-to-display-custom-error-page)
 
-<!-- Added by: jiro4989, at: 2020年  3月 30日 月曜日 08:16:37 JST -->
+<!-- Added by: runner, at: Wed Jul 29 09:34:26 UTC 2020 -->
 
 <!--te-->
 
