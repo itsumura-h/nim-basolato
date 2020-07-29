@@ -2,6 +2,11 @@ Password
 ===
 [back](../README.md)
 
+Table of Contents
+
+<!--ts-->
+<!--te-->
+
 Basolato has its own useful password library. It uses `bcrypt` package inside.  
 https://github.com/runvnc/bcryptnim
 
