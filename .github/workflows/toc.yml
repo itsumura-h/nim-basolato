@@ -22,9 +22,13 @@ jobs:
         run: |
           wget https://raw.githubusercontent.com/ekalinin/github-markdown-toc/master/gh-md-toc
           chmod +x gh-md-toc
-      - name: Insert TOC
+      - name: Insert TOC in top directory
         run: |
-          ./gh-md-toc --insert *.md documents/*.md
+          ./gh-md-toc --insert *.md
+      - name: Insert TOC in documents
+        working-directory: documents
+        run: |
+          ../gh-md-toc --insert *.md
       - name: Git commit documents
         run: |
           git config --local user.email "action@github.com"
