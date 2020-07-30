@@ -39,7 +39,7 @@ proc signin*(this:LoginController):Response =
     # bussines logic
     let userId = newLoginUsecase().signin(name, email, password)
     # auth
-    this.auth.login()
+    this.auth = newLoginAuth()
     this.auth.set("user_id", $user_id)
     this.auth.set("name", name)
     # response

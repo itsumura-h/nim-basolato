@@ -15,19 +15,25 @@ type Controller* = ref object of RootObj
   view*:View
 
 proc newController*(this:typedesc, request:Request): this.type =
-  if request.cookies.hasKey("session_id"):
-    let auth = newAuth(request)
-    return this.type(
-      request:request,
-      auth: auth,
-      view: newView(auth)
-    )
-  else:
-    return this.type(
-      request:request,
-      auth:Auth(),
-      view: newView()
-    )
+  # if request.cookies.hasKey("session_id"):
+  #   let auth = newAuth(request)
+  #   return this.type(
+  #     request:request,
+  #     auth: auth,
+  #     view: newView(auth)
+  #   )
+  # else:
+  #   return this.type(
+  #     request:request,
+  #     auth:Auth(),
+  #     view: newView()
+  #   )
+  let auth = newAuth(request)
+  return this.type(
+    request:request,
+    auth: auth,
+    view: newView(auth)
+  )
 
 # String
 proc render*(body:string):Response =

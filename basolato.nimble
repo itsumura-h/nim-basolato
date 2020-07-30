@@ -39,6 +39,12 @@ requires "faker >= 0.13.2"
 #   for f in srcFiles:
 #     let srcFile = pkgDir / f & ".nim"
 #     exec &"nim doc --hints:off --project --out:{deployDir} --index:on {srcFile}"
+task toc, "Generate TOC":
+  exec "wget https://raw.githubusercontent.com/ekalinin/github-markdown-toc/master/gh-md-toc"
+  exec "chmod +x gh-md-toc"
+  exec "./gh-md-toc --insert *.md documents/*.md"
+  rmFile "gh-md-toc"
+
 task install, "install":
   discard
 after install:
