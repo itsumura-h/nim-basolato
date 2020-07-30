@@ -162,3 +162,14 @@ nim c -r main
 |---|---|
 |v1.0|Support Clean architecture and Tactical DDD|
 |v2.0|Support GraphQL|
+
+## Development
+
+### Generate TOC of documents
+
+Run.
+
+```bash
+nimble setupTool # Build docker image
+nimble toc # Generate TOC
+```
