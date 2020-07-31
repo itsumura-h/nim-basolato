@@ -1,4 +1,5 @@
 import
+  ../base,
   functions/newImpl,
   functions/makeImpl,
   functions/serveImpl,
@@ -6,6 +7,7 @@ import
 
 when isMainModule:
   import cligen
+  clCfg.version = basolatoVersion
   dispatchMulti(
     [newImpl.new],[make],[serve],[build]
   )

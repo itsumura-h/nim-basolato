@@ -9,7 +9,6 @@ services:
       TZ: Asia/Tokyo
     ports:
       - 9000:5000
-      - 8080:8080
     volumes:
       - .:/root/project
   # mysql:

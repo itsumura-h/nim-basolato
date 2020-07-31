@@ -5,11 +5,11 @@ Password
 Table of Contents
 
 <!--ts-->
-   * [Password](documents/password.md#password)
-      * [API](documents/password.md#api)
-      * [Example](documents/password.md#example)
+   * [Password](#password)
+      * [API](#api)
+      * [Example](#example)
 
-<!-- Added by: runner, at: Wed Jul 29 09:34:28 UTC 2020 -->
+<!-- Added by: root, at: Fri Jul 31 13:19:33 UTC 2020 -->
 
 <!--te-->
 

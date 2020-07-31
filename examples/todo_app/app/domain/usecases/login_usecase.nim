@@ -1,5 +1,5 @@
-import tables
-
+import tables, json
+# domain
 import ../models/value_objects
 import ../models/user/user_entity
 import ../models/user/user_service
@@ -21,10 +21,10 @@ proc signin*(this:LoginUsecase, name, email, password:string):int =
   let userId = userService.save(user)
   return userId
 
-proc login*(this:LoginUsecase, email, password:string):int =
+proc login*(this:LoginUsecase, email, password:string):JsonNode =
   let email = newEmail(email)
   let password = newPassword(password)
   let userService = newUserService()
   let user = userService.find(email)
   userService.checkPasswordValid(user, password)
-  return user.id.get()
+  return %*{"id": user.id.get, "name": user.name.get}

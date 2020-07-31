@@ -9,6 +9,8 @@ import middlewares/check_login_middleware
 # controller
 import app/controllers/sample_controller
 
+settings:
+  port = Port(5000)
 
 router sample:
   get "/welcome": route(newSampleController(request).welcome())
@@ -63,12 +65,3 @@ routes:
   after re"/api.*":
     route(response(result), [secureHeader(), corsHeader(), customHeader()])
   extend api, "/api"
-
-# proc main() =
-#   let port = 5000.Port
-#   let settings = newSettings(port=port)
-#   var jester = initJester(main_router, settings=settings)
-#   jester.serve()
-
-# when isMainModule:
-#   main()

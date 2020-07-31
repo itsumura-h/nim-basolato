@@ -1,6 +1,6 @@
 import json
 import ../../../../src/basolato/view
-import ../layouts/application
+import ../layouts/application_view
 
 proc impl(todos:seq[JsonNode]):string = tmpli html"""
 <a href="/logout">logout</a>
@@ -9,28 +9,27 @@ proc impl(todos:seq[JsonNode]):string = tmpli html"""
   <input type="text" name="todo">
   <button type="submit">add</button>
 </form>
-<p><a</p>
-
   $if todos.len > 0{
-      <table>
-        $for todo in todos{
-          <tr>
-            <td>$(todo["todo"].get)</td>
-            <td>
-              <a href="/todo/$(todo["id"].get)">detail</a>
-            </td>
-            <td>
-              <form method="post" action="/todo/$(todo["id"].get)/delete">
-                $(csrfToken())
-                <button type="submit">delete</button>
-              </form>
-            </td>
-          </tr>
-        }
-      </table>
-    </form>
+    <table>
+      $for todo in todos{
+        <tr>
+          <td>$(todo["todo"].get)</td>
+          <td>
+            <a href="/todo/$(todo["id"].get)">detail</a>
+          </td>
+          <td>
+            <form method="post" action="/todo/$(todo["id"].get)/delete">
+              $(csrfToken())
+              <button type="submit">delete</button>
+            </form>
+          </td>
+        </tr>
+      }
+    </table>
   }
-</form>
+  $else{
+    <p>contant not found</p>
+  }
 """
 
 proc todoView*(this:View, todos:seq[JsonNode]):string =

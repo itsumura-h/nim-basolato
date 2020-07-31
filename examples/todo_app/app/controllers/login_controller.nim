@@ -39,8 +39,9 @@ proc signin*(this:LoginController):Response =
     # bussines logic
     let userId = newLoginUsecase().signin(name, email, password)
     # auth
-    this.auth.login()
+    this.auth = newLoginAuth()
     this.auth.set("user_id", $user_id)
+    this.auth.set("name", name)
     # response
     return redirect("/todo").setAuth(this.auth)
   except ValidationError, CatchableError:
@@ -66,10 +67,11 @@ proc login*(this:LoginController):Response =
     v.email("email")
     v.valid()
     # bussiness logic
-    let userId = newLoginUsecase().login(email, password)
+    let userData = newLoginUsecase().login(email, password)
     # auth
     this.auth = newLoginAuth()
-    this.auth.set("id", $userId)
+    this.auth.set("user_id", $userData["id"].getInt)
+    this.auth.set("name", userData["name"].getStr)
     return redirect("/todo").setAuth(this.auth)
   except ValidationError, CatchableError:
     echo getCurrentException().repr

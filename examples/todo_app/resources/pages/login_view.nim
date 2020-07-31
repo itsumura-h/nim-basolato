@@ -1,6 +1,6 @@
 import json
 import ../../../../src/basolato/view
-import ../layouts/application
+import ../layouts/application_view
 
 proc impl(params, errors:JsonNode):string = tmpli html"""
 <h1>Login</h1>

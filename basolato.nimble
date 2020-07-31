@@ -40,6 +40,20 @@ import strformat
 #     let srcFile = pkgDir / f & ".nim"
 #     exec &"nim doc --hints:off --project --out:{deployDir} --index:on {srcFile}"
 
+task install, "install":
+  discard
+after install:
+  echo ""
+  echo "|\\ |  |  |\\  /|"
+  echo "| \\|  |  | \\/ |"
+  echo " __        __   __           ___  __"
+  echo "|__)  /\\  (__  /  \\ |    /\\   |  /  \\"
+  echo "|__) /--\\  __) \\__/ |__ /--\\  |  \\__/"
+  echo " __   __                  __           __    __"
+  echo "|__  |__)   /\\   |\\  /|  |__  \\    /  /  \\  |__)  |_／"
+  echo "|    |  \\  /--\\  | \\/ |  |__   \\/\\/   \\__/  |  \\  | ＼"
+  echo ""
+
 let toolImage = "basolato:tool"
 
 task setupTool, "Setup tool docker image":
