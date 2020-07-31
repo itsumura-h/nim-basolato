@@ -23,7 +23,7 @@ requires "flatdb >= 0.2.4"
 requires "allographer >= 0.12.2"
 requires "faker >= 0.13.2"
 
-# import strformat
+import strformat
 # from os import `/`
 
 # task docs, "Generate API documents":
@@ -39,3 +39,20 @@ requires "faker >= 0.13.2"
 #   for f in srcFiles:
 #     let srcFile = pkgDir / f & ".nim"
 #     exec &"nim doc --hints:off --project --out:{deployDir} --index:on {srcFile}"
+
+let toolImage = "basolato:tool"
+
+task setupTool, "Setup tool docker image":
+  exec &"docker build -t {toolImage} -f tool_Dockerfile ."
+
+proc generateToc(dir: string) =
+  let cwd = getCurrentDir()
+  for f in listFiles(dir):
+    if 3 < f.len:
+      let ext = f[^3..^1]
+      if ext == ".md":
+        exec &"docker run --rm -v {cwd}:/work -it {toolImage} --insert --no-backup {f}"
+
+task toc, "Generate TOC":
+  generateToc(".")
+  generateToc("./documents")

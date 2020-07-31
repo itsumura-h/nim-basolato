@@ -12,6 +12,7 @@ nimcache/
 
 !LICENSE
 !app_Dockerfile
+!tool_Dockerfile
 
 coverage/*
 lcov.info
