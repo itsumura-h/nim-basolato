@@ -5,22 +5,22 @@ View
 Table of Contents
 
 <!--ts-->
-   * [View](documents/view.md#view)
-      * [Introduction](documents/view.md#introduction)
-      * [Csrf Token](documents/view.md#csrf-token)
-         * [nim-templates](documents/view.md#nim-templates)
-         * [htmlgen](documents/view.md#htmlgen)
-         * [SCF](documents/view.md#scf)
-         * [Karax](documents/view.md#karax)
-      * [Block components example](documents/view.md#block-components-example)
-         * [nim-templates](documents/view.md#nim-templates-1)
-         * [htmlgen](documents/view.md#htmlgen-1)
-         * [SCF](documents/view.md#scf-1)
-         * [Karax](documents/view.md#karax-1)
-      * [old helper](documents/view.md#old-helper)
-      * [Auth](documents/view.md#auth)
+   * [View](#view)
+      * [Introduction](#introduction)
+      * [Csrf Token](#csrf-token)
+         * [nim-templates](#nim-templates)
+         * [htmlgen](#htmlgen)
+         * [SCF](#scf)
+         * [Karax](#karax)
+      * [Block components example](#block-components-example)
+         * [nim-templates](#nim-templates-1)
+         * [htmlgen](#htmlgen-1)
+         * [SCF](#scf-1)
+         * [Karax](#karax-1)
+      * [old helper](#old-helper)
+      * [Auth](#auth)
 
-<!-- Added by: runner, at: Wed Jul 29 09:34:30 UTC 2020 -->
+<!-- Added by: root, at: Fri Jul 31 13:19:30 UTC 2020 -->
 
 <!--te-->
 

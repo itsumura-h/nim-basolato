@@ -5,14 +5,14 @@ Headers
 Table of Contents
 
 <!--ts-->
-   * [Headers](documents/headers.md#headers)
-      * [Request Header](documents/headers.md#request-header)
-      * [Response header](documents/headers.md#response-header)
-         * [Type of headers](documents/headers.md#type-of-headers)
-         * [Set headers in routing](documents/headers.md#set-headers-in-routing)
-         * [Set headers in controller](documents/headers.md#set-headers-in-controller)
+   * [Headers](#headers)
+      * [Request Header](#request-header)
+      * [Response header](#response-header)
+         * [Type of headers](#type-of-headers)
+         * [Set headers in routing](#set-headers-in-routing)
+         * [Set headers in controller](#set-headers-in-controller)
 
-<!-- Added by: runner, at: Wed Jul 29 09:34:27 UTC 2020 -->
+<!-- Added by: root, at: Fri Jul 31 13:19:25 UTC 2020 -->
 
 <!--te-->
 

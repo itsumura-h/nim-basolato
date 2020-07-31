@@ -16,17 +16,20 @@ A full-stack web framework for Nim, based on [Jester](https://github.com/dom96/j
 ## Table of Contents
 
 <!--ts-->
-   * [Basolato Framework](README.md#basolato-framework)
-      * [Table of Contents](README.md#table-of-contents)
-      * [Introduction](README.md#introduction)
-         * [Set up your environment](README.md#set-up-your-environment)
-         * [Dependencies](README.md#dependencies)
-         * [Installation](README.md#installation)
-         * [Creating projects](README.md#creating-projects)
-      * [Documentation](README.md#documentation)
-      * [Roadmap](README.md#roadmap)
+   * [Basolato Framework](#basolato-framework)
+      * [Table of Contents](#table-of-contents)
+      * [Introduction](#introduction)
+         * [Set up your environment](#set-up-your-environment)
+         * [Dependencies](#dependencies)
+         * [Installation](#installation)
+         * [Creating projects](#creating-projects)
+      * [Documentation](#documentation)
+      * [Benchmark](#benchmark)
+      * [Roadmap](#roadmap)
+      * [Development](#development)
+         * [Generate TOC of documents](#generate-toc-of-documents)
 
-<!-- Added by: runner, at: Wed Jul 29 09:34:25 UTC 2020 -->
+<!-- Added by: root, at: Fri Jul 31 13:19:24 UTC 2020 -->
 
 <!--te-->
 

@@ -7,18 +7,18 @@ ducere command
 Table of Contents
 
 <!--ts-->
-   * [ducere command](documents/ducere.md#ducere-command)
-      * [new](documents/ducere.md#new)
-      * [serve](documents/ducere.md#serve)
-      * [make](documents/ducere.md#make)
-         * [config](documents/ducere.md#config)
-         * [controller](documents/ducere.md#controller)
-         * [view](documents/ducere.md#view)
-         * [migration](documents/ducere.md#migration)
-         * [model](documents/ducere.md#model)
-         * [usecase](documents/ducere.md#usecase)
+   * [ducere command](#ducere-command)
+      * [new](#new)
+      * [serve](#serve)
+      * [make](#make)
+         * [config](#config)
+         * [controller](#controller)
+         * [view](#view)
+         * [migration](#migration)
+         * [model](#model)
+         * [usecase](#usecase)
 
-<!-- Added by: runner, at: Wed Jul 29 09:34:26 UTC 2020 -->
+<!-- Added by: root, at: Fri Jul 31 13:19:39 UTC 2020 -->
 
 <!--te-->
 

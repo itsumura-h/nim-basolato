@@ -5,13 +5,13 @@ Error
 Table of Contents
 
 <!--ts-->
-   * [Error](documents/error.md#error)
-      * [Introduction](documents/error.md#introduction)
-      * [ErrorAuthRedirect](documents/error.md#errorauthredirect)
-      * [Raise Error and Redirect](documents/error.md#raise-error-and-redirect)
-      * [How to display custom error page](documents/error.md#how-to-display-custom-error-page)
+   * [Error](#error)
+      * [Introduction](#introduction)
+      * [ErrorAuthRedirect](#errorauthredirect)
+      * [Raise Error and Redirect](#raise-error-and-redirect)
+      * [How to display custom error page](#how-to-display-custom-error-page)
 
-<!-- Added by: runner, at: Wed Jul 29 09:34:26 UTC 2020 -->
+<!-- Added by: root, at: Fri Jul 31 13:19:34 UTC 2020 -->
 
 <!--te-->
 
