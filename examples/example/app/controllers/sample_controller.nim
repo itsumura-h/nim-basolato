@@ -1,6 +1,5 @@
 import json, strformat, strutils, times
 import basolato/controller
-
 import allographer/query_builder
 
 # html
@@ -123,17 +122,16 @@ proc destroyCookies*(this:SampleController): Response =
 
 # ========== Login ====================
 proc indexLogin*(this:SampleController): Response =
-  let auth = newAuth(this.request)
-  return render(loginHtml(auth))
+  let flash = this.auth.getFlash()
+  return render(loginHtml(this.auth, flash))
 
 proc storeLogin*(this:SampleController): Response =
   let name = this.request.params["name"]
-  let password = this.request.params["password"]
   # auth
-  let auth = newAuth()
-  auth.login()
-  auth.set("name", name)
-  return redirect("/sample/login").setAuth(auth)
+  this.auth.login()
+  this.auth.set("name", name)
+  this.auth.setFlash("message", "You are logged in!")
+  return redirect("/sample/login").setAuth(this.auth)
 
 proc destroyLogin*(this:SampleController): Response =
   return redirect("/sample/login").destroyAuth(this.auth)

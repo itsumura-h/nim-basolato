@@ -2,7 +2,10 @@ import json
 import ../../../../src/basolato/view
 import ../layouts/application_view
 
-proc impl(todos:seq[JsonNode]):string = tmpli html"""
+proc impl(todos:seq[JsonNode], flash:JsonNode):string = tmpli html"""
+$for key, val in flash{
+  <p style="color: green;">$(val.get)</p>
+}
 <a href="/logout">logout</a>
 <form method="POST">
   $(csrfToken())
@@ -32,6 +35,6 @@ proc impl(todos:seq[JsonNode]):string = tmpli html"""
   }
 """
 
-proc todoView*(this:View, todos:seq[JsonNode]):string =
+proc todoView*(this:View, todos:seq[JsonNode], flash=newJObject()):string =
   let title = "todo"
-  return this.applicationView(title, impl(todos))
+  return this.applicationView(title, impl(todos, flash))

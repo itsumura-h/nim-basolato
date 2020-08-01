@@ -11,7 +11,6 @@ proc newUserRepository*():UserRdbRepository =
 
 proc find*(this:UserRdbRepository, email:Email):Option[User] =
   let userData = RDB().table("users").select("*").where("email", "=", email.get()).first()
-  echo userData
   if userData.len > 0:
     return some(newUser(
       newUserId(userData["id"].getInt),

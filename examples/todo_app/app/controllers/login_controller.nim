@@ -39,9 +39,10 @@ proc signin*(this:LoginController):Response =
     # bussines logic
     let userId = newLoginUsecase().signin(name, email, password)
     # auth
-    this.auth = newLoginAuth()
+    this.auth.login()
     this.auth.set("user_id", $user_id)
     this.auth.set("name", name)
+    this.auth.setFlash("message", "You are logged in!")
     # response
     return redirect("/todo").setAuth(this.auth)
   except ValidationError, CatchableError:
@@ -69,12 +70,12 @@ proc login*(this:LoginController):Response =
     # bussiness logic
     let userData = newLoginUsecase().login(email, password)
     # auth
-    this.auth = newLoginAuth()
+    this.auth.login()
     this.auth.set("user_id", $userData["id"].getInt)
     this.auth.set("name", userData["name"].getStr)
+    this.auth.setFlash("message", "You are logged in!")
     return redirect("/todo").setAuth(this.auth)
   except ValidationError, CatchableError:
-    echo getCurrentException().repr
     v.errors["exception"] = %getCurrentExceptionMsg()
     return render(Http412, this.view.loginView(%params, v.errors))
   except:

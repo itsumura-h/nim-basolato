@@ -22,7 +22,6 @@ proc index*(this:UsersController):Response =
 
 proc show*(this:UsersController, id:string):Response =
   # validation
-  echo this.auth.isLogin()
   let v = Validation()
   if not v.isInt(id):
     return render(Http404, "")

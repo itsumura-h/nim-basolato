@@ -1,5 +1,5 @@
 import json
-import ../../../src/basolato/controller
+import ../../../../src/basolato/controller
 
 proc root*(request:Request):Response =
   let params = request.params
@@ -20,7 +20,7 @@ proc json*():Response =
 proc json500*():Response =
   let r = %*{"message": "json 500 response"}
   return render(Http500, r)
-  
+
 
 
 # type RootController* = ref object of BaseController
