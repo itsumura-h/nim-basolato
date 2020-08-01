@@ -61,13 +61,13 @@ proc setCookie*(this:TestController):Response =
   return render("setCookie").setCookie(cookie)
 
 proc setAuth*(this:TestController):Response =
-  this.auth = newLoginAuth()
+  this.auth.login()
   this.auth.set("key1", "value1")
   this.auth.set("key2", "value2")
   return render("setAuth").setAuth(this.auth)
 
 proc destroyAuth*(this:TestController):Response =
-  this.auth = newLoginAuth()
+  this.auth.login()
   return render("setAuth").destroyAuth(this.auth)
 
 

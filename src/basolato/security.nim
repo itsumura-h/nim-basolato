@@ -307,11 +307,11 @@ proc newAuth*():Auth =
   session.set("created_at", $getTime())
   return Auth(session:session)
 
-proc newLoginAuth*():Auth =
-  let session = newSession()
-  session.set("isLogin", "true")
-  session.set("created_at", $getTime())
-  return Auth(session:session)
+# proc newLoginAuth*():Auth =
+#   let session = newSession()
+#   session.set("isLogin", "true")
+#   session.set("created_at", $getTime())
+#   return Auth(session:session)
 
 proc newAuthIfInvalid*(request:Request):Auth =
   var auth:Auth
@@ -353,7 +353,12 @@ proc destroy*(this:Auth) =
   this.session.destroy()
 
 proc login*(this:Auth) =
-  this.set("isLogin", "true")
+  if this.session.isNil:
+    this.session = newSession()
+    this.session.set("isLogin", "true")
+    this.session.set("created_at", $getTime())
+  else:
+    this.set("isLogin", "true")
 
 proc logout*(this:Auth) =
   this.destroy()

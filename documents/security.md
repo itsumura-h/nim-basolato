@@ -274,9 +274,8 @@ proc index(this:Controller): Response =
   let email = params["email"]
   let password = params["password"]
   let userId = newLoginUsecase().login(email, password)
-  let auth = newAuth()
-  auth.login()
-  auth.set("id", $userId)
+  this.auth.login()
+  this.auth.set("id", $userId)
   return redirect("/").setAuth(auth)
 ```
 
@@ -313,7 +312,7 @@ proc index(this:Controller): Response =
 delete one key-value pair of session
 ```nim
 proc destroy(this:Controller): Response =
-  let auth = this.auth.delete("login_name")
+  this.auth.delete("login_name")
   return render("auth").setAuth(auth)
 ```
 
@@ -326,8 +325,7 @@ proc destroy(this:Controller): Response =
 set flash message
 ```nim
 proc store*(this:Controller):Response =
-  let auth = newAuth()
-  auth.setFlash("success", "Welcome to the Sample App!")
+  this.auth.setFlash("success", "Welcome to the Sample App!")
   return redirect("/auth").setAuth(auth)
 ```
 

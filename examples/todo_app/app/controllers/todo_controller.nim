@@ -21,9 +21,10 @@ proc newTodoController*(request:Request):TodoController =
 
 proc index*(this:TodoController):Response =
   let userId = this.auth.get("user_id").parseInt
+  let flash = this.auth.getFlash()
   let todoUsecase = newTodoUsecase()
   let todos = todoUsecase.index(userId)
-  return render(this.view.todoView(todos))
+  return render(this.view.todoView(todos, flash))
 
 proc show*(this:TodoController, id:string):Response =
   let id = id.parseInt
