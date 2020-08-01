@@ -11,7 +11,7 @@ Table of Contents
       * [Raise Error and Redirect](#raise-error-and-redirect)
       * [How to display custom error page](#how-to-display-custom-error-page)
 
-<!-- Added by: root, at: Fri Jul 31 13:19:34 UTC 2020 -->
+<!-- Added by: root, at: Sat Aug  1 12:13:38 UTC 2020 -->
 
 <!--te-->
 

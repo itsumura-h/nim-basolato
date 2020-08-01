@@ -10,10 +10,15 @@ Table of Contents
          * [CSRF Token](#csrf-token)
       * [Cookie](#cookie)
          * [API](#api)
+         * [Sample](#sample)
       * [Session](#session)
+         * [API](#api-1)
+         * [Sample](#sample-1)
       * [Auth](#auth)
+         * [API](#api-2)
+         * [Sample](#sample-2)
 
-<!-- Added by: root, at: Fri Jul 31 13:19:32 UTC 2020 -->
+<!-- Added by: root, at: Sat Aug  1 12:14:20 UTC 2020 -->
 
 <!--te-->
 
@@ -107,6 +112,7 @@ proc destroy*(this:Cookie, path="/"):Cookie =
 proc setCookie*(response:Response, cookie:Cookie):Response =
 ```
 
+### Sample
 get cookie
 ```nim
 proc index(this:Controller): Response =
@@ -165,7 +171,7 @@ type
     db: SessionDb
 ```
 
-API
+### API
 ```nim
 proc newSession*(token="", typ:SessionType=File):Session =
   # If you set valid token, it connect to existing session.
@@ -184,6 +190,7 @@ proc delete*(this:Session, key:string): Session =
 proc destroy*(this:Session) =
 ```
 
+### Sample
 get session id
 ```nim
 proc index(this:Controller): Response =
@@ -234,7 +241,7 @@ type Auth* = ref object
   session*:Session
 ```
 
-API
+### API
 ```nim
 proc newAuth*(request:Request):Auth =
 
@@ -268,6 +275,7 @@ proc setFlash*(this:Auth, key, value:string) =
 proc getFlash*(this:Auth):JsonNode =
 ```
 
+### Sample
 login
 ```nim
 proc index(this:Controller): Response =

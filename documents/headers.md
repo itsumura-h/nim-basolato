@@ -12,7 +12,7 @@ Table of Contents
          * [Set headers in routing](#set-headers-in-routing)
          * [Set headers in controller](#set-headers-in-controller)
 
-<!-- Added by: root, at: Fri Jul 31 13:19:25 UTC 2020 -->
+<!-- Added by: root, at: Sat Aug  1 12:12:35 UTC 2020 -->
 
 <!--te-->
 
