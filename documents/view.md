@@ -103,7 +103,6 @@ To send POST request from `form`, you have to set `csrf token`. You can use help
 ### nim-templates
 ```nim
 import basolato/view
-import templates
 
 proc index*():string = tmpli html"""
 <form>
@@ -174,7 +173,7 @@ result
 ### nim-templates
 
 ```nim
-import tamplates
+import basolato/view
 
 proc baseImpl(content:string): string = tmpli html"""
 <html>
@@ -346,5 +345,4 @@ proc applicationView*(this:View, title:string, body:string, flash=newJObject()):
 proc homeView*(this:View):string =
   this.applicationView("Title", impl())
 """
-
 ```

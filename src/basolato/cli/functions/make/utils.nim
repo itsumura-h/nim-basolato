@@ -38,7 +38,7 @@ proc randStr*(n:varargs[int]):string =
   for _ in 1..n:
     add(result, options.sample())
 
-proc snake_to_camel*(input:string):string =
+proc snakeToCamel*(input:string):string =
   var underbar_index = -1
   for i, letter in input:
     if letter == '_':

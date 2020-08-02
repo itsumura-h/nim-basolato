@@ -3,7 +3,7 @@ import utils
 
 proc makeModel*(target:string, message:var string):int =
   let targetName = target.split("/").max()
-  let targetCaptalized = targetName.snake_to_camel()
+  let targetCaptalized = snakeToCamel(targetName)
   let ENTITY = &"""
 import ../value_objects
 

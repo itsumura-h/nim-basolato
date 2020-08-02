@@ -4,7 +4,7 @@ import utils
 proc makeView*(target:string, message:var string):int =
   let targetPath = &"{getCurrentDir()}/resources/{target}_view.nim"
   let targetName = target.split("/")[^1]
-  let targetCaptalized = capitalizeAscii(targetName)
+  let targetCaptalized = snakeToCamel(targetName)
   let reativeToApplicationPath = "../".repeat(target.split("/").len-1) & "layouts/application"
 
   var VIEW = &"""
@@ -14,7 +14,7 @@ import {reativeToApplicationPath}
 proc impl():string = tmpli html'''
 '''
 
-proc {targetName}View*(this:View):string =
+proc {targetCaptalized}View*(this:View):string =
   let title = ''
   return this.applicationView(title, impl())
 """
