@@ -10,6 +10,7 @@ proc logger*(output: any, args:varargs[string]) =
     let path = LOG_DIR & "/log.log"
     createDir(parentDir(path))
     let logger = newRollingFileLogger(path, mode=fmAppend, fmtStr=verboseFmtStr)
+    defer: logger.file.close()
     logger.log(lvlInfo, $output & $args)
     flushFile(logger.file)
 
@@ -24,5 +25,6 @@ proc echoErrorMsg*(msg:string) =
     let path = LOG_DIR & "/error.log"
     createDir(parentDir(path))
     let logger = newRollingFileLogger(path, mode=fmAppend, fmtStr=verboseFmtStr)
+    defer: logger.file.close()
     logger.log(lvlError, msg)
     flushFile(logger.file)
