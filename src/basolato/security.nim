@@ -50,7 +50,9 @@ proc clean(this:SessionDb) =
         let expireAt = createdAt + SESSION_TIME.parseInt().minutes
         if now() <= expireAt:
           buffer.add(line)
-    writeFile(SESSION_DB_PATH, buffer.join("\n"))
+    if buffer.len > 0:
+      buffer.add("")
+      writeFile(SESSION_DB_PATH, buffer.join("\n"))
 
 proc checkTokenValid(db:FlatDb, token:string) =
   try:
@@ -65,6 +67,7 @@ proc createParentFlatDbDir():FlatDb =
 
 proc newSessionDb*(sessionId=""):SessionDb =
   let db = createParentFlatDbDir()
+  defer: db.close()
   var sessionDb: SessionDb
   # clean expired session 1/100
   randomize()
@@ -82,6 +85,7 @@ proc newSessionDb*(sessionId=""):SessionDb =
 
 proc checkSessionIdValid*(sessionId=""):bool =
   let db = createParentFlatDbDir()
+  defer: db.close()
   discard db.load()
   try:
     var token = sessionId.decryptCtr()
@@ -95,6 +99,7 @@ proc getToken*(this:SessionDb): string =
 
 proc set*(this:SessionDb, key, value:string):SessionDb =
   let db = this.conn
+  defer: db.close()
   db[this.token][key] = %value
   db.flush()
   return this
@@ -102,6 +107,7 @@ proc set*(this:SessionDb, key, value:string):SessionDb =
 proc some*(this:SessionDb, key:string):bool =
   try:
     let db = this.conn
+    defer: db.close()
     if db[this.token]{key}.isNil():
       return false
     else:
@@ -111,10 +117,12 @@ proc some*(this:SessionDb, key:string):bool =
 
 proc get*(this:SessionDb, key:string): string =
   let db = this.conn
+  defer: db.close()
   return db[this.token]{key}.getStr("")
 
 proc delete*(this:SessionDb, key:string):SessionDb =
   let db = this.conn
+  defer: db.close()
   let row = db[this.token]
   if row.hasKey(key):
     row.delete(key)
@@ -123,6 +131,7 @@ proc delete*(this:SessionDb, key:string):SessionDb =
 
 proc destroy*(this:SessionDb) =
   this.conn.delete(this.token)
+  defer: this.conn.close()
 
 
 # ========= Session ==================
