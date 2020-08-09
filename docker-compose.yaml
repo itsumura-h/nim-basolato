@@ -11,22 +11,22 @@ services:
       - 9000:5000
     volumes:
       - .:/root/project
-  # mysql:
+  # tfb-database-my:
   #   image: mariadb
   #   tty: true
   #   command: --default-authentication-plugin=mysql_native_password
   #   environment:
   #     MYSQL_ROOT_PASSWORD: root
-  #     MYSQL_DATABASE: allographer
-  #     MYSQL_USER: user
-  #     MYSQL_PASSWORD: Password!
+  #     MYSQL_DATABASE: hello_world
+  #     MYSQL_USER: benchmarkdbuser
+  #     MYSQL_PASSWORD: benchmarkdbpass
   #     TZ: Asia/Tokyo
-      # default_authentication_plugin: mysql_native_password
-  # postgres:
+  #     default_authentication_plugin: mysql_native_password
+  # tfb-database-pg:
   #   image: postgres:alpine
   #   tty: true
   #   environment:
-  #     POSTGRES_DB: allographer
-  #     POSTGRES_USER: user
-  #     POSTGRES_PASSWORD: Password!
+  #     POSTGRES_DB: hello_world
+  #     POSTGRES_USER: benchmarkdbuser
+  #     POSTGRES_PASSWORD: benchmarkdbpass
   #     TZ: Asia/Tokyo
