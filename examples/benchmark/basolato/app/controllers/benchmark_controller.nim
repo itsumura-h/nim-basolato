@@ -5,6 +5,8 @@ import basolato/controller
 import allographer/query_builder
 # models
 import ../models
+# repository
+import ../repository
 # view
 import ../../resources/pages/fortune_view
 # const
@@ -79,11 +81,13 @@ proc update*(this:BenchmarkController):Response =
     countNum = 500
 
   var response = newSeq[JsonNode](countNum)
-  transaction:
-    for i in 1..countNum:
-      let index = rand(range1_10000)
-      let newRandomNumber = rand(range1_10000)
-      discard RDB().table("world").findPlain(index)
-      RDB().table("world").where("id", "=", index).update(%*{"randomNumber": newRandomNumber})
-      response[i-1] =  %*{"id":index, "randomNumber": newRandomNumber}
+  let db = db()
+  defer: db.close()
+  for i in 1..countNum:
+    let index = rand(range1_10000)
+    let newRandomNumber = rand(range1_10000)
+    let repository = newRepository(db)
+    repository.findWorld(index)
+    repository.updateRandomNumber(index, newRandomNumber)
+    response[i-1] = %*{"id":index, "randomNumber": newRandomNumber}
   return render(%response)
