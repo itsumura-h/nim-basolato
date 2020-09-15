@@ -1,9 +1,16 @@
-import json, random, db_postgres, strutils, sequtils, cgi, algorithm
+import os, json, random, strutils, sequtils, cgi, algorithm
+import db_postgres
 import jester
 include "fortune.tmpl"
 
-proc db():DbConn =
-  return open("tfb-database-pg:5432", "benchmarkdbuser", "benchmarkdbpass", "hello_world")
+const
+  DRIVER = getEnv("DB_DRIVER","sqlite").string
+  CONN = getEnv("DB_CONNECTION").string
+  USER = getEnv("DB_USER").string
+  PASSWORD = getEnv("DB_PASSWORD").string
+  DATABASE = getEnv("DB_DATABASE").string
+
+let db = open(CONN, USER, PASSWORD, DATABASE)
 
 settings:
   port = Port(5000)
@@ -18,8 +25,6 @@ routes:
     resp data, "text/plain"
 
   get "/db":
-    let db = db()
-    defer: db.close()
     let i = rand(1..10000)
     let row = db.getRow(sql"SELECT * FROM world WHERE id = ?", i)
     let response = %*{"id": row[0].parseInt, "randomnumber": row[1].parseInt}
@@ -27,8 +32,6 @@ routes:
     resp response
 
   get "/queries":
-    let db = db()
-    defer: db.close()
     var countNum:int
     try:
       countNum = request.params["queries"].parseInt()
@@ -48,8 +51,6 @@ routes:
     resp %response
 
   get "/fortunes":
-    let db = db()
-    defer: db.close()
     var rows = db.getAllRows(sql"SELECT * FROM fortune ORDER BY message ASC;")
     var newRows = rows.mapIt(
       Fortune(
@@ -67,8 +68,6 @@ routes:
     resp fortuneView(newRows)
 
   get "/updates":
-    let db = db()
-    defer: db.close()
 
     var countNum:int
     try:

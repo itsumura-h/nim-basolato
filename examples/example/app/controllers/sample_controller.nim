@@ -143,9 +143,5 @@ proc presentDd*(this:SampleController): Response =
     "key3": "value3",
     "key4": "value4",
   }
-  dd(
-    $a,
-    "abc",
-    # this.request.repr,
-  )
+  dd($a, "abc", this.request.repr)
   return render("dd")

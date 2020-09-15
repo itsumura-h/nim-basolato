@@ -1,38 +1,40 @@
-import db_postgres
+import random, json
+import allographer/schema_builder
+import allographer/query_builder
 
-let db = open("tfb-database-pg:5432", "benchmarkdbuser", "benchmarkdbpass", "hello_world")
-db.exec(sql"BEGIN")
-db.exec(sql"DROP TABLE IF EXISTS world;")
-db.exec(sql"DROP TABLE IF EXISTS Fortune;")
-db.exec(sql"""
-CREATE TABLE  World (
-  id integer NOT NULL,
-  randomNumber integer NOT NULL default 0,
-  PRIMARY KEY  (id)
-);
-""")
-db.exec(sql"""
-INSERT INTO World (id, randomnumber)
-SELECT x.id, least(floor(random() * 10000 + 1), 10000) FROM generate_series(1,10000) as x(id);
-""")
-db.exec(sql"""
-CREATE TABLE Fortune (
-  id integer NOT NULL,
-  message varchar(2048) NOT NULL,
-  PRIMARY KEY  (id)
-);
-""")
-db.exec(sql"INSERT INTO Fortune (id, message) VALUES (1, 'fortune: No such file or directory');")
-db.exec(sql"INSERT INTO Fortune (id, message) VALUES (2, 'A computer scientist is someone who fixes things that aren''t broken.');")
-db.exec(sql"INSERT INTO Fortune (id, message) VALUES (3, 'After enough decimal places, nobody gives a damn.');")
-db.exec(sql"INSERT INTO Fortune (id, message) VALUES (4, 'A bad random number generator: 1, 1, 1, 1, 1, 4.33e+67, 1, 1, 1');")
-db.exec(sql"INSERT INTO Fortune (id, message) VALUES (5, 'A computer program does what you tell it to do, not what you want it to do.');")
-db.exec(sql"INSERT INTO Fortune (id, message) VALUES (6, 'Emacs is a nice operating system, but I prefer UNIX. — Tom Christaensen');")
-db.exec(sql"INSERT INTO Fortune (id, message) VALUES (7, 'Any program that runs right is obsolete.');")
-db.exec(sql"INSERT INTO Fortune (id, message) VALUES (8, 'A list is only as strong as its weakest link. — Donald Knuth');")
-db.exec(sql"INSERT INTO Fortune (id, message) VALUES (9, 'Feature: A bug with seniority.');")
-db.exec(sql"INSERT INTO Fortune (id, message) VALUES (10, 'Computers make very fast, very accurate mistakes.');")
-db.exec(sql"""INSERT INTO Fortune (id, message) VALUES (11, '<script>alert("This should not be displayed in a browser alert box.");</script>');""")
-db.exec(sql"INSERT INTO Fortune (id, message) VALUES (12, 'フレームワークのベンチマーク');")
-db.exec(sql"COMMIT")
-db.close()
+randomize()
+
+schema(
+  table("world", [
+    Column().increments("id"),
+    Column().integer("randomNumber").default(0)
+  ], reset=true),
+  table("fortune", [
+    Column().increments("id"),
+    Column().string("message")
+  ], reset=true)
+)
+
+var data = newSeq[JsonNode]()
+for i in 1..10000:
+  data.add(
+    %*{"randomNumber": rand(1..10000)}
+  )
+RDB().table("world").insert(data)
+
+data = @[
+  %*{"id": 1, "message": "fortune: No such file or directory"},
+  %*{"id": 2, "message": "A computer scientist is someone who fixes things that aren''t broken."},
+  %*{"id": 3, "message": "After enough decimal places, nobody gives a damn."},
+  %*{"id": 4, "message": "A bad random number generator: 1, 1, 1, 1, 1, 4.33e+67, 1, 1, 1"},
+  %*{"id": 5, "message": "A computer program does what you tell it to do, not what you want it to do."},
+  %*{"id": 6, "message": "Emacs is a nice operating system, but I prefer UNIX. — Tom Christaensen"},
+  %*{"id": 7, "message": "Any program that runs right is obsolete."},
+  %*{"id": 8, "message": "A list is only as strong as its weakest link. — Donald Knuth"},
+  %*{"id": 9, "message": "Feature: A bug with seniority."},
+  %*{"id": 10, "message": "Computers make very fast, very accurate mistakes."},
+  %*{"id": 11, "message": """<script>alert("This should not be displayed in a browser alert box.");</script>"""},
+  %*{"id": 12, "message": "フレームワークのベンチマーク"},
+]
+
+RDB().table("fortune").insert(data)
