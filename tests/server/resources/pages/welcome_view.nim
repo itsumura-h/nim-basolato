@@ -89,7 +89,7 @@ proc impl(name:string):string = tmpli html"""
       <i>—utilitas, firmitas et venustas (utility, strength and beauty)— by De architectura / Marcus Vitruvius Pollio</i>
     </p>
     <p class="whiteFont">
-      Develop as easy as Ruby on Rais, Stably as Laravel, Run faster and lighter than every other full-skack web framework.
+      Develop as easy as Ruby on Rails, Stably as Laravel, Run faster and lighter than every other full-stack web framework.
     </p>
   </section>
 </article>
