@@ -106,10 +106,10 @@ proc impl(title, name:string):string = tmpli html"""
       <div class="whiteFont">
         <ul>
           <li>Easy syntax as Python thanks to Nim</li>
-          <li>Develop as easy as Ruby on Rais</li>
+          <li>Develop as easy as Ruby on Rails</li>
           <li>Stably structure as Symfony(PHP)</li>
           <li>Including easy query builder as Laravel(PHP)</li>
-          <li>Run faster and lighter than every other full-skack web framework</li>
+          <li>Run faster and lighter than every other full-stack web framework</li>
         </ul>
       </div>
     </section>
