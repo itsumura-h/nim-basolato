@@ -140,7 +140,7 @@ template serve*(routes:var Routes, port=5000) =
   var server = newAsyncHttpServer()
   proc cb(req: Request) {.async, gcsafe.} =
     var headers = newDefaultHeaders()
-    var response = render(Http404, errorPage(Http404, ""), headers)
+    var response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)
     # static file response
     if req.path.contains("."):
       let filepath = getCurrentDir() & "/public" & req.path
@@ -149,7 +149,7 @@ template serve*(routes:var Routes, port=5000) =
         let data = await file.readAll()
         let contentType = newMimetypes().getMimetype(req.path.split(".")[^1])
         headers.set("Content-Type", contentType)
-        response = render(data, headers)
+        response = Response(status:Http200, body:data, headers:headers)
     else:
       block middlewareAndApp:
         # middleware:
@@ -162,10 +162,10 @@ template serve*(routes:var Routes, port=5000) =
             let exception = getCurrentException()
             if exception.name == "ErrorAuthRedirect".cstring:
               headers.set("Location", exception.msg)
-              response = render(Http302, "", headers)
+              response = Response(status:Http302, body:"", headers:headers)
             else:
               let status = checkHttpCode(exception)
-              response = render(status, errorPage(status, exception.msg), headers)
+              response = Response(status:status, body:errorPage(status, exception.msg), headers:headers)
               echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
               echoErrorMsg(exception.msg)
             break middlewareAndApp
@@ -182,10 +182,10 @@ template serve*(routes:var Routes, port=5000) =
             if exception.name == "DD".cstring:
               var msg = exception.msg
               msg = msg.replace(re"Async traceback:[.\s\S]*")
-              response = render(Http200, ddPage(msg), headers)
+              response = Response(status:Http200, body:ddPage(msg), headers:headers)
             else:
               let status = checkHttpCode(exception)
-              response = render(status, errorPage(status, exception.msg), headers)
+              response = Response(status:status, body:errorPage(status, exception.msg), headers:headers)
               echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
               echoErrorMsg(exception.msg)
               break

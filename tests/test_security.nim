@@ -1,6 +1,6 @@
 import unittest, times
 
-include ../src/basolato/security
+include ../src/basolato/core/security
 
 suite "CTR encrypt":
   test "timestamp":

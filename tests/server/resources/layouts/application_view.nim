@@ -1,7 +1,7 @@
 import ../../../../src/basolato/view
-import head
+import head_view
 
-proc applicationView*(this:View, title:string, body:string):string = tmpli html"""
+proc applicationView*(title:string, body:string):string = tmpli html"""
 <!DOCTYPE html>
 <html lang="en">
 <head>

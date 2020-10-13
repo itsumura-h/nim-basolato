@@ -1,6 +1,6 @@
 import unittest, os, strformat, strutils
-import ../src/basolato/baseEnv
-import ../src/basolato/logger
+import ../src/basolato/core/baseEnv
+import ../src/basolato/core/logger
 
 
 suite "logger":

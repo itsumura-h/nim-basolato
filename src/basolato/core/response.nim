@@ -122,7 +122,8 @@ proc setAuth*(response:Response, auth:Auth):Response =
 proc setCookie*(response:Response, cookie:Cookie):Response =
   for cookieData in cookie.cookies:
     let cookieStr = cookieData.toCookieStr()
-    response.headers.add(("Set-cookie", cookieStr))
+    # response.headers.add(("Set-cookie", cookieStr))
+    response.headers.set("Set-cookie", cookieStr)
   return response
 
 

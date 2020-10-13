@@ -87,5 +87,8 @@ proc toResponse*(this:Headers):HttpHeaders =
   var response = newTable[string, seq[string]](defaultInitialSize)
   result = newHttpHeaders()
   for header in this:
-    response[header.key] = @[header.val]
+    if response.hasKey(header.key):
+      response[header.key].add(header.val)
+    else:
+      response[header.key] = @[header.val]
   return HttpHeaders(table:response)

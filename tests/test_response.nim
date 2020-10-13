@@ -1,5 +1,5 @@
 import unittest, strformat, httpclient, strutils
-import ../src/basolato/security
+import ../src/basolato/core/security
 
 const HOST = "http://0.0.0.0:5000"
 
