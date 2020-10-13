@@ -8,7 +8,7 @@
 </head>
 <body>
   <h1>Vue Users index</h1>
-  <p><a href="/">戻る</a></p>
+  <p><a href="/">go back</a></p>
   <div id="app">
     <v-app>
       <v-data-table

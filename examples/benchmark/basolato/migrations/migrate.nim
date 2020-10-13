@@ -1,6 +1,6 @@
-import migration0001sample
+import migration20201013133536create_tfb_db
 
 proc main() =
-  migration0001sample()
+  migration20201013133536create_tfb_db()
 
 main()

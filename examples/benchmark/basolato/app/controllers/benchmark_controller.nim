@@ -1,42 +1,34 @@
-import json, random, algorithm, cgi, sequtils
-from strutils import parseInt
+import json, random, algorithm, cgi, sequtils, strutils
 # framework
-# import basolato/controller
-import ../../../../../src/basolato/controller
+import basolato/controller
 import allographer/query_builder
-# models
-import ../models
-# repository
-import ../repository
+# model
+import ../domain/models/fortune/fortune_entity
+import ../domain/models/world/world_repository_interface
 # view
 import ../../resources/pages/fortune_view
 # const
 randomize()
 const range1_10000 = 1..10000
 
-type BenchmarkController* = ref object of Controller
 
-proc newBenchmarkController*(request:Request):BenchmarkController =
-  return BenchmarkController.newController(request)
-
-
-proc json*(this:BenchmarkController):Response =
+proc json*(request:Request, params:Params):Future[Response] {.async.} =
   return render(%*{"message":"Hello, World!"})
 
-proc plainText*(this:BenchmarkController):Response =
+proc plainText*(request:Request, params:Params):Future[Response] {.async.} =
   var headers = newHeaders()
   headers.set("Content-Type", "text/plain; charset=UTF-8")
-  return render("Hello, World!").setHeader(headers)
+  return render("Hello, World!", headers)
 
-proc db*(this:BenchmarkController):Response =
+proc db*(request:Request, params:Params):Future[Response] {.async.} =
   let i = rand(range1_10000)
-  let response = rdb().table("world").find(i)
+  let response = await rdb().table("world").asyncFind(i)
   return render(response)
 
-proc query*(this:BenchmarkController):Response=
+proc query*(request:Request, params:Params):Future[Response] {.async.} =
   var countNum:int
   try:
-    countNum = this.request.params["queries"].parseInt()
+    countNum = params.urlParams["queries"].getInt
   except:
     countNum = 1
 
@@ -49,11 +41,11 @@ proc query*(this:BenchmarkController):Response=
   transaction:
     for i in 1..countNum:
       let index = rand(1..10000)
-      response[i-1] = rdb().table("world").find(index)
+      response[i-1] = await rdb().table("world").asyncFind(index)
   return render(%response)
 
-proc fortune*(this:BenchmarkController):Response =
-  var rows = rdb().table("Fortune").orderBy("message", Asc).getPlain()
+proc fortune*(request:Request, params:Params):Future[Response] {.async.} =
+  var rows = await rdb().table("Fortune").orderBy("message", Asc).asyncGetPlain()
   var newRows = rows.mapIt(
     Fortune(
       id: it[0].parseInt,
@@ -67,12 +59,13 @@ proc fortune*(this:BenchmarkController):Response =
     )
   )
   newRows = newRows.sortedByIt(it.message)
-  return render(this.view.fortuneView(newRows))
+  return render(fortuneView(newRows))
 
-proc update*(this:BenchmarkController):Response =
+
+proc update*(request:Request, params:Params):Future[Response] {.async.} =
   var countNum:int
   try:
-    countNum = this.request.params["queries"].parseInt()
+    countNum = params.requestParams.get("queries").parseInt()
   except:
     countNum = 1
 
@@ -82,13 +75,11 @@ proc update*(this:BenchmarkController):Response =
     countNum = 500
 
   var response = newSeq[JsonNode](countNum)
-  let db = db()
-  defer: db.close()
   for i in 1..countNum:
     let index = rand(range1_10000)
     let newRandomNumber = rand(range1_10000)
-    let repository = newRepository(db)
-    repository.findWorld(index)
-    repository.updateRandomNumber(index, newRandomNumber)
+    let repository = newIWorldRepository()
+    await repository.findWorld(index)
+    await repository.updateRandomNumber(index, newRandomNumber)
     response[i-1] = %*{"id":index, "randomNumber": newRandomNumber}
   return render(%response)

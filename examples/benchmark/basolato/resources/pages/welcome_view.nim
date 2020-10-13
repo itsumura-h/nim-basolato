@@ -1,5 +1,5 @@
 import basolato/view
-import ../layouts/application
+import ../layouts/application_view
 
 proc impl(title, name:string):string = tmpli html"""
 <!DOCTYPE html>
@@ -106,10 +106,11 @@ proc impl(title, name:string):string = tmpli html"""
       <div class="whiteFont">
         <ul>
           <li>Easy syntax as Python thanks to Nim</li>
-          <li>Develop as easy as Ruby on Rais</li>
+          <li>Develop as easy as Ruby on Rails</li>
           <li>Stably structure as Symfony(PHP)</li>
           <li>Including easy query builder as Laravel(PHP)</li>
-          <li>Run faster and lighter than every other full-skack web framework</li>
+          <li>Run fast and light as Go and Rust</li>
+          <li>This is the fastest full-stack web framework in the world</li>
         </ul>
       </div>
     </section>
@@ -118,6 +119,6 @@ proc impl(title, name:string):string = tmpli html"""
 </html>
 """
 
-proc welcomeView*(this:View, name:string):string =
+proc welcomeView*(name:string):string =
   let title = "Welcome Basolato"
   return impl(title, name)

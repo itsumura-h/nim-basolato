@@ -4,8 +4,8 @@ import utils
 proc makeView*(target:string, message:var string):int =
   let targetPath = &"{getCurrentDir()}/resources/{target}_view.nim"
   let targetName = target.split("/")[^1]
-  let targetCaptalized = snakeToCamel(targetName)
-  let reativeToApplicationPath = "../".repeat(target.split("/").len-1) & "layouts/application"
+  let targetCaptalized = snakeToCamelProcName(targetName)
+  let reativeToApplicationPath = "../".repeat(target.split("/").len-1) & "layouts/application_view"
 
   var VIEW = &"""
 import basolato/view
@@ -14,9 +14,9 @@ import {reativeToApplicationPath}
 proc impl():string = tmpli html'''
 '''
 
-proc {targetCaptalized}View*(this:View):string =
+proc {targetCaptalized}View*():string =
   let title = ''
-  return this.applicationView(title, impl())
+  return applicationView(title, impl())
 """
 
   VIEW = VIEW.replace("'", "\"")
@@ -28,6 +28,6 @@ proc {targetCaptalized}View*(this:View):string =
   f.write(VIEW)
   defer: f.close()
 
-  message = &"created view {target}_view.nim"
+  message = &"created view {targetPath}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
   return 0

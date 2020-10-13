@@ -1,67 +1,45 @@
-import asyncdispatch, httpcore, re, tables
-# framework
-import basolato/routing
-import basolato/middleware
-# middleware
-import middlewares/framework_middleware
-import middlewares/custom_headers_middleware
-import middlewares/check_login_middleware
+import asynchttpserver, asyncdispatch, httpcore, re
+import ../../src/basolato
 # controller
-import app/controllers/sample_controller
+import app/controllers/page_display_controller
+import app/controllers/cookie_controller
+import app/controllers/login_controller
+import app/controllers/flash_controller
+import app/controllers/file_upload_controller
+# middleware
+import app/middlewares/auth_middleware
 
-settings:
-  port = Port(5000)
+var routes = newRoutes()
 
-router sample:
-  get "/welcome": route(newSampleController(request).welcome())
-  get "/karax": route(newSampleController(request).karaxIndex())
-  get "/fib/@num": route(newSampleController(request).fib(@"num"),
-                    [corsHeader()])
-  get re"/react.*": route(newSampleController(request).react())
-  get "/material-ui": route(newSampleController(request).materialUi())
-  get "/vuetify": route(newSampleController(request).vuetify())
-  get "/checkLogin":
-    middleware([isLogin(request)]);
-    route(newSampleController(request).index(), [corsHeader()])
-  get "/custom-headers": route(newSampleController(request).customHeaders(),
-                          [secureHeader(), corsHeader(), customHeader()])
+routes.middleware(".*", auth_middleware.checkCsrfTokenMiddleware)
+routes.middleware("/sample/.*", auth_middleware.chrckAuthTokenMiddleware)
 
-  get "/cookie": route(newSampleController(request).indexCookie())
-  post "/cookie": route(newSampleController(request).storeCookie())
-  post "/cookie/update": route(newSampleController(request).updateCookie())
-  post "/cookie/delete": route(newSampleController(request).destroyCookie())
-  post "/cookie/delete-all": route(newSampleController(request).destroyCookies())
+routes.get("/", page_display_controller.index)
+groups "/sample":
+  routes.get("/welcome", page_display_controller.welcome)
+  routes.get("/fib/{num:int}", page_display_controller.fib)
+  routes.get("/react", page_display_controller.react)
+  routes.get("/material-ui", page_display_controller.materialUi)
+  routes.get("/vuetify", page_display_controller.vuetify)
+  routes.get("/custom-headers", page_display_controller.customHeaders)
+  routes.get("/dd", page_display_controller.presentDd)
 
-  get "/login": route(newSampleController(request).indexLogin())
-  post "/login": route(newSampleController(request).storeLogin())
-  post "/logout": route(newSampleController(request).destroyLogin())
+  routes.get("/cookie", cookie_controller.indexCookie)
+  routes.post("/cookie", cookie_controller.storeCookie)
+  routes.post("/cookie/update", cookie_controller.updateCookie)
+  routes.post("/cookie/delete", cookie_controller.destroyCookie)
+  routes.post("/cookie/delete-all", cookie_controller.destroyCookies)
 
-  get "/dd": route(newSampleController(request).presentDd())
+  routes.get("/login", login_controller.indexLogin)
+  routes.post("/login", login_controller.storeLogin)
+  routes.post("/logout", login_controller.destroyLogin)
 
+  routes.get("/flash", flash_controller.index)
+  routes.post("/flash", flash_controller.store)
+  routes.post("/flash/leave", flash_controller.destroy)
 
-router api:
-  get "/api1":
-    route(render("api1"))
-  get "/api2":
-    route(render("api2"))
+  routes.get("/file-upload", file_upload_controller.index)
+  routes.post("/file-upload", file_upload_controller.store)
+  routes.post("/file-upload/delete", file_upload_controller.destroy)
 
-# =============================================================================
-# router main_router:
-routes:
-  # Framework
-  error Http404: http404Route
-  error Exception: exceptionRoute
-  before: framework
-
-  # Toppage
-  get "/":
-    route(newSampleController(request).index())
-
-  # Sample
-  extend sample, "/sample"
-
-  before re"/api.*":
-    middleware([hasLoginId(request), hasLoginToken(request)])
-  after re"/api.*":
-    route(response(result), [secureHeader(), corsHeader(), customHeader()])
-  extend api, "/api"
+serve(routes)

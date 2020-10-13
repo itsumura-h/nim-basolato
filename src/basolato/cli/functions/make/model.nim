@@ -6,9 +6,7 @@ proc makeModel*(target:string, message:var string):int =
   let targetCaptalized = snakeToCamel(targetName)
   let ENTITY = &"""
 import ../value_objects
-
 type {targetCaptalized}* = ref object
-
 proc new{targetCaptalized}*():{targetCaptalized} =
   return {targetCaptalized}()
 """
@@ -16,9 +14,7 @@ proc new{targetCaptalized}*():{targetCaptalized} =
   let REPOSITORY_INTERFACE = &"""
 import ../value_objects
 include ../di_container
-
 type I{targetCaptalized}Repository* = ref object
-
 proc newI{targetCaptalized}Repository*():I{targetCaptalized}Repository =
   return newI{targetCaptalized}Repository()
 """
@@ -27,12 +23,9 @@ proc newI{targetCaptalized}Repository*():I{targetCaptalized}Repository =
 import allographer/query_builder
 import ../{targetName}_entity
 import ../../value_objects
-
 type {targetCaptalized}RdbRepository* = ref object
-
 proc new{targetCaptalized}Repository*():{targetCaptalized}RdbRepository =
   return {targetCaptalized}RdbRepository()
-
 proc sampleProc*(this:{targetCaptalized}RdbRepository) =
   echo "{targetCaptalized}RdbRepository sampleProc"
 """
@@ -41,10 +34,8 @@ proc sampleProc*(this:{targetCaptalized}RdbRepository) =
 import ../value_objects
 import {targetName}_entity
 import {targetName}_repository_interface
-
 type {targetCaptalized}Service* = ref object
   repository:I{targetCaptalized}Repository
-
 proc new{targetCaptalized}Service*():{targetCaptalized}Service =
   return {targetCaptalized}Service(
     repository:newI{targetCaptalized}Repository()

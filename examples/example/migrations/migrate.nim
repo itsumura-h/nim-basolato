@@ -1,6 +1,6 @@
-import migration202001130355init
+import migration0001sample
 
 proc main() =
-  migration202001130355init()
+  migration0001sample()
 
 main()

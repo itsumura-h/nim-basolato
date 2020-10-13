@@ -1,24 +1,16 @@
-import asyncdispatch
 # framework
-import ../../../src/basolato/routing
+import basolato
 # controller
+import app/controllers/welcome_controller
 import app/controllers/benchmark_controller
-import app/controllers/async_benchmark_controller
 
-settings:
-  port = Port(5000)
+var routes = newRoutes()
+routes.get("/", welcome_controller.index)
+routes.get("/json", benchmark_controller.json)
+routes.get("/plaintext", benchmark_controller.plainText)
+routes.get("/db", benchmark_controller.db)
+routes.get("/queries", benchmark_controller.query)
+routes.get("/fortunes", benchmark_controller.fortune)
+routes.get("/updates", benchmark_controller.update)
 
-routes:
-  get "/json": route(newBenchmarkController(request).json())
-  get "/plaintext": route(newBenchmarkController(request).plainText())
-  get "/db": route(newBenchmarkController(request).db())
-  get "/queries": route(newBenchmarkController(request).query())
-  get "/fortunes": route(newBenchmarkController(request).fortune())
-  get "/updates": route(newBenchmarkController(request).update())
-
-  get "/async/json": route(waitFor newAsyncBenchmarkController(request).json())
-  get "/async/plaintext": route(waitFor newAsyncBenchmarkController(request).plainText())
-  get "/async/db": route(waitFor newAsyncBenchmarkController(request).db())
-  get "/async/queries": route(waitFor newAsyncBenchmarkController(request).query())
-  get "/async/fortunes": route(waitFor newAsyncBenchmarkController(request).fortune())
-  get "/async/updates": route(waitFor newAsyncBenchmarkController(request).update())
+serve(routes)

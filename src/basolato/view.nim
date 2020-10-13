@@ -1,22 +1,7 @@
-import json
-# framework
-import base, security
-# 3rd party
-import templates
-
-# framework
-export base, security
+import templates, json
 export templates
-
-
-type View* = ref object
-  auth*:Auth
-
-proc newView*(auth:Auth=nil):View =
-  if auth.isNil:
-    return View(auth:Auth())
-  else:
-    return View(auth:auth)
+import core/security
+export security
 
 proc get*(val:JsonNode):string =
   case val.kind

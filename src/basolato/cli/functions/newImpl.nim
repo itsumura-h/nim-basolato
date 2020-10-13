@@ -1,5 +1,5 @@
 import os, strformat, terminal, strutils
-from ../../base import basolatoVersion
+from ../../core/base import basolatoVersion
 from make/utils import isDirExists
 
 proc create(dirPath:string, packageDir:string):int =
@@ -11,13 +11,13 @@ proc create(dirPath:string, packageDir:string):int =
   cd {dirPath}
   git clone {tmplateGitUrl} tmp
   """)
-    # get from tmp/DDD
-    moveDir(&"{dirpath}/tmp/DDD/app", &"{dirpath}/app")
-    moveDir(&"{dirpath}/tmp/DDD/migrations", &"{dirpath}/migrations")
-    moveDir(&"{dirpath}/tmp/DDD/public", &"{dirpath}/public")
-    moveDir(&"{dirpath}/tmp/DDD/resources", &"{dirpath}/resources")
-    moveFile(&"{dirpath}/tmp/DDD/main.nim", &"{dirpath}/main.nim")
-    moveFile(&"{dirpath}/tmp/DDD/.gitignore", &"{dirpath}/.gitignore")
+    # get from tmp/0.6
+    moveDir(&"{dirpath}/tmp/0.6/app", &"{dirpath}/app")
+    moveDir(&"{dirpath}/tmp/0.6/migrations", &"{dirpath}/migrations")
+    moveDir(&"{dirpath}/tmp/0.6/public", &"{dirpath}/public")
+    moveDir(&"{dirpath}/tmp/0.6/resources", &"{dirpath}/resources")
+    moveFile(&"{dirpath}/tmp/0.6/main.nim", &"{dirpath}/main.nim")
+    moveFile(&"{dirpath}/tmp/0.6/.gitignore", &"{dirpath}/.gitignore")
     # move static files
     moveFile(&"{dirpath}/tmp/assets/basolato.svg", &"{dirpath}/public/basolato.svg")
     moveFile(&"{dirpath}/tmp/assets/favicon.ico", &"{dirpath}/public/favicon.ico")
@@ -42,18 +42,14 @@ proc create(dirPath:string, packageDir:string):int =
     # create nimble file
     let nimble = &"""
 # Package
-
 version       = "0.1.0"
 author        = "Anonymous"
 description   = "A new awesome basolato package"
 license       = "MIT"
 srcDir        = "."
 bin           = @["main"]
-
 backend       = "c"
-
 # Dependencies
-
 requires "nim >= {NimVersion}"
 requires "https://github.com/itsumura-h/nim-basolato >= {basolatoVersion}"
 requires "httpbeast >= 0.2.2"
