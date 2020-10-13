@@ -1,4 +1,5 @@
 import json, strformat, options, strutils, macros, re
+import asyncdispatch
 # framework
 import
   base, response, logger, middleware, resources/errorPage, resources/ddPage,
@@ -74,10 +75,10 @@ proc joinHeader(headers:openArray[Headers]): Headers =
   return newHeader
 
 
-template route*(respinseArg:Response,
+template route*(responseArg:Response,
                 headersArg:openArray[Headers]) =
   block:
-    let response = respinseArg
+    let response = responseArg
     var headersMiddleware = @headersArg
     var newHeaders: Headers
     headersMiddleware.add(response.headers) # headerMiddleware + headerController
