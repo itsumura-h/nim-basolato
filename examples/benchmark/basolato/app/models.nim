@@ -1,3 +1,3 @@
-type Fortune* = ref object
+type Fortune* {.gcsafe.} = ref object
   id*: int
   message*: string

@@ -1,5 +1,6 @@
 import os, json, random, strutils, sequtils, cgi, algorithm
 import db_postgres
+import allographer/query_builder
 import jester
 include "fortune.tmpl"
 
@@ -25,10 +26,12 @@ routes:
     resp data, "text/plain"
 
   get "/db":
-    let i = rand(1..10000)
-    let row = db.getRow(sql"SELECT * FROM world WHERE id = ?", i)
-    let response = %*{"id": row[0].parseInt, "randomnumber": row[1].parseInt}
-    echo response
+    # let i = rand(1..10000)
+    # let row = db.getRow(sql"SELECT * FROM world WHERE id = ?", i)
+    # let response = %*{"id": row[0].parseInt, "randomnumber": row[1].parseInt}
+    # echo response
+    let i = rand(range1_10000)
+    let response = await rdb().table("world").asyncFind(i)
     resp response
 
   get "/queries":

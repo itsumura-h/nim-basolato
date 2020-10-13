@@ -1,4 +1,4 @@
-import json, random, algorithm, cgi, sequtils
+import json, random, algorithm, cgi, sequtils, asyncdispatch
 from strutils import parseInt
 # framework
 # import basolato/controller
@@ -14,26 +14,26 @@ import ../../resources/pages/fortune_view
 randomize()
 const range1_10000 = 1..10000
 
-type BenchmarkController* = ref object of Controller
+type AsyncBenchmarkController* = ref object of Controller
 
-proc newBenchmarkController*(request:Request):BenchmarkController =
-  return BenchmarkController.newController(request)
+proc newAsyncBenchmarkController*(request:Request):AsyncBenchmarkController =
+  return AsyncBenchmarkController.newController(request)
 
 
-proc json*(this:BenchmarkController):Response =
+proc json*(this:AsyncBenchmarkController):Future[Response] {.async.} =
   return render(%*{"message":"Hello, World!"})
 
-proc plainText*(this:BenchmarkController):Response =
+proc plainText*(this:AsyncBenchmarkController):Future[Response] {.async.} =
   var headers = newHeaders()
   headers.set("Content-Type", "text/plain; charset=UTF-8")
   return render("Hello, World!").setHeader(headers)
 
-proc db*(this:BenchmarkController):Response =
+proc db*(this:AsyncBenchmarkController):Future[Response] {.async.} =
   let i = rand(range1_10000)
-  let response = rdb().table("world").find(i)
+  let response = await rdb().table("world").asyncFind(i)
   return render(response)
 
-proc query*(this:BenchmarkController):Response=
+proc query*(this:AsyncBenchmarkController):Future[Response] {.async.} =
   var countNum:int
   try:
     countNum = this.request.params["queries"].parseInt()
@@ -49,11 +49,11 @@ proc query*(this:BenchmarkController):Response=
   transaction:
     for i in 1..countNum:
       let index = rand(1..10000)
-      response[i-1] = rdb().table("world").find(index)
+      response[i-1] = await rdb().table("world").asyncFind(index)
   return render(%response)
 
-proc fortune*(this:BenchmarkController):Response =
-  var rows = rdb().table("Fortune").orderBy("message", Asc).getPlain()
+proc fortune*(this:AsyncBenchmarkController):Future[Response] {.async.} =
+  var rows = await rdb().table("Fortune").orderBy("message", Asc).asyncGetPlain()
   var newRows = rows.mapIt(
     Fortune(
       id: it[0].parseInt,
@@ -69,7 +69,7 @@ proc fortune*(this:BenchmarkController):Response =
   newRows = newRows.sortedByIt(it.message)
   return render(this.view.fortuneView(newRows))
 
-proc update*(this:BenchmarkController):Response =
+proc update*(this:AsyncBenchmarkController):Future[Response] {.async.} =
   var countNum:int
   try:
     countNum = this.request.params["queries"].parseInt()

@@ -1,4 +1,5 @@
-import basolato/view
+# import basolato/view
+import ../../../../../src/basolato/view
 import ../../app/models
 
 proc impl(title:string, data:seq[Fortune]):string = tmpli html"""

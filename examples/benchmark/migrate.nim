@@ -15,12 +15,14 @@ schema(
   ], reset=true)
 )
 
+echo rdb().table("world").get()
+
 var data = newSeq[JsonNode]()
 for i in 1..10000:
   data.add(
     %*{"randomNumber": rand(1..10000)}
   )
-RDB().table("world").insert(data)
+rdb().table("world").insert(data)
 
 data = @[
   %*{"id": 1, "message": "fortune: No such file or directory"},
@@ -37,4 +39,4 @@ data = @[
   %*{"id": 12, "message": "フレームワークのベンチマーク"},
 ]
 
-RDB().table("fortune").insert(data)
+rdb().table("fortune").insert(data)

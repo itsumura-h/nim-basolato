@@ -12,6 +12,7 @@ proc build*(args:seq[string]) =
     nim c \
     -d:release \
     --threads:on \
+    --threadAnalysis:off \
     --opt:size \
     --out:{outputFileName} \
     main.nim
