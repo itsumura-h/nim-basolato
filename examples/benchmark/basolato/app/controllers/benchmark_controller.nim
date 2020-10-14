@@ -23,7 +23,7 @@ proc db*(request:Request, params:Params):Future[Response] {.async.} =
   let response = await rdb().table("world").asyncFind(i)
   return render(%*response)
 
-proc queries*(request:Request, params:Params):Future[Response] {.async.} =
+proc query*(request:Request, params:Params):Future[Response] {.async.} =
   var countNum:int
   try:
     countNum = params.queryParams["queries"].parseInt
@@ -42,7 +42,7 @@ proc queries*(request:Request, params:Params):Future[Response] {.async.} =
     response.add(data)
   return render(%*response)
 
-proc fortunes*(request:Request, params:Params):Future[Response] {.async.} =
+proc fortune*(request:Request, params:Params):Future[Response] {.async.} =
   var rows = await rdb().table("Fortune").orderBy("message", Asc).asyncGetPlain()
   var newRows = rows.mapIt(
     Fortune(
@@ -59,7 +59,7 @@ proc fortunes*(request:Request, params:Params):Future[Response] {.async.} =
   newRows = newRows.sortedByIt(it.message)
   return render(fortuneView(newRows))
 
-proc updates*(request:Request, params:Params):Future[Response] {.async.} =
+proc update*(request:Request, params:Params):Future[Response] {.async.} =
   var countNum:int
   try:
     countNum = params.queryParams["queries"].parseInt
