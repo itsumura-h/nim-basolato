@@ -1,7 +1,7 @@
 import
   asynchttpserver, asyncdispatch, asyncfile, json, tables, strformat, macros,
   strutils, re, os, mimetypes
-import request, response, header, logger, resources/errorPage, resources/ddPage
+import request, response, header, logger, error_page, resources/ddPage
 export request, header
 
 
@@ -140,7 +140,10 @@ template serve*(routes:var Routes, port=5000) =
   var server = newAsyncHttpServer()
   proc cb(req: Request) {.async, gcsafe.} =
     var headers = newDefaultHeaders()
+    headers.set("Content-Type", "text/html; charset=UTF-8")
     var response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)
+
+    headers = newDefaultHeaders()
     # static file response
     if req.path.contains("."):
       let filepath = getCurrentDir() & "/public" & req.path
@@ -159,8 +162,9 @@ template serve*(routes:var Routes, port=5000) =
               let params = req.params(route)
               route.action(req, params)
           except Exception:
+            headers.set("Content-Type", "text/html; charset=UTF-8")
             let exception = getCurrentException()
-            if exception.name == "ErrorAuthRedirect".cstring:
+            if exception.name == "ErrorRedirect".cstring:
               headers.set("Location", exception.msg)
               response = Response(status:Http302, body:"", headers:headers)
             else:
@@ -178,11 +182,15 @@ template serve*(routes:var Routes, port=5000) =
               logger($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
               break
           except Exception:
+            headers.set("Content-Type", "text/html; charset=UTF-8")
             let exception = getCurrentException()
             if exception.name == "DD".cstring:
               var msg = exception.msg
               msg = msg.replace(re"Async traceback:[.\s\S]*")
               response = Response(status:Http200, body:ddPage(msg), headers:headers)
+            elif exception.name == "ErrorRedirect".cstring:
+              headers.set("Location", exception.msg)
+              response = Response(status:Http302, body:"", headers:headers)
             else:
               let status = checkHttpCode(exception)
               response = Response(status:status, body:errorPage(status, exception.msg), headers:headers)

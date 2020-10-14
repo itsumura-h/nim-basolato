@@ -2,7 +2,7 @@
 #import httpcore
 ## framework
 #from ../base import basolatoVersion
-#proc errorPage*(status:HttpCode, msg:string): string =
+#proc originalErrorPage*(status:HttpCode, msg:string): string =
   #when defined(release):
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head><title>$status</title></head>

@@ -18,9 +18,8 @@ Table of Contents
          * [SCF](#scf-1)
          * [Karax](#karax-1)
       * [old helper](#old-helper)
-      * [Auth](#auth)
 
-<!-- Added by: root, at: Sat Aug  1 12:11:10 UTC 2020 -->
+<!-- Added by: root, at: Wed Oct 14 05:17:39 UTC 2020 -->
 
 <!--te-->
 
@@ -302,47 +301,3 @@ proc signinView*(this:View, params=newJObject()):string =
   return this.applicationView(title, impl(params))
 ```
 It display value if `params` has key `email`, otherwise display empty string.
-
-
-## Auth
-
-You can access `auth` in view like bellow.
-
-controller
-```nim
-proc home*(this:StaticPageController):Response =
-  return render(this.view.homeView())
-```
-
-view
-```html
-import basolato/view
-
-proc headerView*(auth:Auth):string = tmpli html"""
-<header>
-  <ul>
-    $if auth.isLogin(){
-      <li>$(auth.get("id"))</li>
-    }
-    $else{
-      <li><a href="/login">Log In</a></li>
-    }
-  </ul>
-</header>
-
-
-proc applicationView*(this:View, title:string, body:string, flash=newJObject()):string = tmpli html"""
-<!DOCTYPE html>
-<html>
-  <head>
-  </head>
-  <body>
-    $(headerView(this.auth))
-    ...
-  </body>
-</html>
-
-proc homeView*(this:View):string =
-  this.applicationView("Title", impl())
-"""
-```

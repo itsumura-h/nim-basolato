@@ -7,11 +7,10 @@ Table of Contents
 <!--ts-->
    * [Error](#error)
       * [Introduction](#introduction)
-      * [ErrorAuthRedirect](#errorauthredirect)
       * [Raise Error and Redirect](#raise-error-and-redirect)
       * [How to display custom error page](#how-to-display-custom-error-page)
 
-<!-- Added by: root, at: Sat Aug  1 12:13:38 UTC 2020 -->
+<!-- Added by: root, at: Wed Oct 14 05:20:08 UTC 2020 -->
 
 <!--te-->
 
@@ -27,48 +26,28 @@ Basolato have all response status exception type from `300` to `505`
 [List of HTTP Status](https://nim-lang.org/docs/httpcore.html#10)
 
 
-## ErrorAuthRedirect
-If session id is invalid then you want to redirect and delete cookie, raise `ErrorAuthRedirect` exception.
-```nim
-if not newAuth(request).isLogin():
-  raise newException(ErrorAuthRedirect, "/login")
-```
-
 ## Raise Error and Redirect
 If you want to redirect when error raised, you can use `errorRedirect` proc.  
-This proc is able to used only in `controller` or `middleware`.
+This proc is able to used only in `controller`.
 
 ```nim
-errorRedirect("/login")
+return errorRedirect("/login")
 ```
 
 ## How to display custom error page
-These raised exception is caught in framework routing
+Basolato has its own error page. However if you put your original error page in dir `./resources/errors/{http code}.html`, these are returned with priority.  
+If http status code html file is not found and `error.html` exists, `error.html` is returned.
 
-main.nim
-```nim
-routes:
-  # Framework
-  error Http404: http404Route
-  error Exception: exceptionRoute
-```
+・priority  
+{http code}.html > error.html > Basolato own error page
 
-Basolate have it's own error page. If you set arg which is path to HTML file in `http404Route` and `exceptionRoute`, you can display custom error page.
-
-main.nim
-```nim
-routes:
-  # Framework
-  error Http404:
-    http404Route("errors/original404.html")
-  error Exception:
-    exceptionRoute("errors/originalError.html")
-```
-This path should be related path from `resources` dir.
+This function is avaiable only in `release` enviroment　(When you compile with option `-d:release`).
+In develop enviroment (compile **without** `-d:release`), framerwork's error page is always returned.
 
 ```sh
 └── resources
     └── errors
-        ├── original404.html # user custom error
-        └── originalError.html # user custom error
+        ├── 404.html # user custom error
+        ├── 500.html # user custom error
+        └── error.html # user custom error
 ```

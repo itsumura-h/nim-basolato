@@ -29,7 +29,7 @@ A full-stack web framework for Nim, based on [Jester](https://github.com/dom96/j
       * [Development](#development)
          * [Generate TOC of documents](#generate-toc-of-documents)
 
-<!-- Added by: root, at: Sat Aug  1 12:10:06 UTC 2020 -->
+<!-- Added by: root, at: Wed Oct 14 05:16:35 UTC 2020 -->
 
 <!--te-->
 

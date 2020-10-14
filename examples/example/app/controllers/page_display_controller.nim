@@ -90,3 +90,15 @@ proc presentDd*(request:Request, params:Params):Future[Response] {.async.} =
     # request.repr,
   )
   return render("dd")
+
+proc errorPage*(request:Request, params:Params):Future[Response] {.async.} =
+  let id = params.urlParams["id"].getInt
+  if id mod 2 == 1:
+    raise newException(Error400, "")
+  return render($id)
+
+proc errorRedirect*(request:Request, params:Params):Future[Response] {.async.} =
+  let id = params.urlParams["id"].getInt
+  if id mod 2 == 1:
+    raise newException(ErrorRedirect, "/sample/login")
+  return render($id)

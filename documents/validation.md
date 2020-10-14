@@ -38,7 +38,7 @@ Table of Contents
          * [required](#required)
          * [unique](#unique)
 
-<!-- Added by: root, at: Sat Aug  1 12:11:31 UTC 2020 -->
+<!-- Added by: root, at: Wed Oct 14 05:18:01 UTC 2020 -->
 
 <!--te-->
 
@@ -152,36 +152,31 @@ import basolato/request_validation
 Controller
 ```nim
 import json
+import basolato/controller
 
-type SignUpController = ref object
-  request:Request
-  auth: Auth
-
-proc newSignUpController*(request:Request): SignUpController =
-  return SignUpController(
-    request: request,
-    auth: initAuth(request)
-  )
-
-proc store*(this:SignUpController): Response =
-  let name = this.request.params["name"]
-  let email = this.request.params["email"]
-  let password = this.request.params["password"]
-  # validation
-  var v = this.request.validate()
+proc store*(request:Request, params:Params):Future[Response] {.async.} =
+  var v = newValidation(params.requestParams)
   v.required(["name", "email", "password"])
-  v.email("email")
-  v.unique("email", "users", "email")
+  v.strictEmail("email")
   v.password("password")
-  if v.errors.len > 0:
-    return render(createHtml(this.auth, name, email, v.errors))
+  try:
+    v.valid()
+    let name = params.requestParams.get("name")
+    let email = params.requestParams.get("email")
+    let password = params.requestParams.get("password")
+
+    let usecase = newSignInUsecase()
+    usecase.signin(name, email, password)
+    return redirect("/")
+  except:
+    return render(createVIew(name, email, v.errors))
 ```
 
 View
 ```html
 import json
 
-proc createHtmlImpl(name:string, email:string, errors:JsonNode): string = tmpli html"""
+proc createViewImpl(name:string, email:string, errors:JsonNode): string = tmpli html"""
   <form method="post">
     $(csrfToken())
     <div>
@@ -193,7 +188,7 @@ proc createHtmlImpl(name:string, email:string, errors:JsonNode): string = tmpli 
           }
         </ul>
       }
-      <p><input type="text" value="$name" name="name"></p>
+      <p><input type="text" value="$(old(error, "name"))" name="name"></p>
     </div>
     .
     .

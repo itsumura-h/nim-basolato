@@ -23,6 +23,8 @@ groups "/sample":
   routes.get("/vuetify", page_display_controller.vuetify)
   routes.get("/custom-headers", page_display_controller.customHeaders)
   routes.get("/dd", page_display_controller.presentDd)
+  routes.get("/error/{id:int}", page_display_controller.errorPage)
+  routes.get("/error-redirect/{id:int}", page_display_controller.errorRedirect)
 
   routes.get("/cookie", cookie_controller.indexCookie)
   routes.post("/cookie", cookie_controller.storeCookie)
