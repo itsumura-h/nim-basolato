@@ -43,7 +43,7 @@ proc query*(request:Request, params:Params):Future[Response] {.async.} =
   return render(%*response)
 
 proc fortune*(request:Request, params:Params):Future[Response] {.async.} =
-  var rows = await rdb().table("Fortune").orderBy("message", Asc).asyncGetPlain()
+  var rows = await rdb().table("fortune").orderBy("message", Asc).asyncGetPlain()
   var newRows = rows.mapIt(
     Fortune(
       id: it[0].parseInt,
@@ -79,6 +79,6 @@ proc update*(request:Request, params:Params):Future[Response] {.async.} =
     await rdb()
       .table("world")
       .where("id", "=", index)
-      .asyncUpdate(%*{"\"randomNumber\"": number})
+      .asyncUpdate(%*{"randomNumber": number})
     response[i-1] = %*{"id":index, "randomNumber": number}
   return render(%response)
