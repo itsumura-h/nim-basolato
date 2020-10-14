@@ -7,15 +7,16 @@ Table of Contents
 <!--ts-->
    * [Controller](#controller)
       * [Creating a Controller](#creating-a-controller)
-      * [Constructor &amp; DI](#constructor--di)
       * [Response](#response)
          * [Returning string](#returning-string)
          * [Returning HTML file](#returning-html-file)
          * [Returning template](#returning-template)
          * [Returning JSON](#returning-json)
-         * [Response status](#response-status)
+         * [Response with status](#response-with-status)
+         * [Response with header](#response-with-header)
+      * [Redirect](#redirect)
 
-<!-- Added by: root, at: Sat Aug  1 12:13:59 UTC 2020 -->
+<!-- Added by: root, at: Wed Oct 14 05:20:30 UTC 2020 -->
 
 <!--te-->
 
@@ -27,63 +28,37 @@ Resource controllers are controllers that have basic CRUD / resource style metho
 Generated controller is resource controller.
 
 ```nim
-from strutils import parseInt
+from json
 # framework
 import basolato/controller
 
 
-type SampleController* = ref object of Controller
-
-proc newSampleController(request:Request):SampleController =
-  return SampleController.newController(request)
-
-
-proc index*(this:SampleController):Response =
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
   return render("index")
 
-proc show*(this:SampleController, idArg:string):Response =
-  let id = idArg.parseInt
+proc show*(request:Request, params:Params):Future[Response] {.async.} =
+  let id = params.urlParams["id"].getInt
   return render("show")
 
-proc create*(this:SampleController):Response =
+proc create*(request:Request, params:Params):Future[Response] {.async.} =
   return render("create")
 
-proc store*(this:SampleController):Response =
+proc store*(request:Request, params:Params):Future[Response] {.async.} =
   return render("store")
 
-proc edit*(this:SampleController, idArg:string):Response =
-  let id = idArg.parseInt
+proc edit*(request:Request, params:Params):Future[Response] {.async.} =
+  let id = params.urlParams["id"].getInt
   return render("edit")
 
-proc update*(this:SampleController):Response =
+proc update*(request:Request, params:Params):Future[Response] {.async.} =
+  let id = params.urlParams["id"].getInt
   return render("update")
 
-proc destroy*(this:SampleController, idArg:string):Response =
-  let id = idArg.parseInt
+proc destroy*(request:Request, params:Params):Future[Response] {.async.} =
+  let id = params.urlParams["id"].getInt
   return render("destroy")
 
 ```
-## Constructor & DI
-main.nim
-```nim
-routes
-  get "/": newSampleController(request).index()
-
-```
-
-app/controllers/sample_controller.nim
-```nim
-type SampleController = ref object of Controller
-
-proc newSampleController*(request:Request): SampleController =
-  return SampleController.newController(request)
-
-proc index*(this:SampleController): Response =
-  this.request # Request
-  this.auth # Auth
-```
-
-When you define controller object extends `Controller`, `request` and `auth` is initialized.
 
 ## Response
 ### Returning string
@@ -98,6 +73,8 @@ This file path should be relative path from `resources` dir
 
 ```nim
 return render(html("sample/index.html"))
+# or
+return render(await asyncHtml("sample/index.html"))
 
 >> display /resources/sample/index.html
 ```
@@ -105,30 +82,28 @@ return render(html("sample/index.html"))
 ### Returning template
 Call template proc with args in `render` will return template
 
-resources/sample/index.nim
+resources/sample/index_view.nim
 ```nim
 import basolato/view
 
-proc indexHtml(name:string):string = tmpli html"""
+proc indexView(name:string):string = tmpli html"""
 <h1>index</h1>
 <p>$name</p>
 """
 ```
 main.nim
 ```nim
-return render(indexHtml("John"))
+return render(indexView("John"))
 ```
 
 ### Returning JSON
 If you set JsonNode in `render` proc, controller returns JSON.
 
 ```nim
-return render(
-  %*{"key": "value"}
-)
+return render(%*{"key": "value"})
 ```
 
-### Response status
+### Response with status
 Put response status code arge1 and response body arge2
 ```nim
 return render(HTTP500, "It is a response body")
@@ -136,3 +111,28 @@ return render(HTTP500, "It is a response body")
 
 [Here](https://nim-lang.org/docs/httpcore.html#10) is the list of response status code available.  
 [Here](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) is a experiment of HTTP status code
+
+### Response with header
+Put header at the end of `render`
+```nim
+var header = newHeaders()
+header.set("key1", "value1")
+header.set("key2", ["value1", "value2"])
+return render("setHeader", header)
+```
+
+`render` proc are also followings available.
+```nim
+return render(%*{"key": "value"}, header)
+return render(Http400, "setHeader", header)
+return render(Http400, %*{"key": "value"}, header)
+```
+
+## Redirect
+You can use `redirect` proc.
+
+```nim
+return redirect("https://nim-lang.org")
+
+return errorRedirect("/login")
+```

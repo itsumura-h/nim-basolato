@@ -2,19 +2,15 @@ Routing
 ===
 [back](../README.md)
 
-Routing is written in `main.nim`. it is the entrypoint file of Basolato.  
-Routing of Basolato is exactory the same as `Jester`, although you can call controller method by `route()`
+Routing is written in `main.nim`. it is the entrypoint file of Basolato.
 ```nim
-import basolato/routing
-import app/controllers/SomeController
+import basolato
+import app/controllers/some_controller
 
-routes:
-  get "/":
-    route(newSomeController(request).index())
-  post "/":
-    route(newSomeController(request).create())
-  get "/@id":
-    route(newSomeController(request).show(@"id"))
+var routes = newRoutes()
+
+routes.get("/", some_controller.index)
+routes.post("/", some_controller.create)
 ```
 
 Table of Contents
@@ -23,9 +19,9 @@ Table of Contents
    * [Routing](#routing)
       * [HTTP_Verbs](#http_verbs)
       * [Routing group](#routing-group)
-      * [Getting response in sepecific URL groups](#getting-response-in-sepecific-url-groups)
+      * [URL Params](#url-params)
 
-<!-- Added by: root, at: Sat Aug  1 12:10:48 UTC 2020 -->
+<!-- Added by: root, at: Wed Oct 14 05:17:18 UTC 2020 -->
 
 <!--te-->
 
@@ -49,27 +45,38 @@ Following HTTP Verbs are valid.
 |after|Run after get/post/put/patch/delete access.|
 
 ## Routing group
-This functions is definded in `jester`
 ```nim
-router dashboard:
-  get "/url1":
-    route(newDashboardController(request).url1())
-  get "/url2":
-    route(newDashboardController(request).url2())
+import basolato
+import app/controllers/some_controller
+import app/controllers/dashboard_controller
 
-routes:
-  extend dashboard, "/dashboard"
+
+var routes = newRoutes()
+
+routes.get("/", some_controller.index)
+
+groups "/dashboard":
+  routes.get("/url1", dashboard_controller.url1)
+  routes.get("/url2", dashboard_controller.url2)
 ```
 `/dashboard/url1` and `/dashboard/url2` are available.
 
+## URL Params
+Basolato can specify url params with type of `int` and `str`
 
-## Getting response in sepecific URL groups
-`response(result)` return a instance of `Response`. This has some fields.
 ```nim
-after re"/api.*":
-  echo response(result).body
-  echo response(result).headers
-  echo response(result).status
+import basolato
+import app/controllers/some_controller
 
-extend api, "/api"
+var routes = newRoutes()
+
+routes.get("/{id:int}", some_controller.show)
+routes.get("/{name:str}", some_controller.showByName)
 ```
+
+|request URL|Called controller|
+|---|---|
+|`/1`|some_controller.show|
+|`/100`|some_controller.show|
+|`/john`|some_controller.showByName|
+|`/1/john`|not match and responde 404|

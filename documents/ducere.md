@@ -18,7 +18,7 @@ Table of Contents
          * [model](#model)
          * [usecase](#usecase)
 
-<!-- Added by: root, at: Sat Aug  1 12:11:52 UTC 2020 -->
+<!-- Added by: root, at: Wed Oct 14 05:18:22 UTC 2020 -->
 
 <!--te-->
 
@@ -66,8 +66,8 @@ ducere make view pages/login
 ### migration
 Create make migration file
 ```sh
-ducere make migration createUser
->> migrations/migration20200219134020createUser.nim
+ducere make migration create_user
+>> migrations/migration20200219134020create_user.nim
 ```
 
 ### model

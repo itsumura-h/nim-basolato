@@ -1,7 +1,7 @@
 import asynchttpserver, strutils
 export asynchttpserver
-import core/base, core/route, core/security
-export base, route, security
+import core/base, core/route, core/security, core/header
+export base, route, security, header
 
 
 type Check* = ref object
