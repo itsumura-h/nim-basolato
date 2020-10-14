@@ -9,7 +9,6 @@ backend       = "c"
 # Dependencies
 requires "nim >= 1.2.6"
 requires "https://github.com/itsumura-h/nim-basolato >= 0.6.0"
-requires "httpbeast >= 0.2.2"
 requires "cligen >= 0.9.41"
 requires "templates >= 0.5"
 requires "bcrypt >= 0.2.1"
