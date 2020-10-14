@@ -7,7 +7,7 @@ export request, header
 
 type Params* = ref object
   urlParams*:JsonNode
-  queryParams*:JsonNode
+  queryParams*:QueryParams
   requestParams*:RequestParams
 
 type Route* = ref object

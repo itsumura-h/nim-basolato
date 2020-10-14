@@ -50,12 +50,18 @@ proc getUrlParams*(requestPath, routePath:string):JsonNode =
           urlParams[key] = %requestPath[i].split(":")[0]
   return urlParams
 
-proc getQueryParams*(request:Request):JsonNode =
-  var queryParams = newJObject()
+
+type QueryParams* = TableRef[string, string]
+
+proc newQueryParams():QueryParams =
+  return TableRef[string, string]()
+
+proc getQueryParams*(request:Request):QueryParams =
+  var params = newQueryParams()
   let query = request.url.query
   for key, val in cgi.decodeData(query):
-    queryParams[key] = %val
-  return queryParams
+    params[key] = val
+  return params
 
 
 type RequestParam* = ref object

@@ -1,5 +1,5 @@
-import asyncdispatch, asynchttpserver, os, asyncfile
-export asyncdispatch, asynchttpserver
+import asyncdispatch, asynchttpserver, os, asyncfile, tables
+export asyncdispatch, asynchttpserver, tables
 
 import
   core/base, core/request, core/response, core/route, core/header,
