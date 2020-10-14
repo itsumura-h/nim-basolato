@@ -1,7 +1,7 @@
 #? stdtmpl | standard
 #proc vuetifyHtml*(header: string, users: string): string =
 <head>
-  <title>👑Nim Jester</title>
+  <title>👑Nim Basolato</title>
   <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font@3.x/css/materialdesignicons.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">

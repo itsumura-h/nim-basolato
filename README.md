@@ -9,7 +9,7 @@
 
 ---
 
-A full-stack web framework for Nim, based on [Jester](https://github.com/dom96/jester).
+An asynchronous full-stack web framework for Nim, based on [asynchttpserver](https://nim-lang.org/docs/asynchttpserver.html).
 
 :warning: This project is under heavy development. It's not yet production-ready. :warning:
 
@@ -35,7 +35,7 @@ A full-stack web framework for Nim, based on [Jester](https://github.com/dom96/j
 
 
 ## Introduction
-Basolato extends [Jester](), an awesome Sinatra-like framework for Nim, while also adding features for full-stack development. It was also heavily inspired by other frameworks:
+Basolato extends [asynchttpserver](https://nim-lang.org/docs/asynchttpserver.html), an implements a high performance asynchronous HTTP server in Nim std library, while also adding features for full-stack development. It was also heavily inspired by other frameworks:
 
 |Language|Framework|
 |---|---|
@@ -57,7 +57,6 @@ export PATH=$PATH:~/.nimble/bin
 ### Dependencies
 
 The framework depends on several libraries (installed automatically by Nimble):
-- [httpbeast](https://github.com/dom96/httpbeast), a highly performant, multi-threaded HTTP 1.1 server written in Nim.
 - [nim-templates](https://github.com/onionhammer/nim-templates), a simple string templating library.
 - [allographer](https://github.com/itsumura-h/nim-allographer), a library for building queries.
 - [flatdb](https://github.com/enthus1ast/flatdb), a small Flatfile database, used for sessions.
