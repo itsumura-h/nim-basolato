@@ -1,6 +1,5 @@
-# import basolato/view
-import ../../../../../src/basolato/view
-import ../../app/models
+import basolato/view
+import ../../app/domain/models/fortune/fortune_entity
 
 proc impl(title:string, data:seq[Fortune]):string = tmpli html"""
 <!DOCTYPE html>
@@ -28,6 +27,6 @@ proc impl(title:string, data:seq[Fortune]):string = tmpli html"""
 </html>
 """
 
-proc fortuneView*(this:View, data=newSeq[Fortune]()):string =
+proc fortuneView*(data=newSeq[Fortune]()):string =
   let title = "Fortunes"
   return impl(title, data)

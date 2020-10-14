@@ -47,3 +47,13 @@ proc snakeToCamel*(input:string):string =
       result.add(toUpperAscii(letter))
     else:
       result.add(letter)
+
+proc snakeToCamelProcName*(input:string):string =
+  var underbar_index = 0
+  for i, letter in input:
+    if letter == '_':
+      underbar_index = i
+    elif underbar_index > 0 and underbar_index+1 == i:
+      result.add(toUpperAscii(letter))
+    else:
+      result.add(letter)

@@ -9,11 +9,9 @@ proc reactHtml*(users:string): string = tmpli html"""
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-router-dom/5.1.2/react-router-dom.min.js"></script>
 <!-- babel -->
 <script src="https://unpkg.com/babel-standalone@latest/babel.min.js" crossorigin="anonymous"></script>
-
 <script type="text/babel">
   const {useState} = React
   const {BrowserRouter, Switch, Route, Link } = ReactRouterDOM
-
   function Header(){
     return <div>
       <Link to="/sample/react" style={{marginRight: '10px'}}>react</Link>
@@ -21,7 +19,6 @@ proc reactHtml*(users:string): string = tmpli html"""
       <Link to="/sample/react/page2" style={{marginRight: '10px'}}>page2</Link>
     </div>
   }
-
   function Index(){
     let [count, setCount] = useState(0)
     let users = JSON.parse('$users')
@@ -43,18 +40,15 @@ proc reactHtml*(users:string): string = tmpli html"""
       </table>
     </div>
   }
-
   function Page1(){
     return <h1>page1</h1>
   }
-
   function Page2(){
     return <h1>page2</h1>
   }
-
   function App(){
     return <div>
-      <a href="/">back</a>
+      <a href="/">go back</a>
       <BrowserRouter>
         <Header/>
         <Switch>
@@ -65,7 +59,6 @@ proc reactHtml*(users:string): string = tmpli html"""
       </BrowserRouter>
     </div>
   }
-
   ReactDOM.render(<App/>,document.querySelector('main'))
 </script>
 """

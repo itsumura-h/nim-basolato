@@ -59,4 +59,5 @@ jobs:
       run: |
         echo '' >> tests/config.nims
         echo 'switch("threads", "on")' >> tests/config.nims
+        echo 'switch("threadAnalysis", "off")' >> tests/config.nims
         docker-compose run app sh /root/project/runTest.sh

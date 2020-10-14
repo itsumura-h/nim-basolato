@@ -1,2 +1,0 @@
-switch("path", "..")
-switch("path", ".")

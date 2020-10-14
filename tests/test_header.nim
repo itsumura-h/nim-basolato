@@ -1,6 +1,6 @@
 import unittest, tables, json
 from strutils import join
-import ../src/basolato/header
+import ../src/basolato/core/header
 
 suite "header":
   test "newHeaders":

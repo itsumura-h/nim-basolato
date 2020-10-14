@@ -9,9 +9,7 @@ proc makeUsecase*(target:string, message:var string):int =
   let reativeToValueObjectPath = "../".repeat(target.split("/").len) & "models/value_objects"
   let USECASE = &"""
 import {reativeToValueObjectPath}
-
 type {targetCaptalized}Usecase* = ref object
-
 proc new{targetCaptalized}Usecase*():{targetCaptalized}Usecase =
   return {targetCaptalized}Usecase()
 """

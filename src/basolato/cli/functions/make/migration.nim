@@ -39,8 +39,8 @@ proc migration{now}{target}*() =
   textArr.insert(&"  migration{now}{target}()", offsets[1]+1)
   # write in file
   f = open(targetPath, fmWrite)
+  defer: f.close()
   for i in 0..textArr.len-2:
     f.writeLine(textArr[i])
-  f.close()
   message = &"updated migrate.nim"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)

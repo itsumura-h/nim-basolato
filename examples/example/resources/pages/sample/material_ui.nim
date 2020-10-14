@@ -23,7 +23,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
     
     <h1>React Users index</h1>
-    <p><a href="../../">戻る</a></p>
+    <p><a href="../../">back</a></p>
     <div id="app"></div>
     <script type="text/babel">
       const {

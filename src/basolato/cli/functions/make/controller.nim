@@ -4,44 +4,37 @@ import utils
 proc makeController*(target:string, message:var string):int =
   let targetPath = &"{getCurrentDir()}/app/controllers/{target}_controller.nim"
   let targetName = target.split("/").max()
-  let targetCaptalized = snakeToCamel(targetName)
-  let CONTROLLER = &"""
-from strutils import parseInt
+  let controller = &"""
+import json
 # framework
 import basolato/controller
 
-
-type {targetCaptalized}Controller* = ref object of Controller
-
-proc new{targetCaptalized}Controller*(request:Request):{targetCaptalized}Controller =
-  return {targetCaptalized}Controller.newController(request)
-
-
-proc index*(this:{targetCaptalized}Controller):Response =
+proc index*(request:Request, params:Params):Future[Response] ASYNC =
   return render("index")
 
-proc show*(this:{targetCaptalized}Controller, id:string):Response =
-  let id = id.parseInt
+proc show*(request:Request, params:Params):Future[Response] ASYNC =
+  let id = params.urlParams["id"].getInt
   return render("show")
 
-proc create*(this:{targetCaptalized}Controller):Response =
+proc create*(request:Request, params:Params):Future[Response] ASYNC =
   return render("create")
 
-proc store*(this:{targetCaptalized}Controller):Response =
+proc store*(request:Request, params:Params):Future[Response] ASYNC =
   return render("store")
 
-proc edit*(this:{targetCaptalized}Controller, id:string):Response =
-  let id = id.parseInt
+proc edit*(request:Request, params:Params):Future[Response] ASYNC =
+  let id = params.urlParams["id"].getInt
   return render("edit")
 
-proc update*(this:{targetCaptalized}Controller, id:string):Response =
-  let id = id.parseInt
+proc update*(request:Request, params:Params):Future[Response] ASYNC =
+  let id = params.urlParams["id"].getInt
   return render("update")
 
-proc destroy*(this:{targetCaptalized}Controller, id:string):Response =
-  let id = id.parseInt
+proc destroy*(request:Request, params:Params):Future[Response] ASYNC =
+  let id = params.urlParams["id"].getInt
   return render("destroy")
 """
+  let CONTROLLER = controller.replace("ASYNC", "{.async.}")
 
   if isFileExists(targetPath): return 1
 

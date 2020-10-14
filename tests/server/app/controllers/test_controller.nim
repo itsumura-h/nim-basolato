@@ -1,45 +1,37 @@
 import json
 import ../../../../src/basolato/controller
-import ../../../../src/basolato/security
+import ../../../../src/basolato/core/security
 # template
 import ../../resources/pages/test_view
 
 
-type TestController = ref object of Controller
-  name*:string
-
-proc newTestController*(request:Request):TestController =
-  var testController = TestController.newController(request)
-  testController.name = "test"
-  return testController
-
 # test controller
-proc renderStr*(this:TestController):Response =
+proc renderStr*(request:Request, params:Params):Future[Response] {.async.} =
   return render("test")
 
-proc renderHtml*(this:TestController):Response =
+proc renderHtml*(request:Request, params:Params):Future[Response] {.async.} =
   return render(html("pages/test.html"))
 
-proc renderTemplate*(this:TestController):Response =
-  return render(this.view.testView())
+proc renderTemplate*(request:Request, params:Params):Future[Response] {.async.} =
+  return render(testView())
 
-proc renderJson*(this:TestController):Response =
+proc renderJson*(request:Request, params:Params):Future[Response] {.async.} =
   return render(%*{"key": "test"})
 
-proc status500*(this:TestController):Response =
+proc status500*(request:Request, params:Params):Future[Response] {.async.} =
   return render(Http500, "")
 
-proc status500json*(this:TestController):Response =
+proc status500json*(request:Request, params:Params):Future[Response] {.async.} =
   return render(Http500, %*{"key": "test"})
 
-proc redirect*(this:TestController):Response =
+proc redirect*(request:Request, params:Params):Future[Response] {.async.} =
   return redirect("/new_url")
 
-proc error_redirect*(this:TestController):Response =
+proc error_redirect*(request:Request, params:Params):Future[Response] {.async.} =
   return errorRedirect("/new_url")
 
 # test helper
-proc dd*(this:TestController):Response =
+proc dd*(request:Request, params:Params):Future[Response] {.async.} =
   var a = %*{
     "key1": "value1",
     "key2": 2
@@ -48,41 +40,43 @@ proc dd*(this:TestController):Response =
   return render("dd")
 
 # test response
-proc setHeader*(this:TestController):Response =
+proc setHeader*(request:Request, params:Params):Future[Response] {.async.} =
   var header = newHeaders()
   header.set("key1", "value1")
   header.set("key2", ["value1", "value2"])
-  return render("setHeader").setHeader(header)
+  return render("setHeader", header)
 
-proc setCookie*(this:TestController):Response =
-  var cookie = newCookie(this.request)
+proc setCookie*(request:Request, params:Params):Future[Response] {.async.} =
+  var cookie = newCookie(request)
   cookie.set("key1", "value1")
   cookie.set("key2", "value2")
   return render("setCookie").setCookie(cookie)
 
-proc setAuth*(this:TestController):Response =
-  this.auth.login()
-  this.auth.set("key1", "value1")
-  this.auth.set("key2", "value2")
-  return render("setAuth").setAuth(this.auth)
+proc setAuth*(request:Request, params:Params):Future[Response] {.async.} =
+  let auth = newAuth(request)
+  auth.login()
+  auth.set("key1", "value1")
+  auth.set("key2", "value2")
+  return render("setAuth").setAuth(auth)
 
-proc destroyAuth*(this:TestController):Response =
-  this.auth.login()
-  return render("setAuth").destroyAuth(this.auth)
+proc destroyAuth*(request:Request, params:Params):Future[Response] {.async.} =
+  let auth = newAuth(request)
+  auth.login()
+  return render("setAuth").destroyAuth(auth)
 
 
 # test routing
-proc getAction*(this:TestController):Response =
+proc getAction*(request:Request, params:Params):Future[Response] {.async.} =
   return render("get")
 
-proc postAction*(this:TestController):Response =
+proc postAction*(request:Request, params:Params):Future[Response] {.async.} =
   return render("post")
 
-proc patchAction*(this:TestController):Response =
+proc patchAction*(request:Request, params:Params):Future[Response] {.async.} =
   return render("patch")
 
-proc putAction*(this:TestController):Response =
+proc putAction*(request:Request, params:Params):Future[Response] {.async.} =
   return render("put")
 
-proc deleteAction*(this:TestController):Response =
+proc deleteAction*(request:Request, params:Params):Future[Response] {.async.} =
   return render("delete")

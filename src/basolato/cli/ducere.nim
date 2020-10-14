@@ -1,5 +1,5 @@
 import
-  ../base,
+  ../core/base,
   functions/newImpl,
   functions/makeImpl,
   functions/serveImpl,
