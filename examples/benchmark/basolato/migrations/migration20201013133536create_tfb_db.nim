@@ -5,24 +5,24 @@ randomize()
 
 proc migration20201013133536create_tfb_db*() =
   schema(
-    table("world", [
+    table("World", [
       Column().increments("id"),
       Column().integer("randomNumber").default(0)
     ], reset=true),
-    table("fortune", [
+    table("Fortune", [
       Column().increments("id"),
       Column().string("message")
     ], reset=true)
   )
 
-  echo rdb().table("world").get()
+  echo rdb().table("World").get()
 
   var data = newSeq[JsonNode]()
   for i in 1..10000:
     data.add(
       %*{"randomNumber": rand(1..10000)}
     )
-  rdb().table("world").insert(data)
+  rdb().table("World").insert(data)
 
   data = @[
     %*{"id": 1, "message": "fortune: No such file or directory"},
@@ -39,4 +39,4 @@ proc migration20201013133536create_tfb_db*() =
     %*{"id": 12, "message": "フレームワークのベンチマーク"},
   ]
 
-  rdb().table("fortune").insert(data)
+  rdb().table("Fortune").insert(data)
