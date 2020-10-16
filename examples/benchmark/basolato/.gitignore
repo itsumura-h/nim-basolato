@@ -8,7 +8,9 @@ coverage/*
 lcov.info
 
 config.nims
+*.out
 *.log
+*.log.*
 *.sqlite3
 *.db
-*.db.bak
+*.db.*

@@ -11,6 +11,7 @@ proc makeMigration*(target:string, message:var string):int =
   createDir(parentDir(targetPath))
 
   let MIGRATION = &"""
+import json
 import allographer/schema_builder
 import allographer/query_builder
 
