@@ -20,7 +20,7 @@ proc plainText*(request:Request, params:Params):Future[Response] {.async.} =
 
 proc db*(request:Request, params:Params):Future[Response] {.async.} =
   let i = rand(1..10000)
-  let response = await rdb().table("World").asyncFind(i)
+  let response = await rdb().table("World").select("id", "randomNumber").asyncFind(i)
   return render(%*response)
 
 proc query*(request:Request, params:Params):Future[Response] {.async.} =
@@ -38,12 +38,12 @@ proc query*(request:Request, params:Params):Future[Response] {.async.} =
   var response = newJArray()
   for _ in 1..countNum:
     let i = rand(1..10000)
-    let data = await rdb().table("World").asyncFind(i)
+    let data = await rdb().table("World").select("id", "randomNumber").asyncFind(i)
     response.add(data)
   return render(%*response)
 
 proc fortune*(request:Request, params:Params):Future[Response] {.async.} =
-  var rows = await rdb().table("Fortune").orderBy("message", Asc).asyncGetPlain()
+  var rows = await rdb().table("Fortune").select("id", "message").orderBy("message", Asc).asyncGetPlain()
   var newRows = rows.mapIt(
     Fortune(
       id: it[0].parseInt,
@@ -72,13 +72,21 @@ proc update*(request:Request, params:Params):Future[Response] {.async.} =
     countNum = 500
 
   var response = newSeq[JsonNode](countNum)
+  var getFutures = newSeq[Future[Row]](countNum)
+  var updateFutures = newSeq[Future[void]](countNum)
   for i in 1..countNum:
     let index = rand(range1_10000)
     let number = rand(range1_10000)
-    discard await rdb().table("World").asyncFindPlain(index)
-    await rdb()
-      .table("World")
-      .where("id", "=", index)
-      .asyncUpdate(%*{"randomNumber": number})
+    getFutures[i-1] = rdb().table("World").select("id", "randomNumber").asyncFindPlain(index)
+    updateFutures[i-1] = rdb()
+                        .table("World")
+                        .where("id", "=", index)
+                        .asyncUpdate(%*{"randomNumber": number})
     response[i-1] = %*{"id":index, "randomNumber": number}
+
+  try:
+    discard await all(getFutures)
+    await all(updateFutures)
+  except:
+    discard
   return render(%response)

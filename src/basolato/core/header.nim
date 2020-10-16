@@ -76,7 +76,6 @@ proc setDefaultHeaders*(this:var Headers) =
   let formatter = initTimeFormat("ddd, dd MMM YYYY HH:mm:ss 'GMT'")
   this.set("Date", now().format(formatter))
   this.set("Connection", "Keep-Alive")
-  this.set("Keep-Alive", "timeout=5, max=1000")
 
 proc newDefaultHeaders*():Headers =
   var headers = newHeaders()
