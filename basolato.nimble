@@ -20,7 +20,7 @@ requires "bcrypt >= 0.2.1"
 requires "nimAES >= 0.1.2"
 requires "flatdb >= 0.2.4"
 # requires "allographer >= 0.13.2"
-requires "allographer#@head"
+requires "allographer#head"
 requires "faker >= 0.13.1"
 
 import strformat
