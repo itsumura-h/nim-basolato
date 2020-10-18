@@ -1,5 +1,4 @@
 import os, strformat, terminal
-import bcrypt
 import utils
 
 

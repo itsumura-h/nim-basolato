@@ -6,6 +6,7 @@ import app/controllers/cookie_controller
 import app/controllers/login_controller
 import app/controllers/flash_controller
 import app/controllers/file_upload_controller
+import app/controllers/benchmark_controller
 # middleware
 import app/middlewares/auth_middleware
 
@@ -15,6 +16,8 @@ routes.middleware(".*", auth_middleware.checkCsrfTokenMiddleware)
 routes.middleware("/sample/.*", auth_middleware.chrckAuthTokenMiddleware)
 
 routes.get("/", page_display_controller.index)
+routes.get("/test1", benchmark_controller.test1)
+routes.get("/test2", benchmark_controller.test2)
 groups "/sample":
   routes.get("/welcome", page_display_controller.welcome)
   routes.get("/fib/{num:int}", page_display_controller.fib)

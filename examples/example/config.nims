@@ -5,6 +5,8 @@ putEnv("DB_CONNECTION", "/root/project/examples/example/db.sqlite3")
 putEnv("DB_USER", "")
 putEnv("DB_PASSWORD", "")
 putEnv("DB_DATABASE", "")
+putEnv("DB_DATABASE", "")
+putEnv("DB_MAX_CONNECTION", "95")
 # Logging
 putEnv("LOG_IS_DISPLAY", "true")
 putEnv("LOG_IS_FILE", "true")
