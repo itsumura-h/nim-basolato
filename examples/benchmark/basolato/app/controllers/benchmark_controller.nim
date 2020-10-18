@@ -24,11 +24,11 @@ proc db*(request:Request, params:Params):Future[Response] {.async.} =
   return render(%*response)
 
 proc query*(request:Request, params:Params):Future[Response] {.async.} =
-  var countNum:int
-  try:
-    countNum = params.queryParams["queries"].parseInt
-  except:
-    countNum = 1
+  var countNum =
+    if params.queryParams.hasKey("queries"):
+      params.queryParams["queries"].parseInt
+    else:
+      1
 
   if countNum < 1:
     countNum = 1
@@ -60,11 +60,11 @@ proc fortune*(request:Request, params:Params):Future[Response] {.async.} =
   return render(fortuneView(newRows))
 
 proc update*(request:Request, params:Params):Future[Response] {.async.} =
-  var countNum:int
-  try:
-    countNum = params.queryParams["queries"].parseInt
-  except:
-    countNum = 1
+  var countNum =
+    if params.queryParams.hasKey("queries"):
+      params.queryParams["queries"].parseInt
+    else:
+      1
 
   if countNum < 1:
     countNum = 1
