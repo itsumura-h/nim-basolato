@@ -1,6 +1,6 @@
-import asynchttpserver, httpcore, json, strutils, times, random, strformat, tables, os
+import asynchttpserver, httpcore, json, strutils, times, random, strformat, os
 # framework
-import ./base, ./baseEnv, utils
+import ./baseEnv, utils
 # 3rd party
 import flatdb, nimAES
 
