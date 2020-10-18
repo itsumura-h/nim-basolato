@@ -1,4 +1,4 @@
-import json, os
+import os
 # framework
 import ../../../../src/basolato/controller
 # view

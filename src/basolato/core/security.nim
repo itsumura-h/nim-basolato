@@ -3,8 +3,6 @@ import asynchttpserver, httpcore, json, strutils, times, random, strformat, tabl
 import ./base, ./baseEnv, utils
 # 3rd party
 import flatdb, nimAES
-import request
-
 
 
 # ========= Encrypt ==================

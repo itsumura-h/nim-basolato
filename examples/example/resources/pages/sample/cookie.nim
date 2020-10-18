@@ -1,4 +1,3 @@
-import json
 import ../../../../../src/basolato/view
 import ../../layouts/application_view
 
