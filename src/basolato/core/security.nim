@@ -61,7 +61,7 @@ proc checkTokenValid(db:FlatDb, token:string) =
     raise newException(Exception, "Invalid session id")
 
 proc createParentFlatDbDir():FlatDb =
-  if not existsDir(SESSION_DB_PATH.parentDir()):
+  if not dirExists(SESSION_DB_PATH.parentDir()):
     createDir(SESSION_DB_PATH.parentDir())
   return newFlatDb(SESSION_DB_PATH, IS_SESSION_MEMORY)
 
@@ -350,7 +350,7 @@ proc some*(this:Auth, key:string):bool =
   elif this.session.isNil:
     return false
   else:
-    this.session.some(key)
+    return this.session.some(key)
 
 proc get*(this:Auth, key:string):string =
   if this.session.some("isLogin"):

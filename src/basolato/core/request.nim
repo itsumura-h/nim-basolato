@@ -143,7 +143,7 @@ proc parseMultiPart*(body: string, boundary: string): MultiData =
       inc(i)
     i += body.skipWhitespace(i)
 
-    result.add(name, newPart)
+    result[name] = newPart
 
 proc parseMPFD*(contentType: string, body: string): MultiData =
   var boundaryEqIndex = contentType.find("boundary=")+9

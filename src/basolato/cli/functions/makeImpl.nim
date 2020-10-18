@@ -20,7 +20,7 @@ proc make*(args:seq[string]):int =
 
   # check whether you are in dir includes main.nim
   let mainPath = getCurrentDir() & "/main.nim"
-  if existsFile(mainPath) == false:
+  if fileExists(mainPath) == false:
     let message = "Wrong directory. You should be in project root directory"
     styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)
     return 0

@@ -1,4 +1,4 @@
-import os, strformat, terminal, strutils
+import os, strformat, terminal
 from ../../core/base import basolatoVersion
 from make/utils import isDirExists
 

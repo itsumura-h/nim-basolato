@@ -11,7 +11,6 @@ proc build*(args:seq[string]) =
   discard execShellCmd(&"""
     nim c \
     -d:release \
-    --gc:arc \
     --threads:on \
     --threadAnalysis:off \
     --opt:size \
