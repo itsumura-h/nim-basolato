@@ -25,9 +25,9 @@ proc db*(request:Request, params:Params):Future[Response] {.async.} =
 
 proc query*(request:Request, params:Params):Future[Response] {.async.} =
   var countNum =
-    if params.queryParams.hasKey("queries"):
+    try:
       params.queryParams["queries"].parseInt
-    else:
+    except:
       1
 
   if countNum < 1:
@@ -61,9 +61,9 @@ proc fortune*(request:Request, params:Params):Future[Response] {.async.} =
 
 proc update*(request:Request, params:Params):Future[Response] {.async.} =
   var countNum =
-    if params.queryParams.hasKey("queries"):
+    try:
       params.queryParams["queries"].parseInt
-    else:
+    except:
       1
 
   if countNum < 1:
