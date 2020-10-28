@@ -139,7 +139,7 @@ proc checkHttpCode(exception:ref Exception):HttpCode =
 template serve*(routes:var Routes, port=5000) =
   block:
     var server = newAsyncHttpServer()
-    proc cb(req: Request) {.async, gcsafe, thread.} =
+    proc cb(req: Request) {.async, gcsafe.} =
       var headers = newDefaultHeaders()
       headers.set("Content-Type", "text/html; charset=UTF-8")
       var response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)
@@ -200,6 +200,8 @@ template serve*(routes:var Routes, port=5000) =
                 break
       await req.respond(response.status, response.body, response.headers.toResponse())
     waitFor server.serve(Port(port), cb)
+
+
 
 # template serve*(routes:var Routes, port=5000) =
 #   proc onRequest(req: Request): Future[void] =

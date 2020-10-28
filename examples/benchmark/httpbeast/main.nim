@@ -39,7 +39,7 @@ proc main() {.async.} =
       else:
         req.send(Http404)
 
-  let settings = initSettings(Port(5000), "", 3)
+  let settings = initSettings(Port(5000), "")
   run(onRequest, settings)
 
 waitFor main()
