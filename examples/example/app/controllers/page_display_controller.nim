@@ -4,9 +4,9 @@ import ../../../../src/basolato/controller
 import allographer/query_builder
 # view
 import ../../resources/pages/welcome_view
-import ../../resources/pages/sample/react
-import ../../resources/pages/sample/material_ui
-import ../../resources/pages/sample/vuetify
+import ../../resources/pages/sample/react_view
+import ../../resources/pages/sample/material_ui_view
+import ../../resources/pages/sample/vuetify_view
 
 
 let indexHtml = html("pages/sample/index.html")
