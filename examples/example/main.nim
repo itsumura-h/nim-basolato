@@ -1,4 +1,3 @@
-import asynchttpserver, asyncdispatch, httpcore, re
 import ../../src/basolato
 # controller
 import app/controllers/page_display_controller
@@ -35,9 +34,9 @@ groups "/sample":
   routes.post("/cookie/delete", cookie_controller.destroyCookie)
   routes.post("/cookie/delete-all", cookie_controller.destroyCookies)
 
-  routes.get("/login", login_controller.indexLogin)
-  routes.post("/login", login_controller.storeLogin)
-  routes.post("/logout", login_controller.destroyLogin)
+  routes.get("/login", login_controller.index)
+  routes.post("/login", login_controller.store)
+  routes.post("/logout", login_controller.destroy)
 
   routes.get("/flash", flash_controller.index)
   routes.post("/flash", flash_controller.store)

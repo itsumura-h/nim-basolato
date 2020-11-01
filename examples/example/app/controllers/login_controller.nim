@@ -1,14 +1,14 @@
 # framework
 import ../../../../src/basolato/controller
 # view
-import ../../resources/pages/sample/login
+import ../../resources/pages/sample/login_view
 
 
-proc indexLogin*(request:Request, params:Params):Future[Response] {.async.} =
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
   let auth = newAuth(request)
   return render(loginView(auth))
 
-proc storeLogin*(request:Request, params:Params):Future[Response] {.async.} =
+proc store*(request:Request, params:Params):Future[Response] {.async.} =
   let name = params.requestParams.get("name")
   let password = params.requestParams.get("password")
   # auth
@@ -17,6 +17,6 @@ proc storeLogin*(request:Request, params:Params):Future[Response] {.async.} =
   auth.set("name", name)
   return redirect("/sample/login").setAuth(auth)
 
-proc destroyLogin*(request:Request, params:Params):Future[Response] {.async.} =
+proc destroy*(request:Request, params:Params):Future[Response] {.async.} =
   let auth = newAuth(request)
   return redirect("/sample/login").destroyAuth(auth)

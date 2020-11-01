@@ -24,7 +24,7 @@ proc runCommand() =
   try:
     if pid > 0:
       discard execShellCmd(&"kill {pid}")
-    if execShellCmd(&"nim c --threads:on --threadAnalysis:off main") > 0:
+    if execShellCmd(&"nim c main") > 0:
       raise newException(Exception, "")
     echoMsg(bgGreen, "[SUCCESS] Running dev server")
     p = startProcess("./main", currentDir, ["&"],

@@ -12,5 +12,5 @@ const range1_10000 = 1..10000
 
 proc index*(request:Request, params:Params):Future[Response] {.async.} =
   let i = rand(range1_10000)
-  let response = await rdb().table("world").asyncFind(i)
+  let response = await rdb().table("World").asyncFind(i)
   return render(response)
