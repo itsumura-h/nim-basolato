@@ -136,12 +136,13 @@ suite "email valid":
   test "DOS Attack":
     for n in 5..12:
       var s = "username@host" & ".abcde".repeat(n) & "."
-      var start = now()
+      var start = cpuTime()
       let v = Validation()
       try:
         assert v.strictEmail(s)
       except:
-        var diff = now() - start
+        var diff = cpuTime() - start
+        echo diff.type
         debugEcho "--------------"
         debugEcho s
-        echo &"{s.len}: {diff.seconds}.{diff.milliseconds:04}{diff.microseconds:04}"
+        echo &"{s.len}: {diff}"
