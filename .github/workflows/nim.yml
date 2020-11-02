@@ -1,6 +1,14 @@
 name: Build and test Nim
 
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - '*.md'
+      - 'documents/*'
+  pull_request:
+    paths-ignore:
+      - '*.md'
+      - 'documents/*'
 
 jobs:
   # WIP でジョブがスキップされてもCIが失敗した扱いにならないようにするため
@@ -26,8 +34,10 @@ jobs:
           # - macOS-latest
           # Need sqlite3_64.dll
           # - windows-latest
-    env:
-      NIM_VERSION: 1.2.0
+        nim-version:
+          - 1.2.0
+          - 1.4.0
+          - stable
     steps:
     - uses: actions/checkout@v1
     - name: Cache choosenim
@@ -35,18 +45,20 @@ jobs:
       uses: actions/cache@v1
       with:
         path: ~/.choosenim
-        key: ${{ runner.os }}-choosenim-${{ env.NIM_VERSION }}
+        key: ${{ runner.os }}-choosenim-${{ matrix.nim-version }}
     - name: Cache nimble
       id: cache-nimble
       uses: actions/cache@v1
       with:
         path: ~/.nimble
-        key: ${{ runner.os }}-nimble-${{ env.NIM_VERSION }}
-    - uses: jiro4989/setup-nim-action@v1.0.1
+        key: ${{ runner.os }}-nimble-${{ matrix.nim-version }}
+    - uses: jiro4989/setup-nim-action@v1
       with:
-        nim-version: ${{ env.NIM_VERSION }}
+        nim-version: ${{ matrix.nim-version }}
     - name: Build
       run: nimble build -Y
+    - name: Install
+      run: nimble install -Y
 
   test-on-docker:
     runs-on: ubuntu-latest
