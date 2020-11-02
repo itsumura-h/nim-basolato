@@ -57,6 +57,8 @@ jobs:
         nim-version: ${{ matrix.nim-version }}
     - name: Build
       run: nimble build -Y
+    - name: Install
+      run: nimble install -Y
 
   test-on-docker:
     runs-on: ubuntu-latest
