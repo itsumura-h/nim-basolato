@@ -1,6 +1,6 @@
 import
-  asynchttpserver, asyncdispatch, asyncfile, json, tables, strformat, macros,
-  strutils, re, os, mimetypes
+  asynchttpserver, asyncdispatch, json, strformat, macros, strutils, os,
+  asyncfile, mimetypes, re
 from osproc import countProcessors
 import baseEnv, request, response, header, logger, error_page, resources/ddPage
 export request, header
@@ -138,15 +138,11 @@ proc checkHttpCode(exception:ref Exception):HttpCode =
 
 
 proc serveCore(params:(Routes, int)){.thread.} =
-  let routes = params[0]
-  let port = params[1]
+  let (routes, port) = params
   var server = newAsyncHttpServer(true, true)
   proc cb(req: Request) {.async, gcsafe.} =
     var headers = newDefaultHeaders()
-    headers.set("Content-Type", "text/html; charset=UTF-8")
-    var response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)
-
-    headers = newDefaultHeaders()
+    var response: Response
     # static file response
     if req.path.contains("."):
       let filepath = getCurrentDir() & "/public" & req.path
@@ -178,28 +174,33 @@ proc serveCore(params:(Routes, int)){.thread.} =
             break middlewareAndApp
         # web app routes
         for route in routes.values:
-          try:
-            if route.httpMethod == req.httpMethod() and isMatchUrl(req.path, route.path):
+          if route.httpMethod == req.httpMethod() and isMatchUrl(req.path, route.path):
+            try:
               let params = req.params(route)
               response = await route.action(req, params)
               logger($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
-              break
-          except Exception:
-            headers.set("Content-Type", "text/html; charset=UTF-8")
-            let exception = getCurrentException()
-            if exception.name == "DD".cstring:
-              var msg = exception.msg
-              msg = msg.replace(re"Async traceback:[.\s\S]*")
-              response = Response(status:Http200, body:ddPage(msg), headers:headers)
-            elif exception.name == "ErrorRedirect".cstring:
-              headers.set("Location", exception.msg)
-              response = Response(status:Http302, body:"", headers:headers)
-            else:
-              let status = checkHttpCode(exception)
-              response = Response(status:status, body:errorPage(status, exception.msg), headers:headers)
-              echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
-              echoErrorMsg(exception.msg)
-              break
+            except Exception:
+              headers.set("Content-Type", "text/html; charset=UTF-8")
+              let exception = getCurrentException()
+              if exception.name == "DD".cstring:
+                var msg = exception.msg
+                msg = msg.replace(re"Async traceback:[.\s\S]*")
+                response = Response(status:Http200, body:ddPage(msg), headers:headers)
+              elif exception.name == "ErrorRedirect".cstring:
+                headers.set("Location", exception.msg)
+                response = Response(status:Http302, body:"", headers:headers)
+              else:
+                let status = checkHttpCode(exception)
+                response = Response(status:status, body:errorPage(status, exception.msg), headers:headers)
+                echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
+                echoErrorMsg(exception.msg)
+            break middlewareAndApp
+
+    if response.isNil:
+      headers.set("Content-Type", "text/html; charset=UTF-8")
+      response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)
+      echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
+
     await req.respond(response.status, response.body, response.headers.toResponse())
   waitFor server.serve(Port(port), cb)
 
@@ -221,68 +222,3 @@ proc serve*(routes: var Routes) =
     joinThreads(threads)
   else:
     serveCore((routes, port))
-
-
-# template serve*(routes:var Routes, port=5000) =
-#   proc onRequest(req: Request): Future[void] =
-#     var headers = newDefaultHeaders()
-#     headers.set("Content-Type", "text/html; charset=UTF-8")
-#     var response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)
-
-#     headers = newDefaultHeaders()
-#     # static file response
-#     if req.path.contains("."):
-#       let filepath = getCurrentDir() & "/public" & req.path
-#       if existsFile(filepath):
-#         let file = openAsync(filepath, fmRead)
-#         let data = await file.readAll()
-#         let contentType = newMimetypes().getMimetype(req.path.split(".")[^1])
-#         headers.set("Content-Type", contentType)
-#         response = Response(status:Http200, body:data, headers:headers)
-#     else:
-#       block middlewareAndApp:
-#         # middleware:
-#         for route in routes.middlewares:
-#           try:
-#             if find(req.path, re route.path) >= 0:
-#               let params = req.params(route)
-#               route.action(req, params)
-#           except Exception:
-#             headers.set("Content-Type", "text/html; charset=UTF-8")
-#             let exception = getCurrentException()
-#             if exception.name == "ErrorRedirect".cstring:
-#               headers.set("Location", exception.msg)
-#               response = Response(status:Http302, body:"", headers:headers)
-#             else:
-#               let status = checkHttpCode(exception)
-#               response = Response(status:status, body:errorPage(status, exception.msg), headers:headers)
-#               echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
-#               echoErrorMsg(exception.msg)
-#             break middlewareAndApp
-#         # web app routes
-#         for route in routes.values:
-#           try:
-#             if route.httpMethod == req.httpMethod() and isMatchUrl(req.path, route.path):
-#               let params = req.params(route)
-#               response = await route.action(req, params)
-#               logger($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
-#               break
-#           except Exception:
-#             headers.set("Content-Type", "text/html; charset=UTF-8")
-#             let exception = getCurrentException()
-#             if exception.name == "DD".cstring:
-#               var msg = exception.msg
-#               msg = msg.replace(re"Async traceback:[.\s\S]*")
-#               response = Response(status:Http200, body:ddPage(msg), headers:headers)
-#             elif exception.name == "ErrorRedirect".cstring:
-#               headers.set("Location", exception.msg)
-#               response = Response(status:Http302, body:"", headers:headers)
-#             else:
-#               let status = checkHttpCode(exception)
-#               response = Response(status:status, body:errorPage(status, exception.msg), headers:headers)
-#               echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
-#               echoErrorMsg(exception.msg)
-#               break
-#     req.send(response.status, response.body, response.headers.toResponse())
-
-#   run(onRequest)

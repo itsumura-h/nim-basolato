@@ -13,8 +13,6 @@ proc build*(ports="5000", args:seq[string]) =
       discard execShellCmd(&"""
         nim c \
         -d:release \
-        --threads:on \
-        --threadAnalysis:off \
         --opt:size \
         --out:{outputFileName}{port} \
         --putenv:port={port} \
@@ -27,7 +25,7 @@ proc build*(ports="5000", args:seq[string]) =
       --threads:on \
       --threadAnalysis:off \
       --opt:size \
-      --out:{outputFileName}{ports} \
+      --out:{outputFileName} \
       --putenv:port={ports} \
       main.nim
     """)
