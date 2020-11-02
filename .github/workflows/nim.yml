@@ -1,6 +1,14 @@
 name: Build and test Nim
 
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - '*.md'
+      - 'documents/*'
+  pull_request:
+    paths-ignore:
+      - '*.md'
+      - 'documents/*'
 
 jobs:
   # WIP でジョブがスキップされてもCIが失敗した扱いにならないようにするため
