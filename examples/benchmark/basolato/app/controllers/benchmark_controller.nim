@@ -60,7 +60,6 @@ proc fortune*(request:Request, params:Params):Future[Response] {.async.} =
   return render(fortuneView(newRows))
 
 proc update*(request:Request, params:Params):Future[Response] {.async.} =
-  echo "=== update start"
   var countNum =
     try:
       params.queryParams["queries"].parseInt
@@ -90,5 +89,4 @@ proc update*(request:Request, params:Params):Future[Response] {.async.} =
     await all(updateFutures)
   except:
     discard
-  echo "=== update end"
   return render(%response)
