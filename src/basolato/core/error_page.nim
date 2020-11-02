@@ -7,9 +7,9 @@ proc errorPage*(status:HttpCode, msg:string):string =
       let customNumberPath = getCurrentDir() / fmt"./resources/errors/{status.int}.html"
       let customGeneralPath = getCurrentDir() / "./resources/errors/error.html"
       let path =
-        if existsFile(customNumberPath):
+        if fileExists(customNumberPath):
           customNumberPath
-        elif existsFile(customGeneralPath):
+        elif fileExists(customGeneralPath):
           customGeneralPath
         else:
           raise newException(Exception, "")

@@ -2,7 +2,7 @@ import
   asynchttpserver, asyncdispatch, asyncfile, json, tables, strformat, macros,
   strutils, re, os, mimetypes
 from osproc import countProcessors
-import request, response, header, logger, error_page, resources/ddPage
+import baseEnv, request, response, header, logger, error_page, resources/ddPage
 export request, header
 
 
@@ -203,7 +203,8 @@ proc serveCore(params:(Routes, int)){.thread.} =
     await req.respond(response.status, response.body, response.headers.toResponse())
   waitFor server.serve(Port(port), cb)
 
-proc serve*(routes: var Routes, port=5000) =
+proc serve*(routes: var Routes) =
+  let port = PORT_NUM
   let numThreads =
     when compileOption("threads"):
       countProcessors()

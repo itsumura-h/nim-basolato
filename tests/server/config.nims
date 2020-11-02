@@ -19,3 +19,5 @@ putEnv("CSRF_TIME", "525600") # minutes of 1 year
 putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
 putEnv("SESSION_DB", "/root/project/tests/server/session.db")
 putEnv("IS_SESSION_MEMORY", "false")
+
+putEnv("port", "5000")

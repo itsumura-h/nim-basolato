@@ -20,11 +20,11 @@ proc ctrlC() {.noconv.} =
   quit 0
 setControlCHook(ctrlC)
 
-proc runCommand() =
+proc runCommand(port:int) =
   try:
     if pid > 0:
       discard execShellCmd(&"kill {pid}")
-    if execShellCmd(&"nim c main") > 0:
+    if execShellCmd(&"nim c --putenv:port={port} main") > 0:
       raise newException(Exception, "")
     echoMsg(bgGreen, "[SUCCESS] Running dev server")
     p = startProcess("./main", currentDir, ["&"],
@@ -35,9 +35,9 @@ proc runCommand() =
     echo getCurrentExceptionMsg()
     # quit 1
 
-proc serve*() =
+proc serve*(port=5000) =
   ## run application with hot reload
-  runCommand()
+  runCommand(port)
   while true:
     sleep sleepTime * 1000
     for f in walkDirRec(currentDir, {pcFile}):
@@ -65,4 +65,4 @@ proc serve*() =
 
     if isModified:
       isModified = false
-      runCommand()
+      runCommand(port)
