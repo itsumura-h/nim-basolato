@@ -9,3 +9,4 @@ const
   SESSION_TIME* = getEnv("SESSION_TIME").string
   SESSION_DB_PATH* = getEnv("SESSION_DB").string
   IS_SESSION_MEMORY* = getEnv("IS_SESSION_MEMORY").string.parseBool
+  PORT_NUM* = getEnv("port").string.parseInt
