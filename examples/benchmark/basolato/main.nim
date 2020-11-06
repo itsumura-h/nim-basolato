@@ -1,5 +1,5 @@
 # framework
-import basolato
+import ../../../src/basolato
 # controller
 import app/controllers/welcome_controller
 import app/controllers/benchmark_controller

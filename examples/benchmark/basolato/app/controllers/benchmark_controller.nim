@@ -1,6 +1,6 @@
 import json, random, algorithm, cgi, sequtils, strutils
 # framework
-import basolato/controller
+import ../../../../../src/basolato/controller
 import allographer/query_builder
 # model
 import ../domain/models/fortune/fortune_entity
