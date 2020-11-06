@@ -1,7 +1,7 @@
 import random
 # framework
-import basolato/controller
-import basolato/core/base
+import ../../../../../src/basolato/controller
+import ../../../../../src/basolato/core/base
 # view
 import ../../resources/pages/welcome_view
 import allographer/query_builder
