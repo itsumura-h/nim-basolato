@@ -1,6 +1,6 @@
 import
   asynchttpserver, asyncdispatch, json, strformat, macros, strutils, os,
-  asyncfile, mimetypes, re
+  asyncfile, mimetypes, re, tables
 from osproc import countProcessors
 import baseEnv, request, response, header, logger, error_page, resources/ddPage
 export request, header
@@ -40,7 +40,8 @@ proc params*(request:Request, middleware:MiddlewareRoute):Params =
   )
 
 type Routes* = ref object
-  values: seq[Route]
+  withParams: seq[Route]
+  withoutParams: OrderedTable[string, Route]
   middlewares: seq[MiddlewareRoute]
 
 proc newRoutes*():Routes =
@@ -54,9 +55,11 @@ proc newRoute(httpMethod:HttpMethod, path:string, action:proc(r:Request, p:Param
   )
 
 proc add*(this:var Routes, httpMethod:HttpMethod, path:string, action:proc(r:Request, p:Params):Future[Response]) =
-  this.values.add(
-    newRoute(httpMethod, path, action)
-  )
+  let route = newRoute(httpMethod, path, action)
+  if path.contains("{"):
+    this.withParams.add(route)
+  else:
+    this.withoutParams[path] = route
 
 proc middleware*(this:var Routes, path:string, action:proc(r:Request, p:Params)) =
   this.middlewares.add(
@@ -102,7 +105,6 @@ macro groups*(head, body:untyped):untyped =
     newNode.add(rowNode)
   return parseStmt(newNode)
 
-
 const errorStatusArray* = [505, 504, 503, 502, 501, 500, 451, 431, 429, 428, 426,
   422, 421, 418, 417, 416, 415, 414, 413, 412, 411, 410, 409, 408, 407, 406,
   405, 404, 403, 401, 400, 307, 305, 304, 303, 302, 301, 300]
@@ -140,6 +142,31 @@ proc checkHttpCode(exception:ref Exception):HttpCode =
 proc serveCore(params:(Routes, int)){.thread.} =
   let (routes, port) = params
   var server = newAsyncHttpServer(true, true)
+
+  proc createResponse(req:Request, route:Route, headers: Headers):Future[Response] {.async.} =
+    var response: Response
+    var headers = headers
+    try:
+      let params = req.params(route)
+      response = await route.action(req, params)
+      logger($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
+    except Exception:
+      headers.set("Content-Type", "text/html; charset=UTF-8")
+      let exception = getCurrentException()
+      if exception.name == "DD".cstring:
+        var msg = exception.msg
+        msg = msg.replace(re"Async traceback:[.\s\S]*")
+        response = Response(status:Http200, body:ddPage(msg), headers:headers)
+      elif exception.name == "ErrorRedirect".cstring:
+        headers.set("Location", exception.msg)
+        response = Response(status:Http302, body:"", headers:headers)
+      else:
+        let status = checkHttpCode(exception)
+        response = Response(status:status, body:errorPage(status, exception.msg), headers:headers)
+        echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
+        echoErrorMsg(exception.msg)
+    return response
+
   proc cb(req: Request) {.async, gcsafe.} =
     var headers = newDefaultHeaders()
     var response: Response
@@ -173,28 +200,15 @@ proc serveCore(params:(Routes, int)){.thread.} =
               echoErrorMsg(exception.msg)
             break middlewareAndApp
         # web app routes
-        for route in routes.values:
-          if route.httpMethod == req.httpMethod() and isMatchUrl(req.path, route.path):
-            try:
-              let params = req.params(route)
-              response = await route.action(req, params)
-              logger($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
-            except Exception:
-              headers.set("Content-Type", "text/html; charset=UTF-8")
-              let exception = getCurrentException()
-              if exception.name == "DD".cstring:
-                var msg = exception.msg
-                msg = msg.replace(re"Async traceback:[.\s\S]*")
-                response = Response(status:Http200, body:ddPage(msg), headers:headers)
-              elif exception.name == "ErrorRedirect".cstring:
-                headers.set("Location", exception.msg)
-                response = Response(status:Http302, body:"", headers:headers)
-              else:
-                let status = checkHttpCode(exception)
-                response = Response(status:status, body:errorPage(status, exception.msg), headers:headers)
-                echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
-                echoErrorMsg(exception.msg)
-            break middlewareAndApp
+        if routes.withoutParams.hasKey(req.path) and routes.withoutParams[req.path].httpMethod == req.httpMethod:
+          let route = routes.withoutParams[req.path]
+          response = await createResponse(req, route, headers)
+          break middlewareAndApp
+        else:
+          for route in routes.withParams:
+            if route.httpMethod == req.httpMethod and isMatchUrl(req.path, route.path):
+              response = await createResponse(req, route, headers)
+              break middlewareAndApp
 
     if response.isNil:
       headers.set("Content-Type", "text/html; charset=UTF-8")

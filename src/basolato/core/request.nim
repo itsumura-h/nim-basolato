@@ -16,8 +16,8 @@ proc isNumeric(str:string):bool =
       return false
 
 proc isMatchUrl*(requestPath, routePath:string):bool =
-  var requestPath = requestPath.split("/")[1..^1]
-  var routePath = routePath.split("/")[1..^1]
+  let requestPath = requestPath.split("/")[1..^1]
+  let routePath = routePath.split("/")[1..^1]
   if requestPath.len != routePath.len:
     return false
   for i in 0..<requestPath.len:
@@ -26,7 +26,7 @@ proc isMatchUrl*(requestPath, routePath:string):bool =
     if routePath[i].contains("{"):
       if requestPath[i].len == 0:
         return false
-      let typ = routePath[i].replace("{", "").replace("}", "").split(":")[1]
+      let typ = routePath[i][1..^2].split(":")[1]
       if typ == "str" and requestPath[i].isNumeric:
         return false
       if typ == "int" and not requestPath[i].isNumeric:
