@@ -16,6 +16,7 @@ nimcache/
 
 coverage/*
 lcov.info
+.vscode/*
 
 *.sqlite3
 migration.json
