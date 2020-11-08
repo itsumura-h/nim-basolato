@@ -1,5 +1,5 @@
 import
-  asynchttpserver, json, strutils, cgi, tables, os, strformat, strtabs,
+  asynchttpserver, asyncnet, json, strutils, cgi, tables, os, strformat, strtabs,
   parseutils, net, uri
 
 
@@ -8,6 +8,19 @@ proc path*(request:Request):string =
 
 proc httpMethod*(request:Request):HttpMethod =
   return request.reqMethod
+
+proc dealKeepAlive*(req:Request) =
+  if (
+    req.protocol.major == 1 and
+    req.protocol.minor == 1 and
+    cmpIgnoreCase(req.headers.getOrDefault("Connection"), "close") == 0
+  ) or
+  (
+    req.protocol.major == 1 and
+    req.protocol.minor == 0 and
+    cmpIgnoreCase(req.headers.getOrDefault("Connection"), "keep-alive") != 0
+  ):
+    req.client.close()
 
 proc isNumeric(str:string):bool =
   result = true

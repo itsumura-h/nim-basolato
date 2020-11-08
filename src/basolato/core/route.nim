@@ -59,7 +59,7 @@ proc add*(this:var Routes, httpMethod:HttpMethod, path:string, action:proc(r:Req
   if path.contains("{"):
     this.withParams.add(route)
   else:
-    this.withoutParams[path] = route
+    this.withoutParams[ $httpMethod & ":" & path ] = route
 
 proc middleware*(this:var Routes, path:string, action:proc(r:Request, p:Params)) =
   this.middlewares.add(
@@ -143,7 +143,7 @@ proc serveCore(params:(Routes, int)){.thread.} =
   let (routes, port) = params
   var server = newAsyncHttpServer(true, true)
 
-  proc createResponse(req:Request, route:Route, headers: Headers):Future[Response] {.async.} =
+  proc createResponse(req:Request, route:Route, headers: Headers):Future[Response] {.async, gcsafe.} =
     var response: Response
     var headers = headers
     try:
@@ -200,8 +200,9 @@ proc serveCore(params:(Routes, int)){.thread.} =
               echoErrorMsg(exception.msg)
             break middlewareAndApp
         # web app routes
-        if routes.withoutParams.hasKey(req.path) and routes.withoutParams[req.path].httpMethod == req.httpMethod:
-          let route = routes.withoutParams[req.path]
+        let key = $(req.httpMethod) & ":" & req.path
+        if routes.withoutParams.hasKey(key):
+          let route = routes.withoutParams[key]
           response = await createResponse(req, route, headers)
           break middlewareAndApp
         else:
@@ -216,6 +217,8 @@ proc serveCore(params:(Routes, int)){.thread.} =
       echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
 
     await req.respond(response.status, response.body, response.headers.toResponse())
+    # keep-alive
+    req.dealKeepAlive()
   waitFor server.serve(Port(port), cb)
 
 proc serve*(routes: var Routes) =
