@@ -160,7 +160,7 @@ nim c -r main
 
 ## Benchmark
 - https://github.com/the-benchmarker/web-frameworks
-- https://www.techempower.com/benchmarks/#section=test&shareid=0e1c42db-0efe-49b0-86d8-142042a02594&hw=ph&test=json&a=2
+- https://www.techempower.com/benchmarks/#section=test&shareid=d57ac3fe-2855-40ec-ac7a-424d34ce7a92&hw=ph&test=json&a=2
 
 ## Roadmap
 
