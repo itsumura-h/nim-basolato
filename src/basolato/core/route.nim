@@ -228,7 +228,11 @@ proc serve*(routes: var Routes) =
       countProcessors()
     else:
       1
-  echo("Starting ", numThreads, " threads")
+
+  if numThreads == 1:
+    echo("Starting 1 thread")
+  else:
+    echo("Starting ", numThreads, " threads")
   echo("Listening on port ", port)
   when compileOption("threads"):
     var threads = newSeq[Thread[(Routes, int)]](numThreads)
