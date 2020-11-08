@@ -2,7 +2,7 @@ ducere command
 ===
 [back](../README.md)
 
-`ducere` is a CLI tool for Basolato framework such as `rails new`/`php artisan`.
+`ducere` is a CLI tool for Basolato framework such as `rake`/`php artisan`.
 
 Table of Contents
 
@@ -10,6 +10,7 @@ Table of Contents
    * [ducere command](#ducere-command)
       * [new](#new)
       * [serve](#serve)
+      * [build](#build)
       * [make](#make)
          * [config](#config)
          * [controller](#controller)
@@ -32,6 +33,80 @@ ducere new my_project
 Run develop server with hot reload
 ```
 ducere serve
+```
+The default port is 5000. If you want to change it, specify with option `-p`
+
+```
+ducere serve -p:8000
+```
+
+## build
+Compiling for production.  
+By default, it will be compiled to run 5000 port and multithreaded for the number of cores in your PC.
+
+```
+ducere build
+./main
+>> Starting 4 threads
+>> Listening on port 5000
+```
+
+When you specify multi ports, it will be compiled to run each port and singlethreaded.
+
+**Running with Multithreads is buggy. I recommand to compile for singlethreaded and run with nginx road balancer.**
+
+```
+ducere build -p:5000,5001,5002
+>> generated main5000, main50001, main5002
+
+./main5000
+>> Starting 1 thread
+>> Listening on port 5000
+
+./main5001
+>> Starting 1 thread
+>> Listening on port 5001
+```
+
+Here is a sample to run in production environment.
+
+nginx.conf
+```nginx
+worker_processes  auto;
+worker_rlimit_nofile 150000;
+
+events {
+   worker_connections  65535;
+   multi_accept on;
+   use epoll;
+}
+
+http {
+   access_log  /var/log/nginx/access.log  main;
+   error_log   /var/log/nginx/error.log  info;
+   tcp_nopush  on;
+
+   upstream basolato {
+      least_conn;
+      server      127.0.0.1:5000;
+      server      127.0.0.1:5001;
+      server      127.0.0.1:5002;
+      server      127.0.0.1:5003;
+   }
+
+   ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+   server {
+      listen 443;
+      ssl on;
+      server_name www.example.com;
+      ssl_certificate /etc/pki/tls/certs/example_com_combined.crt; # path to certification
+      ssl_certificate_key /etc/pki/tls/private/example_com.key; # path to private key
+
+      location / {
+         proxy_pass http://basolato;
+      }
+   }
+}
 ```
 
 ## make
