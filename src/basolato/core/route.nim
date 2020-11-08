@@ -217,6 +217,8 @@ proc serveCore(params:(Routes, int)){.thread.} =
       echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
 
     await req.respond(response.status, response.body, response.headers.toResponse())
+    # keep-alive
+    req.dealKeepAlive()
   waitFor server.serve(Port(port), cb)
 
 proc serve*(routes: var Routes) =
