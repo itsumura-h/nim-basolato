@@ -167,3 +167,19 @@ Create new usecase
 ducere make usecase login
 >> app/domain/usecases/login_usecase.nim
 ```
+
+### value object
+Add new minimum value object boilerplate.  
+
+```sh
+ducere make valueobject {arg1} {arg2}
+```
+
+`arg1` is a name of value object which should be Camel Case.  
+`arg2` is a relative path to value object file from `app/domain/models`.
+
+example
+```sh
+ducere make valueobject UserName ./value_objects.nim
+>> add UserName in app/domain/models/value_objects.nim
+```

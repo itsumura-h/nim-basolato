@@ -44,6 +44,6 @@ proc destroy*(request:Request, params:Params):Future[Response] ASYNC =
   defer: f.close()
   f.write(CONTROLLER)
 
-  message = &"created controller {target}_controller.nim"
+  message = &"Created controller {target}_controller.nim"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
   return 0

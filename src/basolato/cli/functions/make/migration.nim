@@ -22,7 +22,7 @@ proc migration{now}{target}*() =
   f.write(MIGRATION)
   f.close()
 
-  message = &"created migration {now}{target}"
+  message = &"Created migration {now}{target}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
 
   # update migrate.nim
@@ -43,5 +43,5 @@ proc migration{now}{target}*() =
   defer: f.close()
   for i in 0..textArr.len-2:
     f.writeLine(textArr[i])
-  message = &"updated migrate.nim"
+  message = &"Updated migrate.nim"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)

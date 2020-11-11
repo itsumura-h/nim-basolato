@@ -1,4 +1,4 @@
-import templates, json
+import templates, json, random, tables, strformat, strutils
 export templates
 import core/security
 export security
@@ -23,3 +23,52 @@ proc old*(params:JsonNode, key:string):string =
     return params[key].get()
   except:
     return ""
+
+proc old*(params:TableRef, key:string):string =
+  try:
+    return params[key]
+  except:
+    return ""
+
+
+type CssRow = ref object
+  key:string
+  class:string
+  value:string
+
+type Css* = ref object
+  suffix: string
+  values: OrderedTable[string, OrderedTable[string, CssRow]]
+
+randomize()
+
+proc newCss*():Css =
+  var random:string
+  for _ in 0..10:
+    random.add(char(rand(int('a')..int('z'))))
+  return Css(suffix:random)
+
+proc set*(this:var Css, className, option:string, value:string) =
+  if not this.values.hasKey(className):
+    this.values[className] = OrderedTable[string, CssRow]()
+  this.values[className][option] = CssRow(
+    key:className & "_" & this.suffix & option,
+    class: className & "_" & this.suffix,
+    value:value
+  )
+
+proc get*(this:Css, className:string):string =
+  for option, cssRow in this.values[className]:
+    return cssRow.class
+
+proc define*(this:Css):string =
+  result = "<style type=\"text/css\">\n"
+  for className, cssRows in this.values:
+    for option, cssRow in cssRows:
+      var row = &"""
+.{cssRow.key} [[
+  {cssRow.value}]]
+"""
+      row = row.replace("[[", "{").replace("]]", "}")
+      result.add(row)
+  result.add("</style>")

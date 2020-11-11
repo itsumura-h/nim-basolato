@@ -17,14 +17,14 @@ Basolato has its own useful password library. It uses `bcrypt` package inside.
 https://github.com/runvnc/bcryptnim
 
 ## API
-```
+```nim
 proc genHashedPassword*(val:string):string =
 
 proc isMatchPassword*(input, hashedPassword:string):bool =
 ```
 
 ## Example
-```
+```nim
 import basolato/password
 
 let pass1 = "Password!"

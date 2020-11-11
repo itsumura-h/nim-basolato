@@ -1,11 +1,20 @@
 import os, terminal
 import
-  make/controller, make/migration, make/view, make/config, make/model, make/usecase
+  make/controller, make/migration, make/view, make/config, make/model,
+  make/usecase, make/valueobject
 
 
 template getTarget() =
   try:
     target = args[1]
+  except:
+    let message = "Missing args"
+    styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)
+    return 0
+
+template getTargetPath() =
+  try:
+    targetPath = args[2]
   except:
     let message = "Missing args"
     styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)
@@ -17,6 +26,7 @@ proc make*(args:seq[string]):int =
     message:string
     todo:string
     target:string
+    targetPath:string
 
   # check whether you are in dir includes main.nim
   let mainPath = getCurrentDir() & "/main.nim"
@@ -50,6 +60,10 @@ proc make*(args:seq[string]):int =
     return makeView(target, message)
   of "config":
     return makeConfig()
+  of "valueobject":
+    getTarget
+    getTargetPath
+    return makeValueObject(target, targetPath, message)
   else:
     message = "invalid things to make"
     styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)

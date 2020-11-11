@@ -110,9 +110,9 @@ proc new{targetCaptalized}Service*():{targetCaptalized}Service =
   f = open(targetPath, fmWrite)
   for i in 0..textArr.len-2:
     f.writeLine(textArr[i])
-  message = &"updated di_container.nim"
+  message = &"Updated di_container.nim"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
 
-  message = &"created domain model in {getCurrentDir()}/app/domain/models/{targetName}"
+  message = &"Created domain model in {getCurrentDir()}/app/domain/models/{targetName}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
   return 0

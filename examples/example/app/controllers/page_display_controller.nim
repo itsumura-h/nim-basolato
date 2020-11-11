@@ -7,6 +7,7 @@ import ../../resources/pages/welcome_view
 import ../../resources/pages/sample/react_view
 import ../../resources/pages/sample/material_ui_view
 import ../../resources/pages/sample/vuetify_view
+import ../../resources/pages/sample/with_style_view
 
 
 let indexHtml = html("pages/sample/index.html")
@@ -37,6 +38,8 @@ proc fib*(request:Request, params:Params):Future[Response] {.async.} =
   }
   return render(data)
 
+proc withStylePage*(request:Request, params:Params):Future[Response] {.async.} =
+  return render(withStyleView())
 
 proc react*(request:Request, params:Params):Future[Response] {.async.} =
   let users = %*RDB().table("users")

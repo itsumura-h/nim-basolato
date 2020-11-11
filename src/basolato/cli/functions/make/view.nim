@@ -11,6 +11,10 @@ proc makeView*(target:string, message:var string):int =
 import basolato/view
 import {reativeToApplicationPath}
 
+let style = block:
+  var css = newCss()
+  css
+
 proc impl():string = tmpli html'''
 '''
 

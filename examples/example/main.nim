@@ -20,6 +20,8 @@ routes.get("/test2", benchmark_controller.test2)
 groups "/sample":
   routes.get("/welcome", page_display_controller.welcome)
   routes.get("/fib/{num:int}", page_display_controller.fib)
+  routes.get("/with-style", page_display_controller.withStylePage)
+
   routes.get("/react", page_display_controller.react)
   routes.get("/material-ui", page_display_controller.materialUi)
   routes.get("/vuetify", page_display_controller.vuetify)
