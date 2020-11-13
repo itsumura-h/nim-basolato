@@ -13,9 +13,9 @@ proc signup_page*(request:Request, params:Params):Future[Response] {.async.} =
   return render(signupView())
 
 proc signup*(request:Request, params:Params):Future[Response] {.async.} =
-  let name = params.requestParams.get("name")
-  let email = params.requestParams.get("email")
-  let password = params.requestParams.get("password")
+  let name = params.requestParams.getStr("name")
+  let email = params.requestParams.getStr("email")
+  let password = params.requestParams.getStr("password")
   var v = newValidation(params.requestParams)
   v.required(["name", "email", "password"])
   v.strictEmail("email")
@@ -24,7 +24,10 @@ proc signup*(request:Request, params:Params):Future[Response] {.async.} =
     v.valid()
     let usecase = newSignUsecase()
     usecase.signIn(name, email, password)
-    return redirect("/")
+    let auth = newAuth()
+    auth.set("name", name)
+    auth.login()
+    return redirect("/").setAuth(auth)
   except Exception:
     let params = {"name": name, "email": email}.newTable
     echo v.errors

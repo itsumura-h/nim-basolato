@@ -82,12 +82,18 @@ type RequestParam* = ref object
   ext:string
   body:string
 
-type RequestParams* = Table[string, RequestParam]
+type RequestParams* = TableRef[string, RequestParam]
 type MultiData* = OrderedTable[string, tuple[fields: StringTableRef, body: string]]
 
-proc get*(params:RequestParams, key:string, default=""):string =
+proc getStr*(params:RequestParams, key:string, default=""):string =
   if params.hasKey(key):
     return params[key].body
+  else:
+    return default
+
+proc getInt*(params:RequestParams, key:string, default=0):int =
+  if params.hasKey(key):
+    return params[key].body.parseInt
   else:
     return default
 

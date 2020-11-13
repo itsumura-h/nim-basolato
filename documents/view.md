@@ -320,6 +320,14 @@ proc index*():string = tmpli html"""
 ### old helper
 If the user's input value is invalid and you want to back the input page and display the previously entered value, you can use `old` helper function.
 
+API
+```nim
+proc old*(params:JsonNode, key:string):string =
+
+proc old*(params:TableRef, key:string):string =
+
+```
+
 controller
 ```nim
 # get access

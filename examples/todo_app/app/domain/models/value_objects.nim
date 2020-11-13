@@ -47,14 +47,3 @@ proc get*(this:Password):string =
 proc getHashed*(this:Password):HashedPassword =
   let value = this.value.genHashedPassword()
   return newHashedPassword(value)
-
-
-type TestValueObject* = ref object
-  value:string
-
-proc newTestValueObject*(value:string):TestValueObject =
-  result = new TestValueObject
-  result.value = value
-
-proc get*(this:TestValueObject):string =
-  return this.value

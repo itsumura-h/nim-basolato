@@ -25,7 +25,7 @@ proc checkCsrfToken*(request:Request, params:Params):Check =
     try:
       if not params.requestParams.hasKey("csrf_token"):
         raise newException(Exception, "csrf token is missing")
-      let token = params.requestParams.get("csrf_token")
+      let token = params.requestParams.getStr("csrf_token")
       discard newCsrfToken(token).checkCsrfTimeout()
     except:
       result = Check(
