@@ -57,7 +57,7 @@ When you specify multi ports, it will be compiled to run each port and singlethr
 
 ```
 ducere build -p:5000,5001,5002
->> generated main5000, main50001, main5002
+>> generated main5000, main5001, main5002
 
 ./main5000
 >> Starting 1 thread
