@@ -13,7 +13,7 @@ proc index*(request:Request, params:Params):Future[Response] ASYNC =
   return render("index")
 
 proc show*(request:Request, params:Params):Future[Response] ASYNC =
-  let id = params.urlParams["id"].getInt
+  let id = params.getInt("id")
   return render("show")
 
 proc create*(request:Request, params:Params):Future[Response] ASYNC =
@@ -23,15 +23,15 @@ proc store*(request:Request, params:Params):Future[Response] ASYNC =
   return render("store")
 
 proc edit*(request:Request, params:Params):Future[Response] ASYNC =
-  let id = params.urlParams["id"].getInt
+  let id = params.getInt("id")
   return render("edit")
 
 proc update*(request:Request, params:Params):Future[Response] ASYNC =
-  let id = params.urlParams["id"].getInt
+  let id = params.getInt("id")
   return render("update")
 
 proc destroy*(request:Request, params:Params):Future[Response] ASYNC =
-  let id = params.urlParams["id"].getInt
+  let id = params.getInt("id")
   return render("destroy")
 """
   let CONTROLLER = controller.replace("ASYNC", "{.async.}")

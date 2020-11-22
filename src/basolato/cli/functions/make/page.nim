@@ -1,11 +1,11 @@
 import os, strformat, terminal, strutils
 import utils
 
-proc makeView*(target:string, message:var string):int =
-  let targetPath = &"{getCurrentDir()}/resources/{target}_view.nim"
+proc makePage*(target:string, message:var string):int =
+  let targetPath = &"{getCurrentDir()}/resources/pages/{target}_view.nim"
   let targetName = target.split("/")[^1]
   let targetCaptalized = snakeToCamelProcName(targetName)
-  let reativeToApplicationPath = "../".repeat(target.split("/").len-1) & "layouts/application_view"
+  let reativeToApplicationPath = "../".repeat(target.split("/").len) & "layouts/application_view"
 
   var VIEW = &"""
 import basolato/view
@@ -32,6 +32,6 @@ proc {targetCaptalized}View*():string =
   f.write(VIEW)
   defer: f.close()
 
-  message = &"created view {targetPath}"
+  message = &"created page view {targetPath}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
   return 0

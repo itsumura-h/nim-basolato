@@ -9,46 +9,63 @@ import ../../resources/pages/sign/signin_view
 import ../domain/usecases/sign_usecase
 
 
-proc signup_page*(request:Request, params:Params):Future[Response] {.async.} =
+proc signUpPage*(request:Request, params:Params):Future[Response] {.async.} =
   return render(signupView())
 
-proc signup*(request:Request, params:Params):Future[Response] {.async.} =
-  let name = params.requestParams.getStr("name")
-  let email = params.requestParams.getStr("email")
-  let password = params.requestParams.getStr("password")
-  var v = newValidation(params.requestParams)
+proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
+  let name = params.getStr("name")
+  let email = params.getStr("email")
+  let password = params.getStr("password")
+  var v = newValidation(params)
   v.required(["name", "email", "password"])
   v.strictEmail("email")
   v.password("password")
   try:
     v.valid()
     let usecase = newSignUsecase()
-    usecase.signIn(name, email, password)
+    let user = usecase.signUp(name, email, password)
     let auth = newAuth()
-    auth.set("name", name)
     auth.login()
+    auth.set("id", $(user["id"].getInt))
+    auth.set("name", user["name"].getStr)
     return redirect("/").setAuth(auth)
   except Exception:
     let params = {"name": name, "email": email}.newTable
-    echo v.errors
     return render(signupView(params, v.errors))
 
 
-proc delete_account_page*(request:Request, params:Params):Future[Response] {.async.} =
+proc deleteAccountPage*(request:Request, params:Params):Future[Response] {.async.} =
   return render("delete account")
 
-proc delete_account*(request:Request, params:Params):Future[Response] {.async.} =
+proc deleteAccount*(request:Request, params:Params):Future[Response] {.async.} =
   return render("delete account")
 
-proc signin_page*(request:Request, params:Params):Future[Response] {.async.} =
+proc signInPage*(request:Request, params:Params):Future[Response] {.async.} =
   return render(signinView())
 
-proc signin*(request:Request, params:Params):Future[Response] {.async.} =
-  return render("signin")
+proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
+  let email = params.getStr("email")
+  let password = params.getStr("password")
+  var v = newValidation(params)
+  v.required(["email", "password"])
+  v.strictEmail("email")
+  v.password("password")
+  try:
+    let usecase = newSignUsecase()
+    let user = usecase.signIn(email, password)
+    let auth = newAuth()
+    auth.login()
+    auth.set("id", $(user["id"].getInt))
+    auth.set("name", user["name"].getStr)
+    return redirect("/").setAuth(auth)
+  except:
+    let params = {"email": email}.newTable
+    return render(signInView(params, v.errors))
 
-proc signout*(request:Request, params:Params):Future[Response] {.async.} =
-  return render("signout")
 
+proc signOut*(request:Request, params:Params):Future[Response] {.async.} =
+  let auth = newAuth(request)
+  return redirect("/signin").destroyAuth(auth)
 
 
 # proc index*(request:Request, params:Params):Future[Response] {.async.} =

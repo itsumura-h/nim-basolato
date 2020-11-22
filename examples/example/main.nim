@@ -12,7 +12,6 @@ import app/middlewares/auth_middleware
 var routes = newRoutes()
 
 routes.middleware(".*", auth_middleware.checkCsrfTokenMiddleware)
-routes.middleware("/sample/.*", auth_middleware.chrckAuthTokenMiddleware)
 
 routes.get("/", page_display_controller.index)
 routes.get("/test1", benchmark_controller.test1)

@@ -8,9 +8,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
   return render(fileUploadView())
 
 proc store*(request:Request, params:Params):Future[Response] {.async.} =
-  if params.requestParams.hasKey("img"):
-    params.requestParams["img"].save("./public/sample")
-    params.requestParams["img"].save("./public/sample", "image")
+  if params.hasKey("img"):
+    params.save("img", "./public/sample")
+    params.save("img", "./public/sample", "image")
   return redirect("/sample/file-upload")
 
 proc destroy*(request:Request, params:Params):Future[Response] {.async.} =

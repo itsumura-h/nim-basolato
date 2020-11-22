@@ -385,6 +385,13 @@ proc setFlash*(this:Auth, key, value:string) =
   let key = "flash_" & key
   this.set(key, value)
 
+proc hasFlash*(this:Auth, key:string):bool =
+  result = false
+  for k, v in this.session.db.conn[this.session.db.token].pairs:
+    if k.contains("flash_" & key):
+      result = true
+      break
+
 proc getFlash*(this:Auth):JsonNode =
   result = newJObject()
   if this.isLogin:

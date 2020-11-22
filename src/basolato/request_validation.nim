@@ -8,13 +8,13 @@ import allographer/query_builder
 
 
 type RequestValidation* = ref object
-  params*: RequestParams
+  params*: Params
   errors*: JsonNode # JObject
 
 type ValidationError* = object of CatchableError
 
 
-proc newValidation*(params: RequestParams):RequestValidation =
+proc newValidation*(params: Params):RequestValidation =
   return RequestValidation(
     params: params,
     errors: newJObject()

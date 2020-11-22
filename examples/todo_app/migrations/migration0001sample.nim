@@ -1,5 +1,5 @@
 import json, strformat, times
-import basolato/password
+import ../../../src/basolato/password
 import allographer/schema_builder
 import allographer/query_builder
 
@@ -15,30 +15,35 @@ proc migration0001sample*() =
     ], reset=true),
     table("todos", [
       Column().increments("id"),
-      Column().string("content"),
+      Column().string("title"),
+      Column().text("content"),
       Column().boolean("is_finished"),
-      Column().timestamps()
+      Column().timestamps(),
+      Column().foreign("user_id").reference("id").on("users").onDelete(CASCADE)
     ], reset=true)
   ])
 
   # Seeder
   var users: seq[JsonNode]
-  users.add(%*{
-    "id": 1,
-    "name": &"user1",
-    "email": &"user1@nim.com",
-    "password": "Password1".genHashedPassword(),
-    "created_at": $(now().utc),
-    "updated_at": $(now().utc),
-  })
-  RDB().table("users").insert(users)
+  for i in 1..10:
+    users.add(%*{
+      "id": i,
+      "name": &"user{i}",
+      "email": &"user{i}@nim.com",
+      "password": genHashedPassword(&"Password{i}"),
+      "created_at": $(now().utc),
+      "updated_at": $(now().utc),
+    })
+  rdb().table("users").insert(users)
 
   var todos: seq[JsonNode]
   todos.add(%*{
     "id": 1,
-    "content": "test",
+    "title": "test",
+    "content": "test content",
     "is_finished": false,
     "created_at": $(now().utc),
     "updated_at": $(now().utc),
+    "user_id": 1
   })
-  RDB().table("todos").insert(todos)
+  rdb().table("todos").insert(todos)

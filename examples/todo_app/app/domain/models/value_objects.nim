@@ -1,5 +1,15 @@
 import basolato/password
 
+type UserId* = ref object
+  value:int
+
+proc newUserId*(value:int):UserId =
+  result = new UserId
+  result.value = value
+
+proc get*(this:UserId):int =
+  return this.value
+
 
 type UserName* = ref object
   value:string
@@ -47,3 +57,42 @@ proc get*(this:Password):string =
 proc getHashed*(this:Password):HashedPassword =
   let value = this.value.genHashedPassword()
   return newHashedPassword(value)
+
+
+type TodoId* = ref object
+  value:int
+
+proc newTodoId*(value:int):TodoId =
+  if value < 1:
+    raise newException(Exception, "id should be unsigned")
+  result = new TodoId
+  result.value = value
+
+proc get*(this:TodoId):int =
+  return this.value
+
+
+type TodoTitle* = ref object
+  value:string
+
+proc newTodoTitle*(value:string):TodoTitle =
+  if value.len == 0:
+    raise newException(Exception, "title is not allowed empty")
+  result = new TodoTitle
+  result.value = value
+
+proc get*(this:TodoTitle):string =
+  return this.value
+
+
+type TodoDetail* = ref object
+  value:string
+
+proc newTodoDetail*(value:string):TodoDetail =
+  if value.len == 0:
+    raise newException(Exception, "content is not allowed empty")
+  result = new TodoDetail
+  result.value = value
+
+proc get*(this:TodoDetail):string =
+  return this.value

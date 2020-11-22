@@ -115,23 +115,23 @@ proc setCookie*(response:Response, cookie:Cookie):Response =
 ### Sample
 get cookie
 ```nim
-proc index(this:Controller): Response =
-  let val = newCookie(this.request).get("key")
+proc index(request:Request, params:Params): Response =
+  let val = newCookie(request).get("key")
 ```
 
 set cookie
 ```nim
-proc store*(this:Controller): Response =
-  let name = this.request.params["name"]
-  var cookie = newCookie(this.request)
+proc store*(request:Request, params:Params): Response =
+  let name = params.getStr("name")
+  var cookie = newCookie(request)
   cookie.set("name", name)
   return render("with cookie").setCookie(cookie)
 ```
 
 update cookie expire
 ```nim
-proc store*(this:Controller): Response =
-  var cookie = newCookie(this.request)
+proc store*(request:Request, params:Params): Response =
+  var cookie = newCookie(request)
   cookie.updateExpire("name", 5)
   # cookie will be deleted after 5 days from now
   return render("with cookie").setCookie(cookie)
@@ -139,16 +139,16 @@ proc store*(this:Controller): Response =
 
 delete cookie
 ```nim
-proc index(this:Controller): Response =
-  var cookie = newCookie(this.request)
+proc index(request:Request, params:Params): Response =
+  var cookie = newCookie(request)
   cookie.delete("key")
   return render("with cookie").setCookie(cookie)
 ```
 
 destroy all cookies
 ```nim
-proc index(this:Controller): Response =
-  var cookie = newCookie(this.request)
+proc index(request:Request, params:Params): Response =
+  var cookie = newCookie(request)
   cookie.destroy()
   return render("with cookie").setCookie(cookie)
 ```
@@ -193,14 +193,14 @@ proc destroy*(this:Session) =
 ### Sample
 get session id
 ```nim
-proc index(this:Controller): Response =
+proc index(request:Request, params:Params): Response =
   let sessionId = newSession().getToken()
 ```
 
 set value in session
 ```nim
-proc store(this:Controller): Response =
-  let key = this.request.params["key"]
+proc store(request:Request, params:Params): Response =
+  let key = request.params["key"]
   let value = this.request.params["value"]
   discard newSession().set(key, value)
 ```
@@ -272,74 +272,83 @@ proc destroyAuth*(response:Response, auth:Auth):Response =
 
 proc setFlash*(this:Auth, key, value:string) =
 
-proc getFlash*(this:Auth):JsonNode =
+proc getFlash*(this:Auth, key:string):JsonNode =
 ```
 
 ### Sample
 login
 ```nim
-proc index(this:Controller): Response =
-  let email = params["email"]
-  let password = params["password"]
+proc index(request:Request, params:Params): Response =
+  let email = params.getStr("email")
+  let password = params.getStr("password")
   let userId = newLoginUsecase().login(email, password)
-  this.auth.login()
-  this.auth.set("id", $userId)
+  let auth = newAuth(request)
+  auth.login()
+  auth.set("id", $userId)
   return redirect("/").setAuth(auth)
 ```
 
 logout
 ```nim
-proc index(this:Controller): Response =
-  if this.auth.isLogin():
-    this.auth.logout()
+proc index(request:Request, params:Params): Response =
+  let auth = newAuth(request)
+  if auth.isLogin():
+    auth.logout()
   redirect("/")
 ```
 
 get auth
 ```nim
-proc index(this:Controller): Response =
-  let loginName = this.auth.get("login_name")
+proc index(request:Request, params:Params): Response =
+  let auth = newAuth(request)
+  let loginName = auth.get("login_name")
 ```
 
 set value in auth
 ```nim
-proc index(this:Controller): Response =
-  let name = this.request.params["name"]
-  let auth = this.auth.set("login_name", name)
+proc index(request:Request, params:Params): Response =
+  let name = params.getStr("name")
+  let auth = newAuth(request)
+  auth.set("login_name", name)
   return render("auth").setAuth(auth)
 ```
 
 check and get value in auth
 ```nim
-proc index(this:Controller): Response =
+proc index(request:Request, params:Params): Response =
   var loginName:string
-  if this.auth.some("login_name"):
-    loginName = this.auth.get("login_name")
+  let auth = newAuth(request)
+  if auth.some("login_name"):
+    loginName = auth.get("login_name")
 ```
 
 delete one key-value pair of session
 ```nim
-proc destroy(this:Controller): Response =
-  this.auth.delete("login_name")
-  return render("auth").setAuth(auth)
+proc destroy(request:Request, params:Params): Response =
+  let auth = newAuth(request)
+  auth.delete("login_name")
+  return render("auth")
 ```
 
 destroy auth
 ```nim
-proc destroy(this:Controller): Response =
-  return render("auth").destroyAuth(this.auth)
+proc destroy(request:Request, params:Params): Response =
+  let auth = newAuth(request)
+  return render("auth").destroyAuth(auth)
 ```
 
 set flash message
 ```nim
-proc store*(this:Controller):Response =
-  this.auth.setFlash("success", "Welcome to the Sample App!")
-  return redirect("/auth").setAuth(auth)
+proc store*(request:Request, params:Params):Response =
+  let auth = newAuth(request)
+  auth.setFlash("success", "Welcome to the Sample App!")
+  return redirect("/auth")
 ```
 
 get flash message
 ```nim
 proc show*(this:Controller):Response =
-  let flash = this.auth.getFlash()
-  return render(showHtml(user, flash=flash))
+  let auth = newAuth(request)
+  let flash = auth.getFlash("success")
+  return render(showHtml(user, flash))
 ```

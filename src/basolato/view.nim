@@ -52,8 +52,8 @@ proc set*(this:var Css, className, option:string, value:string) =
   if not this.values.hasKey(className):
     this.values[className] = OrderedTable[string, CssRow]()
   this.values[className][option] = CssRow(
-    key:className & "_" & this.suffix & option,
-    class: className & "_" & this.suffix,
+    key: &"{className}_{this.suffix} {option}",
+    class: &"{className}_{this.suffix}",
     value:value
   )
 
@@ -67,7 +67,7 @@ proc define*(this:Css):string =
     for option, cssRow in cssRows:
       var row = &"""
 .{cssRow.key} [[
-  {cssRow.value}]]
+{cssRow.value}]]
 """
       row = row.replace("[[", "{").replace("]]", "}")
       result.add(row)

@@ -3,19 +3,31 @@ import ../../src/basolato
 # controller
 # import app/controllers/welcome_controller
 import app/controllers/sign_controller
+import app/controllers/todo_controller
 # middleware
 import app/middlewares/auth_middleware
 
 var routes = newRoutes()
 routes.middleware(".*", auth_middleware.checkCsrfTokenMiddleware)
-# routes.get("/", welcome_controller.index)
-routes.get("/signup", sign_controller.signup_page)
-routes.post("/signup", sign_controller.signup)
-routes.get("/delete-account", sign_controller.delete_account_page)
-routes.post("/delete-account", sign_controller.delete_account)
+routes.middleware(
+  "^(?!.*(signin|signup|delete-account)).*$",
+  auth_middleware.chrckAuthTokenMiddleware
+)
 
-routes.get("/signin", sign_controller.signin_page)
-routes.post("/signin", sign_controller.signin)
-routes.post("/signout", sign_controller.signout)
+routes.get("/signup", sign_controller.signUpPage)
+routes.post("/signup", sign_controller.signUp)
+
+routes.get("/signin", sign_controller.signInPage)
+routes.post("/signin", sign_controller.signIn)
+routes.post("/signout", sign_controller.signOut)
+
+routes.get("/delete-account", sign_controller.deleteAccountPage)
+routes.post("/delete-account", sign_controller.deleteAccount)
+
+routes.get("/", todo_controller.index)
+routes.post("/", todo_controller.store)
+routes.post("/change-status/{id:int}", todo_controller.changeStatus)
+routes.post("/delete/{id:int}", todo_controller.destroy)
+routes.get("/{id:int}", todo_controller.show)
 
 serve(routes)

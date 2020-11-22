@@ -336,12 +336,11 @@ proc signinPage*(request:Request, params:Params):Future[Response] {.async.} =
 
 # post access
 proc signin*(request:Request, params:Params):Future[Response] {.async.} =
-  let params = this.request.params()
-  let email = params["email"]
+  let email = params.getStr("email")
   try
     ...
   except:
-    return render(Http422, this.view.signinView(%params))
+    return render(Http422, signinView(%params))
 ```
 
 view
@@ -351,7 +350,7 @@ proc impl(params=newJObject()):string = tmpli html"""
 <input type="text" name="password">
 """
 
-proc signinView*(this:View, params=newJObject()):string =
+proc signinView*(params=newJObject()):string =
   let title = "SignIn"
   return this.applicationView(title, impl(params))
 ```

@@ -7,4 +7,4 @@ Views are HTML file or Nim template views.
 This directory is used to locate files which are component parts.
 
 ## pages
-This directory is used to locate files which are page's unique content.
+This directory is used to locate files which are page's unique detail.

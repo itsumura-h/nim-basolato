@@ -47,58 +47,65 @@ proc isMatchUrl*(requestPath, routePath:string):bool =
   return true
 
 
-proc getUrlParams*(requestPath, routePath:string):JsonNode =
-  var urlParams = newJObject()
+type Param* = ref object
+  fileName*:string
+  ext:string
+  value:string
+
+type Params* = TableRef[string, Param]
+
+
+proc `[]`(params:Params, key:string):Param =
+  return tables.`[]`(params, key)
+
+proc getStr*(params:Params, key:string, default=""):string =
+  if params.hasKey(key):
+    return params[key].value
+  else:
+    return default
+
+proc getInt*(params:Params, key:string, default=0):int =
+  if params.hasKey(key):
+    return params[key].value.parseInt
+  else:
+    return default
+
+proc getFloat*(params:Params, key:string, default=0.0):float =
+  if params.hasKey(key):
+    return params[key].value.parseFloat
+  else:
+    return default
+
+proc getBool*(params:Params, key:string, default=false):bool =
+  if params.hasKey(key):
+    return params[key].value.parseBool
+  else:
+    return default
+
+proc hasKey*(params:Params, key:string):bool =
+  return tables.hasKey(params, key)
+
+proc getUrlParams*(requestPath, routePath:string):Params =
+  let params = Params()
   if routePath.contains("{"):
     let requestPath = requestPath.split("/")[1..^1]
     let routePath = routePath.split("/")[1..^1]
     for i in 0..<routePath.len:
       if routePath[i].contains("{"):
-        let keyInUrl = routePath[i].replace("{", "").replace("}", "").split(":")
+        let keyInUrl = routePath[i][1..^1].split(":")
         let key = keyInUrl[0]
-        let typ = keyInUrl[1]
-        if typ == "int":
-          urlParams[key] = %requestPath[i].split(":")[0].parseInt
-        elif typ == "str":
-          urlParams[key] = %requestPath[i].split(":")[0]
-  return urlParams
+        params[key] = Param(value:requestPath[i].split(":")[0])
+  return params
 
-
-type QueryParams* = TableRef[string, string]
-
-proc newQueryParams():QueryParams =
-  return TableRef[string, string]()
-
-proc getQueryParams*(request:Request):QueryParams =
-  var params = newQueryParams()
+proc getQueryParams*(request:Request):Params =
+  let params = Params()
   let query = request.url.query
   for key, val in cgi.decodeData(query):
-    params[key] = val
+    params[key.string] = Param(value:val)
   return params
 
 
-type RequestParam* = ref object
-  fileName*:string
-  ext:string
-  body:string
-
-type RequestParams* = TableRef[string, RequestParam]
 type MultiData* = OrderedTable[string, tuple[fields: StringTableRef, body: string]]
-
-proc getStr*(params:RequestParams, key:string, default=""):string =
-  if params.hasKey(key):
-    return params[key].body
-  else:
-    return default
-
-proc getInt*(params:RequestParams, key:string, default=0):int =
-  if params.hasKey(key):
-    return params[key].body.parseInt
-  else:
-    return default
-
-proc hasKey*(params:RequestParams, key:string):bool =
-  return tables.hasKey(params, key)
 
 template parseContentDisposition() =
   var hCount = 0
@@ -169,41 +176,39 @@ proc parseMPFD*(contentType: string, body: string): MultiData =
   var boundary = contentType.substr(boundaryEqIndex, contentType.len()-1)
   return parseMultiPart(body, boundary)
 
-proc getRequestParams*(request:Request):RequestParams =
-  var params = RequestParams()
+proc getRequestParams*(request:Request):Params =
+  var params = Params()
   if request.headers.hasKey("content-type"):
     let contentType = request.headers["content-type"].toString
     if contentType.contains("multipart/form-data"):
       let formdata = parseMPFD(contentType, request.body)
       for key, row in formdata:
         if row.fields.hasKey("filename"):
-          params[key] = RequestParam(
+          params[key] = Param(
             fileName: row.fields["filename"],
             ext: row.fields["filename"].split(".")[^1],
-            body: row.body
+            value: row.body
           )
         else:
-          params[key] = RequestParam(
-            body: row.body
+          params[key] = Param(
+            value: row.body
           )
     elif contentType.contains("application/x-www-form-urlencoded"):
       let rows = request.body.decodeUrl().split("&")
       for row in rows:
         let row = row.split("=")
-        params[row[0]] = RequestParam(
-          body: row[1]
+        params[row[0]] = Param(
+          value: row[1]
         )
   return params
 
-proc `[]`*(params:RequestParams, key:string):RequestParam =
-  return tables.`[]`(params, key)
-
-proc save*(param:RequestParam, dir:string) =
+proc save*(params:Params, key, dir:string) =
   ## save file with same file name
   ## .. code-block:: nim
-  ##   assert requestParams["upload_file"].filename == "test.jpg"
-  ##   requestParams["upload_file"].save("/var/tmp")
+  ##   assert params["upload_file"].filename == "test.jpg"
+  ##   params.save("upload_file", "/var/tmp")
   ##   > /var/tmp/test.jpg is stored
+  let param = params[key]
   if param.fileName.len > 0:
     var dir = dir
     if dir[0] == '.':
@@ -211,14 +216,15 @@ proc save*(param:RequestParam, dir:string) =
     createDir(dir)
     var f = open(&"{dir}/{param.fileName}", fmWrite)
     defer: f.close()
-    f.write(param.body)
+    f.write(param.value)
 
-proc save*(param:RequestParam, dir:string, newFileName:string) =
+proc save*(params:Params, key, dir, newFileName:string) =
   ## save file with new file name and same extention.
   ## .. code-block:: nim
-  ##   assert requestParams["upload_file"].filename == "test.jpg"
-  ##   requestParams["upload_file"].save("/var/tmp", "newFileName")
+  ##   assert params["upload_file"].filename == "test.jpg"
+  ##   params.save("upload_file", "/var/tmp", "newFileName")
   ##   > /var/tmp/newFileName.jpg is stored
+  let param = params[key]
   if param.fileName.len > 0:
     var dir = dir
     if dir[0] == '.':
@@ -226,7 +232,7 @@ proc save*(param:RequestParam, dir:string, newFileName:string) =
     createDir(dir)
     var f = open(&"{dir}/{newFileName}.{param.ext}", fmWrite)
     defer: f.close()
-    f.write(param.body)
+    f.write(param.value)
 
 
 

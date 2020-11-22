@@ -1,7 +1,7 @@
 import os, terminal
 import
-  make/controller, make/migration, make/view, make/config, make/model,
-  make/usecase, make/valueobject
+  make/controller, make/migration, make/page, make/layout, make/config,
+  make/model, make/usecase, make/valueobject
 
 
 template getTarget() =
@@ -55,9 +55,12 @@ proc make*(args:seq[string]):int =
   of "migration":
     getTarget
     return makeMigration(target, message)
-  of "view":
+  of "layout":
     getTarget
-    return makeView(target, message)
+    return makelayout(target, message)
+  of "page":
+    getTarget
+    return makePage(target, message)
   of "config":
     return makeConfig()
   of "valueobject":
