@@ -29,5 +29,6 @@ routes.post("/", todo_controller.store)
 routes.post("/change-status/{id:int}", todo_controller.changeStatus)
 routes.post("/delete/{id:int}", todo_controller.destroy)
 routes.get("/{id:int}", todo_controller.show)
+routes.post("/{id:int}", todo_controller.update)
 
 serve(routes)

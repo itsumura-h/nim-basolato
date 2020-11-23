@@ -13,12 +13,13 @@ proc index*(this:TodoUsecase, userId:int):seq[JsonNode] =
   return this.repository.index(userId)
 
 proc show*(this:TodoUsecase, id:int):JsonNode =
+  let id = newTodoId(id)
   return this.repository.show(id)
 
 proc store*(this:TodoUsecase, userId:int, title, content:string) =
   let userId = newUserId(userId)
   let title = newTodoTitle(title)
-  let content = newTodoDetail(content)
+  let content = newTodoContent(content)
   this.repository.store(userId, title, content)
 
 proc changeStatus*(this:TodoUsecase, id:int, status:bool) =
@@ -28,3 +29,9 @@ proc changeStatus*(this:TodoUsecase, id:int, status:bool) =
 proc destroy*(this:TodoUsecase, id:int) =
   let id = newTodoId(id)
   this.repository.destroy(id)
+
+proc update*(this:TodoUsecase, id:int, title, content:string, isFinished:bool) =
+  let id = newTodoId(id)
+  let title = newTodoTitle(title)
+  let content = newTodoContent(content)
+  this.repository.update(id, title, content, isFinished)

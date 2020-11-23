@@ -85,14 +85,14 @@ proc get*(this:TodoTitle):string =
   return this.value
 
 
-type TodoDetail* = ref object
+type TodoContent* = ref object
   value:string
 
-proc newTodoDetail*(value:string):TodoDetail =
+proc newTodoContent*(value:string):TodoContent =
   if value.len == 0:
     raise newException(Exception, "content is not allowed empty")
-  result = new TodoDetail
+  result = new TodoContent
   result.value = value
 
-proc get*(this:TodoDetail):string =
+proc get*(this:TodoContent):string =
   return this.value
