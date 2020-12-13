@@ -11,6 +11,15 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
   let email = params.getStr("email")
 ```
 
+If `Content-type` of request is `application/json`, you can get `JsonNode` request params by `params.getJson()`
+
+```nim
+proc store*(request:Request, params:Params):Future[Response] {.async.} =
+  let jsonParams = params.getJson()
+  let id = jsonParams["id"].getInt
+  let email = jsonParams["email"].getStr
+```
+
 ### API
 ```nim
 proc getStr*(params:Params, key:string, default=""):string =
@@ -20,6 +29,8 @@ proc getInt*(params:Params, key:string, default=0):int =
 proc getFloat*(params:Params, key:string, default=0.0):float =
 
 proc getBool*(params:Params, key:string, default=false):bool =
+
+proc getJson*(params:Params):JsonNode =
 ```
 
 ## Save file
