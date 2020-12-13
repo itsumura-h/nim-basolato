@@ -26,6 +26,6 @@ proc {targetCaptalized}View*():string = tmpli html'''
   f.write(VIEW)
   defer: f.close()
 
-  message = &"created layout view {targetPath}"
+  message = &"Created layout view {targetPath}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
   return 0

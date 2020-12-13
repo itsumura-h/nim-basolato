@@ -82,6 +82,9 @@ proc getBool*(params:Params, key:string, default=false):bool =
   else:
     return default
 
+proc getJson*(params:Params):JsonNode =
+  return params["json"].value.parseJson
+
 proc hasKey*(params:Params, key:string):bool =
   return tables.hasKey(params, key)
 
@@ -200,6 +203,8 @@ proc getRequestParams*(request:Request):Params =
         params[row[0]] = Param(
           value: row[1]
         )
+    elif contentType.contains("application/json"):
+      params["json"] = Param(value: request.body)
   return params
 
 proc save*(params:Params, key, dir:string) =

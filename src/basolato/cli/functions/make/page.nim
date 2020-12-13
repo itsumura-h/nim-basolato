@@ -32,6 +32,6 @@ proc {targetCaptalized}View*():string =
   f.write(VIEW)
   defer: f.close()
 
-  message = &"created page view {targetPath}"
+  message = &"Created page view {targetPath}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
   return 0
