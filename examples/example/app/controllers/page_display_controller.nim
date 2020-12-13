@@ -7,6 +7,7 @@ import ../../resources/pages/welcome_view
 import ../../resources/pages/sample/react_view
 import ../../resources/pages/sample/material_ui_view
 import ../../resources/pages/sample/vuetify_view
+import ../../resources/pages/sample/with_style_view
 
 
 let indexHtml = html("pages/sample/index.html")
@@ -24,7 +25,7 @@ proc fib_logic(n: int): int =
   return fib_logic(n - 2) + fib_logic(n - 1)
 
 proc fib*(request:Request, params:Params):Future[Response] {.async.} =
-  let num = params.urlParams["num"].getInt
+  let num = params.getInt("num")
   var results: seq[int]
   let start_time = getTime()
   for i in 0..<num:
@@ -37,6 +38,8 @@ proc fib*(request:Request, params:Params):Future[Response] {.async.} =
   }
   return render(data)
 
+proc withStylePage*(request:Request, params:Params):Future[Response] {.async.} =
+  return render(withStyleView())
 
 proc react*(request:Request, params:Params):Future[Response] {.async.} =
   let users = %*RDB().table("users")
@@ -92,13 +95,13 @@ proc presentDd*(request:Request, params:Params):Future[Response] {.async.} =
   return render("dd")
 
 proc errorPage*(request:Request, params:Params):Future[Response] {.async.} =
-  let id = params.urlParams["id"].getInt
+  let id = params.getInt("id")
   if id mod 2 == 1:
     raise newException(Error400, "")
   return render($id)
 
 proc errorRedirect*(request:Request, params:Params):Future[Response] {.async.} =
-  let id = params.urlParams["id"].getInt
+  let id = params.getInt("id")
   if id mod 2 == 1:
     raise newException(ErrorRedirect, "/sample/login")
   return render($id)

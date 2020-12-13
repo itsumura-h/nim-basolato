@@ -1,22 +1,20 @@
 import os, strformat, terminal, strutils
 import utils
 
-proc makeView*(target:string, message:var string):int =
-  let targetPath = &"{getCurrentDir()}/resources/{target}_view.nim"
+proc makeLayout*(target:string, message:var string):int =
+  let targetPath = &"{getCurrentDir()}/resources/layouts/{target}_view.nim"
   let targetName = target.split("/")[^1]
   let targetCaptalized = snakeToCamelProcName(targetName)
-  let reativeToApplicationPath = "../".repeat(target.split("/").len-1) & "layouts/application_view"
 
   var VIEW = &"""
 import basolato/view
-import {reativeToApplicationPath}
 
-proc impl():string = tmpli html'''
+let style = block:
+  var css = newCss()
+  css
+
+proc {targetCaptalized}View*():string = tmpli html'''
 '''
-
-proc {targetCaptalized}View*():string =
-  let title = ''
-  return applicationView(title, impl())
 """
 
   VIEW = VIEW.replace("'", "\"")
@@ -28,6 +26,6 @@ proc {targetCaptalized}View*():string =
   f.write(VIEW)
   defer: f.close()
 
-  message = &"created view {targetPath}"
+  message = &"Created layout view {targetPath}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
   return 0

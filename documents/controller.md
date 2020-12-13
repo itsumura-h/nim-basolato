@@ -59,6 +59,43 @@ proc destroy*(request:Request, params:Params):Future[Response] {.async.} =
   return render("destroy")
 
 ```
+## How to get params
+### Request params
+view
+```html
+<input type="text" name="email">
+```
+
+controller
+```nim
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let email = params.requestParams.get("email")
+```
+
+### Url params
+routing
+```nim
+var routes = newRoutes()
+routes.get("/{id:int}", some_controller.show)
+```
+
+controller
+```nim
+proc show*(request:Request, params:Params):Future[Response] {.async.} =
+  let id = params.urlParams["id"].getInt
+```
+
+### Query params
+URL
+```
+/updates?queries=500
+```
+
+controller
+```nim
+proc update*(request:Request, params:Params):Future[Response] {.async.} =
+  let queries = params.queryParams["queries"].parseInt
+```
 
 ## Response
 ### Returning string

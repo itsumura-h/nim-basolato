@@ -6,11 +6,6 @@ import baseEnv, request, response, header, logger, error_page, resources/ddPage
 export request, header
 
 
-type Params* = ref object
-  urlParams*:JsonNode
-  queryParams*:QueryParams
-  requestParams*:RequestParams
-
 type Route* = ref object
   httpMethod*:HttpMethod
   path*:string
@@ -24,20 +19,26 @@ type MiddlewareRoute* = ref object
 proc params*(request:Request, route:Route):Params =
   let url = request.path
   let path = route.path
-  return Params(
-    urlParams: getUrlParams(url, path),
-    queryParams: getQueryParams(request),
-    requestParams: getRequestParams(request)
-  )
+  let params = Params()
+  for k, v in getUrlParams(url, path).pairs:
+    params[k] = v
+  for k, v in getQueryParams(request).pairs:
+    params[k] = v
+  for k, v in getRequestParams(request).pairs:
+    params[k] = v
+  return params
 
 proc params*(request:Request, middleware:MiddlewareRoute):Params =
   let url = request.path
   let path = middleware.path
-  return Params(
-    urlParams: getUrlParams(url, path),
-    queryParams: getQueryParams(request),
-    requestParams: getRequestParams(request)
-  )
+  let params = Params()
+  for k, v in getUrlParams(url, path).pairs:
+    params[k] = v
+  for k, v in getQueryParams(request).pairs:
+    params[k] = v
+  for k, v in getRequestParams(request).pairs:
+    params[k] = v
+  return params
 
 type Routes* = ref object
   withParams: seq[Route]

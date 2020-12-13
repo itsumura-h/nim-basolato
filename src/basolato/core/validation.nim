@@ -37,7 +37,7 @@ proc domain(value:string):seq[string] =
       let addr4 = re"(([01]?[0-9]{1,2}|2(?:[0-4]?[0-9]|5[0-5]))\.){3}([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))"
       let addr4Start = re"^(([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))\.){3}([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))$"
       if value.len == 0 or value.len > 255:
-        raise newException(Exception, "domain length is 0")
+        raise newException(Exception, "domain part is missing")
       if not value.startsWith("["):
         if not (not value.match(addr4) and value.match(fqdn)):
           raise newException(Exception, "invalid domain format")

@@ -109,6 +109,13 @@ http {
 }
 ```
 
+## migrate
+```sh
+ducere migrate
+```
+This is a alias for `nim c -r migrations/migrate`
+
+
 ## make
 Create new file
 
@@ -133,13 +140,19 @@ ducere make controller sample/sample2/user
 
 ### view
 Create new view template
+
 ```sh
-ducere make view pages/login
+ducere make layout buttons/success_button
+>> resources/layouts/buttons/success_button_view.nim
+```
+
+```sh
+ducere make page login
 >> resources/pages/login_view.nim
 ```
 
 ### migration
-Create make migration file
+Create new migration file
 ```sh
 ducere make migration create_user
 >> migrations/migration20200219134020create_user.nim
@@ -166,4 +179,20 @@ Create new usecase
 ```sh
 ducere make usecase login
 >> app/domain/usecases/login_usecase.nim
+```
+
+### value object
+Add new minimum value object boilerplate.  
+
+```sh
+ducere make valueobject {arg1} {arg2}
+```
+
+`arg1` is a name of value object which should be Camel Case.  
+`arg2` is a relative path to value object file from `app/domain/models`.
+
+example
+```sh
+ducere make valueobject UserName ./value_objects
+>> add UserName in app/domain/models/value_objects
 ```

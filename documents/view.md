@@ -96,57 +96,7 @@ Basolato use `nim-templates` as a default template engin. It can be used by impo
 
 Views file should be in `resources` dir.
 
-## Csrf Token
-To send POST request from `form`, you have to set `csrf token`. You can use helper function from `basolato/view`
-
-### nim-templates
-```nim
-import basolato/view
-
-proc index*():string = tmpli html"""
-<form>
-  $(csrfToken())
-  <input type="text", name="name">
-</form>
-"""
-```
-
-### htmlgen
-```nim
-import htmlgen
-import basolato/view
-
-proc index*():string =
-  form(
-    csrfToken(),
-    input(type="text", name="name")
-  )
-```
-
-### SCF
-```nim
-#? stdtmpl | standard
-#import basolato/view
-#proc index*():string =
-<form>
-  ${csrfToken()}
-  <input type="text", name="name">
-</form>
-```
-
-### Karax
-```nim
-import basolato/view
-import karax / [karaxdsl, vdom]
-
-proc index*():string =
-  var vnode = buildView(form):
-    csrfTokenKarax()
-    input(type="text", name="name")
-  return $vnode
-```
-
-## Block components example
+### Block component example
 
 Controller and result is same for each example.
 
@@ -169,7 +119,7 @@ result
 </html>
 ```
 
-### nim-templates
+#### nim-templates
 
 ```nim
 import basolato/view
@@ -193,7 +143,7 @@ proc indexView*(message:string): string =
   baseImpl(indexImpl(message))
 ```
 
-### htmlgen
+#### htmlgen
 
 ```nim
 import htmlgen
@@ -213,9 +163,7 @@ proc indexView*(message:string): string =
   baseImpl(indexImpl(message))
 ```
 
-
-### SCF
-
+#### SCF
 SCF should divide procs for each file
 
 baseImpl.nim
@@ -248,7 +196,7 @@ index_view.nim
 ${baseImpl(indexImpl(message))}
 ```
 
-### Karax
+#### Karax
 This usage is **Server Side HTML Rendering**
 
 ```nim
@@ -270,23 +218,129 @@ proc indexView*(message:string): string =
   baseImpl(indexImpl(message))
 ```
 
-## old helper
+## Component design
+Basolato view is designed for component oriented design like React and Vue.  
+Component is a single chunk of html and css, and just a procedure that return html string.
+
+controller
+```nim
+import basolato/controller
+
+proc withStylePage*(request:Request, params:Params):Future[Response] {.async.} =
+  return render(withStyleView())
+```
+
+view
+```nim
+import basolato/view
+
+let style = block:
+  var css = newCss()
+  css.set("background", "", """
+    height: 200px;
+    width: 200px;
+    background-color: blue;
+  """)
+  css.set("background", ":hover", """
+    background-color: green;
+  """)
+  css
+
+proc component():string = tmpli html"""
+$(style.define())
+<div class="$(style.get("background"))"></div>
+"""
+
+proc impl():string = tmpli html"""
+$(component())
+"""
+
+proc withStyleView*():string =
+  let title = "Title"
+  return applicationView(title, impl())
+```
+
+This is compiled to this html
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Title</title>
+  </head>
+  <body>
+    <style type="text/css">
+      .background_jtshlgnucxj {
+        height: 200px;
+        width: 200px;
+        background-color: blue;
+      }
+      .background_jtshlgnucxj:hover {
+        background-color: green;
+      }
+    </style>
+    <div class="background_jtshlgnucxj"></div>
+  </body>
+</html>
+```
+
+`Css` is a useful type for creating per-component style inspired by `CSS-in-JS`.
+Styled class names have a random suffix per component, so multiple components can have the same class name.
+At first time if you create view for component.
+
+### API
+```nim
+proc newCss*():Css =
+
+proc set*(this:var Css, className, option:string, value:string) =
+
+proc get*(this:Css, className:string):string =
+
+proc define*(this:Css):string =
+```
+
+
+## Helper functions
+
+### Csrf Token
+To send POST request from `form`, you have to set `csrf token`. You can use helper function from `basolato/view`
+
+```nim
+import basolato/view
+
+proc index*():string = tmpli html"""
+<form>
+  $(csrfToken())
+  <input type="text", name="name">
+</form>
+"""
+```
+
+### old helper
 If the user's input value is invalid and you want to back the input page and display the previously entered value, you can use `old` helper function.
+
+API
+```nim
+proc old*(params:JsonNode, key:string):string =
+
+proc old*(params:TableRef, key:string):string =
+
+```
 
 controller
 ```nim
 # get access
-proc signinPage*(this:LoginController):Response =
-  return render(this.view.signinView())
+proc signinPage*(request:Request, params:Params):Future[Response] {.async.} =
+  return render(signinView())
 
 # post access
-proc signin(this:LoginController):Response =
-  let params = this.request.params()
-  let email = params["email"]
+proc signin*(request:Request, params:Params):Future[Response] {.async.} =
+  let email = params.getStr("email")
   try
     ...
   except:
-    return render(Http422, this.view.signinView(%params))
+    return render(Http422, signinView(%params))
 ```
 
 view
@@ -296,7 +350,7 @@ proc impl(params=newJObject()):string = tmpli html"""
 <input type="text" name="password">
 """
 
-proc signinView*(this:View, params=newJObject()):string =
+proc signinView*(params=newJObject()):string =
   let title = "SignIn"
   return this.applicationView(title, impl(params))
 ```
