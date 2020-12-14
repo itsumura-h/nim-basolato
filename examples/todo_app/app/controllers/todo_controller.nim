@@ -54,7 +54,7 @@ proc update*(request:Request, params:Params):Future[Response] {.async.} =
   try:
     let usecase = newTodoUsecase()
     usecase.update(id, title, content, isFinished)
-    return redirect(&"/{id}")
+    return redirect("/")
   except:
     auth.setFlash("error", getCurrentExceptionMsg())
     let post = %*{"title": title, "content": content, "is_finished": isFinished}

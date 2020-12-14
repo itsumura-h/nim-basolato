@@ -10,9 +10,6 @@ type TodoRdbRepository* = ref object
 proc newTodoRepository*():TodoRdbRepository =
   return TodoRdbRepository()
 
-proc sampleProc*(this:TodoRdbRepository) =
-  echo "TodoRdbRepository sampleProc"
-
 proc index*(this:TodoRdbRepository, userId:UserId):seq[JsonNode] =
   return rdb().table("todos").where("user_id", "=", userId.get).get()
 
@@ -40,7 +37,6 @@ proc destroy*(this:TodoRdbRepository, id:TodoId) =
   rdb().table("todos").delete(id.get)
 
 proc update*(this:TodoRdbRepository, id:TodoId, title:TodoTitle, content:TodoContent, isFinished:bool) =
-  echo isFinished
   rdb().table("todos")
   .where("id", "=", id.get)
   .update(%*{
