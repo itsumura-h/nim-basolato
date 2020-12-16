@@ -11,11 +11,13 @@ let style = block:
   css
 
 proc impl(auth:Auth, todos:seq[JsonNode], params, errors:JsonNode):string = tmpli html"""
-<div class="section">
-  $(headerView(auth.get("name")))
-  $(inputView(params, errors))
-  $(errorsView(auth))
-  $(tableView(todos))
+<section class="section">
+  <div class="container is-max-desktop">
+    $(headerView(auth.get("name")))
+    $(inputView(params, errors))
+    $(errorsView(auth))
+    $(tableView(todos))
+  </div>
 </div>
 """
 

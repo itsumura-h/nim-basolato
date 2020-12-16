@@ -30,7 +30,7 @@ proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
     auth.set("name", user["name"].getStr)
     return redirect("/").setAuth(auth)
   except Exception:
-    let params = {"name": name, "email": email}.newTable
+    let params = %*{"name": name, "email": email}
     return render(signupView(params, v.errors))
 
 
@@ -59,7 +59,7 @@ proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
     auth.set("name", user["name"].getStr)
     return redirect("/").setAuth(auth)
   except:
-    let params = {"email": email}.newTable
+    let params = %*{"email": email}
     return render(signInView(params, v.errors))
 
 
