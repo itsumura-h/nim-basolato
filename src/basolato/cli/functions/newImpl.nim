@@ -1,4 +1,4 @@
-import os, strformat, terminal
+import os, strformat, terminal, strutils
 from ../../core/base import basolatoVersion
 from make/utils import isDirExists
 
@@ -78,13 +78,19 @@ proc new*(args:seq[string]):int =
     packageDir:string
     dirPath:string
 
-  if args.len > 0 and args[0].len > 0:
-    packageDir = args[0]
-    dirPath = getCurrentDir() & "/" & packageDir
-    if isDirExists(dirPath): return 0
-    message = &"create project {dirPath}"
-  else:
-    dirPath = getCurrentDir()
-    message = &"create project {getCurrentDir()}"
+  try:
+    if args[0] == ".":
+      dirPath = getCurrentDir()
+      packageDir = dirPath.split("/")[^1]
+    else:
+      packageDir = args[0]
+      dirPath = getCurrentDir() & "/" & packageDir
+      if isDirExists(dirPath): return 0
+  except:
+    message = "Missing args"
+    styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)
+    return 0
+
+  message = &"create project {dirPath}"
 
   return create(dirPath, packageDir)

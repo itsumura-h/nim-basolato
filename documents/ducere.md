@@ -26,7 +26,19 @@ Table of Contents
 ## new
 Create new project
 ```
+pwd
+> /user/local/src
 ducere new my_project
+> Created project /user/local/src/my_project
+```
+
+```
+pwd
+> /user/local/src
+mkdir my_project
+cd my_project
+ducere new .
+> Created project /user/local/src/my_project
 ```
 
 ## serve

@@ -1,7 +1,9 @@
 import json, strutils, strformat
 # framework
 import ../../../../src/basolato/controller
+# domain
 import ../domain/usecases/todo_usecase
+# view
 import ../../resources/pages/todo/index_view
 import ../../resources/pages/todo/show_view
 
