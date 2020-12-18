@@ -1,7 +1,9 @@
 import json, strutils, strformat
 # framework
 import ../../../../src/basolato/controller
+# domain
 import ../domain/usecases/todo_usecase
+# view
 import ../../resources/pages/todo/index_view
 import ../../resources/pages/todo/show_view
 
@@ -54,7 +56,7 @@ proc update*(request:Request, params:Params):Future[Response] {.async.} =
   try:
     let usecase = newTodoUsecase()
     usecase.update(id, title, content, isFinished)
-    return redirect(&"/{id}")
+    return redirect("/")
   except:
     auth.setFlash("error", getCurrentExceptionMsg())
     let post = %*{"title": title, "content": content, "is_finished": isFinished}
