@@ -2,7 +2,8 @@ import
   asynchttpserver, asyncdispatch, json, strformat, macros, strutils, os,
   asyncfile, mimetypes, re, tables
 from osproc import countProcessors
-import baseEnv, request, response, header, logger, error_page, resources/ddPage
+import baseEnv, request, response, header, logger, error_page, resources/ddPage,
+  security
 export request, header
 
 
@@ -13,7 +14,7 @@ type Route* = ref object
 
 type MiddlewareRoute* = ref object
   path*:string
-  action*:proc(r:Request, p:Params)
+  action*:proc(r:Request, p:Params) {.async.}
 
 
 proc params*(request:Request, route:Route):Params =
@@ -62,7 +63,7 @@ proc add*(this:var Routes, httpMethod:HttpMethod, path:string, action:proc(r:Req
   else:
     this.withoutParams[ $httpMethod & ":" & path ] = route
 
-proc middleware*(this:var Routes, path:string, action:proc(r:Request, p:Params)) =
+proc middleware*(this:var Routes, path:string, action:proc(r:Request, p:Params){.async.}) =
   this.middlewares.add(
     MiddlewareRoute(
       path: path,
@@ -187,12 +188,16 @@ proc serveCore(params:(Routes, int)){.thread.} =
           try:
             if find(req.path, re route.path) >= 0:
               let params = req.params(route)
-              route.action(req, params)
-          except Exception:
+              await route.action(req, params)
+          except:
             headers.set("Content-Type", "text/html; charset=UTF-8")
             let exception = getCurrentException()
             if exception.name == "ErrorRedirect".cstring:
               headers.set("Location", exception.msg)
+              response = Response(status:Http302, body:"", headers:headers)
+            elif exception.name == "ErrorAuthRedirect".cstring:
+              headers.set("Location", exception.msg)
+              headers.set("Set-Cookie", "session_id=; expires=31-Dec-1999 23:59:59 GMT")
               response = Response(status:Http302, body:"", headers:headers)
             else:
               let status = checkHttpCode(exception)
@@ -211,6 +216,11 @@ proc serveCore(params:(Routes, int)){.thread.} =
             if route.httpMethod == req.httpMethod and isMatchUrl(req.path, route.path):
               response = await createResponse(req, route, headers)
               break middlewareAndApp
+
+    # anonymous user login
+    let auth = await newAuth(req)
+    if await auth.anonumousCreateSession():
+      response = await response.setAuth(auth)
 
     if response.isNil:
       headers.set("Content-Type", "text/html; charset=UTF-8")

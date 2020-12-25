@@ -1,4 +1,4 @@
-import httpcore, json, strutils, times
+import httpcore, json, strutils, times, asyncdispatch
 import baseEnv, header, security, logger
 
 type Response* = ref object
@@ -102,8 +102,8 @@ proc errorRedirect*(url:string):Response =
   )
 
 # ========== Auth ====================
-proc setAuth*(response:Response, auth:Auth):Response =
-  let sessionId = auth.getToken()
+proc setAuth*(response:Response, auth:Auth):Future[Response] {.async.} =
+  let sessionId = await auth.getToken()
   let cookie = if SESSION_TIME.len > 0:
     newCookieData(
       "session_id",
@@ -127,13 +127,13 @@ proc setCookie*(response:Response, cookie:Cookie):Response =
   return response
 
 
-proc destroyAuth*(response:Response, auth:Auth):Response =
-  if auth.isLogin:
-    let sessionId = auth.getToken()
+proc destroyAuth*(response:Response, auth:Auth):Future[Response] {.async.} =
+  if await auth.isLogin:
+    let sessionId = await auth.getToken()
     let cookie = newCookieData("session_id", sessionId, timeForward(-1, Days))
                   .toCookieStr()
     response.headers.add(("Set-cookie", cookie))
-    auth.destroy()
+    await auth.destroy()
   else:
     echoErrorMsg("Tried to destroy auth but not logged in")
   return response

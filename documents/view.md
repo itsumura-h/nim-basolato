@@ -7,19 +7,18 @@ Table of Contents
 <!--ts-->
    * [View](#view)
       * [Introduction](#introduction)
-      * [Csrf Token](#csrf-token)
-         * [nim-templates](#nim-templates)
-         * [htmlgen](#htmlgen)
-         * [SCF](#scf)
-         * [Karax](#karax)
-      * [Block components example](#block-components-example)
-         * [nim-templates](#nim-templates-1)
-         * [htmlgen](#htmlgen-1)
-         * [SCF](#scf-1)
-         * [Karax](#karax-1)
-      * [old helper](#old-helper)
+         * [Block component example](#block-component-example)
+            * [nim-templates](#nim-templates)
+            * [htmlgen](#htmlgen)
+            * [SCF](#scf)
+            * [Karax](#karax)
+      * [Component design](#component-design)
+         * [API](#api)
+      * [Helper functions](#helper-functions)
+         * [Csrf Token](#csrf-token)
+         * [old helper](#old-helper)
 
-<!-- Added by: root, at: Wed Oct 14 05:17:39 UTC 2020 -->
+<!-- Added by: root, at: Fri Dec 25 17:29:26 UTC 2020 -->
 
 <!--te-->
 

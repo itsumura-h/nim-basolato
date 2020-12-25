@@ -1,5 +1,5 @@
 const
-  basolatoVersion* = "0.7.2"
+  basolatoVersion* = "0.8.0"
 
 type
   Error505* = object of CatchableError
@@ -41,6 +41,7 @@ type
   Error301* = object of CatchableError
   Error300* = object of CatchableError
   ErrorRedirect* = object of CatchableError
+  ErrorAuthRedirect* = object of CatchableError
   DD* = object of CatchableError
 
 const errorStatusArray* = [505, 504, 503, 502, 501, 500, 451, 431, 429, 428, 426,

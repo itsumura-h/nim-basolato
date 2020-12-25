@@ -8,68 +8,195 @@ Table of Contents
    * [Security](#security)
       * [Check in middleware](#check-in-middleware)
          * [CSRF Token](#csrf-token)
-      * [Cookie](#cookie)
+      * [Auth](#auth)
          * [API](#api)
          * [Sample](#sample)
-      * [Session](#session)
+      * [Cookie](#cookie)
          * [API](#api-1)
          * [Sample](#sample-1)
-      * [Auth](#auth)
+      * [Session](#session)
          * [API](#api-2)
          * [Sample](#sample-2)
 
-<!-- Added by: root, at: Wed Oct 14 05:20:51 UTC 2020 -->
+<!-- Added by: root, at: Fri Dec 25 17:32:59 UTC 2020 -->
 
 <!--te-->
 
 ## Check in middleware
 Basolato check whether value is valid in middleware. `checkCsrfToken()` and `checkAuthToken()` are available.  
-These procs return `Check` object. `catch()` defines what to do if value is invalid.
+These procs return `MiddlwareResult` object.
+
+```nim
+type MiddlewareResult* = ref object
+  isError: bool
+  message: string
+
+proc isError*(this:MiddlewareResult):bool =
+  return this.isError
+
+proc message*(this:MiddlewareResult):string =
+  return this.message
+```
 
 ### CSRF Token
 Basolato can check whether csrf token is valid if request metod is `post`, `put`, `patch`, `delete`.
 
-When you use SCF,Set `${csrfToken()}` in view.
+main.nim
 ```nim
-#? stdtmpl | standard
-#import basolato/view
-#proc createHtml*():string =
-<form method="post">
-  ${csrfToken()}
-  .
-  .
+var routes = newRoutes()
+routes.middleware(".*", auth_middleware.checkCsrfTokenMiddleware)
+```
+
+app/middlewares/auth_middleware.nim
+```nim
+proc checkCsrfTokenMiddleware*(r:Request, p:Params) {.async.} =
+  let res = await checkCsrfToken(r, p)
+  if res.isError:
+    raise newException(Error403, res.message)
+```
+
+Set `${csrfToken()}` in view.
+```nim
+<form method="POST">
+  $(csrfToken())
+  <input type="text" name="name">
+  <input type="text" name="password">
+  <button type="submit">login</button>
 </form>
 ```
-
-When you use Karax, Set `csrfTokenKarax()` in view.
-```nim
-import karax / [karaxdsl, vdom]
-import basolato/view
-proc createHtml*():string =
-  var vnode = buildHtml(tdiv):
-    form(`method`="post"):
-      csrfTokenKarax()
-      .
-      .
-```
-
-If `checkCsrfToken(request)` is in `template framework()`, csrf check is available.
-
-middleware/framework_middleware.nim
-```nim
-template framework*() =
-  checkCsrfToken(request).catch()
-```
-If token is invalid, return `500`.
 
 You can overwrite your own custom error handring.
 ```nim
 # If you want to return 403
-checkCsrfToken(request).catch(Error403, "Error message")
+let res = await checkCsrfToken(r, p)
+if res.isError:
+  raise newException(Error403, "Error message")
 
 # If you want to redirect login page
-checkCsrfToken(request).catch(Error302, "/login")
+let res = await checkCsrfToken(r, p)
+if res.isError:
+  raise newException(Error302, "/login")
 ```
+
+## Auth
+Basolato has Auth system. it conceal inconvenient cookie and session process.
+
+```nim
+type Auth* = ref object
+  isLogin*:bool
+  session*:Session
+```
+
+### API
+```nim
+proc newAuth*(request:Request):Future[Auth] {.async.} =
+
+proc newAuth*():Future[Auth] {.async.} =
+
+proc login*(this:Auth) {.async.} =
+
+proc logout*(this:Auth) {.async.} =
+
+proc isLogin*(this:Auth):Future[bool] {.async.} =
+
+proc getToken*(this:Auth):Future[string] {.async.} =
+
+proc set*(this:Auth, key, value:string) {.async.} =
+
+proc some*(this:Auth, key:string):Future[bool] {.async.} =
+
+proc get*(this:Auth, key:string):Future[string] {.async.} =
+
+proc delete*(this:Auth, key:string) {.async.} =
+
+proc destroy*(this:Auth) {.async.} =
+
+proc setFlash*(this:Auth, key, value:string) {.async.} =
+
+proc hasFlash*(this:Auth, key:string):Future[bool] {.async.} =
+
+proc getFlash*(this:Auth):Future[JsonNode] {.async.} =
+```
+
+### Sample
+login
+```nim
+proc index(request:Request, params:Params):Future[Response] {.async.} =
+  let email = params.getStr("email")
+  let password = params.getStr("password")
+  let userId = newLoginUsecase().login(email, password)
+  let auth = await newAuth(request)
+  await auth.login()
+  await auth.set("id", $userId)
+  return redirect("/")
+```
+
+logout
+```nim
+proc index(request:Request, params:Params):Future[Response] {.async.} =
+  let auth = await newAuth(request)
+  if await auth.isLogin():
+    await auth.logout()
+  redirect("/")
+```
+
+get from session
+```nim
+proc index(request:Request, params:Params):Future[Response] {.async.} =
+  let auth = await newAuth(request)
+  let loginName = await auth.get("login_name")
+```
+
+set value in session
+```nim
+proc index(request:Request, params:Params):Future[Response] {.async.} =
+  let name = params.getStr("name")
+  let auth = await newAuth(request)
+  await auth.set("login_name", name)
+  return render("auth")
+```
+
+check and get value in session
+```nim
+proc index(request:Request, params:Params):Future[Response] {.async.} =
+  var loginName:string
+  let auth = await newAuth(request)
+  if await auth.some("login_name"):
+    loginName = await auth.get("login_name")
+```
+
+delete one key-value pair of session
+```nim
+proc destroy(request:Request, params:Params):Future[Response] {.async.} =
+  let auth = await newAuth(request)
+  await auth.delete("login_name")
+  return render("auth")
+```
+
+destroy all session data
+```nim
+proc destroy(request:Request, params:Params):Future[Response] {.async.} =
+  let auth = await newAuth(request)
+  return render("auth")
+```
+
+set flash message
+```nim
+proc store*(request:Request, params:Params):Response =
+  let auth = await newAuth(request)
+  await auth.setFlash("success", "Welcome to the Sample App!")
+  return redirect("/auth")
+```
+
+get flash message
+```nim
+proc show*(this:Controller):Response =
+  let auth = await newAuth(request)
+  let flash = await auth.getFlash("success")
+  return render(showHtml(user, flash))
+```
+
+**⚠ In most cases, Session and Cookies should not be used directly, but using Auth is recommended. ⚠**
 
 ## Cookie
 
@@ -115,13 +242,13 @@ proc setCookie*(response:Response, cookie:Cookie):Response =
 ### Sample
 get cookie
 ```nim
-proc index(request:Request, params:Params): Response =
+proc index(request:Request, params:Params):Future[Response] {.async.} =
   let val = newCookie(request).get("key")
 ```
 
 set cookie
 ```nim
-proc store*(request:Request, params:Params): Response =
+proc store*(request:Request, params:Params):Future[Response] {.async.} =
   let name = params.getStr("name")
   var cookie = newCookie(request)
   cookie.set("name", name)
@@ -130,7 +257,7 @@ proc store*(request:Request, params:Params): Response =
 
 update cookie expire
 ```nim
-proc store*(request:Request, params:Params): Response =
+proc store*(request:Request, params:Params):Future[Response] {.async.} =
   var cookie = newCookie(request)
   cookie.updateExpire("name", 5)
   # cookie will be deleted after 5 days from now
@@ -139,7 +266,7 @@ proc store*(request:Request, params:Params): Response =
 
 delete cookie
 ```nim
-proc index(request:Request, params:Params): Response =
+proc index(request:Request, params:Params):Future[Response] {.async.} =
   var cookie = newCookie(request)
   cookie.delete("key")
   return render("with cookie").setCookie(cookie)
@@ -147,7 +274,7 @@ proc index(request:Request, params:Params): Response =
 
 destroy all cookies
 ```nim
-proc index(request:Request, params:Params): Response =
+proc index(request:Request, params:Params):Future[Response] {.async.} =
   var cookie = newCookie(request)
   cookie.destroy()
   return render("with cookie").setCookie(cookie)
@@ -173,33 +300,33 @@ type
 
 ### API
 ```nim
-proc newSession*(token="", typ:SessionType=File):Session =
+proc newSession*(token="", typ:SessionType=File):Future[Session] {.async.} =
   # If you set valid token, it connect to existing session.
   # If you don't set token, it creates new session.
 
-proc getToken*(this:Session):string =
+proc getToken*(this:Session):Future[string] {.async.} =
 
-proc set*(this:Session, key, value:string):Session =
+proc set*(this:Session, key, value:string) {.async.} =
 
-proc some*(this:SessionDb, key:string):bool =
+proc some*(this:Session, key:string):Future[bool] {.async.} =
 
-proc get*(this:Session, key:string):string =
+proc get*(this:Session, key:string):Future[string] {.async.} =
 
-proc delete*(this:Session, key:string): Session =
+proc delete*(this:Session, key:string) {.async.} =
 
-proc destroy*(this:Session) =
+proc delete*(this:Session, key:string) {.async.} =
 ```
 
 ### Sample
 get session id
 ```nim
-proc index(request:Request, params:Params): Response =
+proc index(request:Request, params:Params):Future[Response] {.async.} =
   let sessionId = newSession().getToken()
 ```
 
 set value in session
 ```nim
-proc store(request:Request, params:Params): Response =
+proc store(request:Request, params:Params):Future[Response] {.async.} =
   let key = request.params["key"]
   let value = this.request.params["value"]
   discard newSession().set(key, value)
@@ -207,7 +334,7 @@ proc store(request:Request, params:Params): Response =
 
 check and get value in session
 ```nim
-proc index(this:Controller): Response =
+proc index(this:Controller):Future[Response] {.async.} =
   let sessionId = newCookie(this.request).get("session_id")
   let key = this.request.params["key"]
   let session = newSession(sessionId)
@@ -218,7 +345,7 @@ proc index(this:Controller): Response =
 
 delete one key-value pair of session
 ```nim
-proc destroy(this:Controller): Response =
+proc destroy(this:Controller):Future[Response] {.async.} =
   let sessionId = newCookie(this.request).getToken()
   let key = this.request.params["key"]
   discard newSession(sessionId).delete(key)
@@ -226,129 +353,7 @@ proc destroy(this:Controller): Response =
 
 destroy session
 ```nim
-proc destroy(this:Controller): Response =
+proc destroy(this:Controller):Future[Response] {.async.} =
   let sessionId = newCookie(this.request).getToken()
   newSession(sessionId).destroy()
-```
-
-
-## Auth
-Basolato has Auth system. it conceal inconvenient cookie and session process.
-
-```nim
-type Auth* = ref object
-  isLogin*:bool
-  session*:Session
-```
-
-### API
-```nim
-proc newAuth*(request:Request):Auth =
-
-proc newAuth*():Auth =
-
-proc login*(this:Auth) =
-
-proc logout*(this:Auth) =
-
-proc isLogin*(this:Auth):bool =
-
-proc getToken*(this:Auth):string =
-
-proc set*(this:Auth, key, value:string):Auth =
-
-proc some*(this:Auth, key:string):bool =
-
-proc get*(this:Auth, key:string):string =
-
-proc delete*(this:Auth, key:string):AUth =
-
-proc setAuth*(response:Response, auth:Auth):Response =
-  # If not logged in, do nothing.
-  # If logged in but not updated any session value,
-  # expire of session_id is updated.
-
-proc destroyAuth*(response:Response, auth:Auth):Response =
-
-proc setFlash*(this:Auth, key, value:string) =
-
-proc getFlash*(this:Auth, key:string):JsonNode =
-```
-
-### Sample
-login
-```nim
-proc index(request:Request, params:Params): Response =
-  let email = params.getStr("email")
-  let password = params.getStr("password")
-  let userId = newLoginUsecase().login(email, password)
-  let auth = newAuth(request)
-  auth.login()
-  auth.set("id", $userId)
-  return redirect("/").setAuth(auth)
-```
-
-logout
-```nim
-proc index(request:Request, params:Params): Response =
-  let auth = newAuth(request)
-  if auth.isLogin():
-    auth.logout()
-  redirect("/")
-```
-
-get auth
-```nim
-proc index(request:Request, params:Params): Response =
-  let auth = newAuth(request)
-  let loginName = auth.get("login_name")
-```
-
-set value in auth
-```nim
-proc index(request:Request, params:Params): Response =
-  let name = params.getStr("name")
-  let auth = newAuth(request)
-  auth.set("login_name", name)
-  return render("auth").setAuth(auth)
-```
-
-check and get value in auth
-```nim
-proc index(request:Request, params:Params): Response =
-  var loginName:string
-  let auth = newAuth(request)
-  if auth.some("login_name"):
-    loginName = auth.get("login_name")
-```
-
-delete one key-value pair of session
-```nim
-proc destroy(request:Request, params:Params): Response =
-  let auth = newAuth(request)
-  auth.delete("login_name")
-  return render("auth")
-```
-
-destroy auth
-```nim
-proc destroy(request:Request, params:Params): Response =
-  let auth = newAuth(request)
-  return render("auth").destroyAuth(auth)
-```
-
-set flash message
-```nim
-proc store*(request:Request, params:Params):Response =
-  let auth = newAuth(request)
-  auth.setFlash("success", "Welcome to the Sample App!")
-  return redirect("/auth")
-```
-
-get flash message
-```nim
-proc show*(this:Controller):Response =
-  let auth = newAuth(request)
-  let flash = auth.getFlash("success")
-  return render(showHtml(user, flash))
 ```

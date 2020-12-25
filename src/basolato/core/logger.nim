@@ -21,7 +21,7 @@ proc echoErrorMsg*(msg:string) =
     when not defined(release):
       styledWriteLine(stdout, fgRed, bgDefault, msg, resetStyle)
   # file log
-  if IS_FILE:
+  if IS_ERROR_FILE:
     let path = LOG_DIR & "/error.log"
     createDir(parentDir(path))
     let logger = newRollingFileLogger(path, mode=fmAppend, fmtStr=verboseFmtStr)

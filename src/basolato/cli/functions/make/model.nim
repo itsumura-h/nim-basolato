@@ -16,7 +16,8 @@ proc new{targetCaptalized}*():{targetCaptalized} =
 
   let REPOSITORY_INTERFACE = &"""
 import ../value_objects
-include ../di_container
+import {targetName}_entity
+include ../../di_container
 
 
 type I{targetCaptalized}Repository* = ref object
@@ -93,19 +94,22 @@ proc new{targetCaptalized}Service*():{targetCaptalized}Service =
   f = open(targetPath, fmWrite)
   f.write(SERVICE)
 
-    # update di_container.nim
-  targetPath = &"{getCurrentDir()}/app/domain/models/di_container.nim"
+  # update di_container.nim
+  targetPath = &"{getCurrentDir()}/app/domain/di_container.nim"
   f = open(targetPath, fmRead)
-  let text = f.readAll()
-  var textArr = text.splitLines()
+  var textArr = f.readAll().splitLines()
   # get offset where column is empty string
-  var offsets:seq[int]
+  var importOffset:int
   for i, row in textArr:
-    if row == "":
-      offsets.add(i)
+    if row == "type DiContainer* = tuple":
+      importOffset = i
+      break
+  if importOffset < 1:
+    textArr.insert("", 0)
+    importOffset = 1
   # insert array
-  textArr.insert(&"import {targetName}/repositories/{targetName}_rdb_repository", offsets[0])
-  textArr.insert(&"  {targetName}Repository: {targetCaptalized}RdbRepository", offsets[1]+1)
+  textArr.insert(&"import models/{targetName}/repositories/{targetName}_rdb_repository", importOffset-1)
+  textArr.insert(&"  {targetName}Repository: {targetCaptalized}RdbRepository", textArr.len-1)
   # write in file
   f = open(targetPath, fmWrite)
   for i in 0..textArr.len-2:

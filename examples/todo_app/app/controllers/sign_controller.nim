@@ -24,7 +24,7 @@ proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
     v.valid()
     let usecase = newSignUsecase()
     let user = usecase.signUp(name, email, password)
-    let auth = newAuth()
+    let auth = newAuth(request)
     auth.login()
     auth.set("id", $(user["id"].getInt))
     auth.set("name", user["name"].getStr)
@@ -53,7 +53,7 @@ proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
   try:
     let usecase = newSignUsecase()
     let user = usecase.signIn(email, password)
-    let auth = newAuth()
+    let auth = newAuth(request)
     auth.login()
     auth.set("id", $(user["id"].getInt))
     auth.set("name", user["name"].getStr)
@@ -65,30 +65,5 @@ proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
 
 proc signOut*(request:Request, params:Params):Future[Response] {.async.} =
   let auth = newAuth(request)
-  return redirect("/signin").destroyAuth(auth)
-
-
-# proc index*(request:Request, params:Params):Future[Response] {.async.} =
-#   return render("index")
-
-# proc show*(request:Request, params:Params):Future[Response] {.async.} =
-#   let id = params.urlParams["id"].getInt
-#   return render("show")
-
-# proc create*(request:Request, params:Params):Future[Response] {.async.} =
-#   return render("create")
-
-# proc store*(request:Request, params:Params):Future[Response] {.async.} =
-#   return render("store")
-
-# proc edit*(request:Request, params:Params):Future[Response] {.async.} =
-#   let id = params.urlParams["id"].getInt
-#   return render("edit")
-
-# proc update*(request:Request, params:Params):Future[Response] {.async.} =
-#   let id = params.urlParams["id"].getInt
-#   return render("update")
-
-# proc destroy*(request:Request, params:Params):Future[Response] {.async.} =
-#   let id = params.urlParams["id"].getInt
-#   return render("destroy")
+  auth.logout()
+  return redirect("/signin")

@@ -11,7 +11,7 @@ Table of Contents
          * [Type of headers](#type-of-headers)
          * [Set headers in controller](#set-headers-in-controller)
 
-<!-- Added by: root, at: Wed Oct 14 05:19:05 UTC 2020 -->
+<!-- Added by: root, at: Fri Dec 25 17:30:51 UTC 2020 -->
 
 <!--te-->
 

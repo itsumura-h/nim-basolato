@@ -1,26 +1,20 @@
-import asynchttpserver, strutils
+import asynchttpserver, asyncdispatch, strutils
 export asynchttpserver
 import core/base, core/route, core/security, core/header
 export base, route, security, header
 
+type MiddlewareResult* = ref object
+  isError: bool
+  message: string
 
-type Check* = ref object
-  status*:bool
-  msg*:string
+proc isError*(this:MiddlewareResult):bool =
+  return this.isError
 
-proc catch*(this:Check, error:typedesc=Error400, msg="") =
-  if not this.status:
-    var newMsg = ""
-    if msg.len == 0:
-      newMsg = this.msg
-    else:
-      newMsg = msg
-    raise newException(error, newMsg)
+proc message*(this:MiddlewareResult):string =
+  return this.message
 
-# =============================================================================
-
-proc checkCsrfToken*(request:Request, params:Params):Check =
-  result = Check(status:true)
+proc checkCsrfToken*(request:Request, params:Params):Future[MiddlewareResult] {.async.} =
+  result = MiddlewareResult()
   if request.reqMethod == HttpPost and not request.path.contains("api/"):
     try:
       if not params.hasKey("csrf_token"):
@@ -28,14 +22,12 @@ proc checkCsrfToken*(request:Request, params:Params):Check =
       let token = params.getStr("csrf_token")
       discard newCsrfToken(token).checkCsrfTimeout()
     except:
-      result = Check(
-        status:false,
-        msg:getCurrentExceptionMsg()
-      )
+      result.isError = true
+      result.message = getCurrentExceptionMsg()
 
-proc checkAuthToken*(request:Request):Check =
+proc checkAuthToken*(request:Request):Future[MiddlewareResult] {.async.} =
   ## Check session id in cookie is valid.
-  result = Check(status:true)
+  result = MiddlewareResult()
   let cookie = newCookie(request)
   try:
     if not cookie.hasKey("session_id"):
@@ -43,16 +35,8 @@ proc checkAuthToken*(request:Request):Check =
     let sessionId = cookie.get("session_id")
     if sessionId.len == 0:
       raise newException(Exception, "Session id is empty")
-    if not checkSessionIdValid(sessionId):
+    if not await checkSessionIdValid(sessionId):
       raise newException(Exception, "Invalid session id")
   except:
-    result = Check(
-      status:false,
-      msg:getCurrentExceptionMsg()
-    )
-
-proc checkApiToken*(request:Request):Check =
-  if (request.reqMethod == HttpPost or request.reqMethod == HttpPut or
-        request.reqMethod == HttpPatch or request.reqMethod == HttpDelete) and
-        request.path.contains("api/"):
-    result = Check(status:true)
+    result.isError = true
+    result.message = getCurrentExceptionMsg()

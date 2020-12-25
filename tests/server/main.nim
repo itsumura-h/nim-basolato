@@ -8,7 +8,7 @@ import app/middlewares/auth_middleware
 import app/controllers/test_controller
 
 var routes = newRoutes()
-routes.middleware(".*", chrckAuthTokenMiddleware)
+routes.middleware(".*", checkAuthTokenMiddleware)
 routes.middleware(".*", checkCsrfTokenMiddleware)
 
 # test controller
