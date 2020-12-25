@@ -11,6 +11,7 @@ Table of Contents
       * [new](#new)
       * [serve](#serve)
       * [build](#build)
+      * [migrate](#migrate)
       * [make](#make)
          * [config](#config)
          * [controller](#controller)
@@ -18,8 +19,9 @@ Table of Contents
          * [migration](#migration)
          * [model](#model)
          * [usecase](#usecase)
+         * [value object](#value-object)
 
-<!-- Added by: root, at: Wed Oct 14 05:18:22 UTC 2020 -->
+<!-- Added by: root, at: Fri Dec 25 17:30:09 UTC 2020 -->
 
 <!--te-->
 

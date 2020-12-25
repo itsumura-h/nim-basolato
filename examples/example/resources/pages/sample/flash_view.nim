@@ -2,7 +2,7 @@ import json
 import ../../../../../src/basolato/view
 import ../../layouts/application_view
 
-proc impl(auth:Auth):string = tmpli html"""
+proc impl(auth:Auth):Future[string] {.async.} = tmpli html"""
 <a href="/">go back</a>
 <form method="POST">
   $(csrfToken())
@@ -14,11 +14,11 @@ proc impl(auth:Auth):string = tmpli html"""
   <button type="submit">leave</button>
 </form>
 
-$for key, val in auth.getFlash().pairs{
+$for key, val in await(auth.getFlash()).pairs{
   <p>$(val.get())</p>
 }
 """
 
-proc indexView*(auth:Auth):string =
+proc indexView*(auth:Auth):Future[string] {.async.} =
   const title = "Flash message"
-  return applicationView(title, impl(auth))
+  return applicationView(title, await impl(auth))

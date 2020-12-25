@@ -10,6 +10,7 @@ putEnv("DB_MAX_CONNECTION", "95")
 # Logging
 putEnv("LOG_IS_DISPLAY", "true")
 putEnv("LOG_IS_FILE", "true")
+putEnv("LOG_IS_ERROR_FILE", "true")
 putEnv("LOG_DIR", "/root/project/examples/example/logs")
 # Security
 putEnv("SECRET_KEY", "QPyp/t^KTtw;xrN/Hzl&/AIr") # 24 length

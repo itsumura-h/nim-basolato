@@ -5,16 +5,16 @@ import ../../../../src/basolato/controller
 import ../../resources/pages/sample/cookie_view
 
 proc indexCookie*(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = newAuth(request)
-  return render(cookieVIew(auth))
+  let auth = await newAuth(request)
+  return render(cookieView(auth))
 
 proc storeCookie*(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = newAuth(request)
+  let auth = await newAuth(request)
   let key = params.getStr("key")
   let value = params.getStr("value")
   var cookie = newCookie(request)
   cookie.set(key, value)
-  return render(cookieVIew(auth)).setCookie(cookie)
+  return render(cookieView(auth)).setCookie(cookie)
 
 proc updateCookie*(request:Request, params:Params):Future[Response] {.async.} =
   let key = params.getStr("key")

@@ -1,9 +1,10 @@
-import asynchttpserver, httpcore, json, strutils, times, random, strformat, os
+import asynchttpserver, asyncdispatch, httpcore, json, strutils, times, random, strformat, os
 # framework
 import ./baseEnv, utils
 # 3rd party
 import flatdb, nimAES
 
+randomize()
 
 # ========= Encrypt ==================
 proc randStr(n:varargs[int]):string =
@@ -37,72 +38,71 @@ type SessionDb = ref object
   conn: FlatDb
   token: string
 
-proc clean(this:SessionDb) =
+proc clean(this:SessionDb) {.async.} =
   if not IS_SESSION_MEMORY and SESSION_TIME.len > 0:
     var buffer = newSeq[string]()
     for line in SESSION_DB_PATH.lines:
       if line.len == 0: break
       let lineJson = line.parseJson()
-      if lineJson.hasKey("created_at"):
-        let createdAt = lineJson["created_at"].getStr().parse("yyyy-MM-dd\'T\'HH:mm:sszzz")
-        let expireAt = createdAt + SESSION_TIME.parseInt().minutes
+      if lineJson.hasKey("last_access"):
+        let lastAccess = lineJson["last_access"].getStr().parse("yyyy-MM-dd\'T\'HH:mm:sszzz")
+        let expireAt = lastAccess + SESSION_TIME.parseInt().minutes
         if now() <= expireAt:
           buffer.add(line)
     if buffer.len > 0:
       buffer.add("")
       writeFile(SESSION_DB_PATH, buffer.join("\n"))
 
-proc checkTokenValid(db:FlatDb, token:string) =
+proc checkTokenValid(db:FlatDb, token:string) {.async.} =
   try:
     discard db[token]
   except:
     raise newException(Exception, "Invalid session id")
 
-proc createParentFlatDbDir():FlatDb =
+proc createParentFlatDbDir():Future[FlatDb] {.async.} =
   if not dirExists(SESSION_DB_PATH.parentDir()):
     createDir(SESSION_DB_PATH.parentDir())
   return newFlatDb(SESSION_DB_PATH, IS_SESSION_MEMORY)
 
-proc newSessionDb*(sessionId=""):SessionDb =
-  let db = createParentFlatDbDir()
+proc newSessionDb*(sessionId=""):Future[SessionDb] {.async.} =
+  let db = await createParentFlatDbDir()
   defer: db.close()
   var sessionDb: SessionDb
   # clean expired session probability of 1/100
-  randomize()
   if rand(1..100) == 1:
-    sessionDb.clean()
+    await sessionDb.clean()
   discard db.load()
   try:
     var token = sessionId.decryptCtr()
-    db.checkTokenValid(token)
+    await db.checkTokenValid(token)
     sessionDb = SessionDb(conn: db, token:token)
   except:
     let token = db.append(newJObject())
     sessionDb = SessionDb(conn: db, token:token)
   return sessionDb
 
-proc checkSessionIdValid*(sessionId=""):bool =
-  let db = createParentFlatDbDir()
+proc checkSessionIdValid*(sessionId=""):Future[bool] {.async.} =
+  let db = await createParentFlatDbDir()
   defer: db.close()
   discard db.load()
   try:
     var token = sessionId.decryptCtr()
-    db.checkTokenValid(token)
+    await db.checkTokenValid(token)
     return true
   except:
     return false
 
-proc getToken*(this:SessionDb): string =
+proc getToken*(this:SessionDb):Future[string] {.async.} =
   return this.token.encryptCtr()
 
-proc set*(this:SessionDb, key, value:string):SessionDb =
+proc set*(this:SessionDb, key, value:string):Future[SessionDb] {.async.} =
   let db = this.conn
   defer: db.close()
   db[this.token][key] = %value
   db.flush()
   return this
 
-proc some*(this:SessionDb, key:string):bool =
+proc some*(this:SessionDb, key:string):Future[bool] {.async.} =
   try:
     let db = this.conn
     defer: db.close()
@@ -113,12 +113,12 @@ proc some*(this:SessionDb, key:string):bool =
   except:
     return false
 
-proc get*(this:SessionDb, key:string): string =
+proc get*(this:SessionDb, key:string):Future[string] {.async.} =
   let db = this.conn
   defer: db.close()
   return db[this.token]{key}.getStr("")
 
-proc delete*(this:SessionDb, key:string):SessionDb =
+proc delete*(this:SessionDb, key:string):Future[SessionDb] {.async.} =
   let db = this.conn
   defer: db.close()
   let row = db[this.token]
@@ -127,7 +127,7 @@ proc delete*(this:SessionDb, key:string):SessionDb =
     db.flush()
   return this
 
-proc destroy*(this:SessionDb) =
+proc destroy*(this:SessionDb) {.async.} =
   this.conn.delete(this.token)
   defer: this.conn.close()
 
@@ -141,30 +141,30 @@ type
   Session* = ref object
     db: SessionDb
 
-proc newSession*(token="", typ:SessionType=File):Session =
+proc newSession*(token="", typ:SessionType=File):Future[Session] {.async.} =
   if typ == File:
-    return Session(db:newSessionDb(token))
+    return Session(db:await newSessionDb(token))
 
 proc db*(this:Session):SessionDb =
   return this.db
 
-proc getToken*(this:Session):string =
-  return this.db.getToken()
+proc getToken*(this:Session):Future[string] {.async.} =
+  return await this.db.getToken()
 
-proc set*(this:Session, key, value:string) =
-  discard this.db.set(key, value)
+proc set*(this:Session, key, value:string) {.async.} =
+  discard await this.db.set(key, value)
 
-proc some*(this:Session, key:string):bool =
-  return this.db.some(key)
+proc some*(this:Session, key:string):Future[bool] {.async.} =
+  return await this.db.some(key)
 
-proc get*(this:Session, key:string):string =
-  return this.db.get(key)
+proc get*(this:Session, key:string):Future[string] {.async.} =
+  return await this.db.get(key)
 
-proc delete*(this:Session, key:string) =
-  discard this.db.delete(key)
+proc delete*(this:Session, key:string) {.async.} =
+  discard await this.db.delete(key)
 
-proc destroy*(this:Session) =
-  this.db.destroy()
+proc destroy*(this:Session) {.async.} =
+  await this.db.destroy()
 
 
 # ========== Cookie ====================
@@ -302,105 +302,110 @@ proc destroy*(this:var Cookie, path="/") =
 type Auth* = ref object
   session*:Session
 
-proc newAuth*(request:Request):Auth =
+proc newAuth*(request:Request):Future[Auth] {.async.} =
   ## use in constructor
   var sessionId = newCookie(request).get("session_id")
-  if checkSessionIdValid(sessionId):
-    return Auth(session:newSession(sessionId))
+  if await checkSessionIdValid(sessionId):
+    let session = await newSession(sessionId)
+    await session.set("last_access", $getTime())
+    return Auth(session:session)
   else:
     return Auth()
 
-proc newAuth*():Auth =
+proc newAuth*():Future[Auth] {.async.} =
   ## use in action method
-  let session = newSession()
-  session.set("isLogin", "false")
-  session.set("created_at", $getTime())
+  let session = await newSession()
+  await session.set("isLogin", "false")
+  await session.set("last_access", $getTime())
   return Auth(session:session)
 
-# proc newLoginAuth*():Auth =
-#   let session = newSession()
-#   session.set("isLogin", "true")
-#   session.set("created_at", $getTime())
-#   return Auth(session:session)
-
-proc newAuthIfInvalid*(request:Request):Auth =
-  var auth:Auth
-  if not request.cookies.hasKey("session_id"):
-    auth = newAuth()
-  else:
-    var sessionId = newCookie(request).get("session_id")
-    try:
-      auth = Auth(session:newSession(sessionId))
-    except:
-      auth = newAuth()
-  return auth
+# proc newAuthIfInvalid*(request:Request):Future[Auth] {.async.} =
+#   var auth:Auth
+#   if not request.cookies.hasKey("session_id"):
+#     auth = await newAuth()
+#   else:
+#     var sessionId = newCookie(request).get("session_id")
+#     try:
+#       auth = Auth(session:await newSession(sessionId))
+#     except:
+#       auth = await newAuth()
+#   return auth
 
 
-proc getToken*(this:Auth):string =
-  return this.session.getToken()
+proc getToken*(this:Auth):Future[string] {.async.} =
+  return await this.session.getToken()
 
-proc set*(this:Auth, key, value:string) =
-  this.session.set(key, value)
+proc set*(this:Auth, key, value:string) {.async.} =
+  await this.session.set(key, value)
 
-proc some*(this:Auth, key:string):bool =
+proc some*(this:Auth, key:string):Future[bool] {.async.} =
   if this.isNil:
     return false
   elif this.session.isNil:
     return false
   else:
-    return this.session.some(key)
+    return await this.session.some(key)
 
-proc get*(this:Auth, key:string):string =
-  if this.session.some("isLogin"):
-    return this.session.get(key)
+proc get*(this:Auth, key:string):Future[string] {.async.} =
+  if await this.session.some("isLogin"):
+    return await this.session.get(key)
   else:
     return ""
 
-proc delete*(this:Auth, key:string) =
-  this.session.delete(key)
+proc delete*(this:Auth, key:string) {.async.} =
+  await this.session.delete(key)
 
-proc destroy*(this:Auth) =
-  this.session.destroy()
+proc destroy*(this:Auth) {.async.} =
+  await this.session.destroy()
 
-proc login*(this:Auth) =
+proc login*(this:Auth) {.async.} =
   if this.session.isNil:
-    this.session = newSession()
-    this.session.set("isLogin", "true")
-    this.session.set("created_at", $getTime())
+    this.session = await newSession()
+    await this.session.set("isLogin", "true")
+    await this.session.set("last_access", $getTime())
   else:
-    this.set("isLogin", "true")
+    await this.set("isLogin", "true")
 
-proc logout*(this:Auth) =
-  this.destroy()
+proc anonumousCreateSession*(this:Auth):Future[bool] {.async.} =
+  if this.session.isNil or not await checkSessionIdValid(await this.getToken):
+    this.session = await newSession()
+    await this.set("isLogin", "false")
+    await this.set("last_access", $getTime())
+    return true
+  else:
+    return false
 
-proc isLogin*(this:Auth):bool =
-  if this.some("isLogin"):
-    return this.session.get("isLogin").parseBool()
+proc logout*(this:Auth) {.async.} =
+  await this.destroy()
+
+proc isLogin*(this:Auth):Future[bool] {.async.} =
+  if await this.some("isLogin"):
+    return parseBool(await this.session.get("isLogin"))
   else:
     return false
 
 
 # ========== Flash ====================
-proc setFlash*(this:Auth, key, value:string) =
+proc setFlash*(this:Auth, key, value:string) {.async.} =
   let key = "flash_" & key
-  this.set(key, value)
+  await this.set(key, value)
 
-proc hasFlash*(this:Auth, key:string):bool =
+proc hasFlash*(this:Auth, key:string):Future[bool] {.async.} =
   result = false
   for k, v in this.session.db.conn[this.session.db.token].pairs:
     if k.contains("flash_" & key):
       result = true
       break
 
-proc getFlash*(this:Auth):JsonNode =
+proc getFlash*(this:Auth):Future[JsonNode] {.async.} =
   result = newJObject()
-  if this.isLogin:
+  if await this.isLogin:
     for key, val in this.session.db.conn[this.session.db.token].pairs:
       if key.contains("flash_"):
         var newKey = key
         newKey.delete(0, 5)
         result[newKey] = val
-        this.delete(key)
+        await this.delete(key)
 
 
 # ========== Token ====================

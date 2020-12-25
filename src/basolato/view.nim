@@ -1,5 +1,5 @@
-import templates, json, random, tables, strformat, strutils
-export templates
+import templates, json, random, tables, strformat, strutils, asyncdispatch
+export templates, asyncdispatch
 import core/security
 export security
 

@@ -7,6 +7,10 @@ Table of Contents
 <!--ts-->
    * [Controller](#controller)
       * [Creating a Controller](#creating-a-controller)
+      * [How to get params](#how-to-get-params)
+         * [Request params](#request-params)
+         * [Url params](#url-params)
+         * [Query params](#query-params)
       * [Response](#response)
          * [Returning string](#returning-string)
          * [Returning HTML file](#returning-html-file)
@@ -16,7 +20,7 @@ Table of Contents
          * [Response with header](#response-with-header)
       * [Redirect](#redirect)
 
-<!-- Added by: root, at: Wed Oct 14 05:20:30 UTC 2020 -->
+<!-- Added by: root, at: Fri Dec 25 17:32:16 UTC 2020 -->
 
 <!--te-->
 

@@ -2,6 +2,19 @@ Request
 ===
 [back](../README.md)
 
+Table of Contents
+
+<!--ts-->
+   * [Request](#request)
+      * [Getting params](#getting-params)
+         * [API](#api)
+      * [Save file](#save-file)
+         * [API](#api-1)
+
+<!-- Added by: root, at: Fri Dec 25 17:32:37 UTC 2020 -->
+
+<!--te-->
+
 ## Getting params
 All of `request params`, `url params`, `query params` is stored in `params:Params`.
 

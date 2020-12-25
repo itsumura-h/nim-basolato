@@ -8,13 +8,13 @@ Table of Contents
    * [Middleware](#middleware)
       * [Routing middleware](#routing-middleware)
 
-<!-- Added by: root, at: Wed Oct 14 05:18:43 UTC 2020 -->
+<!-- Added by: root, at: Fri Dec 25 17:30:30 UTC 2020 -->
 
 <!--te-->
 
 ## Routing middleware
 You can run middleware methods before calling controller.  
-In following example, `checkCsrfTokenMiddleware()` and `chrckAuthTokenMiddleware()` definded in `app/middleware/auth_middlware.nim` are called
+In following example, `checkCsrfTokenMiddleware()` and `checkAuthTokenMiddleware()` definded in `app/middleware/auth_middlware.nim` are called
 
 app/middleware/auth_middlware.nim
 ```nim

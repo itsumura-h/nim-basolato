@@ -1,11 +1,11 @@
 import ../../../../../src/basolato/view
 import ../../layouts/application_view
 
-proc impl(auth:Auth): string = tmpli html"""
+proc impl(auth:Auth):Future[string] {.async.}= tmpli html"""
 <a href="/">go back</a>
 <div>
-  $if auth.isLogin(){
-    <h1>Login Name: $(auth.get("name"))</h1>
+  $if await auth.isLogin(){
+    <h1>Login Name: $(await auth.get("name"))</h1>
     <form method="POST" action="/sample/logout">
       $(csrfToken())
       <button type="submit">Logout</button>
@@ -22,6 +22,6 @@ proc impl(auth:Auth): string = tmpli html"""
 </div>
 """
 
-proc loginView*(auth:Auth):string =
+proc loginView*(auth:Auth):Future[string] {.async.} =
   const title = "Login"
-  return applicationView(title, impl(auth))
+  return applicationView(title, await impl(auth))
