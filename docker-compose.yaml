@@ -6,7 +6,7 @@ services:
     depends_on:
       - app
     ports:
-      - 16379:6379
+      - 6379:6379
   app:
     build:
       context: .

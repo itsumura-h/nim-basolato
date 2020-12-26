@@ -7,6 +7,10 @@ putEnv("DB_PASSWORD", "")
 putEnv("DB_DATABASE", "")
 putEnv("DB_DATABASE", "")
 putEnv("DB_MAX_CONNECTION", "95")
+# Session db
+putEnv("SESSION_TYPE", "redis") # file or redis
+putEnv("REDIS_HOST", "redis")
+putEnv("REDIS_PORT", "6379")
 # Logging
 putEnv("LOG_IS_DISPLAY", "true")
 putEnv("LOG_IS_FILE", "true")
@@ -18,5 +22,3 @@ putEnv("CSRF_TIME", "525600") # minutes of 1 year
 putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
 putEnv("SESSION_DB", "/root/project/examples/example/session.db")
 putEnv("IS_SESSION_MEMORY", "false")
-
-putEnv("PORTS", "5000,5001,5002")
