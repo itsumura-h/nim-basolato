@@ -53,16 +53,16 @@ proc setCookie*(request:Request, params:Params):Future[Response] {.async.} =
   return render("setCookie").setCookie(cookie)
 
 proc setAuth*(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = newAuth(request)
-  auth.login()
-  auth.set("key1", "value1")
-  auth.set("key2", "value2")
-  return render("setAuth").setAuth(auth)
+  let auth = await newAuth(request)
+  await auth.set("key1", "value1")
+  await auth.set("key2", "value2")
+  return render("setAuth")
 
 proc destroyAuth*(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = newAuth(request)
-  auth.login()
-  return render("setAuth").destroyAuth(auth)
+  let auth = await newAuth(request)
+  await auth.login()
+  await auth.destroy()
+  return render("setAuth")
 
 
 # test routing

@@ -78,6 +78,27 @@ if res.isError:
   raise newException(Error302, "/login")
 ```
 
+## Session DB
+You can choose two options to use session, `File` or `Redis`.  
+File session uses [flatdb](https://github.com/enthus1ast/flatdb) , a document database like Mongo, inside.
+
+
+config.nims for file session
+```nim
+putEnv("SESSION_TYPE", "file")
+putEnv("SESSION_DB_PATH", "/your/project/path/session.db") # file path
+putEnv("REDIS_PORT", "6379")
+putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
+```
+
+config.nims for redis session
+```nim
+putEnv("SESSION_TYPE", "redis")
+putEnv("SESSION_DB_PATH", "localhost") # Redis IP addressS
+putEnv("REDIS_PORT", "6379")
+putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
+```
+
 ## Auth
 Basolato has Auth system. it conceal inconvenient cookie and session process.
 

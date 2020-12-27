@@ -5,8 +5,6 @@ services:
     tty: true
     depends_on:
       - app
-    ports:
-      - 6379:6379
   app:
     build:
       context: .

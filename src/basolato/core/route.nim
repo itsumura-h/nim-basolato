@@ -217,15 +217,15 @@ proc serveCore(params:(Routes, int)){.thread.} =
               response = await createResponse(req, route, headers)
               break middlewareAndApp
 
-    # anonymous user login
-    let auth = await newAuth(req)
-    if await auth.anonumousCreateSession():
-      response = await response.setAuth(auth)
-
     if response.isNil:
       headers.set("Content-Type", "text/html; charset=UTF-8")
       response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)
       echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
+
+    # anonymous user login
+    let auth = await newAuth(req)
+    if await auth.anonumousCreateSession():
+      response = await response.setAuth(auth)
 
     await req.respond(response.status, response.body, response.headers.toResponse())
     # keep-alive

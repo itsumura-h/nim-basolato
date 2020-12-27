@@ -8,8 +8,8 @@ import app/middlewares/auth_middleware
 import app/controllers/test_controller
 
 var routes = newRoutes()
-routes.middleware(".*", checkAuthTokenMiddleware)
-routes.middleware(".*", checkCsrfTokenMiddleware)
+routes.middleware("/csrf/*", checkCsrfTokenMiddleware)
+routes.middleware("/session/*", checkAuthTokenMiddleware)
 
 # test controller
 routes.get("/renderStr", test_controller.renderStr)
@@ -36,5 +36,8 @@ routes.post("/test_routing", test_controller.postAction)
 routes.patch("/test_routing", test_controller.patchAction)
 routes.put("/test_routing", test_controller.putAction)
 routes.delete("/test_routing", test_controller.deleteAction)
+
+routes.post("/csrf/test_routing", test_controller.postAction)
+routes.post("/session/test_routing", test_controller.postAction)
 
 serve(routes)

@@ -1,8 +1,12 @@
-import asynchttpserver, asyncdispatch, redis, httpcore, json, strutils, times, random, strformat, os
+import asynchttpserver, asyncdispatch, httpcore, json, strutils, times, random, strformat, os
 # framework
 import ./baseEnv, utils
 # 3rd party
 import flatdb, nimAES
+
+when SESSION_TYPE == "redis":
+  import redis
+
 
 randomize()
 
@@ -85,7 +89,7 @@ when SESSION_TYPE == "redis":
   proc getToken*(this:SessionDb):Future[string] {.async.} =
     return this.token
 
-  proc set*(this:SessionDb, key, value: string):Future[bool] {.async.} =
+  proc set*(this:SessionDb, key, value: string) {.async.} =
     discard await this.conn.hSet(this.token, key, value)
 
   proc some*(this:SessionDb, key:string):Future[bool] {.async.} =
@@ -163,10 +167,10 @@ else:
   proc checkSessionIdValid*(sessionId=""):Future[bool] {.async.} =
     let db = await createParentFlatDbDir()
     defer: db.close()
-    discard this.conn.load()
+    discard db.load()
     try:
       var token = sessionId.decryptCtr()
-      await this.conn.checkTokenValid(token)
+      await db.checkTokenValid(token)
       return true
     except:
       return false
@@ -214,10 +218,6 @@ else:
 
 # ========= Session ==================
 type
-  # SessionType* = enum
-  #   File
-  #   Redis
-
   Session* = ref object
     db: SessionDb
 
@@ -225,14 +225,14 @@ proc newSession*(token=""):Future[Session] {.async.} =
   # if SESSION_TYPE == "file":
   return Session(db:await newSessionDb(token))
 
-proc db*(this:Session):SessionDb =
+proc db*(this:Session):Future[SessionDb] {.async.} =
   return this.db
 
 proc getToken*(this:Session):Future[string] {.async.} =
   return await this.db.getToken()
 
 proc set*(this:Session, key, value:string) {.async.} =
-  discard await this.db.set(key, value)
+  await this.db.set(key, value)
 
 proc some*(this:Session, key:string):Future[bool] {.async.} =
   return await this.db.some(key)
@@ -392,12 +392,12 @@ proc newAuth*(request:Request):Future[Auth] {.async.} =
   else:
     return Auth()
 
-# proc newAuth*():Future[Auth] {.async.} =
-#   ## use in action method
-#   let session = await newSession()
-#   await session.set("isLogin", "false")
-#   await session.set("last_access", $getTime())
-#   return Auth(session:session)
+proc newAuth():Future[Auth] {.async.} =
+  ## use in action method
+  let session = await newSession()
+  await session.set("isLogin", "false")
+  await session.set("last_access", $getTime())
+  return Auth(session:session)
 
 # proc newAuthIfInvalid*(request:Request):Future[Auth] {.async.} =
 #   var auth:Auth
