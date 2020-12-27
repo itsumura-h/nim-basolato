@@ -8,6 +8,7 @@ Table of Contents
    * [Security](#security)
       * [Check in middleware](#check-in-middleware)
          * [CSRF Token](#csrf-token)
+      * [Session DB](#session-db)
       * [Auth](#auth)
          * [API](#api)
          * [Sample](#sample)
@@ -18,7 +19,7 @@ Table of Contents
          * [API](#api-2)
          * [Sample](#sample-2)
 
-<!-- Added by: root, at: Fri Dec 25 17:32:59 UTC 2020 -->
+<!-- Added by: root, at: Sun Dec 27 18:23:11 UTC 2020 -->
 
 <!--te-->
 
@@ -94,7 +95,7 @@ putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
 config.nims for redis session
 ```nim
 putEnv("SESSION_TYPE", "redis")
-putEnv("SESSION_DB_PATH", "localhost") # Redis IP addressS
+putEnv("SESSION_DB_PATH", "localhost") # Redis IP address
 putEnv("REDIS_PORT", "6379")
 putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
 ```
