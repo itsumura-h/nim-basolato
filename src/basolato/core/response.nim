@@ -104,11 +104,11 @@ proc errorRedirect*(url:string):Response =
 # ========== Auth ====================
 proc setAuth*(response:Response, auth:Auth):Future[Response] {.async.} =
   let sessionId = await auth.getToken()
-  let cookie = if SESSION_TIME.len > 0:
+  let cookie = if SESSION_TIME > 0:
     newCookieData(
       "session_id",
       sessionId,
-      timeForward(SESSION_TIME.parseInt, Minutes)
+      timeForward(SESSION_TIME, Minutes)
     )
     .toCookieStr()
   else:

@@ -66,8 +66,9 @@ when SESSION_TYPE == "redis":
       else:
         sessionId
 
-    let conn = await openAsync(REDIS_HOST, Port(REDIS_PORT))
+    let conn = await openAsync(SESSION_DB_PATH, Port(REDIS_PORT))
     discard await conn.hSet(token, "last_access", $getTime())
+    discard await conn.expire(token, SESSION_TIME * 60)
 
     return SessionDb(
       conn: conn,
@@ -75,7 +76,7 @@ when SESSION_TYPE == "redis":
     )
 
   proc checkSessionIdValid*(sessionId:string):Future[bool] {.async.} =
-    let conn = await openAsync(REDIS_HOST, Port(REDIS_PORT))
+    let conn = await openAsync(SESSION_DB_PATH, Port(REDIS_PORT))
     if not await conn.hExists(sessionId, "last_access"):
       return false
     else:
@@ -118,19 +119,18 @@ else:
     token: string
 
   proc clean(this:SessionDb) {.async.} =
-    if not IS_SESSION_MEMORY and SESSION_TIME.len > 0:
-      var buffer = newSeq[string]()
-      for line in SESSION_DB_PATH.lines:
-        if line.len == 0: break
-        let lineJson = line.parseJson()
-        if lineJson.hasKey("last_access"):
-          let lastAccess = lineJson["last_access"].getStr().parse("yyyy-MM-dd\'T\'HH:mm:sszzz")
-          let expireAt = lastAccess + SESSION_TIME.parseInt().minutes
-          if now() <= expireAt:
-            buffer.add(line)
-      if buffer.len > 0:
-        buffer.add("")
-        writeFile(SESSION_DB_PATH, buffer.join("\n"))
+    var buffer = newSeq[string]()
+    for line in SESSION_DB_PATH.lines:
+      if line.len == 0: break
+      let lineJson = line.parseJson()
+      if lineJson.hasKey("last_access"):
+        let lastAccess = lineJson["last_access"].getStr().parse("yyyy-MM-dd\'T\'HH:mm:sszzz")
+        let expireAt = lastAccess + SESSION_TIME.minutes
+        if now() <= expireAt:
+          buffer.add(line)
+    if buffer.len > 0:
+      buffer.add("")
+      writeFile(SESSION_DB_PATH, buffer.join("\n"))
 
   proc checkTokenValid(db:FlatDb, token:string) {.async.} =
     try:
@@ -141,7 +141,7 @@ else:
   proc createParentFlatDbDir():Future[FlatDb] {.async.} =
     if not dirExists(SESSION_DB_PATH.parentDir()):
       createDir(SESSION_DB_PATH.parentDir())
-    return newFlatDb(SESSION_DB_PATH, IS_SESSION_MEMORY)
+    return newFlatDb(SESSION_DB_PATH, false)
 
   proc newSessionDb*(sessionId=""):Future[SessionDb] {.async.} =
     let db = await createParentFlatDbDir()
@@ -343,7 +343,7 @@ proc set*(this:var Cookie, name, value: string, expire:DateTime,
 
 proc set*(this:var Cookie, name, value: string, sameSite: SameSite=Lax,
       secure = false, httpOnly = false, domain = "", path = "/") =
-  let expires = timeForward(CSRF_TIME, Minutes)
+  let expires = timeForward(SESSION_TIME, Minutes)
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(expires.utc, f)
   this.cookies.add(
@@ -512,6 +512,6 @@ proc checkCsrfTimeout*(this:CsrfToken):bool =
   except:
     raise newException(Exception, "Invalid csrf token")
 
-  if getTime().toUnix > timestamp + CSRF_TIME * 60:
+  if getTime().toUnix > timestamp + SESSION_TIME * 60:
     raise newException(Exception, "Timeout")
   return true
