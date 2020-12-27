@@ -246,8 +246,8 @@ when isMainModule:
     let requestPath = "/name/john/id/1"
     let routePath = "/name/{name:str}/id/{id:int}"
     let params = getUrlParams(requestPath, routePath)
-    assert params["name"].getStr == "john"
-    assert params["id"].getInt == 1
+    assert params.getStr("name") == "john"
+    assert params.getInt("id") == 1
 
   block:
     var requestPath = "/name/john/id/1"

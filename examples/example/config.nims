@@ -1,4 +1,6 @@
 import os
+# Security
+putEnv("SECRET_KEY", "QPyp/t^KTtw;xrN/Hzl&/AIr") # 24 length
 # DB Connection
 putEnv("DB_DRIVER", "sqlite")
 putEnv("DB_CONNECTION", "/root/project/examples/example/db.sqlite3")
@@ -12,11 +14,9 @@ putEnv("LOG_IS_DISPLAY", "true")
 putEnv("LOG_IS_FILE", "true")
 putEnv("LOG_IS_ERROR_FILE", "true")
 putEnv("LOG_DIR", "/root/project/examples/example/logs")
-# Security
-putEnv("SECRET_KEY", "QPyp/t^KTtw;xrN/Hzl&/AIr") # 24 length
-putEnv("CSRF_TIME", "525600") # minutes of 1 year
+# Session db
+putEnv("SESSION_TYPE", "redis") # file or redis
+# putEnv("SESSION_DB_PATH", "/root/project/examples/example/session.db")
+putEnv("SESSION_DB_PATH", "redis")
+putEnv("REDIS_PORT", "6379")
 putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
-putEnv("SESSION_DB", "/root/project/examples/example/session.db")
-putEnv("IS_SESSION_MEMORY", "false")
-
-putEnv("PORTS", "5000,5001,5002")

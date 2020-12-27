@@ -4,6 +4,10 @@ import ./baseEnv, utils
 # 3rd party
 import flatdb, nimAES
 
+when SESSION_TYPE == "redis":
+  import redis
+
+
 randomize()
 
 # ========= Encrypt ==================
@@ -33,126 +37,202 @@ proc decryptCtr*(input:string):string =
   return input[16..high(input)]
 
 
-# ========= Flat DB ==================
-type SessionDb = ref object
-  conn: FlatDb
-  token: string
+# ========== Token ====================
+type Token* = ref object
+  token:string
 
-proc clean(this:SessionDb) {.async.} =
-  if not IS_SESSION_MEMORY and SESSION_TIME.len > 0:
+
+proc newToken*(token=""):Token =
+  if token.len > 0:
+    return Token(token:token)
+  var token = $(getTime().toUnix().int())
+  token = token.encryptCtr()
+  return Token(token:token)
+
+proc getToken*(this:Token):string =
+  return this.token
+
+proc toTimestamp*(this:Token): int =
+  return this.getToken().decryptCtr().parseInt()
+
+
+# ========== Session DB ====================
+when SESSION_TYPE == "redis":
+  # ========== Redis ====================
+  type SessionDb = ref object
+    conn: AsyncRedis
+    token: string
+
+  proc newSessionDb*(sessionId=""):Future[SessionDb] {.async.} =
+    let token =
+      if sessionId.len == 0:
+        newToken().getToken()
+      else:
+        sessionId
+
+    let conn = await openAsync(SESSION_DB_PATH, Port(REDIS_PORT))
+    discard await conn.hSet(token, "last_access", $getTime())
+    discard await conn.expire(token, SESSION_TIME * 60)
+
+    return SessionDb(
+      conn: conn,
+      token: token
+    )
+
+  proc checkSessionIdValid*(sessionId:string):Future[bool] {.async.} =
+    let conn = await openAsync(SESSION_DB_PATH, Port(REDIS_PORT))
+    if not await conn.hExists(sessionId, "last_access"):
+      return false
+    else:
+      return true
+
+  proc getToken*(this:SessionDb):Future[string] {.async.} =
+    return this.token
+
+  proc set*(this:SessionDb, key, value: string) {.async.} =
+    discard await this.conn.hSet(this.token, key, value)
+
+  proc some*(this:SessionDb, key:string):Future[bool] {.async.} =
+    return await this.conn.hExists(this.token, key)
+
+  proc get*(this:SessionDb, key:string):Future[string] {.async.} =
+    return await this.conn.hGet(this.token, key)
+
+  proc getRows*(this:SessionDb):Future[JsonNode] {.async.} =
+    let rows = await this.conn.hGetAll(this.token)
+    # list to JsonNode
+    var str = "{"
+    for i, val in rows:
+      if i == 0 or i mod 2 == 0:
+        str.add(&"\"{val}\":")
+      else:
+        str.add(&"\"{val}\", ")
+    str.add("}")
+    return str.parseJson
+
+  proc delete*(this:SessionDb, key:string) {.async.} =
+    discard await this.conn.hDel(this.token, key)
+
+  proc destroy*(this:SessionDb) {.async.} =
+    discard await this.conn.del(@[this.token])
+
+else:
+  # ========= Flat DB ==================
+  type SessionDb = ref object
+    conn: FlatDb
+    token: string
+
+  proc clean(this:SessionDb) {.async.} =
     var buffer = newSeq[string]()
     for line in SESSION_DB_PATH.lines:
       if line.len == 0: break
       let lineJson = line.parseJson()
       if lineJson.hasKey("last_access"):
         let lastAccess = lineJson["last_access"].getStr().parse("yyyy-MM-dd\'T\'HH:mm:sszzz")
-        let expireAt = lastAccess + SESSION_TIME.parseInt().minutes
+        let expireAt = lastAccess + SESSION_TIME.minutes
         if now() <= expireAt:
           buffer.add(line)
     if buffer.len > 0:
       buffer.add("")
       writeFile(SESSION_DB_PATH, buffer.join("\n"))
 
-proc checkTokenValid(db:FlatDb, token:string) {.async.} =
-  try:
-    discard db[token]
-  except:
-    raise newException(Exception, "Invalid session id")
+  proc checkTokenValid(db:FlatDb, token:string) {.async.} =
+    try:
+      discard db[token]
+    except:
+      raise newException(Exception, "Invalid session id")
 
-proc createParentFlatDbDir():Future[FlatDb] {.async.} =
-  if not dirExists(SESSION_DB_PATH.parentDir()):
-    createDir(SESSION_DB_PATH.parentDir())
-  return newFlatDb(SESSION_DB_PATH, IS_SESSION_MEMORY)
+  proc createParentFlatDbDir():Future[FlatDb] {.async.} =
+    if not dirExists(SESSION_DB_PATH.parentDir()):
+      createDir(SESSION_DB_PATH.parentDir())
+    return newFlatDb(SESSION_DB_PATH, false)
 
-proc newSessionDb*(sessionId=""):Future[SessionDb] {.async.} =
-  let db = await createParentFlatDbDir()
-  defer: db.close()
-  var sessionDb: SessionDb
-  # clean expired session probability of 1/100
-  if rand(1..100) == 1:
-    await sessionDb.clean()
-  discard db.load()
-  try:
-    var token = sessionId.decryptCtr()
-    await db.checkTokenValid(token)
-    sessionDb = SessionDb(conn: db, token:token)
-  except:
-    let token = db.append(newJObject())
-    sessionDb = SessionDb(conn: db, token:token)
-  return sessionDb
+  proc newSessionDb*(sessionId=""):Future[SessionDb] {.async.} =
+    let db = await createParentFlatDbDir()
+    defer: db.close()
+    var sessionDb: SessionDb
+    # clean expired session probability of 1/100
+    if rand(1..100) == 1:
+      await sessionDb.clean()
+    discard db.load()
+    try:
+      var token = sessionId.decryptCtr()
+      await db.checkTokenValid(token)
+      sessionDb = SessionDb(conn: db, token:token)
+    except:
+      let token = db.append(newJObject())
+      sessionDb = SessionDb(conn: db, token:token)
+    return sessionDb
 
-proc checkSessionIdValid*(sessionId=""):Future[bool] {.async.} =
-  let db = await createParentFlatDbDir()
-  defer: db.close()
-  discard db.load()
-  try:
-    var token = sessionId.decryptCtr()
-    await db.checkTokenValid(token)
-    return true
-  except:
-    return false
+  proc checkSessionIdValid*(sessionId=""):Future[bool] {.async.} =
+    let db = await createParentFlatDbDir()
+    defer: db.close()
+    discard db.load()
+    try:
+      var token = sessionId.decryptCtr()
+      await db.checkTokenValid(token)
+      return true
+    except:
+      return false
 
-proc getToken*(this:SessionDb):Future[string] {.async.} =
-  return this.token.encryptCtr()
+  proc getToken*(this:SessionDb):Future[string] {.async.} =
+    return this.token.encryptCtr()
 
-proc set*(this:SessionDb, key, value:string):Future[SessionDb] {.async.} =
-  let db = this.conn
-  defer: db.close()
-  db[this.token][key] = %value
-  db.flush()
-  return this
-
-proc some*(this:SessionDb, key:string):Future[bool] {.async.} =
-  try:
+  proc set*(this:SessionDb, key, value:string) {.async.} =
     let db = this.conn
     defer: db.close()
-    if db[this.token]{key}.isNil():
-      return false
-    else:
-      return true
-  except:
-    return false
-
-proc get*(this:SessionDb, key:string):Future[string] {.async.} =
-  let db = this.conn
-  defer: db.close()
-  return db[this.token]{key}.getStr("")
-
-proc delete*(this:SessionDb, key:string):Future[SessionDb] {.async.} =
-  let db = this.conn
-  defer: db.close()
-  let row = db[this.token]
-  if row.hasKey(key):
-    row.delete(key)
+    db[this.token][key] = %value
     db.flush()
-  return this
 
-proc destroy*(this:SessionDb) {.async.} =
-  this.conn.delete(this.token)
-  defer: this.conn.close()
+  proc some*(this:SessionDb, key:string):Future[bool] {.async.} =
+    try:
+      let db = this.conn
+      defer: db.close()
+      if db[this.token]{key}.isNil():
+        return false
+      else:
+        return true
+    except:
+      return false
+
+  proc get*(this:SessionDb, key:string):Future[string] {.async.} =
+    let db = this.conn
+    defer: db.close()
+    return db[this.token]{key}.getStr("")
+
+  proc getRows*(this:SessionDb):Future[JsonNode] {.async.} =
+    return %*(this.conn[this.token])
+
+  proc delete*(this:SessionDb, key:string) {.async.} =
+    let db = this.conn
+    defer: db.close()
+    let row = db[this.token]
+    if row.hasKey(key):
+      row.delete(key)
+      db.flush()
+
+  proc destroy*(this:SessionDb) {.async.} =
+    this.conn.delete(this.token)
+    defer: this.conn.close()
 
 
 # ========= Session ==================
 type
-  SessionType* = enum
-    File
-    Redis
-
   Session* = ref object
     db: SessionDb
 
-proc newSession*(token="", typ:SessionType=File):Future[Session] {.async.} =
-  if typ == File:
-    return Session(db:await newSessionDb(token))
+proc newSession*(token=""):Future[Session] {.async.} =
+  # if SESSION_TYPE == "file":
+  return Session(db:await newSessionDb(token))
 
-proc db*(this:Session):SessionDb =
+proc db*(this:Session):Future[SessionDb] {.async.} =
   return this.db
 
 proc getToken*(this:Session):Future[string] {.async.} =
   return await this.db.getToken()
 
 proc set*(this:Session, key, value:string) {.async.} =
-  discard await this.db.set(key, value)
+  await this.db.set(key, value)
 
 proc some*(this:Session, key:string):Future[bool] {.async.} =
   return await this.db.some(key)
@@ -161,7 +241,7 @@ proc get*(this:Session, key:string):Future[string] {.async.} =
   return await this.db.get(key)
 
 proc delete*(this:Session, key:string) {.async.} =
-  discard await this.db.delete(key)
+  await this.db.delete(key)
 
 proc destroy*(this:Session) {.async.} =
   await this.db.destroy()
@@ -263,7 +343,7 @@ proc set*(this:var Cookie, name, value: string, expire:DateTime,
 
 proc set*(this:var Cookie, name, value: string, sameSite: SameSite=Lax,
       secure = false, httpOnly = false, domain = "", path = "/") =
-  let expires = timeForward(CSRF_TIME, Minutes)
+  let expires = timeForward(SESSION_TIME, Minutes)
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(expires.utc, f)
   this.cookies.add(
@@ -312,7 +392,7 @@ proc newAuth*(request:Request):Future[Auth] {.async.} =
   else:
     return Auth()
 
-proc newAuth*():Future[Auth] {.async.} =
+proc newAuth():Future[Auth] {.async.} =
   ## use in action method
   let session = await newSession()
   await session.set("isLogin", "false")
@@ -347,7 +427,7 @@ proc some*(this:Auth, key:string):Future[bool] {.async.} =
     return await this.session.some(key)
 
 proc get*(this:Auth, key:string):Future[string] {.async.} =
-  if await this.session.some("isLogin"):
+  if await this.some(key):
     return await this.session.get(key)
   else:
     return ""
@@ -361,15 +441,15 @@ proc destroy*(this:Auth) {.async.} =
 proc login*(this:Auth) {.async.} =
   if this.session.isNil:
     this.session = await newSession()
-    await this.session.set("isLogin", "true")
+    await this.session.set("is_login", "true")
     await this.session.set("last_access", $getTime())
   else:
-    await this.set("isLogin", "true")
+    await this.set("is_login", "true")
 
 proc anonumousCreateSession*(this:Auth):Future[bool] {.async.} =
   if this.session.isNil or not await checkSessionIdValid(await this.getToken):
     this.session = await newSession()
-    await this.set("isLogin", "false")
+    await this.set("is_login", "false")
     await this.set("last_access", $getTime())
     return true
   else:
@@ -379,8 +459,8 @@ proc logout*(this:Auth) {.async.} =
   await this.destroy()
 
 proc isLogin*(this:Auth):Future[bool] {.async.} =
-  if await this.some("isLogin"):
-    return parseBool(await this.session.get("isLogin"))
+  if await this.some("is_login"):
+    return parseBool(await this.session.get("is_login"))
   else:
     return false
 
@@ -392,7 +472,8 @@ proc setFlash*(this:Auth, key, value:string) {.async.} =
 
 proc hasFlash*(this:Auth, key:string):Future[bool] {.async.} =
   result = false
-  for k, v in this.session.db.conn[this.session.db.token].pairs:
+  let rows = await this.session.db.getRows()
+  for k, v in rows.pairs:
     if k.contains("flash_" & key):
       result = true
       break
@@ -400,31 +481,13 @@ proc hasFlash*(this:Auth, key:string):Future[bool] {.async.} =
 proc getFlash*(this:Auth):Future[JsonNode] {.async.} =
   result = newJObject()
   if await this.isLogin:
-    for key, val in this.session.db.conn[this.session.db.token].pairs:
+    let rows = await this.session.db.getRows()
+    for key, val in rows.pairs:
       if key.contains("flash_"):
         var newKey = key
         newKey.delete(0, 5)
         result[newKey] = val
         await this.delete(key)
-
-
-# ========== Token ====================
-type Token* = ref object
-  token:string
-
-
-proc newToken*(token:string):Token =
-  if token.len > 0:
-    return Token(token:token)
-  var token = $(getTime().toUnix().int())
-  token = token.encryptCtr()
-  return Token(token:token)
-
-proc getToken*(this:Token):string =
-  return this.token
-
-proc toTimestamp*(this:Token): int =
-  return this.getToken().decryptCtr().parseInt()
 
 
 # ========== CsrfToken ====================
@@ -449,6 +512,6 @@ proc checkCsrfTimeout*(this:CsrfToken):bool =
   except:
     raise newException(Exception, "Invalid csrf token")
 
-  if getTime().toUnix > timestamp + CSRF_TIME * 60:
+  if getTime().toUnix > timestamp + SESSION_TIME * 60:
     raise newException(Exception, "Timeout")
   return true

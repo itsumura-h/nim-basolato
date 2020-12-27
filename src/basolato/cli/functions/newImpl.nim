@@ -65,6 +65,18 @@ requires "faker >= 0.12.1"
       defer: f.close()
       f.write(nimble)
 
+    let test = """
+import unittest
+
+suite "test suite":
+  test "sample":
+    check true
+"""
+    block:
+      let f = open(&"{dirPath}/tests/test_sample.nim", fmWrite)
+      defer: f.close()
+      f.write(test)
+
     styledEcho(fgBlack, bgGreen, &"[Success] Created project in {dirpath} ", resetStyle)
     return 0
   except:

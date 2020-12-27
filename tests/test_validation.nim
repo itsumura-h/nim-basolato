@@ -5,10 +5,10 @@ import allographer/query_builder
 import allographer/schema_builder
 
 proc createValid(row:JsonNode):RequestValidation =
-  var rps = RequestParams()
+  var params = Params()
   for k, v in row:
-    rps[k] = RequestParam(body:v.getStr)
-  return newValidation(rps)
+    params[k] = Param(value:v.getStr)
+  return newValidation(params)
 
 suite "validation":
   test "accepted":

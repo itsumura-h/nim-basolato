@@ -1,4 +1,4 @@
-import unittest, times
+import unittest, times, asyncdispatch
 
 include ../src/basolato/core/security
 
@@ -97,7 +97,7 @@ suite "csrf token":
 
 
 
-let sessionDb = newSessionDb()
+let sessionDb = waitFor newSessionDb()
 
 suite "SessionDb":
   test "newSessionDb":
@@ -105,76 +105,76 @@ suite "SessionDb":
     check sessionDb.token.len > 0
  
   test "set get":
-    let result = sessionDb
-                  .set("key1", "value1")
-                  .get("key1")
+    waitFor sessionDb.set("key1", "value1")
+    let result = waitFor sessionDb.get("key1")
     echo result
     check result == "value1"
 
   test "some":
-    let result = sessionDb
-                  .set("key1", "value1")
-    check result.some("key1") == true
-    check result.some("key2") == false
+    waitFor sessionDb.set("key1", "value1")
+    check true == waitFor sessionDb.some("key1")
+    check false == waitFor sessionDb.some("key2")
 
   test "delete":
-    let result = sessionDb
-                  .set("key2", "value2")
-                  .delete("key2")
-                  .get("key2")
+    waitFor sessionDb.set("key2", "value2")
+    waitFor sessionDb.delete("key2")
+    let result = waitFor sessionDb.get("key2")
     check result == ""
 
   test "destroy":
-    let sessionDb = newSessionDb()
-      .set("key_sessionDb", "value sessionDb")
-    sessionDb.destroy()
+    let sessionDb = waitFor newSessionDb()
+    waitFor sessionDb.set("key_sessionDb", "value sessionDb")
+    waitFor sessionDb.destroy()
     var result = ""
     try:
-      result = sessionDb.get("key_sessionDb")
+      result = waitFor sessionDb.get("key_sessionDb")
     except:
       check result == ""
 
 
 suite "Session":
   test "newSession":
-    let session = newSession()
-    echo session.getToken()
-    check session.getToken.len > 0
+    let session = waitFor newSession()
+    echo waitFor session.getToken()
+    check waitFor(session.getToken).len > 0
 
   test "set":
-    let token = sessionDb.getToken()
+    let token = waitFor sessionDb.getToken()
     echo token
     try:
-      newSession(token).set("key_session", "value_session")
+      let session = waitFor newSession(token)
+      waitFor session.set("key_session", "value_session")
       check true
     except:
       check false
 
   test "some":
-    let token = sessionDb.getToken()
-    check newSession(token).some("key_session") == true
-    check newSession(token).some("false") == false
+    let token = waitFor sessionDb.getToken()
+    let session = waitFor newSession(token)
+    check waitFor(session.some("key_session")) == true
+    check waitFor(session.some("false")) == false
 
   test "get":
-    let token = sessionDb.getToken()
+    let token = waitFor sessionDb.getToken()
     echo token
-    let result = newSession(token).get("key_session")
+    let session = waitFor newSession(token)
+    let result = waitFor session.get("key_session")
     echo result
     check result == "value_session"
 
   test "delete":
-    let token = sessionDb.getToken()
-    let session = newSession(token)
-    session.delete("key_session")
-    check session.get("key_session") == ""
+    let token = waitFor sessionDb.getToken()
+    let session = waitFor newSession(token)
+    waitFor session.delete("key_session")
+    check waitFor(session.get("key_session")) == ""
 
   test "destroy":
-    let token = sessionDb.getToken()
-    var session = newSession(token)
-    session.set("key_session2", "value_session2")
-    session.destroy()
+    let token = waitFor sessionDb.getToken()
+    var session = waitFor newSession(token)
+    waitFor session.set("key_session2", "value_session2")
+    waitFor session.destroy()
     var result = ""
     try:
-      result = session.get("key_session2")
+      result = waitFor session.get("key_session2")
     except:
       check result == ""
