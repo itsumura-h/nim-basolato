@@ -148,6 +148,7 @@ nim c -r main
 - [ducere CLI tool](./documents/ducere.md)
 - [Routing](./documents/routing.md)
 - [Controller](./documents/controller.md)
+- [Request](./documents/request.md)
 - [Middleware](./documents/middleware.md)
 - [Headers](./documents/headers.md)
 - [Migration](./documents/migration.md)
