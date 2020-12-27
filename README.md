@@ -29,7 +29,7 @@ An asynchronous full-stack web framework for Nim, based on [asynchttpserver](htt
       * [Development](#development)
          * [Generate TOC of documents](#generate-toc-of-documents)
 
-<!-- Added by: root, at: Fri Dec 25 17:28:23 UTC 2020 -->
+<!-- Added by: root, at: Sun Dec 27 18:18:33 UTC 2020 -->
 
 <!--te-->
 
@@ -97,17 +97,21 @@ The overall file structure is as follows:
 │   ├── controllers
 │   │   ├── README.md
 │   │   └── welcome_controller.nim
-│   ├── domain
-│   │   ├── models
-│   │   │   ├── README.md
-│   │   │   ├── di_container.nim
-│   │   │   └── value_objects.nim
-│   │   └── usecases
-│   │       └── README.md
-│   └── middlewares
-│       ├── README.md
-│       ├── custom_headers_middleware.nim
-│       └── framework_middleware.nim
+│   ├── domain
+│   │   ├── di_container.nim
+│   │   ├── models
+│   │   │   ├── README.md
+│   │   │   └── value_objects.nim
+│   │   ├── query_services
+│   │   │   ├── README.md
+│   │   │   ├── query_service_interface.nim
+│   │   │   └── rdb_query_service.nim
+│   │   └── usecases
+│   │       └── README.md
+│   └── middlewares
+│       ├── README.md
+│       ├── auth_middleware.nim
+│       └── custom_headers_middleware.nim
 ├── config.nims
 ├── main.nim
 ├── migrations
@@ -122,14 +126,15 @@ The overall file structure is as follows:
 │   └── js
 ├── resources
 │   ├── README.md
-│   ├── layouts
-│   │   ├── application.nim
-│   │   └── head.nim
+│   ├── layouts
+│   │   ├── application_view.nim
+│   │   └── head_view.nim
 │   └── pages
 │       └── welcome_view.nim
 ├── session.db
 ├── {project_name}.nimble
 └── tests
+    └── test_sample.nim
 ```
 
 With your project ready, you can start serving requests using `ducere`:
