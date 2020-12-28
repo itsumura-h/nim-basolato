@@ -20,3 +20,4 @@ putEnv("SESSION_TYPE", "redis") # file or redis
 putEnv("SESSION_DB_PATH", "redis")
 putEnv("REDIS_PORT", "6379")
 putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
+putEnv("COOKIE_DOMAIN", "amazon.com, google.com")

@@ -13,5 +13,6 @@ const
   SESSION_DB_PATH*  = getEnv("SESSION_DB_PATH").string
   REDIS_PORT*       = getEnv("REDIS_PORT").string.parseInt
   SESSION_TIME*     = getEnv("SESSION_TIME").string.parseInt
+  COOKIE_DOMAINS*    = getEnv("COOKIE_DOMAINS").string
   # Run
   PORT_NUM*         = getEnv("port").string.parseInt
