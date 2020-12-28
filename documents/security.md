@@ -113,8 +113,6 @@ type Auth* = ref object
 ```nim
 proc newAuth*(request:Request):Future[Auth] {.async.} =
 
-proc newAuth*():Future[Auth] {.async.} =
-
 proc login*(this:Auth) {.async.} =
 
 proc logout*(this:Auth) {.async.} =
