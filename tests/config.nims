@@ -21,5 +21,6 @@ putEnv("SESSION_TYPE", "file") # file or redis
 putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
 putEnv("SESSION_DB_PATH", "/root/project/tests/server/session.db")
 putEnv("REDIS_PORT", "6379")
+putEnv("COOKIE_DOMAINS", "")
 
 putEnv("port", "5000")
