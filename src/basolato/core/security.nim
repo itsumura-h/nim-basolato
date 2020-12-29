@@ -292,8 +292,8 @@ proc toCookieStr*(this:CookieData):string =
               this.secure, this.httpOnly, this.sameSite)
 
 
-proc newCookieData*(name, value:string, expire:DateTime, sameSite: SameSite=Lax,
-      secure, httpOnly=false, domain = "", path = "/"):CookieData =
+proc newCookieData*(name, value:string, expire:DateTime, sameSite:SameSite=Lax,
+      secure, httpOnly=false, domain="", path="/"):CookieData =
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(expire.utc, f)
   when defined(release):
@@ -336,38 +336,20 @@ proc set*(this:var Cookie, name, value: string, expire:DateTime,
       path = "/") =
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(expire.utc, f)
-  if COOKIE_DOMAINS.len > 0:
-    for domain in COOKIE_DOMAINS.split(","):
-      var newDomain = domain
-      newDomain.removePrefix()
-      this.cookies.add(
-        CookieData(name:name, value:value, expire:expireStr, sameSite:sameSite,
-          secure:secure, httpOnly:httpOnly, domain:newDomain, path:path)
-      )
-  else:
-    this.cookies.add(
-      CookieData(name:name, value:value, expire:expireStr, sameSite:sameSite,
-        secure:secure, httpOnly:httpOnly, domain:domain, path:path)
-    )
+  this.cookies.add(
+    newCookieData(name=name, value=value, expire=expireStr, sameSite=sameSite,
+      secure=secure, httpOnly=httpOnly, domain=domain, path=path)
+  )
 
 proc set*(this:var Cookie, name, value: string, sameSite: SameSite=Lax,
       secure = false, httpOnly = false, domain = "", path = "/") =
   let expires = timeForward(SESSION_TIME, Minutes)
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(expires.utc, f)
-  if COOKIE_DOMAINS.len > 0:
-    for domain in COOKIE_DOMAINS.split(","):
-        var newDomain = domain
-        newDomain.removePrefix()
-        this.cookies.add(
-          CookieData(name:name, value:value, expire:expireStr, sameSite:sameSite,
-            secure:secure, httpOnly:httpOnly, domain:newDomain, path:path)
-        )
-  else:
-    this.cookies.add(
-      CookieData(name:name, value:value, expire:expireStr, sameSite:sameSite,
-        secure:secure, httpOnly:httpOnly, domain:domain, path:path)
-    )
+  this.cookies.add(
+    newCookieData(name=name, value=value, expire=expireStr, sameSite=sameSite,
+      secure=secure, httpOnly=httpOnly, domain=domain, path=path)
+  )
 
 proc updateExpire*(this:var Cookie, name:string, num:int,
                     timeUnit:TimeUnit, path="/") =
@@ -380,6 +362,18 @@ proc updateExpire*(this:var Cookie, name:string, num:int,
       if rowArr[0] == name:
         this.cookies.add(newCookieData(rowArr[0], rowArr[1], expire=expireStr))
         break
+
+proc updateExpire*(this:var Cookie, num:int, time:TimeUnit) =
+  let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
+  let expireStr = format(timeForward(num, time).utc, f)
+  if this.request.headers.hasKey("Cookie"):
+    let cookiesStrArr = this.request.headers["Cookie"].split("; ")
+    for row in cookiesStrArr:
+      let name = row.split("=")[0]
+      let value = row.split("=")[1]
+      this.cookies.add(
+        newCookieData(name=name, value=value, expire=expireStr)
+      )
 
 proc delete*(this:var Cookie, key:string, path="/") =
   this.cookies.add(
