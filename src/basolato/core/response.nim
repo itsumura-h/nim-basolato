@@ -104,17 +104,36 @@ proc errorRedirect*(url:string):Response =
 # ========== Auth ====================
 proc setAuth*(response:Response, auth:Auth):Future[Response] {.async.} =
   let sessionId = await auth.getToken()
-  let cookie = if SESSION_TIME > 0:
-    newCookieData(
+  if SESSION_TIME > 0 and COOKIE_DOMAINS.len > 0:
+    for domain in COOKIE_DOMAINS.split(","):
+      let newDomain = domain.strip()
+      let cookie = newCookieData(
+        "session_id",
+        sessionId,
+        timeForward(SESSION_TIME, Minutes),
+        domain=newDomain
+      ).toCookieStr()
+      response.headers.add(("Set-cookie", cookie))
+  elif SESSION_TIME == 0 and COOKIE_DOMAINS.len > 0:
+    for domain in COOKIE_DOMAINS.split(","):
+      let newDomain = domain.strip()
+      let cookie = newCookieData(
+        "session_id",
+        sessionId,
+        domain=newDomain
+      ).toCookieStr()
+      response.headers.add(("Set-cookie", cookie))
+  elif SESSION_TIME > 0 and COOKIE_DOMAINS.len == 0:
+    let cookie = newCookieData(
       "session_id",
       sessionId,
       timeForward(SESSION_TIME, Minutes)
-    )
-    .toCookieStr()
+    ).toCookieStr()
+    response.headers.add(("Set-cookie", cookie))
   else:
-    newCookieData("session_id", sessionId).toCookieStr()
+    let cookie = newCookieData("session_id", sessionId).toCookieStr()
+    response.headers.add(("Set-cookie", cookie))
 
-  response.headers.add(("Set-cookie", cookie))
   return response
 
 

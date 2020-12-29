@@ -250,7 +250,9 @@ proc set*(this:var Cookie, name, value: string, expire:DateTime,
 proc set*(this:var Cookie, name, value: string, sameSite: SameSite=Lax,
       secure = false, httpOnly = false, domain = "", path = "/") =
 
-proc updateExpire*(this:var Cookie, name:string, days:int, path="/") =
+proc updateExpire*(this:var Cookie, name:string, num:int, timeUnit:TimeUnit, path="/") =
+
+proc updateExpire*(this:var Cookie, num:int, time:TimeUnit) =
 
 proc delete*(this:Cookie, key:string, path="/"):Cookie =
 
@@ -258,6 +260,15 @@ proc destroy*(this:Cookie, path="/"):Cookie =
 
 proc setCookie*(response:Response, cookie:Cookie):Response =
 ```
+
+### How to create cookie for multiple domains
+You can define multiple domains for cookie in setting of `config.nims`
+
+config.nims
+```nim
+putEnv("COOKIE_DOMAINS", "localhost, nim-lang.org, github.com")
+```
+
 
 ### Sample
 get cookie
@@ -309,18 +320,13 @@ Basolato use [nimAES](https://github.com/jangko/nimAES) as session DB. We have a
 If you set `sessionId` in arg of `newSession()`, it return existing session otherwise create new session.
 
 ```nim
-type 
-  SessionType* = enum
-    File
-    Redis # Not work now
-
-  Session* = ref object
-    db: SessionDb
+Session* = ref object
+  db: SessionDb
 ```
 
 ### API
 ```nim
-proc newSession*(token="", typ:SessionType=File):Future[Session] {.async.} =
+proc newSession*(token=""):Future[Session] {.async.} =
   # If you set valid token, it connect to existing session.
   # If you don't set token, it creates new session.
 
@@ -334,7 +340,7 @@ proc get*(this:Session, key:string):Future[string] {.async.} =
 
 proc delete*(this:Session, key:string) {.async.} =
 
-proc delete*(this:Session, key:string) {.async.} =
+proc destroy*(this:Session) {.async.} =
 ```
 
 ### Sample

@@ -1,6 +1,6 @@
 import
   asynchttpserver, asyncdispatch, json, strformat, macros, strutils, os,
-  asyncfile, mimetypes, re, tables
+  asyncfile, mimetypes, re, tables, times
 from osproc import countProcessors
 import baseEnv, request, response, header, logger, error_page, resources/ddPage,
   security
@@ -226,6 +226,10 @@ proc serveCore(params:(Routes, int)){.thread.} =
     let auth = await newAuth(req)
     if await auth.anonumousCreateSession():
       response = await response.setAuth(auth)
+    else:
+      var cookie = newCookie(req)
+      cookie.updateExpire(SESSION_TIME, Minutes)
+      response = response.setCookie(cookie)
 
     await req.respond(response.status, response.body, response.headers.toResponse())
     # keep-alive
