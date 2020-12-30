@@ -8,7 +8,7 @@ type Response* = ref object
 
 
 proc render*(status:HttpCode, body:string):Response =
-  var headers = newDefaultHeaders()
+  var headers = newHeaders()
   headers.set("Content-Type", "text/html; charset=UTF-8")
   return Response(
     status:status,
@@ -37,7 +37,7 @@ proc render*(body:string, headers:var Headers):Response =
   )
 
 proc render*(body:string):Response =
-  var headers = newDefaultHeaders()
+  var headers = newHeaders()
   headers.set("Content-Type", "text/html; charset=UTF-8")
   return Response(
     status:Http200,
@@ -46,7 +46,7 @@ proc render*(body:string):Response =
   )
 
 proc render*(status:HttpCode, body:JsonNode):Response =
-  var headers = newDefaultHeaders()
+  var headers = newHeaders()
   headers.set("Content-Type", "application/json; charset=utf-8")
   return Response(
     status:status,
@@ -75,7 +75,7 @@ proc render*(body:JsonNode, headers:var Headers):Response =
   )
 
 proc render*(body:JsonNode):Response =
-  var headers = newDefaultHeaders()
+  var headers = newHeaders()
   headers.set("Content-Type", "application/json; charset=utf-8")
   return Response(
     status:Http200,
@@ -84,7 +84,7 @@ proc render*(body:JsonNode):Response =
   )
 
 proc redirect*(url:string):Response =
-  var headers = newDefaultHeaders()
+  var headers = newHeaders()
   headers.set("Location", url)
   return Response(
     status:Http303,
@@ -93,7 +93,7 @@ proc redirect*(url:string):Response =
   )
 
 proc errorRedirect*(url:string):Response =
-  var headers = newDefaultHeaders()
+  var headers = newHeaders()
   headers.set("Location", url)
   return Response(
     status:Http302,

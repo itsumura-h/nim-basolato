@@ -13,8 +13,9 @@ type Route* = ref object
   action*:proc(r:Request, p:Params):Future[Response]
 
 type MiddlewareRoute* = ref object
-  path*:string
-  action*:proc(r:Request, p:Params) {.async.}
+  httpMethods*:seq[HttpMethod]
+  path*:Regex
+  action*:proc(r:Request, p:Params):Future[Response]
 
 
 proc params*(request:Request, route:Route):Params =
@@ -33,8 +34,8 @@ proc params*(request:Request, middleware:MiddlewareRoute):Params =
   let url = request.path
   let path = middleware.path
   let params = Params()
-  for k, v in getUrlParams(url, path).pairs:
-    params[k] = v
+  # for k, v in getUrlParams(url, path).pairs:
+  #   params[k] = v
   for k, v in getQueryParams(request).pairs:
     params[k] = v
   for k, v in getRequestParams(request).pairs:
@@ -63,9 +64,28 @@ proc add*(this:var Routes, httpMethod:HttpMethod, path:string, action:proc(r:Req
   else:
     this.withoutParams[ $httpMethod & ":" & path ] = route
 
-proc middleware*(this:var Routes, path:string, action:proc(r:Request, p:Params){.async.}) =
+proc middleware*(
+  this:var Routes,
+  path:Regex,
+  action:proc(r:Request, p:Params):Future[Response]
+) =
   this.middlewares.add(
     MiddlewareRoute(
+      httpMethods: newSeq[HttpMethod](),
+      path: path,
+      action: action
+    )
+  )
+
+proc middleware*(
+  this:var Routes,
+  httpMethods:seq[HttpMethod],
+  path:Regex,
+  action:proc(r:Request, p:Params):Future[Response]
+) =
+  this.middlewares.add(
+    MiddlewareRoute(
+      httpMethods: httpMethods,
       path: path,
       action: action
     )
@@ -151,6 +171,9 @@ proc serveCore(params:(Routes, int)){.thread.} =
     try:
       let params = req.params(route)
       response = await route.action(req, params)
+      response.headers = response.headers & headers
+      echo headers
+      echo response.headers
       logger($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
     except Exception:
       headers.set("Content-Type", "text/html; charset=UTF-8")
@@ -186,9 +209,14 @@ proc serveCore(params:(Routes, int)){.thread.} =
         # middleware:
         for route in routes.middlewares:
           try:
-            if find(req.path, re route.path) >= 0:
-              let params = req.params(route)
-              await route.action(req, params)
+            if route.httpMethods.len > 0:
+              if findAll(req.path, route.path).len > 0 and route.httpMethods.contains(req.httpMethod):
+                let params = req.params(route)
+                response = await route.action(req, params)
+            else:
+              if findAll(req.path, route.path).len > 0:
+                let params = req.params(route)
+                response = await route.action(req, params)
           except:
             headers.set("Content-Type", "text/html; charset=UTF-8")
             let exception = getCurrentException()
@@ -197,7 +225,7 @@ proc serveCore(params:(Routes, int)){.thread.} =
               response = Response(status:Http302, body:"", headers:headers)
             elif exception.name == "ErrorAuthRedirect".cstring:
               headers.set("Location", exception.msg)
-              headers.set("Set-Cookie", "session_id=; expires=31-Dec-1999 23:59:59 GMT")
+              headers.set("Set-Cookie", "session_id=; expires=31-Dec-1999 23:59:59 GMT") # Delete session id
               response = Response(status:Http302, body:"", headers:headers)
             else:
               let status = checkHttpCode(exception)
@@ -205,6 +233,8 @@ proc serveCore(params:(Routes, int)){.thread.} =
               echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
               echoErrorMsg(exception.msg)
             break middlewareAndApp
+        if response.headers.len > 0:
+          headers = headers & response.headers
         # web app routes
         let key = $(req.httpMethod) & ":" & req.path
         if routes.withoutParams.hasKey(key):

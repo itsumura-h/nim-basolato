@@ -1,4 +1,5 @@
 from strutils import join
+import asyncdispatch
 import ../../../../src/basolato/middleware
 
 
@@ -34,3 +35,7 @@ proc secureHeader*(): Headers =
     "Cache-control": ["no-cache", "no-store", "must-revalidate"].join(", "),
     "Pragma": "no-cache",
   }.toHeaders()
+
+proc setCorsHeadersMiddleware*(r:Request, p:Params):Future[Response] {.async.} =
+  let headers = corsHeader() & secureHeader()
+  return next(status=Http204, headers=headers)

@@ -1,7 +1,7 @@
 import asynchttpserver, asyncdispatch, strutils
 export asynchttpserver
-import core/base, core/route, core/security, core/header
-export base, route, security, header
+import core/base, core/route, core/security, core/header, core/response
+export base, route, security, header, response
 
 type MiddlewareResult* = ref object
   isError: bool
@@ -12,6 +12,9 @@ proc isError*(this:MiddlewareResult):bool =
 
 proc message*(this:MiddlewareResult):string =
   return this.message
+
+proc next*(status:HttpCode=Http404, headers:Headers=newHeaders()):Response =
+  return Response(status:status, body:"", headers:headers)
 
 proc checkCsrfToken*(request:Request, params:Params):Future[MiddlewareResult] {.async.} =
   result = MiddlewareResult()
