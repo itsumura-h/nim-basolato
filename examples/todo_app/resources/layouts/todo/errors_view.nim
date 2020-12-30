@@ -9,11 +9,11 @@ let style = block:
   """)
   css
 
-proc errorsView*(auth:Auth):string = tmpli html"""
+proc errorsView*(auth:Auth):Future[string] {.async.} = tmpli html"""
 $(style.define())
-$if auth.hasFlash("error"){
+$if await auth.hasFlash("error"){
   <div class="container $(style.get("errors"))">
-    $for k, v in auth.getFlash().pairs{
+    $for k, v in await(auth.getFlash()).pairs{
       <p class="content">$(v.get)</p>
     }
   </div>
