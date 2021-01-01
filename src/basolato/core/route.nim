@@ -172,8 +172,6 @@ proc serveCore(params:(Routes, int)){.thread.} =
       let params = req.params(route)
       response = await route.action(req, params)
       response.headers = response.headers & headers
-      echo headers
-      echo response.headers
       logger($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
     except Exception:
       headers.set("Content-Type", "text/html; charset=UTF-8")
@@ -193,8 +191,10 @@ proc serveCore(params:(Routes, int)){.thread.} =
     return response
 
   proc cb(req: Request) {.async, gcsafe.} =
-    var headers = newDefaultHeaders()
-    var response: Response
+    var
+      headers = newDefaultHeaders()
+      response: Response
+      isMiddleware, isWebApp = false
     # static file response
     if req.path.contains("."):
       let filepath = getCurrentDir() & "/public" & req.path
@@ -213,10 +213,12 @@ proc serveCore(params:(Routes, int)){.thread.} =
               if findAll(req.path, route.path).len > 0 and route.httpMethods.contains(req.httpMethod):
                 let params = req.params(route)
                 response = await route.action(req, params)
+                isMiddleware = true
             else:
               if findAll(req.path, route.path).len > 0:
                 let params = req.params(route)
                 response = await route.action(req, params)
+                isMiddleware = true
           except:
             headers.set("Content-Type", "text/html; charset=UTF-8")
             let exception = getCurrentException()
@@ -233,24 +235,29 @@ proc serveCore(params:(Routes, int)){.thread.} =
               echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
               echoErrorMsg(exception.msg)
             break middlewareAndApp
-        if response.headers.len > 0:
-          headers = headers & response.headers
+          if response.headers.len > 0:
+            headers.add(response.headers)
         # web app routes
         let key = $(req.httpMethod) & ":" & req.path
         if routes.withoutParams.hasKey(key):
           let route = routes.withoutParams[key]
           response = await createResponse(req, route, headers)
+          isWebApp = true
           break middlewareAndApp
         else:
           for route in routes.withParams:
             if route.httpMethod == req.httpMethod and isMatchUrl(req.path, route.path):
               response = await createResponse(req, route, headers)
+              isWebApp = true
               break middlewareAndApp
 
     if response.isNil:
       headers.set("Content-Type", "text/html; charset=UTF-8")
       response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)
       echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
+
+    if not isWebApp and isMiddleware:
+      response.headers = headers
 
     # anonymous user login
     let auth = await newAuth(req)
