@@ -36,12 +36,6 @@ proc secureHeader*(): Headers =
     "Pragma": "no-cache",
   }.toHeaders()
 
-proc setCorsHeadersMiddleware*(r:Request, p:Params):Future[Response] {.async.} =
+proc setCorsMiddleware*(r:Request, p:Params):Future[Response] {.async.} =
   let headers = corsHeader() & secureHeader()
   return next(status=Http204, headers=headers)
-
-proc mockCorsMiddleware*(r:Request, p:Params):Future[Response] {.async.} =
-  let headers = {
-    "key1": "value1"
-  }.toHeaders()
-  return next(Http204, headers)

@@ -13,7 +13,7 @@ proc isError*(this:MiddlewareResult):bool =
 proc message*(this:MiddlewareResult):string =
   return this.message
 
-proc next*(status:HttpCode=Http404, headers:Headers=newHeaders()):Response =
+proc next*(status:HttpCode=HttpCode(0), headers:Headers=newHeaders()):Response =
   return Response(status:status, body:"", headers:headers)
 
 proc checkCsrfToken*(request:Request, params:Params):Future[MiddlewareResult] {.async.} =

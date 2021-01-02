@@ -14,12 +14,12 @@ import app/middlewares/cors_middleware
 var routes = newRoutes()
 
 routes.middleware(re".*", auth_middleware.checkCsrfTokenMiddleware)
-routes.middleware(@[HttpOptions], re"/api/.*", cors_middleware.setCorsHeadersMiddleware)
-routes.middleware(@[HttpOptions], re"/api/.*", cors_middleware.mockCorsMiddleware)
+routes.middleware(@[HttpOptions], re"/api/.*", cors_middleware.setCorsMiddleware)
 
 routes.get("/", page_display_controller.index)
 routes.get("/api/test1", benchmark_controller.test1)
 routes.get("/api/test2", benchmark_controller.test2)
+routes.put("/api/test2", benchmark_controller.test2)
 groups "/sample":
   routes.get("/welcome", page_display_controller.welcome)
   routes.get("/fib/{num:int}", page_display_controller.fib)

@@ -63,6 +63,8 @@ proc add*(this:var Routes, httpMethod:HttpMethod, path:string, action:proc(r:Req
     this.withParams.add(route)
   else:
     this.withoutParams[ $httpMethod & ":" & path ] = route
+    if not @[HttpGet, HttpHead, HttpPost].contains(httpMethod):
+      this.withoutParams[ $(HttpOptions) & ":" & path ] = route
 
 proc middleware*(
   this:var Routes,
@@ -161,40 +163,44 @@ proc checkHttpCode(exception:ref Exception):HttpCode =
   createHttpCodeError
 
 
+proc runMiddleware(req:Request, routes:Routes, headers:Headers):Future[Response] {.async, gcsafe.} =
+  var
+    response: Response
+    headers = headers
+    status = HttpCode(0)
+  for route in routes.middlewares:
+    if route.httpMethods.len > 0:
+      if findAll(req.path, route.path).len > 0 and route.httpMethods.contains(req.httpMethod):
+        let params = req.params(route)
+        response = await route.action(req, params)
+    else:
+      if findAll(req.path, route.path).len > 0:
+        let params = req.params(route)
+        response = await route.action(req, params)
+    if response.headers.len > 0:
+      headers = response.headers & headers
+    if response.status != HttpCode(0):
+      status = response.status
+  response.headers = headers
+  response.status = status
+  return response
+
+proc runController(req:Request, route:Route, headers: Headers):Future[Response] {.async, gcsafe.} =
+  var response: Response
+  let params = req.params(route)
+  response = await route.action(req, params)
+  response.headers = response.headers & headers
+  echoLog($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
+  return response
+
 proc serveCore(params:(Routes, int)){.thread.} =
   let (routes, port) = params
   var server = newAsyncHttpServer(true, true)
 
-  proc createResponse(req:Request, route:Route, headers: Headers):Future[Response] {.async, gcsafe.} =
-    var response: Response
-    var headers = headers
-    try:
-      let params = req.params(route)
-      response = await route.action(req, params)
-      response.headers = response.headers & headers
-      logger($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
-    except Exception:
-      headers.set("Content-Type", "text/html; charset=UTF-8")
-      let exception = getCurrentException()
-      if exception.name == "DD".cstring:
-        var msg = exception.msg
-        msg = msg.replace(re"Async traceback:[.\s\S]*")
-        response = Response(status:Http200, body:ddPage(msg), headers:headers)
-      elif exception.name == "ErrorRedirect".cstring:
-        headers.set("Location", exception.msg)
-        response = Response(status:Http302, body:"", headers:headers)
-      else:
-        let status = checkHttpCode(exception)
-        response = Response(status:status, body:errorPage(status, exception.msg), headers:headers)
-        echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
-        echoErrorMsg(exception.msg)
-    return response
-
   proc cb(req: Request) {.async, gcsafe.} =
     var
-      headers = newDefaultHeaders()
+      headers: Headers
       response: Response
-      isMiddleware, isWebApp = false
     # static file response
     if req.path.contains("."):
       let filepath = getCurrentDir() & "/public" & req.path
@@ -205,59 +211,49 @@ proc serveCore(params:(Routes, int)){.thread.} =
         headers.set("Content-Type", contentType)
         response = Response(status:Http200, body:data, headers:headers)
     else:
-      block middlewareAndApp:
-        # middleware:
-        for route in routes.middlewares:
-          try:
-            if route.httpMethods.len > 0:
-              if findAll(req.path, route.path).len > 0 and route.httpMethods.contains(req.httpMethod):
-                let params = req.params(route)
-                response = await route.action(req, params)
-                isMiddleware = true
-            else:
-              if findAll(req.path, route.path).len > 0:
-                let params = req.params(route)
-                response = await route.action(req, params)
-                isMiddleware = true
-          except:
-            headers.set("Content-Type", "text/html; charset=UTF-8")
-            let exception = getCurrentException()
-            if exception.name == "ErrorRedirect".cstring:
-              headers.set("Location", exception.msg)
-              response = Response(status:Http302, body:"", headers:headers)
-            elif exception.name == "ErrorAuthRedirect".cstring:
-              headers.set("Location", exception.msg)
-              headers.set("Set-Cookie", "session_id=; expires=31-Dec-1999 23:59:59 GMT") # Delete session id
-              response = Response(status:Http302, body:"", headers:headers)
-            else:
-              let status = checkHttpCode(exception)
-              response = Response(status:status, body:errorPage(status, exception.msg), headers:headers)
-              echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
-              echoErrorMsg(exception.msg)
-            break middlewareAndApp
-          if response.headers.len > 0:
-            headers.add(response.headers)
-        # web app routes
+      # check controller routing
+      try:
         let key = $(req.httpMethod) & ":" & req.path
         if routes.withoutParams.hasKey(key):
           let route = routes.withoutParams[key]
-          response = await createResponse(req, route, headers)
-          isWebApp = true
-          break middlewareAndApp
+          response = await runMiddleware(req, routes, headers)
+          if req.httpMethod != HttpOptions:
+            headers = headers & response.headers
+            response = await runController(req, route, headers)
         else:
           for route in routes.withParams:
             if route.httpMethod == req.httpMethod and isMatchUrl(req.path, route.path):
-              response = await createResponse(req, route, headers)
-              isWebApp = true
-              break middlewareAndApp
+              response = await runMiddleware(req, routes, headers)
+              if req.httpMethod != HttpOptions:
+                headers = headers & response.headers
+                response = await runController(req, route, headers)
+                break
+      except:
+        headers.set("Content-Type", "text/html; charset=UTF-8")
+        let exception = getCurrentException()
+        if exception.name == "DD".cstring:
+          var msg = exception.msg
+          msg = msg.replace(re"Async traceback:[.\s\S]*")
+          response = Response(status:Http200, body:ddPage(msg), headers:headers)
+        elif exception.name == "ErrorAuthRedirect".cstring:
+          headers.set("Location", exception.msg)
+          headers.set("Set-Cookie", "session_id=; expires=31-Dec-1999 23:59:59 GMT") # Delete session id
+          response = Response(status:Http302, body:"", headers:headers)
+        elif exception.name == "ErrorRedirect".cstring:
+          headers.set("Location", exception.msg)
+          response = Response(status:Http302, body:"", headers:headers)
+        else:
+          let status = checkHttpCode(exception)
+          response = Response(status:status, body:errorPage(status, exception.msg), headers:headers)
+          echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
+          echoErrorMsg(exception.msg)
 
     if response.isNil:
       headers.set("Content-Type", "text/html; charset=UTF-8")
       response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)
       echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
 
-    if not isWebApp and isMiddleware:
-      response.headers = headers
+    response.headers.setDefaultHeaders()
 
     # anonymous user login
     let auth = await newAuth(req)
