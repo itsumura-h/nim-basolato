@@ -1,6 +1,6 @@
-ducere command
+Ducere command
 ===
-[back](../README.md)
+[back](../../README.md)
 
 `ducere` is a CLI tool for Basolato framework such as `rake`/`php artisan`.
 

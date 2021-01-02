@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="./documents/basolato.svg" style="width:160px">
+  <img src="./documents/images/basolato.svg" style="width:160px">
 </p>
 <div align="center">
   <h1>Basolato Framework</h1>
@@ -150,19 +150,20 @@ nim c -r main
 
 ## Documentation
 
-- [ducere CLI tool](./documents/ducere.md)
-- [Routing](./documents/routing.md)
-- [Controller](./documents/controller.md)
-- [Request](./documents/request.md)
-- [Middleware](./documents/middleware.md)
-- [Headers](./documents/headers.md)
-- [Migration](./documents/migration.md)
-- [View](./documents/view.md)
-- [Error](./documents/error.md)
-- [Validation](./documents/validation.md)
-- [Security (CsrfToken, Cookie, Session, Auth)](./documents/security.md)
-- [Password](./documents/password.md)
-- [Helper](./documents/helper.md)
+- [ducere CLI tool](./documents/en/ducere.md)
+- [Routing](./documents/en/routing.md)
+- [Controller](./documents/en/controller.md)
+- [Request](./documents/en/request.md)
+- [Middleware](./documents/en/middleware.md)
+- [Headers](./documents/en/headers.md)
+- [Migration](./documents/en/migration.md)
+- [View](./documents/en/view.md)
+- [Error](./documents/en/error.md)
+- [Validation](./documents/en/validation.md)
+- [Security (CsrfToken, Cookie, Session, Auth)](./documents/en/security.md)
+- [Password](./documents/en/password.md)
+- [Helper](./documents/en/helper.md)
+- [Logging](./documents/en/logging.md)
 
 ## Benchmark
 - https://github.com/the-benchmarker/web-frameworks

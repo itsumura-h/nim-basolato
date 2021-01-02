@@ -1,6 +1,6 @@
 Middleware
 ===
-[back](../README.md)
+[back](../../README.md)
 
 Table of Contents
 
@@ -12,9 +12,36 @@ Table of Contents
 
 <!--te-->
 
-## Routing middleware
+## API
+```nim
+proc middleware*(
+  this:var Routes,
+  path:Regex,
+  action:proc(r:Request, p:Params):Future[Response]
+) =
+
+proc middleware*(
+  this:var Routes,
+  httpMethods:seq[HttpMethod],
+  path:Regex,
+  action:proc(r:Request, p:Params):Future[Response]
+) =
+```
+
+## Sample
 You can run middleware methods before calling controller.  
 In following example, `checkCsrfTokenMiddleware()` and `checkAuthTokenMiddleware()` definded in `app/middleware/auth_middlware.nim` are called
+
+main.nim
+```nim
+import re
+import basolato
+import app/middlewares/auth_middleware
+
+var routes = newRoutes()
+routes.middleware(re".*", auth_middleware.checkLoginIdMiddleware)
+serve(routes)
+```
 
 app/middleware/auth_middlware.nim
 ```nim
@@ -32,22 +59,11 @@ proc checkLoginId*(r:Request, p:Params):Future[Response] {.async.} =
   return next()
 ```
 
-main.nim
-```nim
-import re
-import basolato
-import app/middlewares/auth_middleware
-
-var routes = newRoutes()
-routes.middleware(re".*", auth_middleware.checkLoginIdMiddleware)
-serve(routes)
-```
-
 If `X-login-id` or `X-login-token` are missing in request header, return 403 otherwise 200.
 
 ---
 
-Moreover, If you want to redirect to login page when login check is fail, you can use `ErrorRedirect`. It calls `Error 302`.
+If you want to redirect to login page when login check is fail, you can use `ErrorRedirect`. It calls `Error 302`.
 
 app/middleware/auth_middlware.nim
 ```nim
@@ -60,4 +76,22 @@ proc checkLoginId*(r:Request, p:Params):Future[Response] {.async.} =
   if not r.headers.hasKey("X-login-token"):
     raise newException(ErrorRedirect, "/login")
   return next()
+```
+
+---
+
+As in CORS, if you want to return a response made by the middleware to the client instead of the controller, you can set an argument to the `next` proc.  
+In following example, `setCorsMiddleware` run only in `OPTIONS` requests.
+
+main.nim
+```nim
+var routes = newRoutes()
+routes.middleware(@[HttpOptions], re"/api/.*", cors_middleware.setCorsMiddleware)
+```
+
+app/middleware/cors_middlware.nim
+```nim
+proc setCorsMiddleware*(r:Request, p:Params):Future[Response] {.async.} =
+  let headers = corsHeader() & secureHeader()
+  return next(status=Http204, headers=headers)
 ```
