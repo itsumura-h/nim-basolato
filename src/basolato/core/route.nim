@@ -165,7 +165,7 @@ proc checkHttpCode(exception:ref Exception):HttpCode =
 
 proc runMiddleware(req:Request, routes:Routes, headers:Headers):Future[Response] {.async, gcsafe.} =
   var
-    response: Response
+    response = Response()
     headers = headers
     status = HttpCode(0)
   for route in routes.middlewares:
