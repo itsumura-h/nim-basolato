@@ -1,4 +1,4 @@
-import asyncdispatch, httpcore, tables
+import asyncdispatch, httpcore, tables, re
 # framework
 import ../../src/basolato
 # middleware
@@ -8,8 +8,8 @@ import app/middlewares/auth_middleware
 import app/controllers/test_controller
 
 var routes = newRoutes()
-routes.middleware("/csrf/*", checkCsrfTokenMiddleware)
-routes.middleware("/session/*", checkAuthTokenMiddleware)
+routes.middleware(re"/csrf/*", checkCsrfTokenMiddleware)
+routes.middleware(re"/session/*", checkAuthTokenMiddleware)
 
 # test controller
 routes.get("/renderStr", test_controller.renderStr)

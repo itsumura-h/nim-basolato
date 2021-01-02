@@ -10,7 +10,7 @@ let style = block:
   """)
   css
 
-proc impl(auth:Auth, post:JsonNode):string = tmpli html"""
+proc impl(auth:Auth, post:JsonNode):Future[string] {.async.} = tmpli html"""
 $(style.define())
 <section class="section">
   <div class="container is-max-desktop">
@@ -44,7 +44,7 @@ $(style.define())
         </div>
       </div>
   
-      $(errorsView(auth))
+      $(await errorsView(auth))
   
       <div class="field">
         <div class="controll">
@@ -66,6 +66,6 @@ $(style.define())
 </section>
 """
 
-proc showView*(auth:Auth, post=newJObject()):string =
+proc showView*(auth:Auth, post=newJObject()):Future[string] {.async.} =
   let title = ""
-  return applicationView(title, impl(auth, post))
+  return applicationView(title, await impl(auth, post))

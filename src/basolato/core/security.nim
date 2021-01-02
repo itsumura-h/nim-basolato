@@ -217,9 +217,8 @@ else:
 
 
 # ========= Session ==================
-type
-  Session* = ref object
-    db: SessionDb
+type Session* = ref object
+  db: SessionDb
 
 proc newSession*(token=""):Future[Session] {.async.} =
   # if SESSION_TYPE == "file":
@@ -392,7 +391,7 @@ proc destroy*(this:var Cookie, path="/") =
 
 # ========== Auth ====================
 type Auth* = ref object
-  session*:Session
+  session*: Session
 
 proc newAuth*(request:Request):Future[Auth] {.async.} =
   ## use in constructor

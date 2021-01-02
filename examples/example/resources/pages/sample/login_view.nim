@@ -1,7 +1,7 @@
 import ../../../../../src/basolato/view
 import ../../layouts/application_view
 
-proc impl(auth:Auth):Future[string] {.async.}= tmpli html"""
+proc impl(auth:Auth):Future[string] {.async.} = tmpli html"""
 <a href="/">go back</a>
 <div>
   $if await auth.isLogin(){

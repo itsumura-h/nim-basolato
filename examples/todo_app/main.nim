@@ -1,3 +1,4 @@
+import re
 # framework
 import ../../src/basolato
 # controller
@@ -8,9 +9,9 @@ import app/controllers/todo_controller
 import app/middlewares/auth_middleware
 
 var routes = newRoutes()
-routes.middleware(".*", auth_middleware.checkCsrfTokenMiddleware)
+routes.middleware(re".*", auth_middleware.checkCsrfTokenMiddleware)
 routes.middleware(
-  "^(?!.*(signin|signup|delete-account)).*$",
+  re"^(?!.*(signin|signup|delete-account)).*$",
   auth_middleware.checkAuthTokenMiddleware
 )
 

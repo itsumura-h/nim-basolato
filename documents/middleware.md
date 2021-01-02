@@ -22,21 +22,24 @@ import asyncdispatch
 import basolato/middleware
 
 
-proc checkLoginId*(r:Request, p:Params) {.async.} =
+proc checkLoginId*(r:Request, p:Params):Future[Response] {.async.} =
   if not r.headers.hasKey("X-login-id"):
     raise newException(Error403, "X-login-id is missing in request header")
 
   if not r.headers.hasKey("X-login-token"):
     raise newException(Error403, "X-login-token is missing in request header")
+
+  return next()
 ```
 
 main.nim
 ```nim
+import re
 import basolato
 import app/middlewares/auth_middleware
 
 var routes = newRoutes()
-routes.middleware(".*", auth_middleware.checkLoginIdMiddleware)
+routes.middleware(re".*", auth_middleware.checkLoginIdMiddleware)
 serve(routes)
 ```
 
@@ -50,10 +53,11 @@ app/middleware/auth_middlware.nim
 ```nim
 import basolato/middleware
 
-proc checkLoginId*(r:Request, p:Params) {.async.} =
+proc checkLoginId*(r:Request, p:Params):Future[Response] {.async.} =
   if not r.headers.hasKey("X-login-id"):
     raise newException(ErrorRedirect, "/login")
 
   if not r.headers.hasKey("X-login-token"):
     raise newException(ErrorRedirect, "/login")
+  return next()
 ```

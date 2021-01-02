@@ -1,11 +1,14 @@
+import asyncdispatch
 import ../../../../src/basolato/middleware
 
-proc checkCsrfTokenMiddleware*(r:Request, p:Params) =
-  if not checkCsrfToken(r, p):
-    raise newException(Error403, "Invalid csrf token")
+proc checkCsrfTokenMiddleware*(r:Request, p:Params):Future[Response] {.async.} =
+  let res = await checkCsrfToken(r, p)
+  if res.isError:
+    raise newException(Error403, res.message)
+  return next()
 
-proc checkAuthTokenMiddleware*(r:Request, p:Params) {.async.} =
-  let auth = await newAuth(r)
-  if not await auth.isLogin():
-    # raise newException(ErrorAuthRedirect, "/signin")
+proc checkAuthTokenMiddleware*(r:Request, p:Params):Future[Response] {.async.} =
+  let res = await checkAuthToken(r)
+  if res.isError:
     raise newException(ErrorRedirect, "/signin")
+  return next()

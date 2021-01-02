@@ -24,11 +24,11 @@ proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
     v.valid()
     let usecase = newSignUsecase()
     let user = usecase.signUp(name, email, password)
-    let auth = newAuth(request)
-    auth.login()
-    auth.set("id", $(user["id"].getInt))
-    auth.set("name", user["name"].getStr)
-    return redirect("/").setAuth(auth)
+    let auth = await newAuth(request)
+    await auth.login()
+    await auth.set("id", $(user["id"].getInt))
+    await auth.set("name", user["name"].getStr)
+    return redirect("/")
   except Exception:
     let params = %*{"name": name, "email": email}
     return render(signupView(params, v.errors))
@@ -53,17 +53,17 @@ proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
   try:
     let usecase = newSignUsecase()
     let user = usecase.signIn(email, password)
-    let auth = newAuth(request)
-    auth.login()
-    auth.set("id", $(user["id"].getInt))
-    auth.set("name", user["name"].getStr)
-    return redirect("/").setAuth(auth)
+    let auth = await newAuth(request)
+    await auth.login()
+    await auth.set("id", $(user["id"].getInt))
+    await auth.set("name", user["name"].getStr)
+    return redirect("/")
   except:
     let params = %*{"email": email}
     return render(signInView(params, v.errors))
 
 
 proc signOut*(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = newAuth(request)
-  auth.logout()
+  let auth = await newAuth(request)
+  await auth.logout()
   return redirect("/signin")
