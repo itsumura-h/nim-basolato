@@ -38,7 +38,7 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## Response header
 ### Type of headers
 `toHeaders()` generate `Header` object from `array`, `seq`, `table` and `JsonNode`.  
-[sample code](../tests/test_header.nim)
+[sample code](../../tests/test_header.nim)
 
 
 ```nim
@@ -55,7 +55,7 @@ let headers = [
 
 
 ### Set headers in controller
-Create header instance by `newHeaders()` and add by `set()`. Finally, set header to response with `setHeader()`
+Create header instance by `newHeaders()` and add by `set()`. Finally, set header at the last arge of response.
 ```nim
 proc index*(request:Request, params:Params):Future[Response] {.async.} =
   var header = newHeaders()

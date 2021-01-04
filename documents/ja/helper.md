@@ -1,8 +1,8 @@
-Healper
+ヘルパー関数
 ===
-[back](../../README.md)
+[戻る](../../README.md)
 
-Table of Contents
+コンテンツ
 
 <!--ts-->
    * [Healper](#healper)
@@ -16,8 +16,8 @@ Table of Contents
 ```
 proc dd(outputs:varges[string])
 ```
-`dd()` is essentially adding a break point in your code which dumps the properties of an object to your browser.  
-This proc is only available in develop mode.
+`dd`関数はソースコードの中にブレークポイントを発生させ、引数に入れている文字列をブラウザに表示させます。
+この機能は開発環境でのみ有効になります。
 
 ```nim
 var a = %*{
@@ -26,7 +26,7 @@ var a = %*{
   "key3": "value3",
   "key4": "value4",
 }
-dd($a,　"abc",　this.request.repr)
+dd($a,　"abc", request.repr)
 ```
 
 ![dd](../images/helper-dd.jpg)

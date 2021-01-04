@@ -1,10 +1,8 @@
-Ducere command
+Ducereコマンド
 ===
-[back](../../README.md)
+[戻る](../../README.md)
 
-`ducere` is a CLI tool for Basolato framework such as `rake`/`php artisan`.
-
-Table of Contents
+コンテンツ
 
 <!--ts-->
    * [ducere command](#ducere-command)
@@ -25,16 +23,21 @@ Table of Contents
 
 <!--te-->
 
-## new
-Create new project
-```
+## イントロダクション
+`ducere`はRuby on Railsにおける`rake`、Laravelにおける`php artisan`のようなBasolatoフレームワークのCLIツールです。
+
+## 使い方
+
+### new
+新しくプロジェクトを作ります
+```sh
 pwd
 > /user/local/src
 ducere new my_project
 > Created project /user/local/src/my_project
 ```
 
-```
+```sh
 pwd
 > /user/local/src
 mkdir my_project
@@ -43,33 +46,32 @@ ducere new .
 > Created project /user/local/src/my_project
 ```
 
-## serve
-Run develop server with hot reload
-```
+### serve
+ホットリロードが有効になった開発用サーバーを立ち上げます。
+```sh
 ducere serve
 ```
-The default port is 5000. If you want to change it, specify with option `-p`
 
-```
+デフォルトでは5000番ポートで起動します。`-p`のオプションを付けることで起動ポートを変更できます。
+```sh
 ducere serve -p:8000
 ```
 
-## build
-Compiling for production.  
-By default, it will be compiled to run 5000 port and multithreaded for the number of cores in your PC.
-
-```
+### build
+本番環境用にプロジェクトをビルドします。
+何もオプションを付けない場合、5000番ポートを使い、実行したコンピューターのコア数分マルチスレッドで起動するようになっています。
+```sh
 ducere build
 ./main
 >> Starting 4 threads
 >> Listening on port 5000
 ```
 
-When you specify multi ports, it will be compiled to run each port and singlethreaded.
+複数のポートを指定した場合、シングルスレッドで、それぞれのポートを使って起動する実行バイナリが複数出力されます。
 
-**Running with Multithreads is buggy. I recommand to compile for singlethreaded and run with nginx road balancer.**
+**マルチスレッドでの起動はバグの危険性があります。そのためシングルスレッドで起動し、Nginxでロードバランシングさせることを推奨しています。**
 
-```
+```sh
 ducere build -p:5000,5001,5002
 >> generated main5000, main5001, main5002
 
@@ -82,7 +84,7 @@ ducere build -p:5000,5001,5002
 >> Listening on port 5001
 ```
 
-Here is a sample to run in production environment.
+以下は本番環境で動かすためのNginxのサンプルです。
 
 nginx.conf
 ```nginx
@@ -123,24 +125,26 @@ http {
 }
 ```
 
-## migrate
+### migrate
 ```sh
 ducere migrate
 ```
-This is a alias for `nim c -r migrations/migrate`
+これは`nim c -r migrations/migrate`のエイリアスです
 
 
-## make
-Create new file
+### make
+予め雛形が書かれた新しいファイルを作ります。
 
-### config
-Create `config.nims` for database connection, logging, session-timeout configuation.
+#### config
+
+DBコネクション、ログ、セッションタイムなどを定義するための`config.nims`のファイルを作ります。
 ```
 ducere make config
 ```
 
-### controller
-Create new controller
+#### controller
+
+コントローラーを作ります。
 ```sh
 ducere make controller user
 >> app/controllers/user_controller.nim
@@ -152,8 +156,10 @@ ducere make controller sample/sample2/user
 >> app/controllers/sample/sample2/user_controller.nim
 ```
 
-### view
-Create new view template
+#### view
+
+画面を描画するためのビューテンプレートを作ります。  
+`layout`はコンポーネントのパーツ、`page`は実際にコントローラーから呼び出されるビューです。
 
 ```sh
 ducere make layout buttons/success_button
@@ -165,20 +171,23 @@ ducere make page login
 >> resources/pages/login_view.nim
 ```
 
-### migration
-Create new migration file
+#### migration
+マイグレーションファイルを作ります。
+
 ```sh
 ducere make migration create_user
 >> migrations/migration20200219134020create_user.nim
 ```
 
-### model
-create new domain model
+#### model
+ドメインモデルを作ります。
+
 ```sh
 ducere make model user
 ```
+
 ```
-in app/domain/models
+app/domain/models
 
 user
  ├── repositories
@@ -188,24 +197,24 @@ user
  └── user_service.nim
 ```
 
-### usecase
-Create new usecase
+#### usecase
+ユースケースを作ります。
+
 ```sh
 ducere make usecase login
 >> app/domain/usecases/login_usecase.nim
 ```
 
-### value object
-Add new minimum value object boilerplate.  
+#### value object
+値オブジェクトの最小の雛形を追加します。
 
 ```sh
-ducere make valueobject {arg1} {arg2}
+ducere make valueobject {引数1} {引数2}
 ```
 
-`arg1` is a name of value object which should be Camel Case.  
-`arg2` is a relative path to value object file from `app/domain/models`.
+`引数1`はキャメルケースの値オブジェクトの名前です。  
+`引数2`は`app/domain/models`から値オブジェクトのファイルへの相対パスです。
 
-example
 ```sh
 ducere make valueobject UserName ./value_objects
 >> add UserName in app/domain/models/value_objects

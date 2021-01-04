@@ -1,8 +1,8 @@
-Error
+エラー
 ===
-[back](../../README.md)
+[戻る](../../README.md)
 
-Table of Contents
+コンテンツ
 
 <!--ts-->
    * [Error](#error)
@@ -14,40 +14,46 @@ Table of Contents
 
 <!--te-->
 
-## Introduction
-When exception raised, Basolato will catch excepton and return Exception status response.  
+## イントロダクション
+例外が発生した時、Basolatoフレームワークはそれをキャッチし、例外型が持つステータスのレスポンスをクライアントへ返します。
 
 ```nim
 raise newException(Error403, "session timeout")
 ```
-It return `403 response` and 'session timeout' will be in response body.
+この場合は`403`ステータスコードで、「session timeout」がボディに入っているレスポンスを返します。
 
-Basolato have all response status exception type from `300` to `505`  
-[List of HTTP Status](https://nim-lang.org/docs/httpcore.html#10)
+Basolatoは`300`から`505`までの全てのレスポンスステータスの例外型を持っています。
+
+[HTTPステータスコード一覧](https://ja.wikipedia.org/wiki/HTTPステータスコード)
 
 
-## Raise Error and Redirect
-If you want to redirect when error raised, you can use `errorRedirect` proc.  
-This proc is able to used only in `controller`.
+## 例外発生させながらリダイレクトさせたい時
+もし例外が発生した時に同時にリダイレクトさせたい時は、`errorRedirect`関数を使ってください。
+この関数はコントローラーの中でのみ使えます。
 
 ```nim
 return errorRedirect("/login")
 ```
 
-## How to display custom error page
-Basolato has its own error page. However if you put your original error page in dir `./resources/errors/{http code}.html`, these are returned with priority.  
-If http status code html file is not found and `error.html` exists, `error.html` is returned.
+コントローラー以外では、`ErrorRedirect`エラーを発生させてください。
+```nim
+raise newException(ErrorRedirect, "/login")
+```
 
-・priority  
-{http code}.html > error.html > Basolato own error page
+## 独自のエラーページを表示するには
+Basolatoは専用のエラーページを持っています。しかし`./resources/errors/{http code}.html`の形式に沿ってファイルを作ることで、独自のエラーページを表示させることもできます。  
+もしHTTPステータスコードと一致するHTMLファイルが存在せず、かつ`error.html`が存在する場合は、`error.html`が表示されます。
 
-This function is avaiable only in `release` enviroment　(When you compile with option `-d:release`).
-In develop enviroment (compile **without** `-d:release`), framerwork's error page is always returned.
+・優先順位  
+{http code}.html > error.html > Basolato独自のエラーページ
 
-```sh
+この機能は本番環境（コンパイルオプションに`-d:release`を付けた時）のみ有効になります。  
+開発環境では常にフレームワーク独自のエラーページが表示されます。
+
+```
 └── resources
     └── errors
-        ├── 404.html # user custom error
-        ├── 500.html # user custom error
-        └── error.html # user custom error
+        ├── 404.html # ユーザーオリジナルエラーページ
+        ├── 500.html # ユーザーオリジナルエラーページ
+        └── error.html # ユーザーオリジナルエラーページ
 ```

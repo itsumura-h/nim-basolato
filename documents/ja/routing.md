@@ -1,6 +1,6 @@
 Routing
 ===
-[back](../../README.md)
+[戻る](../../README.md)
 
 Routing is written in `main.nim`. it is the entrypoint file of Basolato.
 ```nim

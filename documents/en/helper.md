@@ -26,7 +26,7 @@ var a = %*{
   "key3": "value3",
   "key4": "value4",
 }
-dd($a,　"abc",　this.request.repr)
+dd($a,　"abc",request.repr)
 ```
 
 ![dd](../images/helper-dd.jpg)

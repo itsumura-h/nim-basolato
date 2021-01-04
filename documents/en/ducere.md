@@ -2,8 +2,6 @@ Ducere command
 ===
 [back](../../README.md)
 
-`ducere` is a CLI tool for Basolato framework such as `rake`/`php artisan`.
-
 Table of Contents
 
 <!--ts-->
@@ -25,7 +23,12 @@ Table of Contents
 
 <!--te-->
 
-## new
+## Introduction
+`ducere` is a CLI tool for Basolato framework such as `rake`/`php artisan`.
+
+## Usages
+
+### new
 Create new project
 ```
 pwd
@@ -43,7 +46,7 @@ ducere new .
 > Created project /user/local/src/my_project
 ```
 
-## serve
+### serve
 Run develop server with hot reload
 ```
 ducere serve
@@ -54,7 +57,7 @@ The default port is 5000. If you want to change it, specify with option `-p`
 ducere serve -p:8000
 ```
 
-## build
+### build
 Compiling for production.  
 By default, it will be compiled to run 5000 port and multithreaded for the number of cores in your PC.
 
@@ -123,23 +126,23 @@ http {
 }
 ```
 
-## migrate
+### migrate
 ```sh
 ducere migrate
 ```
 This is a alias for `nim c -r migrations/migrate`
 
 
-## make
+### make
 Create new file
 
-### config
+#### config
 Create `config.nims` for database connection, logging, session-timeout configuation.
 ```
 ducere make config
 ```
 
-### controller
+#### controller
 Create new controller
 ```sh
 ducere make controller user
@@ -152,8 +155,9 @@ ducere make controller sample/sample2/user
 >> app/controllers/sample/sample2/user_controller.nim
 ```
 
-### view
-Create new view template
+#### view
+Create new view template.
+`layout` is a part of components. `page` is a view that called by controller.
 
 ```sh
 ducere make layout buttons/success_button
@@ -165,14 +169,14 @@ ducere make page login
 >> resources/pages/login_view.nim
 ```
 
-### migration
+#### migration
 Create new migration file
 ```sh
 ducere make migration create_user
 >> migrations/migration20200219134020create_user.nim
 ```
 
-### model
+#### model
 create new domain model
 ```sh
 ducere make model user
@@ -188,14 +192,14 @@ user
  └── user_service.nim
 ```
 
-### usecase
+#### usecase
 Create new usecase
 ```sh
 ducere make usecase login
 >> app/domain/usecases/login_usecase.nim
 ```
 
-### value object
+#### value object
 Add new minimum value object boilerplate.  
 
 ```sh
