@@ -1,8 +1,8 @@
-Headers
+ヘッダー
 ===
-[back](../README.md)
+[戻る](../../README.md)
 
-Table of Contents
+コンテンツ
 
 <!--ts-->
    * [Headers](#headers)
@@ -15,8 +15,8 @@ Table of Contents
 
 <!--te-->
 
-## Request Header
-To get request header, use `request.headers`
+## リクエストヘッダー
+リクエストヘッダーを取得するには、`request.headers`を使ってください。
 
 middleware/check_login.nim
 ```nim
@@ -35,11 +35,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
   let loginId = request.headers["X-login-id"]
 ```
 
-## Response header
-### Type of headers
-`toHeaders()` generate `Header` object from `array`, `seq`, `table` and `JsonNode`.  
-[sample code](../tests/test_header.nim)
-
+## レスポンスヘッダー
+### Header型
+`toHeaders()`関数は`array`、 `seq`、 `table`、`JsonNode`から`Header`を出力します。  
+[サンプルコード](../../tests/test_header.nim)
 
 ```nim
 let headers = [
@@ -54,8 +53,9 @@ let headers = [
 ```
 
 
-### Set headers in controller
-Create header instance by `newHeaders()` and add by `set()`. Finally, set header to response with `setHeader()`
+### コントローラーでレスポンスにヘッダーを設定する
+`newHeaders()`関数で`Header`型のインスタンスを作り、`set`関数で値を追加し、最後に`render`関数の末尾に置きます。
+
 ```nim
 proc index*(request:Request, params:Params):Future[Response] {.async.} =
   var header = newHeaders()

@@ -1,6 +1,6 @@
 Controller
 ===
-[back](../README.md)
+[back](../../README.md)
 
 Table of Contents
 
@@ -28,8 +28,7 @@ Table of Contents
 Use `ducere` command  
 [ducere make controller](./ducere.md#controller)
 
-Resource controllers are controllers that have basic CRUD / resource style methods to them.  
-Generated controller is resource controller.
+Resource controllers are controllers that have basic CRUD / resource style methods to them.
 
 ```nim
 from json
@@ -61,8 +60,20 @@ proc update*(request:Request, params:Params):Future[Response] {.async.} =
 proc destroy*(request:Request, params:Params):Future[Response] {.async.} =
   let id = params.urlParams["id"].getInt
   return render("destroy")
-
 ```
+
+Each method should be called according to the following list
+
+|HTTP method|URL path|controller method|usecase|
+|---|---|---|---|
+|GET|/posts|index|Display all posts|
+|GET|/posts/create|create|Display new post page|
+|POST|/posts|store|Submit new post|
+|GET|/posts/{id}|show|Display one post|
+|GET|/posts/{id}/edit|edit|Dpsplay one post edit page|
+|POST|/posts/{id}|update|Update one post|
+|DELETE|/posts/{id}|destroy|Delete one post|
+
 ## How to get params
 ### Request params
 view

@@ -26,19 +26,19 @@ proc render*(status:HttpCode, body:string, headers:var Headers):Response =
     headers: headers
   )
 
-proc render*(body:string, headers:var Headers):Response =
-  if not headers.hasKey("Content-Type"):
-    headers.set("Content-Type", "text/html; charset=UTF-8")
-  headers.setDefaultHeaders()
+proc render*(body:string):Response =
+  var headers = newHeaders()
+  headers.set("Content-Type", "text/html; charset=UTF-8")
   return Response(
     status:Http200,
     body:body,
     headers: headers
   )
 
-proc render*(body:string):Response =
-  var headers = newHeaders()
-  headers.set("Content-Type", "text/html; charset=UTF-8")
+proc render*(body:string, headers:var Headers):Response =
+  if not headers.hasKey("Content-Type"):
+    headers.set("Content-Type", "text/html; charset=UTF-8")
+  headers.setDefaultHeaders()
   return Response(
     status:Http200,
     body:body,
@@ -54,12 +54,11 @@ proc render*(status:HttpCode, body:JsonNode):Response =
     headers: headers
   )
 
-proc render*(status:HttpCode, body:JsonNode, headers:var Headers):Response =
-  if not headers.hasKey("Content-Type"):
-    headers.set("Content-Type", "application/json; charset=utf-8")
-  headers.setDefaultHeaders()
+proc render*(body:JsonNode):Response =
+  var headers = newHeaders()
+  headers.set("Content-Type", "application/json; charset=utf-8")
   return Response(
-    status:status,
+    status:Http200,
     body: $body,
     headers: headers
   )
@@ -74,11 +73,12 @@ proc render*(body:JsonNode, headers:var Headers):Response =
     headers: headers
   )
 
-proc render*(body:JsonNode):Response =
-  var headers = newHeaders()
-  headers.set("Content-Type", "application/json; charset=utf-8")
+proc render*(status:HttpCode, body:JsonNode, headers:var Headers):Response =
+  if not headers.hasKey("Content-Type"):
+    headers.set("Content-Type", "application/json; charset=utf-8")
+  headers.setDefaultHeaders()
   return Response(
-    status:Http200,
+    status:status,
     body: $body,
     headers: headers
   )

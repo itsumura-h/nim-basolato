@@ -1,6 +1,6 @@
 View
 ===
-[back](../README.md)
+[戻る](../../README.md)
 
 Table of Contents
 

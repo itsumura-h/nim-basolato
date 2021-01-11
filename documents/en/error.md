@@ -1,6 +1,6 @@
 Error
 ===
-[back](../README.md)
+[back](../../README.md)
 
 Table of Contents
 
@@ -44,7 +44,7 @@ If http status code html file is not found and `error.html` exists, `error.html`
 This function is avaiable only in `release` enviroment　(When you compile with option `-d:release`).
 In develop enviroment (compile **without** `-d:release`), framerwork's error page is always returned.
 
-```sh
+```
 └── resources
     └── errors
         ├── 404.html # user custom error
