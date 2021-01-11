@@ -1,8 +1,8 @@
-Middleware
+ミドルウェア
 ===
 [戻る](../../README.md)
 
-Table of Contents
+コンテンツ
 
 <!--ts-->
    * [Middleware](#middleware)
@@ -28,9 +28,9 @@ proc middleware*(
 ) =
 ```
 
-## Sample
-You can run middleware methods before calling controller.  
-In following example, `checkCsrfTokenMiddleware()` and `checkAuthTokenMiddleware()` definded in `app/middleware/auth_middlware.nim` are called
+## サンプル
+ミドルウェアはコントローラーが呼ばれる前に実行されます。  
+下のサンプルソースでは、`app/middleware/auth_middlware.nim`に定義されている`checkCsrfTokenMiddleware()`と`checkAuthTokenMiddleware()`が動きます。
 
 main.nim
 ```nim
