@@ -27,6 +27,9 @@ proc create(dirPath:string, packageDir:string):int =
     discard execShellCmd(&"""
   cd {dirPath}
   ducere make config
+  cp config.nims config.nims.dev
+  cp config.nims config.nims.stg
+  cp config.nims config.nims.prd
   """)
     # create session.db
     block:
