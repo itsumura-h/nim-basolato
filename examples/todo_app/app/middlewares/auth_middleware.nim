@@ -7,8 +7,8 @@ proc checkCsrfTokenMiddleware*(r:Request, p:Params):Future[Response] {.async.} =
     raise newException(Error403, res.message)
   return next()
 
-proc checkAuthTokenMiddleware*(r:Request, p:Params):Future[Response] {.async.} =
-  let res = await checkAuthToken(r)
+proc checkSessionIdMiddleware*(r:Request, p:Params):Future[Response] {.async.} =
+  let res = await checkSessionId(r)
   if res.isError:
     raise newException(ErrorRedirect, "/signin")
   return next()

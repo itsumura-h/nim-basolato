@@ -28,7 +28,7 @@ proc checkCsrfToken*(request:Request, params:Params):Future[MiddlewareResult] {.
       result.isError = true
       result.message = getCurrentExceptionMsg()
 
-proc checkAuthToken*(request:Request):Future[MiddlewareResult] {.async.} =
+proc checkSessionId*(request:Request):Future[MiddlewareResult] {.async.} =
   ## Check session id in cookie is valid.
   result = MiddlewareResult()
   let cookie = newCookie(request)

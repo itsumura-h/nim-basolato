@@ -30,7 +30,7 @@ proc middleware*(
 
 ## Sample
 You can run middleware methods before calling controller.  
-In following example, `checkCsrfTokenMiddleware()` and `checkAuthTokenMiddleware()` definded in `app/middleware/auth_middlware.nim` are called
+In following example, `checkCsrfTokenMiddleware()` and `checkSessionIdMiddleware()` definded in `app/middleware/auth_middlware.nim` are called
 
 main.nim
 ```nim

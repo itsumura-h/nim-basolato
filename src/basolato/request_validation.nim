@@ -1,10 +1,11 @@
-import asynchttpserver
-import json, re, tables, strformat, strutils, unicode
+import asynchttpserver, os, json, re, tables, strformat, strutils, unicode
 # from ./core/core import Request, params
+import core/baseEnv
 include core/validation
 import core/request
 import allographer/query_builder
 
+let message_templats = getCurrentDir() / &"resources/lang/{LANGUAGE}/validation.json"
 
 
 type RequestValidation* = ref object
@@ -44,7 +45,7 @@ proc valid*(this:RequestValidation) =
 proc accepted*(this: var RequestValidation, key: string, val = "on") =
   if this.params.hasKey(key):
     if this.params.getStr(key) != val:
-      this.putValidate(key, &"{key} should be accespted")
+      this.putValidate(key, &"{key} should be accepted")
 
 
 proc contains*(this: var RequestValidation, key: string, val: string) =

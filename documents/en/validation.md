@@ -48,7 +48,7 @@ Another is more simple. Recieve value and return `bool`.
 
 # Simple Validation
 ```
-import basolato/validation
+import basolato/core/validation
 ```
 ## Available Rules
 ### email
@@ -155,21 +155,21 @@ import json
 import basolato/controller
 
 proc store*(request:Request, params:Params):Future[Response] {.async.} =
-  var v = newValidation(params.requestParams)
+  var v = newValidation(params)
   v.required(["name", "email", "password"])
   v.strictEmail("email")
   v.password("password")
   try:
     v.valid()
-    let name = params.requestParams.get("name")
-    let email = params.requestParams.get("email")
-    let password = params.requestParams.get("password")
+    let name = params.getStr("name")
+    let email = params.getStr("email")
+    let password = params.getStr("password")
 
     let usecase = newSignInUsecase()
     usecase.signin(name, email, password)
     return redirect("/")
   except:
-    return render(createVIew(name, email, v.errors))
+    return render(createView(name, email, v.errors))
 ```
 
 View

@@ -12,7 +12,7 @@ var routes = newRoutes()
 routes.middleware(re".*", auth_middleware.checkCsrfTokenMiddleware)
 routes.middleware(
   re"^(?!.*(signin|signup|delete-account)).*$",
-  auth_middleware.checkAuthTokenMiddleware
+  auth_middleware.checkSessionIdMiddleware
 )
 
 routes.get("/signup", sign_controller.signUpPage)

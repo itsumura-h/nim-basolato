@@ -30,7 +30,7 @@ proc middleware*(
 
 ## サンプル
 ミドルウェアはコントローラーが呼ばれる前に実行されます。  
-下のサンプルソースでは、`app/middleware/auth_middlware.nim`に定義されている`checkCsrfTokenMiddleware()`と`checkAuthTokenMiddleware()`が動きます。
+下のサンプルソースでは、`app/middleware/auth_middlware.nim`に定義されている`checkCsrfTokenMiddleware()`と`checkSessionIdMiddleware()`が動きます。
 
 main.nim
 ```nim

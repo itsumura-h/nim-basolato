@@ -9,7 +9,7 @@ import app/controllers/test_controller
 
 var routes = newRoutes()
 routes.middleware(re"/csrf/*", checkCsrfTokenMiddleware)
-routes.middleware(re"/session/*", checkAuthTokenMiddleware)
+routes.middleware(re"/session/*", checkSessionIdMiddleware)
 
 # test controller
 routes.get("/renderStr", test_controller.renderStr)

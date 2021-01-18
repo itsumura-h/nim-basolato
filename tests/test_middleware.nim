@@ -23,7 +23,7 @@ suite "middleware":
     check response.code == Http403
     check response.body.contains("Invalid csrf token")
 
-  test "checkAuthToken":
+  test "checkSessionId":
     let auth_id = waitFor getToken(waitFor newSession())
     echo auth_id
     client.headers = newHttpHeaders({
@@ -36,7 +36,7 @@ suite "middleware":
     # echo response.body
     check Http200 == response.code
 
-  test "checkAuthToken invalid":
+  test "checkSessionId invalid":
     let auth_id = "invalid_auth_id".encryptCtr()
     echo auth_id
     client.headers = newHttpHeaders({

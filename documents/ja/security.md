@@ -24,7 +24,7 @@ Table of Contents
 <!--te-->
 
 ## Check in middleware
-Basolato check whether value is valid in middleware. `checkCsrfToken()` and `checkAuthToken()` are available.  
+Basolato check whether value is valid in middleware. `checkCsrfToken()` and `checkSessionId()` are available.  
 These procs return `MiddlwareResult` object.
 
 ```nim
