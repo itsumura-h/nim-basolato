@@ -1,0 +1,5 @@
+
+proc main() =
+  discard
+
+main()

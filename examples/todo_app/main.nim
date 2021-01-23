@@ -3,10 +3,10 @@ import re
 import ../../src/basolato
 # controller
 # import app/controllers/welcome_controller
-import app/controllers/sign_controller
-import app/controllers/todo_controller
+import app/http/controllers/sign_controller
+import app/http/controllers/todo_controller
 # middleware
-import app/middlewares/auth_middleware
+import app/http/middlewares/auth_middleware
 
 var routes = newRoutes()
 routes.middleware(re".*", auth_middleware.checkCsrfTokenMiddleware)

@@ -1,7 +1,7 @@
 import os, terminal
 import
   make/controller, make/migration, make/page, make/layout, make/config,
-  make/model, make/usecase, make/valueobject
+  make/aggregate, make/usecase, make/valueobject
 
 
 template getTarget() =
@@ -46,9 +46,9 @@ proc make*(args:seq[string]):int =
   of "controller":
     getTarget
     return makeController(target, message)
-  of "model":
+  of "aggregate":
     getTarget
-    return makeModel(target, message)
+    return makeAggregate(target, message)
   of "usecase":
     getTarget
     return makeUsecase(target, message)

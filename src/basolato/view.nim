@@ -1,4 +1,5 @@
-import templates, json, random, tables, strformat, strutils, asyncdispatch
+import
+  templates, json, random, tables, strformat, strutils, asyncdispatch, cgi
 export templates, asyncdispatch
 import core/security
 export security
@@ -6,7 +7,7 @@ export security
 proc get*(val:JsonNode):string =
   case val.kind
   of JString:
-    return val.getStr
+    return val.getStr.xmlEncode
   of JInt:
     return $(val.getInt)
   of JFloat:
@@ -18,16 +19,19 @@ proc get*(val:JsonNode):string =
   else:
     raise newException(JsonKindError, "val is array")
 
+proc get*(val:string|TaintedString):string =
+  return val.xmlEncode
+
 proc old*(params:JsonNode, key:string):string =
-  try:
+  if params.hasKey(key):
     return params[key].get()
-  except:
+  else:
     return ""
 
 proc old*(params:TableRef, key:string):string =
-  try:
-    return params[key]
-  except:
+  if params.hasKey(key):
+    return params[key].xmlEncode
+  else:
     return ""
 
 

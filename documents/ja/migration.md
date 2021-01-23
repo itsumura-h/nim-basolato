@@ -2,7 +2,7 @@ Migration
 ===
 [戻る](../../README.md)
 
-Table of Contents
+コンテンツ
 
 <!--ts-->
    * [Migration](#migration)
@@ -13,19 +13,25 @@ Table of Contents
 
 <!--te-->
 
-## Introduction
-Use `ducere` command  
+## イントロダクション
+マイグレーションファイルを作るには、`ducere`コマンドを使います。  
 [`ducere make migration`](./ducere.md#migration)
 
 ```sh
 ducere make migration createUsersTable
 >> migrations/migration{datetime}createUsersTable.nim
 ```
-and updated `/migrations/migrate.nim` automatically.
 
-To run migration, run `migrate.nim`
+コマンドを実行すると、`/migrations/migrate.nim`は自動的に更新されます。
+
+マイグレーションを実行するには、`migrate.nim`を実行してください。
 ```sh
 nim c -r migrations/migrate
+```
+
+ducereコマンドを使うこともできます
+```sh
+ducere migrate
 ```
 
 ## Example

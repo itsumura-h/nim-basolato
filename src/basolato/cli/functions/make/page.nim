@@ -2,14 +2,14 @@ import os, strformat, terminal, strutils
 import utils
 
 proc makePage*(target:string, message:var string):int =
-  let targetPath = &"{getCurrentDir()}/resources/pages/{target}_view.nim"
-  let targetName = target.split("/")[^1]
+  let targetPath = &"{getCurrentDir()}/app/http/views/pages/{target}_view.nim"
+  let targetName = target.split("/").max()
   let targetCaptalized = snakeToCamelProcName(targetName)
-  let reativeToApplicationPath = "../".repeat(target.split("/").len) & "layouts/application_view"
+  let relativeToApplicationPath = "../".repeat(target.split("/").len) & "layouts/application_view"
 
   var VIEW = &"""
 import basolato/view
-import {reativeToApplicationPath}
+import {relativeToApplicationPath}
 
 let style = block:
   var css = newCss()

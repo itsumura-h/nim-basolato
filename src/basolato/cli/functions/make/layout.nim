@@ -2,7 +2,7 @@ import os, strformat, terminal, strutils
 import utils
 
 proc makeLayout*(target:string, message:var string):int =
-  let targetPath = &"{getCurrentDir()}/resources/layouts/{target}_view.nim"
+  let targetPath = &"{getCurrentDir()}/app/http/views/layouts/{target}_view.nim"
   let targetName = target.split("/")[^1]
   let targetCaptalized = snakeToCamelProcName(targetName)
 

@@ -129,13 +129,13 @@ proc baseImpl(content:string): string = tmpli html"""
     <title>Basolato</title>
   </head>
   <body>
-    $(content)
+    $(content.get)
   </body>
 </html>
 """
 
 proc indexImpl(message:string): string = tmpli html"""
-<p>$message</p>
+<p>$(message.get)</p>
 """
 
 proc indexView*(message:string): string =
@@ -216,6 +216,34 @@ proc indexImpl(message:string): string =
 proc indexView*(message:string): string =
   baseImpl(indexImpl(message))
 ```
+
+## XSS
+To prevent XSS, **you have to use `get` proc for valiable.** It applies [xmlEncode](https://nim-lang.org/docs/cgi.html#xmlEncode,string) inside.
+
+### API
+```nim
+proc get*(val:JsonNode):string =
+
+proc get*(val:string):string =
+```
+
+### Sample
+```nim
+title = "<script>alert("aaa")</script>"
+params = @["<script>alert("aaa")</script>", "b"].parseJson()
+```
+```nim
+import basolato/view
+
+proc impl(title:string, params:JsonNode):Future[string] {.async.} = tmpli html"""
+  <h1>$(title.get)</h1>
+  <ul>
+    $for param in params {
+      <li>$(param.get)</li>
+    }
+  </ul>
+```
+
 
 ## Component design
 Basolato view is designed for component oriented design like React and Vue.  

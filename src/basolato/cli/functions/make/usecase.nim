@@ -3,10 +3,10 @@ import utils
 
 
 proc makeUsecase*(target:string, message:var string):int =
-  var targetPath = &"{getCurrentDir()}/app/domain/usecases/{target}_usecase.nim"
+  var targetPath = &"{getCurrentDir()}/app/model/usecases/{target}_usecase.nim"
   let targetName = target.split("/")[^1]
   let targetCaptalized = snakeToCamel(targetName)
-  let reativeToValueObjectPath = "../".repeat(target.split("/").len) & "models/value_objects"
+  let reativeToValueObjectPath = "../".repeat(target.split("/").len) & "aggregates/value_objects"
   let USECASE = &"""
 import {reativeToValueObjectPath}
 
