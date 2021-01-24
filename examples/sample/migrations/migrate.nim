@@ -1,5 +1,0 @@
-
-proc main() =
-  discard
-
-main()

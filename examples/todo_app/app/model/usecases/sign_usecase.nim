@@ -1,5 +1,5 @@
 import json
-import ../aggregates/value_objects
+import ../value_objects
 import ../aggregates/user/user_entity
 import ../aggregates/user/user_repository_interface
 import ../aggregates/user/user_service

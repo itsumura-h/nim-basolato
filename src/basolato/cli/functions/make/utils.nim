@@ -16,9 +16,9 @@ proc isDirExists*(targetPath:string):bool =
   else:
     return false
 
-proc isTargetContainSlash*(target:string):bool =
+proc isTargetContainSlash*(target, `object`:string):bool =
   if target.contains("/"):
-    let message = &"Don't contain \"/\" in migration file name"
+    let message = &"Don't contain \"/\" in {`object`}"
     styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)
     return true
   else:

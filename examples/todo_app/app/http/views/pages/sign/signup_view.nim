@@ -17,7 +17,7 @@ $(style.define())
   <div class="container is-max-desktop">
     <div class="card">
       <div class="card-header">
-        <div class="card-header-title"> Todo App Sign Up</div>
+        <div class="card-header-title"> Post App Sign Up</div>
       </div>
       <div class="card-content">
         <form method="POST">

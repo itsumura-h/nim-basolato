@@ -2,7 +2,7 @@ import os, strformat, terminal, strutils
 import utils
 
 proc makeAggregate*(target:string, message:var string):int =
-  let targetName = target.split("/").max()
+  let targetName = target
   let targetCaptalized = snakeToCamel(targetName)
   let ENTITY = &"""
 import ../value_objects
@@ -58,16 +58,29 @@ proc new{targetCaptalized}Service*():{targetCaptalized}Service =
   )
 """
 
-  # create domain dir
+  if isTargetContainSlash(target, "aggregate"): return 0
+
+  # create aggregate dir
   var targetPath = &"{getCurrentDir()}/app/model/aggregates/{targetName}"
   if isDirExists(targetPath): return 1
   createDir(targetPath)
 
-  # entity
-  targetPath = &"{getCurrentDir()}/app/model/aggregates/{targetName}/{targetName}_entity.nim"
+  # create repository dir
+  targetPath = &"{getCurrentDir()}/app/repositories/{targetName}"
+  if isDirExists(targetPath): return 1
+  createDir(targetPath)
+
+  # repository
+  targetPath = &"{getCurrentDir()}/app/repositories/{targetName}/{targetName}_rdb_repository.nim"
   if isFileExists(targetPath): return 1
   var f = open(targetPath, fmWrite)
   defer: f.close()
+  f.write(REPOSITORY)
+
+  # entity
+  targetPath = &"{getCurrentDir()}/app/model/aggregates/{targetName}/{targetName}_entity.nim"
+  if isFileExists(targetPath): return 1
+  f = open(targetPath, fmWrite)
   f.write(ENTITY)
 
   # repository interface
@@ -76,12 +89,6 @@ proc new{targetCaptalized}Service*():{targetCaptalized}Service =
   f = open(targetPath, fmWrite)
   f.write(REPOSITORY_INTERFACE)
 
-  # repository
-  targetPath = &"{getCurrentDir()}/app/repositories/{targetName}/{targetName}_rdb_repository.nim"
-  if isFileExists(targetPath): return 1
-  f = open(targetPath, fmWrite)
-  f.write(REPOSITORY)
-
   # service
   targetPath = &"{getCurrentDir()}/app/model/aggregates/{targetName}/{targetName}_service.nim"
   if isFileExists(targetPath): return 1
@@ -89,7 +96,7 @@ proc new{targetCaptalized}Service*():{targetCaptalized}Service =
   f.write(SERVICE)
 
   # update di_container.nim
-  targetPath = &"{getCurrentDir()}/app/model/aggregate/di_container.nim"
+  targetPath = &"{getCurrentDir()}/app/model/aggregates/di_container.nim"
   f = open(targetPath, fmRead)
   var textArr = f.readAll().splitLines()
   # get offset where column is empty string

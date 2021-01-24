@@ -1,5 +1,5 @@
-import ../value_objects
-include ../di_container
+import ../../value_objects
+include ../../di_container
 import ./user_entity
 
 type IUserRepository* = ref object

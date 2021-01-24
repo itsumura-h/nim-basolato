@@ -13,7 +13,7 @@ proc migration0001sample*() =
       Column().string("password"),
       Column().timestamps()
     ], reset=true),
-    table("todos", [
+    table("posts", [
       Column().increments("id"),
       Column().string("title"),
       Column().text("content"),
@@ -36,8 +36,8 @@ proc migration0001sample*() =
     })
   rdb().table("users").insert(users)
 
-  var todos: seq[JsonNode]
-  todos.add(%*{
+  var posts: seq[JsonNode]
+  posts.add(%*{
     "id": 1,
     "title": "test",
     "content": "test content",
@@ -46,4 +46,4 @@ proc migration0001sample*() =
     "updated_at": $(now().utc),
     "user_id": 1
   })
-  rdb().table("todos").insert(todos)
+  rdb().table("posts").insert(posts)

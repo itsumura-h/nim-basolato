@@ -2,9 +2,9 @@ import os, strformat, terminal, strutils
 import utils
 
 proc makeModel*(target:string, message:var string):int =
-  let targetName = target.split("/").max()
+  let targetName = target.split("/")[^1]
   let targetCaptalized = snakeToCamel(targetName)
-  let relativeToValueObjectsPath = "../".repeat(target.split("/").len) & "value_objects.nim"
+  let relativeToValueObjectsPath = "../".repeat(target.split("/").len) & "value_objects"
 
   let ENTITY = &"""
 import {relativeToValueObjectsPath}
@@ -22,20 +22,16 @@ import {targetName}_entity
 
 
 type {targetCaptalized}Service* = ref object
-  repository:I{targetCaptalized}Repository
 
 
 proc new{targetCaptalized}Service*():{targetCaptalized}Service =
-  return {targetCaptalized}Service(
-    repository:newI{targetCaptalized}Repository()
-  )
+  return {targetCaptalized}Service()
 """
 
   # create domain dir
   var targetPath = &"{getCurrentDir()}/app/model/aggregates/{target}"
-  for row in targetPath.split("/"):
-    if isDirExists(): return 1
-    createDir(targetPath)
+  if isDirExists(targetPath): return 1
+  createDir(targetPath)
 
   # entity
   targetPath = &"{getCurrentDir()}/app/model/aggregates/{target}/{targetName}_entity.nim"
