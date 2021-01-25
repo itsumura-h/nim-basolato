@@ -7,6 +7,8 @@ import ../views/pages/sign/signup_view
 import ../views/pages/sign/signin_view
 # usecase
 import ../../model/usecases/sign_usecase
+# repository
+import ../../repositories/user/user_rdb_repository
 
 
 proc signUpPage*(request:Request, params:Params):Future[Response] {.async.} =
@@ -22,7 +24,8 @@ proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
   v.password("password")
   try:
     v.valid()
-    let usecase = newSignUsecase()
+    let repository = newUserRdbRepository().toInterface()
+    let usecase = newSignUsecase(repository)
     let user = usecase.signUp(name, email, password)
     let auth = await newAuth(request)
     await auth.login()
@@ -51,7 +54,8 @@ proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
   v.strictEmail("email")
   v.password("password")
   try:
-    let usecase = newSignUsecase()
+    let repository = newUserRdbRepository().toInterface()
+    let usecase = newSignUsecase(repository)
     let user = usecase.signIn(email, password)
     let auth = await newAuth(request)
     await auth.login()

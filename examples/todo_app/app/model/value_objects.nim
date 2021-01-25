@@ -7,7 +7,7 @@ proc newUserId*(value:int):UserId =
   result = new UserId
   result.value = value
 
-proc get*(this:UserId):int =
+proc getInt*(this:UserId):int =
   return this.value
 
 
@@ -18,7 +18,7 @@ proc newUserName*(value:string):UserName =
   result = new UserName
   result.value = value
 
-proc get*(this:UserName):string =
+proc `$`*(this:UserName):string =
   return this.value
 
 
@@ -29,7 +29,7 @@ proc newUserEmail*(value:string):UserEmail =
   result = new UserEmail
   result.value = value
 
-proc get*(this:UserEmail):string =
+proc `$`*(this:UserEmail):string =
   return this.value
 
 
@@ -40,7 +40,7 @@ proc newHashedPassword*(value:string):HashedPassword =
   result = new HashedPassword
   result.value = value
 
-proc get*(this:HashedPassword):string =
+proc `$`*(this:HashedPassword):string =
   return this.value
 
 
@@ -51,7 +51,7 @@ proc newPassword*(value:string):Password =
   result = new Password
   result.value = value
 
-proc get*(this:Password):string =
+proc `$`*(this:Password):string =
   return this.value
 
 proc getHashed*(this:Password):HashedPassword =
@@ -68,7 +68,7 @@ proc newPostId*(value:int):PostId =
   result = new PostId
   result.value = value
 
-proc get*(this:PostId):int =
+proc getInt*(this:PostId):int =
   return this.value
 
 
@@ -81,7 +81,7 @@ proc newPostTitle*(value:string):PostTitle =
   result = new PostTitle
   result.value = value
 
-proc get*(this:PostTitle):string =
+proc `$`*(this:PostTitle):string =
   return this.value
 
 
@@ -94,5 +94,5 @@ proc newPostContent*(value:string):PostContent =
   result = new PostContent
   result.value = value
 
-proc get*(this:PostContent):string =
+proc `$`*(this:PostContent):string =
   return this.value

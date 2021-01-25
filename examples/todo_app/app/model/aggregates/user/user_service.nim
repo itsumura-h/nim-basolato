@@ -8,17 +8,17 @@ type UserService* = ref object
   repository:IUserRepository
 
 
-proc newUserService*():UserService =
+proc newUserService*(repository:IUserRepository):UserService =
   return UserService(
-    repository:newIUserRepository()
+    repository:repository
   )
 
 proc getUser*(this:UserService, email:UserEmail, password:Password):User =
   let user =  this.repository.getUser(email)
-  if isMatchPassword(password.get, user.hashedPassword().get):
+  if isMatchPassword($password, $(user.hashedPassword())):
     return user
   else:
     raise newException(Exception, "user not found")
 
 proc isMatchPassword*(this:UserService, password:Password, hashedPassword:HashedPassword):bool =
-  return isMatchPassword(password.get, hashedPassword.get)
+  return isMatchPassword($password, $hashedPassword)

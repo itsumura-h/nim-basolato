@@ -9,9 +9,10 @@ type SignUsecase* = ref object
   repository:IUserRepository
   service: UserService
 
-proc newSignUsecase*():SignUsecase =
+proc newSignUsecase*(repository:IUserRepository):SignUsecase =
   return SignUsecase(
-    repository: IUserRepository()
+    repository: repository,
+    service: newUserService(repository)
   )
 
 proc signUp*(this:SignUsecase, name, email, password:string):JsonNode =
@@ -19,7 +20,7 @@ proc signUp*(this:SignUsecase, name, email, password:string):JsonNode =
   let email = newUserEmail(email)
   let password = newPassword(password).getHashed()
   let userId = this.repository.storeUser(name, email, password)
-  return %*{"id": userId.get, "name": name}
+  return %*{"id": userId.getInt, "name": name}
 
 proc signIn*(this:SignUsecase, email, password:string):JsonNode =
   let email = newUserEmail(email)
@@ -27,6 +28,6 @@ proc signIn*(this:SignUsecase, email, password:string):JsonNode =
   let password = newPassword(password)
   let hashedPassword = user.hashedPassword()
   if this.service.isMatchPassword(password, hashedPassword):
-    return %*{"id": user.id().get, "name": user.name().get}
+    return %*{"id": user.id().getInt, "name": $(user.name())}
   else:
     raise newException(Exception, "password not match")

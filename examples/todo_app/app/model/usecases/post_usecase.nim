@@ -1,15 +1,13 @@
 import json
 import ../value_objects
-include ../di_container
 import ../aggregates/post/post_repository_interface
 
 
 type PostUsecase* = ref object
-  queryService: QueryService
   repository: IPostRepository
 
-proc newPostUsecase*():PostUsecase =
-  return PostUsecase()
+proc newPostUsecase*(repository:IPostRepository):PostUsecase =
+  return PostUsecase(repository:repository)
 
 
 proc store*(this:PostUsecase, userId:int, title, content:string) =
