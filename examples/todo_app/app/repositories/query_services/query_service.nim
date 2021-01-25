@@ -1,5 +1,5 @@
 import json
-include ../../http/query_service_interface
+import ../../http/query_service_interface
 import allographer/query_builder
 
 
