@@ -248,21 +248,22 @@ proc serveCore(params:(Routes, int)){.thread.} =
           echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
           echoErrorMsg(exception.msg)
 
+      # anonymous user login should run only for response from controler
+      if ENABLE_ANONYMOUS_COOKIE:
+        let auth = await newAuth(req)
+        if await auth.anonumousCreateSession():
+          response = await response.setAuth(auth)
+        else:
+          var cookie = newCookie(req)
+          cookie.updateExpire(SESSION_TIME, Minutes)
+          response = response.setCookie(cookie)
+
     if response.isNil:
       headers.set("Content-Type", "text/html; charset=UTF-8")
       response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)
       echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
 
     response.headers.setDefaultHeaders()
-
-    # anonymous user login
-    let auth = await newAuth(req)
-    if await auth.anonumousCreateSession():
-      response = await response.setAuth(auth)
-    else:
-      var cookie = newCookie(req)
-      cookie.updateExpire(SESSION_TIME, Minutes)
-      response = response.setCookie(cookie)
 
     await req.respond(response.status, response.body, response.headers.toResponse())
     # keep-alive

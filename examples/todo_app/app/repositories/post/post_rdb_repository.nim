@@ -11,7 +11,7 @@ type PostRdbRepository* = ref object
 proc newPostRdbRepository*():PostRdbRepository =
   return PostRdbRepository()
 
-proc store*(this:PostRdbRepository, userId:UserId, title:PostTitle, content:PostContent) =
+proc store(this:PostRdbRepository, userId:UserId, title:PostTitle, content:PostContent) =
   rdb().table("posts").insert(%*{
     "title": $title,
     "content": $content,
@@ -21,17 +21,17 @@ proc store*(this:PostRdbRepository, userId:UserId, title:PostTitle, content:Post
     "user_id": userId.getInt,
   })
 
-proc changeStatus*(this:PostRdbRepository, id:PostId, status:bool) =
+proc changeStatus(this:PostRdbRepository, id:PostId, status:bool) =
   rdb().table("posts")
   .where("id", "=", id.getInt)
   .update(%*{
     "is_finished": status
   })
 
-proc destroy*(this:PostRdbRepository, id:PostId) =
+proc destroy(this:PostRdbRepository, id:PostId) =
   rdb().table("posts").delete(id.getInt)
 
-proc update*(this:PostRdbRepository, id:PostId, title:PostTitle, content:PostContent, isFinished:bool) =
+proc update(this:PostRdbRepository, id:PostId, title:PostTitle, content:PostContent, isFinished:bool) =
   rdb().table("posts")
   .where("id", "=", id.getInt)
   .update(%*{

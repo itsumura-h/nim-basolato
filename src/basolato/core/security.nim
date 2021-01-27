@@ -33,8 +33,11 @@ proc encryptCtr*(input:string):string =
   return input
 
 proc decryptCtr*(input:string):string =
-  let input = input.parseHexStr().commonCtr()
-  return input[16..high(input)]
+  try:
+    let input = input.parseHexStr().commonCtr()
+    return input[16..high(input)]
+  except:
+    return ""
 
 
 # ========== Token ====================
@@ -136,11 +139,8 @@ else:
       buffer.add("")
       writeFile(SESSION_DB_PATH, buffer.join("\n"))
 
-  proc checkTokenValid(db:FlatDb, token:string) {.async.} =
-    try:
-      discard db[token]
-    except:
-      raise newException(Exception, "Invalid session id")
+  proc isTokenValid(db:FlatDb, token:string):Future[bool] {.async.} =
+    return db.exists(token)
 
   proc createParentFlatDbDir():Future[FlatDb] {.async.} =
     if not dirExists(SESSION_DB_PATH.parentDir()):
@@ -155,25 +155,18 @@ else:
     if rand(1..100) == 1:
       await sessionDb.clean()
     discard db.load()
-    try:
-      var token = sessionId.decryptCtr()
-      await db.checkTokenValid(token)
-      sessionDb = SessionDb(conn: db, token:token)
-    except:
-      let token = db.append(newJObject())
-      sessionDb = SessionDb(conn: db, token:token)
+    var token = sessionId.decryptCtr()
+    if not await db.isTokenValid(token):
+      token = db.append(newJObject())
+    sessionDb = SessionDb(conn: db, token:token)
     return sessionDb
 
   proc checkSessionIdValid*(sessionId=""):Future[bool] {.async.} =
     let db = await createParentFlatDbDir()
     defer: db.close()
     discard db.load()
-    try:
-      var token = sessionId.decryptCtr()
-      await db.checkTokenValid(token)
-      return true
-    except:
-      return false
+    var token = sessionId.decryptCtr()
+    return await db.isTokenValid(token)
 
   proc getToken*(this:SessionDb):Future[string] {.async.} =
     return this.token.encryptCtr()
@@ -452,10 +445,12 @@ proc destroy*(this:Auth) {.async.} =
 proc login*(this:Auth) {.async.} =
   if this.session.isNil:
     this.session = await newSession()
-    await this.session.set("is_login", "true")
-    await this.session.set("last_access", $getTime())
-  else:
-    await this.set("is_login", "true")
+  await this.set("is_login", $true)
+
+proc logout*(this:Auth) {.async.} =
+  if this.session.isNil:
+    this.session = await newSession()
+  await this.set("is_login", $false)
 
 proc anonumousCreateSession*(this:Auth):Future[bool] {.async.} =
   if this.session.isNil or not await checkSessionIdValid(await this.getToken):
@@ -465,9 +460,6 @@ proc anonumousCreateSession*(this:Auth):Future[bool] {.async.} =
     return true
   else:
     return false
-
-proc logout*(this:Auth) {.async.} =
-  await this.destroy()
 
 proc isLogin*(this:Auth):Future[bool] {.async.} =
   if await this.some("is_login"):
