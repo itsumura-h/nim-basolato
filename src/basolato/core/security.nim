@@ -396,12 +396,12 @@ proc newAuth*(request:Request):Future[Auth] {.async.} =
   else:
     return Auth()
 
-proc newAuth():Future[Auth] {.async.} =
-  ## use in action method
-  let session = await newSession()
-  await session.set("isLogin", "false")
-  await session.set("last_access", $getTime())
-  return Auth(session:session)
+# proc newAuth():Future[Auth] {.async.} =
+#   ## use in constructor
+#   let session = await newSession()
+#   await session.set("isLogin", "false")
+#   await session.set("last_access", $getTime())
+#   return Auth(session:session)
 
 # proc newAuthIfInvalid*(request:Request):Future[Auth] {.async.} =
 #   var auth:Auth
@@ -420,6 +420,8 @@ proc getToken*(this:Auth):Future[string] {.async.} =
   return await this.session.getToken()
 
 proc set*(this:Auth, key, value:string) {.async.} =
+  if this.session.isNil:
+    this.session = await newSession()
   await this.session.set(key, value)
 
 proc some*(this:Auth, key:string):Future[bool] {.async.} =
@@ -443,13 +445,9 @@ proc destroy*(this:Auth) {.async.} =
   await this.session.destroy()
 
 proc login*(this:Auth) {.async.} =
-  if this.session.isNil:
-    this.session = await newSession()
   await this.set("is_login", $true)
 
 proc logout*(this:Auth) {.async.} =
-  if this.session.isNil:
-    this.session = await newSession()
   await this.set("is_login", $false)
 
 proc anonumousCreateSession*(this:Auth):Future[bool] {.async.} =

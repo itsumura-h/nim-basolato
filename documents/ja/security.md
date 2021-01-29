@@ -216,6 +216,32 @@ proc show*(this:Controller):Response =
   return render(showHtml(user, flash))
 ```
 
+### Anonymous user cookie
+In `config.nims`, if you set `true` for `ENABLE_ANONYMOUS_COOKIE`, Basolato automatically creates cookie for every user.  
+If you set `false` and you want to create sign in function, you should create it manually in controller.
+
+anonymous user enabled
+```nim
+proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
+  let email = params.getStr("email")
+  let password = params.getStr("password")
+  # ..sign in check
+  let auth = await newAuth(request)
+  await auth.login()
+  return redirect("/")
+```
+
+anonymous user disabled
+```nim
+proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
+  let email = params.getStr("email")
+  let password = params.getStr("password")
+  # ..sign in check
+  let auth = await newAuth(request)
+  await auth.login()
+  return await redirect("/").setAuth(auth)
+```
+
 **⚠ In most cases, Session and Cookies should not be used directly, but using Auth is recommended. ⚠**
 
 ## Cookie
