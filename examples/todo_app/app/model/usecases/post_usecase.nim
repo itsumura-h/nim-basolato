@@ -1,5 +1,6 @@
 import json
 import ../value_objects
+import ../aggregates/post/post_entity
 import ../aggregates/post/post_repository_interface
 
 
@@ -14,7 +15,8 @@ proc store*(this:PostUsecase, userId:int, title, content:string) =
   let userId = newUserId(userId)
   let title = newPostTitle(title)
   let content = newPostContent(content)
-  this.repository.store(userId, title, content)
+  let post = newPost(userId, title, content)
+  this.repository.store(post)
 
 proc changeStatus*(this:PostUsecase, id:int, status:bool) =
   let id = newPostId(id)
@@ -25,7 +27,8 @@ proc destroy*(this:PostUsecase, id:int) =
   this.repository.destroy(id)
 
 proc update*(this:PostUsecase, id:int, title, content:string, isFinished:bool) =
-  let id = newPostId(id)
+  let postId = newPostId(id)
   let title = newPostTitle(title)
   let content = newPostContent(content)
-  this.repository.update(id, title, content, isFinished)
+  let post = newPost(postId, title, content, isFinished)
+  this.repository.update(post)

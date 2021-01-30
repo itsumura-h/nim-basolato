@@ -61,7 +61,7 @@ proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
     await auth.login()
     await auth.set("id", $(user["id"].getInt))
     await auth.set("name", user["name"].getStr)
-    return await redirect("/").setAuth(auth)
+    return redirect("/")
   except:
     let params = %*{"email": email}
     return render(signInView(params, v.errors))

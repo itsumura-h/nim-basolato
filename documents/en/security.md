@@ -220,7 +220,14 @@ proc show*(this:Controller):Response =
 In `config.nims`, if you set `true` for `ENABLE_ANONYMOUS_COOKIE`, Basolato automatically creates cookie for every user.  
 If you set `false` and you want to create sign in function, you should create it manually in controller.
 
-anonymous user enabled
+#### anonymous user enabled
+
+config.nims
+```nim
+putEnv("ENABLE_ANONYMOUS_COOKIE", "true")
+```
+
+controller
 ```nim
 proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
   let email = params.getStr("email")
@@ -231,7 +238,14 @@ proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
   return redirect("/")
 ```
 
-anonymous user disabled
+#### anonymous user disabled
+
+config.nims
+```nim
+putEnv("ENABLE_ANONYMOUS_COOKIE", "false")
+```
+
+controller
 ```nim
 proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
   let email = params.getStr("email")
@@ -240,6 +254,14 @@ proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
   let auth = await newAuth(request)
   await auth.login()
   return await redirect("/").setAuth(auth)
+```
+
+### How to create cookie for multiple domains
+You can define multiple domains for cookie in setting of `config.nims`
+
+config.nims
+```nim
+putEnv("COOKIE_DOMAINS", "localhost, nim-lang.org, github.com")
 ```
 
 **⚠ In most cases, Session and Cookies should not be used directly, but using Auth is recommended. ⚠**
@@ -286,15 +308,6 @@ proc destroy*(this:Cookie, path="/"):Cookie =
 
 proc setCookie*(response:Response, cookie:Cookie):Response =
 ```
-
-### How to create cookie for multiple domains
-You can define multiple domains for cookie in setting of `config.nims`
-
-config.nims
-```nim
-putEnv("COOKIE_DOMAINS", "localhost, nim-lang.org, github.com")
-```
-
 
 ### Sample
 get cookie

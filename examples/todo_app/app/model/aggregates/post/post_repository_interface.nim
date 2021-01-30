@@ -1,9 +1,10 @@
 import json
+import post_entity
 import ../../value_objects
 
 
 type IPostRepository* = tuple
-  store: proc(userId:UserId,  title:PostTitle, content:PostContent)
+  store: proc(post:Post)
   changeStatus: proc(id:PostId, status:bool)
   destroy: proc(id:PostId)
-  update: proc(id:PostId, title:PostTitle, content:PostContent, isFinished:bool)
+  update: proc(post:Post)

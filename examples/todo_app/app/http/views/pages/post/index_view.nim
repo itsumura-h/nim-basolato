@@ -22,5 +22,5 @@ proc impl(auth:Auth, posts:seq[JsonNode], params, errors:JsonNode):Future[string
 """
 
 proc indexView*(auth:Auth, posts=newSeq[JsonNode](), params=newJObject(), errors=newJObject()):Future[string] {.async.} =
-  let title = "Post App"
+  let title = "Todo App"
   return applicationView(title, await impl(auth, posts, params, errors))

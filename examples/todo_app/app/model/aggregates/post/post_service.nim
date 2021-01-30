@@ -7,7 +7,7 @@ type PostService* = ref object
   repository:IPostRepository
 
 
-proc newPostService*():PostService =
+proc newPostService*(repository:IPostRepository):PostService =
   return PostService(
-    repository:newIPostRepository()
+    repository:repository
   )

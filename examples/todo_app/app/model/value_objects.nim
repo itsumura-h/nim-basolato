@@ -8,7 +8,10 @@ proc newUserId*(value:int):UserId =
   result.value = value
 
 proc getInt*(this:UserId):int =
-  return this.value
+  if this.isNil:
+    return 0
+  else:
+    return this.value
 
 
 type UserName* = ref object
