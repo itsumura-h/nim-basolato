@@ -23,18 +23,15 @@ $(style.define())
         <tr>
           <td><a href="/$(post["id"].get)">$(post["title"].get)</a></td>
           <td>
-            $if post["is_finished"].getBool {
-              <form method="POST" action="/change-status/$(post["id"].get)">
-                $(csrfToken())
+            <form method="POST" action="/change-status/$(post["id"].get)">
+              $(csrfToken())
+              $if post["is_finished"].getBool {
                 <button type="submit" name="status" value="false" class="button is-success is-light is-outlined">Finished</button>
-              </form>
-            }
-            $else{
-              <form method="POST" action="/change-status/$(post["id"].get)">
-                $(csrfToken())
+              }
+              $else{
                 <button type="submit" name="status" value="true" class="button is-danger is-light is-outlined">Not finished</button>
-              </form>
-            }
+              }
+            </form>
           </td>
           <td>
             <form method="POST" action="/delete/$(post["id"].get)">

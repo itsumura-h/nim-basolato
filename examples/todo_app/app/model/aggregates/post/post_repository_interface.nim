@@ -1,6 +1,5 @@
-import json
-import post_entity
 import ../../value_objects
+import post_entity
 
 
 type IPostRepository* = tuple

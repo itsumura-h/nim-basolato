@@ -4,7 +4,7 @@ import utils
 proc makeModel*(target:string, message:var string):int =
   let targetName = target.split("/")[^1]
   let targetCaptalized = snakeToCamel(targetName)
-  let relativeToValueObjectsPath = "../".repeat(target.split("/").len) & "value_objects"
+  let relativeToValueObjectsPath = "../".repeat(target.split("/").len+1) & "value_objects"
 
   let ENTITY = &"""
 import {relativeToValueObjectsPath}
@@ -22,7 +22,6 @@ import {targetName}_entity
 
 
 type {targetCaptalized}Service* = ref object
-
 
 proc new{targetCaptalized}Service*():{targetCaptalized}Service =
   return {targetCaptalized}Service()
@@ -46,6 +45,6 @@ proc new{targetCaptalized}Service*():{targetCaptalized}Service =
   f = open(targetPath, fmWrite)
   f.write(SERVICE)
 
-  message = &"Created domain model in {getCurrentDir()}/app/model/aggregates/{targetName}"
+  message = &"Created domain model in {getCurrentDir()}/app/model/aggregates/{target}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
   return 0

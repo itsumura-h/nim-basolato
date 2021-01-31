@@ -5,7 +5,7 @@ proc makeAggregate*(target:string, message:var string):int =
   let targetName = target
   let targetCaptalized = snakeToCamel(targetName)
   let ENTITY = &"""
-import ../value_objects
+import ../../value_objects
 
 
 type {targetCaptalized}* = ref object
@@ -15,46 +15,41 @@ proc new{targetCaptalized}*():{targetCaptalized} =
 """
 
   let REPOSITORY_INTERFACE = &"""
-import ../value_objects
+import ../../value_objects
 import {targetName}_entity
-include ../di_container
 
 
-type I{targetCaptalized}Repository* = ref object
-
-
-proc newI{targetCaptalized}Repository*():I{targetCaptalized}Repository =
-  return newI{targetCaptalized}Repository()
+type I{targetCaptalized}Repository* = tuple
 """
 
   let REPOSITORY = &"""
 import allographer/query_builder
-import ../../model/aggregate/value_objects
+import ../../model/value_objects
+import ../../model/aggregates/{targetName}/{targetName}_repository_interface
 
 
 type {targetCaptalized}RdbRepository* = ref object
 
-
 proc new{targetCaptalized}Repository*():{targetCaptalized}RdbRepository =
   return {targetCaptalized}RdbRepository()
 
-proc sampleProc*(this:{targetCaptalized}RdbRepository) =
-  echo "{targetCaptalized}RdbRepository sampleProc"
+
+proc toInterface*(this:{targetCaptalized}RdbRepository):I{targetCaptalized}Repository =
+  return ()
 """
 
   let SERVICE = &"""
-import ../value_objects
+import ../../value_objects
 import {targetName}_entity
 import {targetName}_repository_interface
 
 
 type {targetCaptalized}Service* = ref object
-  repository:I{targetCaptalized}Repository
+  repository: I{targetCaptalized}Repository
 
-
-proc new{targetCaptalized}Service*():{targetCaptalized}Service =
+proc new{targetCaptalized}Service*(repository:I{targetCaptalized}Repository):{targetCaptalized}Service =
   return {targetCaptalized}Service(
-    repository:newI{targetCaptalized}Repository()
+    repository: repository
   )
 """
 
@@ -96,7 +91,7 @@ proc new{targetCaptalized}Service*():{targetCaptalized}Service =
   f.write(SERVICE)
 
   # update di_container.nim
-  targetPath = &"{getCurrentDir()}/app/model/aggregates/di_container.nim"
+  targetPath = &"{getCurrentDir()}/app/model/di_container.nim"
   f = open(targetPath, fmRead)
   var textArr = f.readAll().splitLines()
   # get offset where column is empty string
@@ -108,9 +103,22 @@ proc new{targetCaptalized}Service*():{targetCaptalized}Service =
   if importOffset < 1:
     textArr.insert("", 0)
     importOffset = 1
-  # insert array
-  textArr.insert(&"import ../../repositories/{targetName}/{targetName}_rdb_repository", importOffset-1)
-  textArr.insert(&"  {targetName}Repository: {targetCaptalized}RdbRepository", textArr.len-1)
+  # insert import
+  textArr.insert(&"import ../repositories/{targetName}/{targetName}_rdb_repository", importOffset-1)
+  textArr.insert(&"import aggregates/{targetName}/{targetName}_repository_interface", importOffset-1)
+  textArr.insert(&"# {targetName}", importOffset-1)
+  # insert di difinition
+  var isAfterDiDifinision:bool
+  var importDifinisionOffset:int
+  for i, row in textArr:
+    if row == "type DiContainer* = tuple":
+      isAfterDiDifinision = true
+    if isAfterDiDifinision and row == "":
+      importDifinisionOffset = i
+      break
+  textArr.insert(&"  {targetName}Repository: I{targetCaptalized}Repository", importDifinisionOffset)
+  # insert constructor
+  textArr.insert(&"    {targetName}Repository: new{targetCaptalized}Repository().toInterface(),", textArr.len-4)
   # write in file
   f = open(targetPath, fmWrite)
   for i in 0..textArr.len-2:
@@ -118,6 +126,6 @@ proc new{targetCaptalized}Service*():{targetCaptalized}Service =
   message = &"Updated di_container.nim"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
 
-  message = &"Created domain model in {getCurrentDir()}/app/model/aggregates/{targetName}"
+  message = &"Created domain aggregate in {getCurrentDir()}/app/model/aggregates/{targetName}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
   return 0

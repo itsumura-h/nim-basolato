@@ -176,20 +176,42 @@ ducere make migration create_user
 >> migrations/migration20200219134020create_user.nim
 ```
 
+#### aggregates
+create new aggregate
+
+```sh
+ducere make aggregate circle
+```
+
+in app/domain/models/aggregates
+```
+circle
+├── circle_entity.nim
+├── circle_repository_interface.nim
+└── circle_service.nim
+```
+
+in app/repositories
+```
+circle
+└── circle_rdb_repository.nim
+```
+
 #### model
 create new domain model
 ```sh
-ducere make model user
+ducere make model circle/user
 ```
-```
-in app/domain/models
 
-user
- ├── repositories
- │   └── user_rdb_repository.nim
- ├── user_entity.nim
- ├── user_repository_interface.nim
- └── user_service.nim
+in app/domain/models/aggregates
+```
+circle
+├── circle_entity.nim
+├── circle_repository_interface.nim
+├── circle_service.nim
+└── user
+    ├── user_entity.nim
+    └── user_service.nim
 ```
 
 #### usecase

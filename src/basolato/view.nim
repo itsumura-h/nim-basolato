@@ -20,7 +20,7 @@ proc get*(val:JsonNode):string =
     raise newException(JsonKindError, "val is array")
 
 proc get*(val:string|TaintedString):string =
-  return val.xmlEncode
+  return val.string.xmlEncode
 
 proc old*(params:JsonNode, key:string):string =
   if params.hasKey(key):

@@ -28,14 +28,11 @@ $(style.define())
           <textarea name="content" placeholder="content" class="textarea">$(post["content"].get)</textarea>
         </div>
       </div>
-
-
-    <div>$(post["content"].get)</div>
   
       <div class="field">
         <div class="select">
           <select name="is_finished">
-            $if post["is_finished"].getBool == true{
+            $if post["is_finished"].getBool{
               <option value="true" selected>Finished</option>
               <option value="false">Not finished</option>
             }
