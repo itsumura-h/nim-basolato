@@ -2,9 +2,9 @@ import json, strutils, strformat
 # framework
 import ../../../../../src/basolato/controller
 # model
-import ../../model/di_container
+import ../../di_container
 import ../../repositories/query_services/query_service
-import ../../model/usecases/post_usecase
+import ../../core/usecases/post_usecase
 # view
 import ../views/pages/post/index_view
 import ../views/pages/post/show_view

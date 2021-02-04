@@ -84,10 +84,10 @@ when SESSION_TYPE == "redis":
 
   proc checkSessionIdValid*(sessionId:string):Future[bool] {.async.} =
     let conn = await openAsync(SESSION_DB_PATH, Port(REDIS_PORT))
-    if not await conn.hExists(sessionId, "last_access"):
-      return false
-    else:
+    if await conn.hExists(sessionId, "last_access"):
       return true
+    else:
+      return false
 
   proc getToken*(this:SessionDb):Future[string] {.async.} =
     return this.token
@@ -166,6 +166,8 @@ else:
     defer: db.close()
     discard db.load()
     var token = sessionId.decryptCtr()
+    echo "=== checkSessionIdValid"
+    echo token
     return await db.isTokenValid(token)
 
   proc getToken*(this:SessionDb):Future[string] {.async.} =

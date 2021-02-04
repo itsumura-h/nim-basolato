@@ -1,7 +1,7 @@
 import os, terminal
 import
   make/config, make/migration, make/controller,
-  make/usecase, make/aggregate, make/model, make/valueobject,
+  make/usecase, make/model, make/valueobject,
   make/layout, make/page
 
 
@@ -55,9 +55,9 @@ proc make*(args:seq[string]):int =
   of "usecase":
     getTarget
     return makeUsecase(target, message)
-  of "aggregate":
-    getTarget
-    return makeAggregate(target, message)
+  # of "aggregate":
+  #   getTarget
+  #   return makeAggregate(target, message)
   of "model":
     getTarget
     return makeModel(target, message)

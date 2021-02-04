@@ -1,8 +1,8 @@
 import json
 import ../value_objects
-import ../aggregates/user/user_entity
-import ../aggregates/user/user_repository_interface
-import ../aggregates/user/user_service
+import ../models/user/user_entity
+import ../models/user/user_repository_interface
+import ../models/user/user_service
 
 
 type SignUsecase* = ref object

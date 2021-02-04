@@ -1,7 +1,7 @@
 import json
 import ../value_objects
-import ../aggregates/post/post_entity
-import ../aggregates/post/post_repository_interface
+import ../models/post/post_entity
+import ../models/post/post_repository_interface
 
 
 type PostUsecase* = ref object

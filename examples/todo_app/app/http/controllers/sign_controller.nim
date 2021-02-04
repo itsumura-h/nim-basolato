@@ -6,7 +6,7 @@ import ../../../../../src/basolato/request_validation
 import ../views/pages/sign/signup_view
 import ../views/pages/sign/signin_view
 # usecase
-import ../../model/usecases/sign_usecase
+import ../../core/usecases/sign_usecase
 # repository
 import ../../repositories/user/user_rdb_repository
 

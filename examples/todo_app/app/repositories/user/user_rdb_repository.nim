@@ -1,8 +1,8 @@
 import json
 import allographer/query_builder
-import ../../model/aggregates/user/user_repository_interface
-import ../../model/aggregates/user/user_entity
-import ../../model/value_objects
+import ../../core/models/user/user_repository_interface
+import ../../core/models/user/user_entity
+import ../../core/value_objects
 
 
 type UserRdbRepository* = ref object

@@ -42,4 +42,5 @@ proc checkSessionId*(request:Request):Future[MiddlewareResult] {.async.} =
       raise newException(Exception, "Invalid session id")
   except:
     result.isError = true
+    echo getCurrentExceptionMsg()
     result.message = getCurrentExceptionMsg()
