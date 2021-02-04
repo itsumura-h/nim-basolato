@@ -1,15 +1,15 @@
 import re
 import ../../src/basolato
 # controller
-import app/controllers/page_display_controller
-import app/controllers/cookie_controller
-import app/controllers/login_controller
-import app/controllers/flash_controller
-import app/controllers/file_upload_controller
-import app/controllers/benchmark_controller
+import app/http/controllers/page_display_controller
+import app/http/controllers/cookie_controller
+import app/http/controllers/login_controller
+import app/http/controllers/flash_controller
+import app/http/controllers/file_upload_controller
+import app/http/controllers/benchmark_controller
 # middleware
-import app/middlewares/auth_middleware
-import app/middlewares/cors_middleware
+import app/http/middlewares/auth_middleware
+import app/http/middlewares/cors_middleware
 
 var routes = newRoutes()
 

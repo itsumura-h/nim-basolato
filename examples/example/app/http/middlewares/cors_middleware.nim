@@ -1,6 +1,6 @@
 from strutils import join
 import asyncdispatch
-import ../../../../src/basolato/middleware
+import ../../../../../src/basolato/middleware
 
 
 proc corsHeader*(): Headers =

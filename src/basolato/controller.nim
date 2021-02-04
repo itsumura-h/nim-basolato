@@ -26,7 +26,7 @@ proc html*(path:string):string =
   ## .. code-block:: nim
   ##   let indexHtml = html("pages/index.html")
   ##   return render(indexHtml)
-  let path = getCurrentDir() & "/resources/" & path
+  let path = getCurrentDir() / "app/http/views" / path
   let f = open(path, fmRead)
   defer: f.close()
   let data = f.readAll()

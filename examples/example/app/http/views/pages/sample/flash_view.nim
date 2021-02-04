@@ -1,5 +1,5 @@
 import json
-import ../../../../../src/basolato/view
+import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
 proc impl(auth:Auth):Future[string] {.async.} = tmpli html"""

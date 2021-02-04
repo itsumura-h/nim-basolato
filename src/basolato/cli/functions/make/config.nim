@@ -22,9 +22,9 @@ putEnv("DB_DATABASE", "")
 putEnv("DB_MAX_CONNECTION", "95")
 
 # Logging
-putEnv("LOG_IS_DISPLAY", "true") # ture or false
-putEnv("LOG_IS_FILE", "true") # ture or false
-putEnv("LOG_IS_ERROR_FILE", "true") # ture or false
+putEnv("LOG_IS_DISPLAY", "true") # true or false
+putEnv("LOG_IS_FILE", "true") # true or false
+putEnv("LOG_IS_ERROR_FILE", "true") # true or false
 putEnv("LOG_DIR", "{getCurrentDir()}/logs")
 
 # Session db
@@ -32,7 +32,7 @@ putEnv("SESSION_TYPE", "file") # "file" or "redis"
 putEnv("SESSION_DB_PATH", "{getCurrentDir()}/session.db") # Session file path or IP address or Docker service name
 putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
 putEnv("REDIS_PORT", "6379")
-putEnv("ENABLE_ANONYMOUS_COOKIE", "ture") # true or false
+putEnv("ENABLE_ANONYMOUS_COOKIE", "true") # true or false
 putEnv("COOKIE_DOMAINS", "")
 """
 

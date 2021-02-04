@@ -1,8 +1,8 @@
 import os
 # framework
-import ../../../../src/basolato/controller
+import ../../../../../src/basolato/controller
 # view
-import ../../resources/pages/sample/file_upload_view
+import ../views/pages/sample/file_upload_view
 
 proc index*(request:Request, params:Params):Future[Response] {.async.} =
   return render(fileUploadView())

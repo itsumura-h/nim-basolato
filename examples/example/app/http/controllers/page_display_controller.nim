@@ -1,13 +1,13 @@
 import json, times, strformat
 # framework
-import ../../../../src/basolato/controller
+import ../../../../../src/basolato/controller
 import allographer/query_builder
 # view
-import ../../resources/pages/welcome_view
-import ../../resources/pages/sample/react_view
-import ../../resources/pages/sample/material_ui_view
-import ../../resources/pages/sample/vuetify_view
-import ../../resources/pages/sample/with_style_view
+import ../views/pages/welcome_view
+import ../views/pages/sample/react_view
+import ../views/pages/sample/material_ui_view
+import ../views/pages/sample/vuetify_view
+import ../views/pages/sample/with_style_view
 
 
 let indexHtml = html("pages/sample/index.html")

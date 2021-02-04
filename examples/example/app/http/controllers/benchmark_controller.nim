@@ -1,5 +1,5 @@
 import asyncdispatch
-import ../../../../src/basolato/controller
+import ../../../../../src/basolato/controller
 
 
 proc test1*(request:Request, params:Params):Future[Response] {.async.} =

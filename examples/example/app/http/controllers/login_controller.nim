@@ -1,7 +1,7 @@
 # framework
-import ../../../../src/basolato/controller
+import ../../../../../src/basolato/controller
 # view
-import ../../resources/pages/sample/login_view
+import ../views/pages/sample/login_view
 
 
 proc index*(request:Request, params:Params):Future[Response] {.async.} =
@@ -15,9 +15,9 @@ proc store*(request:Request, params:Params):Future[Response] {.async.} =
   let auth = await newAuth(request)
   await auth.login()
   await auth.set("name", name)
-  return redirect("/sample/login")
+  return await redirect("/sample/login").setAuth(auth)
 
 proc destroy*(request:Request, params:Params):Future[Response] {.async.} =
   let auth = await newAuth(request)
   await auth.destroy()
-  return redirect("/sample/login")
+  return await redirect("/sample/login").setAuth(auth)

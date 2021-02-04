@@ -15,7 +15,7 @@ proc create(dirPath:string, packageDir:string):int =
     moveDir(&"{dirpath}/tmp/0.9/app", &"{dirpath}/app")
     moveDir(&"{dirpath}/tmp/0.9/migrations", &"{dirpath}/migrations")
     moveDir(&"{dirpath}/tmp/0.9/public", &"{dirpath}/public")
-    moveDir(&"{dirpath}/tmp/0.9/resources", &"{dirpath}/resources")
+    # moveDir(&"{dirpath}/tmp/0.9/resources", &"{dirpath}/resources")
     moveFile(&"{dirpath}/tmp/0.9/main.nim", &"{dirpath}/main.nim")
     moveFile(&"{dirpath}/tmp/0.9/.gitignore", &"{dirpath}/.gitignore")
     # move static files
@@ -37,8 +37,7 @@ proc create(dirPath:string, packageDir:string):int =
       defer: f.close()
       f.write("")
     # create empty dirs
-    createDir(&"{dirPath}/resources/pages")
-    createDir(&"{dirPath}/resources/layouts")
+    createDir(&"{dirPath}/resources/errors")
     createDir(&"{dirPath}/tests")
     createDir(&"{dirPath}/public/js")
     createDir(&"{dirPath}/public/css")

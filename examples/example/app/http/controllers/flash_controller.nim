@@ -1,7 +1,7 @@
 # framework
-import ../../../..//src/basolato/controller
+import ../../../../../src/basolato/controller
 # view
-import ../../resources/pages/sample/flash_view
+import ../views/pages/sample/flash_view
 
 proc index*(request:Request, params:Params):Future[Response] {.async.} =
   let auth = await newAuth(request)

@@ -1,8 +1,8 @@
 import strutils, times
 # framework
-import ../../../../src/basolato/controller
+import ../../../../../src/basolato/controller
 # view
-import ../../resources/pages/sample/cookie_view
+import ../views/pages/sample/cookie_view
 
 proc indexCookie*(request:Request, params:Params):Future[Response] {.async.} =
   let auth = await newAuth(request)
