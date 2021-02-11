@@ -14,7 +14,7 @@ import app/http/middlewares/cors_middleware
 var routes = newRoutes()
 
 routes.middleware(re".*", auth_middleware.checkCsrfTokenMiddleware)
-routes.middleware(@[HttpOptions], re"/api/.*", cors_middleware.setCorsMiddleware)
+routes.middleware(@[HttpGet, HttpOptions], re"/api/.*", cors_middleware.setCorsMiddleware)
 
 routes.get("/", page_display_controller.index)
 routes.get("/api/test1", benchmark_controller.test1)

@@ -166,8 +166,6 @@ else:
     defer: db.close()
     discard db.load()
     var token = sessionId.decryptCtr()
-    echo "=== checkSessionIdValid"
-    echo token
     return await db.isTokenValid(token)
 
   proc getToken*(this:SessionDb):Future[string] {.async.} =
@@ -391,6 +389,15 @@ type Auth* = ref object
 proc newAuth*(request:Request):Future[Auth] {.async.} =
   ## use in constructor
   var sessionId = newCookie(request).get("session_id")
+  if await checkSessionIdValid(sessionId):
+    let session = await newSession(sessionId)
+    await session.set("last_access", $getTime())
+    return Auth(session:session)
+  else:
+    return Auth()
+
+proc newAuth*(sessionId:string):Future[Auth] {.async.} =
+  ## use in constructor
   if await checkSessionIdValid(sessionId):
     let session = await newSession(sessionId)
     await session.set("last_access", $getTime())

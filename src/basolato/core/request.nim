@@ -107,6 +107,13 @@ proc getQueryParams*(request:Request):Params =
     params[key.string] = Param(value:val)
   return params
 
+proc getJsonParams*(request:Request):Params =
+  let params = Params()
+  let jsonParams = request.body.parseJson
+  for k, v in jsonParams.pairs:
+    params[k] = Param(value:v.getStr)
+  return params
+
 
 type MultiData* = OrderedTable[string, tuple[fields: StringTableRef, body: string]]
 

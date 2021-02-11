@@ -26,8 +26,13 @@ proc params*(request:Request, route:Route):Params =
     params[k] = v
   for k, v in getQueryParams(request).pairs:
     params[k] = v
-  for k, v in getRequestParams(request).pairs:
-    params[k] = v
+
+  if request.headers.hasKey("content-type") and request.headers["content-type"].split(";")[0] == "application/json":
+    for k, v in getJsonParams(request).pairs:
+      params[k] = v
+  else:
+    for k, v in getRequestParams(request).pairs:
+      params[k] = v
   return params
 
 proc params*(request:Request, middleware:MiddlewareRoute):Params =
@@ -214,16 +219,16 @@ proc serveCore(params:(Routes, int)){.thread.} =
       # check controller routing
       try:
         let key = $(req.httpMethod) & ":" & req.path
+        response = await runMiddleware(req, routes, headers)
         if routes.withoutParams.hasKey(key):
           let route = routes.withoutParams[key]
-          response = await runMiddleware(req, routes, headers)
           if req.httpMethod != HttpOptions:
             headers = headers & response.headers
             response = await runController(req, route, headers)
         else:
           for route in routes.withParams:
+            response = await runMiddleware(req, routes, headers)
             if route.httpMethod == req.httpMethod and isMatchUrl(req.path, route.path):
-              response = await runMiddleware(req, routes, headers)
               if req.httpMethod != HttpOptions:
                 headers = headers & response.headers
                 response = await runController(req, route, headers)
@@ -249,7 +254,7 @@ proc serveCore(params:(Routes, int)){.thread.} =
           echoErrorMsg(exception.msg)
 
       # anonymous user login should run only for response from controler
-      if ENABLE_ANONYMOUS_COOKIE:
+      if not response.isNil and ENABLE_ANONYMOUS_COOKIE and req.headers.hasKey("content-type") and req.headers["content-type"].split(";")[0] != "application/json":
         let auth = await newAuth(req)
         if await auth.anonumousCreateSession():
           response = await response.setAuth(auth)

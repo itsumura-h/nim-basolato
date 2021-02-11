@@ -38,7 +38,6 @@ proc render*(body:string):Response =
 proc render*(body:string, headers:var Headers):Response =
   if not headers.hasKey("Content-Type"):
     headers.set("Content-Type", "text/html; charset=UTF-8")
-  headers.setDefaultHeaders()
   return Response(
     status:Http200,
     body:body,

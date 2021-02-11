@@ -97,7 +97,7 @@ proc presentDd*(request:Request, params:Params):Future[Response] {.async.} =
 proc errorPage*(request:Request, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
   if id mod 2 == 1:
-    raise newException(Error400, "")
+    raise newException(Error400, "Displaying error page")
   return render($id)
 
 proc errorRedirect*(request:Request, params:Params):Future[Response] {.async.} =

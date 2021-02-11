@@ -113,6 +113,8 @@ type Auth* = ref object
 ```nim
 proc newAuth*(request:Request):Future[Auth] {.async.} =
 
+proc newAuth*(sessionId:string):Future[Auth] {.async.} =
+
 proc login*(this:Auth) {.async.} =
 
 proc logout*(this:Auth) {.async.} =
@@ -139,6 +141,19 @@ proc getFlash*(this:Auth):Future[JsonNode] {.async.} =
 ```
 
 ### Sample
+newAuth for MPA(Multi page application)
+```nim
+proc index(request:Request, params:Params):Future[Response] {.async.} =
+  let auth = await newAuth(request)
+```
+
+newAuth for API
+```nim
+proc index(request:Request, params:Params):Future[Response] {.async.} =
+  let sessionId = request.headers["x-login-token"]
+  let auth = await newAuth(sessionId)
+```
+
 login
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
