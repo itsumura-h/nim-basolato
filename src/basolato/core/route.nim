@@ -198,6 +198,21 @@ proc runController(req:Request, route:Route, headers: Headers):Future[Response] 
   echoLog($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
   return response
 
+proc doesRunAnonymousLogin(req:Request, res:Response):bool =
+  if res.isNil:
+    return false
+  if not ENABLE_ANONYMOUS_COOKIE:
+    return false
+  if req.httpMethod == HttpOptions:
+    return false
+  if res.headers.hasKey("set-cookie"):
+    return false
+  # if not req.headers.hasKey("content-type"):
+  #   return false
+  # if req.headers["content-type"].split(";")[0] == "application/json":
+  #   return false
+  return true
+
 proc serveCore(params:(Routes, int)){.thread.} =
   let (routes, port) = params
   var server = newAsyncHttpServer(true, true)
@@ -254,7 +269,7 @@ proc serveCore(params:(Routes, int)){.thread.} =
           echoErrorMsg(exception.msg)
 
       # anonymous user login should run only for response from controler
-      if not response.isNil and ENABLE_ANONYMOUS_COOKIE and req.headers.hasKey("content-type") and req.headers["content-type"].split(";")[0] != "application/json":
+      if doesRunAnonymousLogin(req, response):
         let auth = await newAuth(req)
         if await auth.anonumousCreateSession():
           response = await response.setAuth(auth)

@@ -73,14 +73,6 @@ proc signOut*(request:Request, params:Params):Future[Response] {.async.} =
   return redirect("/signin")
 
 
-proc signInDataApi*(request:Request, params:Params):Future[Response] {.async.} =
-  let sessionId = request.headers["x-login-token"]
-  let auth = await newAuth(sessionId)
-  if await auth.isLogin():
-    return render(%*{"message": "signed in"})
-  else:
-    return render(Http400, %*{"message": "not signed in"})
-
 proc signInApi*(request:Request, params:Params):Future[Response] {.async.} =
   let email = params.getStr("email")
   let password = params.getStr("password")
@@ -92,13 +84,17 @@ proc signInApi*(request:Request, params:Params):Future[Response] {.async.} =
     await auth.login()
     await auth.set("id", $(user["id"].getInt))
     await auth.set("name", user["name"].getStr)
-    var header = newHeaders()
-    header.set("X-login-token", await auth.getToken())
-    return render(Http200, newJObject(), header)
+    return await render(Http200, newJObject()).setAuth(auth)
   except:
     let params = %*{"email": email}
     return render(%*{"params":params, "error": getCurrentExceptionMsg()})
 
+proc signInDataApi*(request:Request, params:Params):Future[Response] {.async.} =
+  let auth = await newAuth(request)
+  if await auth.isLogin():
+    return render(%*{"message": "signed in"})
+  else:
+    return render(Http400, %*{"message": "not signed in"})
 
 proc signOutApi*(request:Request, params:Params):Future[Response] {.async.} =
   echo params.repr

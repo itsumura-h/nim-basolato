@@ -13,14 +13,12 @@ proc corsHeader*(): Headers =
   ]
 
   let allowedHeaders = [
-    "X-login-id",
-    "X-login-token",
     "content-type",
   ]
 
   return {
     "Cache-Control": "no-cache",
-    "Access-Control-Allow-Origin": "http://172.29.0.5:3000",
+    "Access-Control-Allow-Origin": "http://localhost:3000",
     "Access-Control-Allow-Methods": allowedMethods.join(", "),
     "Access-Control-Allow-Headers": allowedHeaders.join(", "),
     "Access-Control-Allow-Credentials": "true",

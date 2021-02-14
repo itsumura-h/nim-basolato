@@ -394,7 +394,10 @@ proc newAuth*(request:Request):Future[Auth] {.async.} =
     await session.set("last_access", $getTime())
     return Auth(session:session)
   else:
-    return Auth()
+    # return Auth()
+    let session = await newSession()
+    await session.set("last_access", $getTime())
+    return Auth(session:session)
 
 proc newAuth*(sessionId:string):Future[Auth] {.async.} =
   ## use in constructor

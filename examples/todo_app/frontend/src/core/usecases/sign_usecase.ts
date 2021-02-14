@@ -1,43 +1,40 @@
 import {replace} from 'svelte-spa-router'
-import axios from "axios";
+import axios from "axios"
 
-export default class SignUsecase {
+export default class SignUsecase{
+  config: object
+  
+  constructor(){
+    this.config = {
+      withCredentials: true
+    }
+  }
+
   signin(email, password:string):string{
     let params = {
       email: email,
       password: password
     }
-    let config = {
-      withCredentials: true,
-    }
-    return axios.post("http://localhost:9000/api/signin", params, config)
+    return axios.post("http://localhost:9000/api/signin", params, this.config)
     .then(response=>{
-      sessionStorage.setItem("x-login-token", response.headers["x-login-token"]);
+      sessionStorage.setItem('isLogin', 'true')
       replace('/')
       return ""
     })
     .catch(err=>{
-      console.log(err)
+      console.error(err)
       return err
     })
   }
 
   dataFetch():string{
-    console.log(sessionStorage.getItem('x-login-token'))
-    let config = {
-      withCredentials: true,
-      headers: {
-        'x-login-token': sessionStorage.getItem('x-login-token'),
-      }
-    }
-    return axios.get("http://localhost:9000/api/signin-data", config)
+    return axios.get("http://localhost:9000/api/signin-data", this.config)
     .then(response=>{
       return response.data["message"]
     })
     .catch(err=>{
-      console.log(err)
-      replace('/signin')
-      return err
+      sessionStorage.removeItem('isLogin')
+      replace('/signin')  
     })
   }
 }
