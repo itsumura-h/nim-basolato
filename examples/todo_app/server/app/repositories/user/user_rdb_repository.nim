@@ -1,4 +1,4 @@
-import json
+import json, options
 import allographer/query_builder
 import ../../core/models/user/user_repository_interface
 import ../../core/models/user/user_entity
@@ -29,9 +29,11 @@ proc storeUser*(
 
 proc getUser*(this:UserRdbRepository, email:UserEmail):User =
   let userData = rdb().table("users").where("email", "=", $email).first()
-  let id = newUserId(userData["id"].getInt)
-  let name = newUserName(userData["name"].getStr)
-  let hashedPassword = newHashedPassword(userData["password"].getStr)
+  if not userData.isSome():
+    raise newException(Exception, "user not found")
+  let id = newUserId(userData.get["id"].getInt)
+  let name = newUserName(userData.get["name"].getStr)
+  let hashedPassword = newHashedPassword(userData.get["password"].getStr)
   let user = newUser(id, name, email, hashedPassword)
   return user
 

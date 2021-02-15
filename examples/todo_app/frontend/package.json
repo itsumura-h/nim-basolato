@@ -25,6 +25,8 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
+    "node-sass": "^5.0.0",
+    "sass": "^1.32.7",
     "sirv-cli": "^1.0.0",
     "svelte-spa-router": "^3.1.0"
   }

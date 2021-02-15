@@ -1,4 +1,4 @@
-import json
+import json, options
 import ../../http/query_service_interface
 import allographer/query_builder
 
@@ -13,7 +13,7 @@ proc getPostsByUserId(this:QueryService, id:int):seq[JsonNode] =
   return rdb().table("posts").where("user_id", "=", $id).get()
 
 proc getPostByUserId(this:QueryService, id:int):JsonNode =
-  return rdb().table("posts").find(id)
+  return rdb().table("posts").find(id).get()
 
 
 proc toInterface*(this:QueryService):IQueryService =

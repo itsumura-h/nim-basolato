@@ -72,6 +72,7 @@ proc signOut*(request:Request, params:Params):Future[Response] {.async.} =
   await auth.logout()
   return redirect("/signin")
 
+# ==================== API ====================
 
 proc signInApi*(request:Request, params:Params):Future[Response] {.async.} =
   let email = params.getStr("email")
@@ -87,14 +88,7 @@ proc signInApi*(request:Request, params:Params):Future[Response] {.async.} =
     return await render(Http200, newJObject()).setAuth(auth)
   except:
     let params = %*{"email": email}
-    return render(%*{"params":params, "error": getCurrentExceptionMsg()})
-
-proc signInDataApi*(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
-  if await auth.isLogin():
-    return render(%*{"message": "signed in"})
-  else:
-    return render(Http400, %*{"message": "not signed in"})
+    return render(Http400, %*{"params":params, "error": getCurrentExceptionMsg()})
 
 proc signOutApi*(request:Request, params:Params):Future[Response] {.async.} =
   echo params.repr

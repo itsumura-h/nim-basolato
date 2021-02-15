@@ -1,6 +1,7 @@
 import {replace} from 'svelte-spa-router'
 import axios from "axios"
 
+
 export default class SignUsecase{
   config: object
   
@@ -10,20 +11,18 @@ export default class SignUsecase{
     }
   }
 
-  signin(email, password:string):string{
+  async signin(email, password:string):string{
     let params = {
       email: email,
       password: password
     }
-    return axios.post("http://localhost:9000/api/signin", params, this.config)
+    return await axios.post("http://localhost:9000/api/signin", params, this.config)
     .then(response=>{
       sessionStorage.setItem('isLogin', 'true')
       replace('/')
-      return ""
     })
     .catch(err=>{
-      console.error(err)
-      return err
+      return err.response.data.error
     })
   }
 

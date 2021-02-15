@@ -68,3 +68,11 @@ proc update*(request:Request, params:Params):Future[Response] {.async.} =
     await auth.setFlash("error", getCurrentExceptionMsg())
     let post = %*{"title": title, "content": content, "is_finished": isFinished}
     return render(await showView(auth, post))
+
+# ==================== API ====================
+
+proc indexApi*(request:Request, params:Params):Future[Response] {.async.} =
+  let auth = await newAuth(request)
+  let id = await(auth.get("id")).parseInt
+  let posts = di.queryService.getPostsByUserId(id)
+  return render(%*posts)
