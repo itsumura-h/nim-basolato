@@ -82,8 +82,8 @@ proc getBool*(params:Params, key:string, default=false):bool =
   else:
     return default
 
-proc getJson*(params:Params):JsonNode =
-  return params["json"].value.parseJson
+proc getJson*(params:Params, key:string, default=newJObject()):JsonNode =
+  return params[key].value.parseJson
 
 proc hasKey*(params:Params, key:string):bool =
   return tables.hasKey(params, key)
@@ -109,9 +109,23 @@ proc getQueryParams*(request:Request):Params =
 
 proc getJsonParams*(request:Request):Params =
   let params = Params()
-  let jsonParams = request.body.parseJson
+  let jsonParams = request.body.parseJson()
   for k, v in jsonParams.pairs:
-    params[k] = Param(value:v.getStr)
+    case v.kind
+    of JInt:
+      params[k] = Param(value: $(v.getInt))
+    of JFloat:
+      params[k] = Param(value: $(v.getFloat))
+    of JBool:
+      params[k] = Param(value: $(v.getBool))
+    of JNull:
+      params[k] = Param(value: "")
+    of JArray:
+      params[k] = Param(value: $v)
+    of JObject:
+      params[k] = Param(value: $v)
+    else:
+      params[k] = Param(value: v.getStr)
   return params
 
 

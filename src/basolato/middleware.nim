@@ -31,16 +31,17 @@ proc checkCsrfToken*(request:Request, params:Params):Future[MiddlewareResult] {.
 proc checkSessionId*(request:Request):Future[MiddlewareResult] {.async.} =
   ## Check session id in cookie is valid.
   result = MiddlewareResult()
-  let cookie = newCookie(request)
-  try:
-    if not cookie.hasKey("session_id"):
-      raise newException(Exception, "Missing session id")
-    let sessionId = cookie.get("session_id")
-    if sessionId.len == 0:
-      raise newException(Exception, "Session id is empty")
-    if not await checkSessionIdValid(sessionId):
-      raise newException(Exception, "Invalid session id")
-  except:
-    result.isError = true
-    echo getCurrentExceptionMsg()
-    result.message = getCurrentExceptionMsg()
+  if request.httpMethod != HttpOptions:
+    let cookie = newCookie(request)
+    try:
+      if not cookie.hasKey("session_id"):
+        raise newException(Exception, "Missing session id")
+      let sessionId = cookie.get("session_id")
+      if sessionId.len == 0:
+        raise newException(Exception, "Session id is empty")
+      if not await checkSessionIdValid(sessionId):
+        raise newException(Exception, "Invalid session id")
+    except:
+      result.isError = true
+      echo getCurrentExceptionMsg()
+      result.message = getCurrentExceptionMsg()

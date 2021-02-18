@@ -75,4 +75,32 @@ proc indexApi*(request:Request, params:Params):Future[Response] {.async.} =
   let auth = await newAuth(request)
   let id = await(auth.get("id")).parseInt
   let posts = di.queryService.getPostsByUserId(id)
-  return render(%*posts)
+  return render(%*{"name":await auth.get("name"), "posts":posts})
+
+proc storeApi*(request:Request, params:Params):Future[Response] {.async.} =
+  let title = params.getStr("title")
+  let content = params.getStr("content")
+  let auth = await newAuth(request)
+  let userId = await(auth.get("id")).parseInt
+  try:
+    let repository = di.postRepository
+    let usecase = newPostUsecase(repository)
+    usecase.store(userId, title, content)
+    return render("")
+  except:
+    return render(Http422, %*{"error":getCurrentExceptionMsg()})
+
+proc changeStatusApi*(request:Request, params:Params):Future[Response] {.async.} =
+  let id = params.getInt("id")
+  let status = params.getBool("status")
+  let repository = di.postRepository
+  let usecase = newPostUsecase(repository)
+  usecase.changeStatus(id, status)
+  return render("")
+
+proc destroyApi*(request:Request, params:Params):Future[Response] {.async.} =
+  let id = params.getInt("id")
+  let repository = di.postRepository
+  let usecase = newPostUsecase(repository)
+  usecase.destroy(id)
+  return render("")

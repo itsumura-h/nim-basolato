@@ -1,22 +1,15 @@
 import {replace} from 'svelte-spa-router'
-import axios from "axios"
+import request from "../libs/request"
 
 
 export default class SignUsecase{
-  config: object
-  
-  constructor(){
-    this.config = {
-      withCredentials: true
-    }
-  }
 
-  async signin(email, password:string):string{
+  async signin(email, password:string){
     let params = {
       email: email,
       password: password
     }
-    return await axios.post("http://localhost:9000/api/signin", params, this.config)
+    return request.post("/signin", params)
     .then(response=>{
       sessionStorage.setItem('isLogin', 'true')
       replace('/')
@@ -26,14 +19,9 @@ export default class SignUsecase{
     })
   }
 
-  dataFetch():string{
-    return axios.get("http://localhost:9000/api/signin-data", this.config)
-    .then(response=>{
-      return response.data["message"]
-    })
-    .catch(err=>{
-      sessionStorage.removeItem('isLogin')
-      replace('/signin')  
-    })
+  async signout(){
+    await request.delete('/signout')
+    sessionStorage.removeItem('isLogin')
+    replace('/signin')
   }
 }

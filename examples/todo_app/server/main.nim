@@ -24,19 +24,23 @@ routes.post("/signup", sign_controller.signUp)
 routes.get("/signin", sign_controller.signInPage)
 routes.post("/signin", sign_controller.signIn)
 routes.post("/signout", sign_controller.signOut)
-routes.post("/api/signin", sign_controller.signInApi)
-routes.post("/api/signout", sign_controller.signOutApi)
 
 routes.get("/delete-account", sign_controller.deleteAccountPage)
 routes.post("/delete-account", sign_controller.deleteAccount)
 
 routes.get("/", post_controller.index)
-routes.get("/api/posts", post_controller.indexApi)
 routes.post("/", post_controller.store)
-# routes.post("/api/posts", post_controller.indexApi)
 routes.post("/change-status/{id:int}", post_controller.changeStatus)
 routes.post("/delete/{id:int}", post_controller.destroy)
 routes.get("/{id:int}", post_controller.show)
 routes.post("/{id:int}", post_controller.update)
+
+groups "/api":
+  routes.post("/signin", sign_controller.signInApi)
+  routes.post("/signout", sign_controller.signOutApi)
+  routes.get("/posts", post_controller.indexApi)
+  routes.post("/posts", post_controller.storeApi)
+  routes.put("/change-status/{id:int}", post_controller.changeStatusApi)
+  routes.delete("/posts/{id:int}", post_controller.destroyApi)
 
 serve(routes)
