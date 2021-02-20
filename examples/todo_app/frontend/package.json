@@ -2,15 +2,17 @@
   "name": "svelte-app",
   "version": "1.0.0",
   "scripts": {
-    "build": "rollup -c",
-    "dev": "HOST=0.0.0.0 PORT=3000 rollup -c -w",
-    "start": "sirv public",
+    "build": "routify -b && rollup -c",
+    "dev": "routify -c my-server",
+    "my-server": "HOST=0.0.0.0 PORT=3000 rollup -c -w",
+    "start": "sirv public --single",
     "validate": "svelte-check"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-node-resolve": "^11.0.0",
     "@rollup/plugin-typescript": "^6.0.0",
+    "@roxi/routify": "^2.12.5",
     "@tsconfig/svelte": "^1.0.0",
     "rollup": "^2.3.4",
     "rollup-plugin-css-only": "^3.1.0",

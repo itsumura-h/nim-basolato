@@ -307,11 +307,11 @@ proc newCookie*(request:Request):Cookie =
 proc get*(this:Cookie, name:string):string =
 
 proc set*(this:var Cookie, name, value: string, expire:DateTime,
-      sameSite: SameSite=Lax, secure = false, httpOnly = false, domain = "",
+      sameSite: SameSite=Lax, secure = false, httpOnly = true, domain = "",
       path = "/") =
 
 proc set*(this:var Cookie, name, value: string, sameSite: SameSite=Lax,
-      secure = false, httpOnly = false, domain = "", path = "/") =
+      secure = false, httpOnly = true, domain = "", path = "/") =
 
 proc updateExpire*(this:var Cookie, name:string, num:int, timeUnit:TimeUnit, path="/") =
 

@@ -42,5 +42,7 @@ groups "/api":
   routes.post("/posts", post_controller.storeApi)
   routes.put("/change-status/{id:int}", post_controller.changeStatusApi)
   routes.delete("/posts/{id:int}", post_controller.destroyApi)
+  routes.get("/posts/{id:int}", post_controller.showApi)
+  routes.put("/posts/{id:int}", post_controller.updateApi)
 
 serve(routes)

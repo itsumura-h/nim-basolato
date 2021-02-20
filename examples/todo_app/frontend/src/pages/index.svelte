@@ -1,11 +1,11 @@
 <script lang="ts">
   import {onMount} from 'svelte'
-  import { replace } from 'svelte-spa-router';
+  import {goto} from '@roxi/routify'
   import {title, content} from '../stores/post'
   import Header from '../components/post/header.svelte'
   import Input from '../components/post/input.svelte'
   import Table from '../components/post/table.svelte'
-  import PostUsecase from '../core/usecases/post_usecase';
+  import {PostUsecase} from '../core/usecases/post_usecase';
   
   let isLogin: boolean
   let name: string
@@ -17,7 +17,7 @@
   onMount(async() => {
     isLogin = sessionStorage.getItem('isLogin') === 'true'
     if(!isLogin){
-      replace('/signin')
+      $goto('/signin')
     }
 
     getPosts()
@@ -43,7 +43,7 @@
     getPosts()
   }
 
-  const deletePost=async (id:number) => {
+  const deletePost=async(id:number) => {
     await usecase.deletePost(id)
     getPosts()
   }
@@ -58,15 +58,14 @@
       {:then posts}
         <Header name={name}/>
         <Input storePost={storePost}/>
+        {#await error}
+          <!---->
+        {:then error} 
+          {#if error}
+            {error}
+          {/if}
+        {/await}
         <Table posts={posts} changeStatus={changeStatus} deletePost={deletePost}/>
-      {/await}
-
-      {#await error}
-        loading
-      {:then error} 
-        {#if error}
-          {error}
-        {/if}
       {/await}
     </div>
   </section>

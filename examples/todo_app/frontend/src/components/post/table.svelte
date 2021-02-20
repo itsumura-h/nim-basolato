@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {url} from '@roxi/routify'
   export let posts:Array<any>
   export let changeStatus:(id:number, status:boolean)=>void
   export let deletePost:(id:number)=>void
@@ -24,7 +25,7 @@
       </tr>
       {#each posts as post}
         <tr>
-          <td><a href={'/' + post['id']}>{post['title']}</a></td>
+          <td><a href={$url(`./${post['id']}`)}>{post['title']}</a></td>
           <td>
             <form method="POST" action={'/change-status/' + post['id']}>
               {#if post['is_finished']}

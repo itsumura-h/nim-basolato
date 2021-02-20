@@ -1,4 +1,4 @@
-import {replace} from 'svelte-spa-router'
+import {goto} from '@roxi/routify'
 import request from "../libs/request"
 
 
@@ -12,7 +12,7 @@ export default class SignUsecase{
     return request.post("/signin", params)
     .then(response=>{
       sessionStorage.setItem('isLogin', 'true')
-      replace('/')
+      $goto('/')
     })
     .catch(err=>{
       return err.response.data.error
@@ -22,6 +22,6 @@ export default class SignUsecase{
   async signout(){
     await request.delete('/signout')
     sessionStorage.removeItem('isLogin')
-    replace('/signin')
+    $goto('/signin')
   }
 }
