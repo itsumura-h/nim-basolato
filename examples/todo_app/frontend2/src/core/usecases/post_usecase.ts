@@ -1,5 +1,5 @@
-import axios from 'axios'
-import Request from '../libs/api'
+import axios, {AxiosResponse} from 'axios'
+import request from '../libs/request'
 
 export class ApiResponse {
   errors:Array<string>
@@ -16,22 +16,19 @@ export class ApiResponse {
 
 export class PostUsecase {
   async getPosts(){
-    const req = Request(this)
-    const res = await req.get('/posts')
+    const res = await request.get('/posts')
     return await res.data
   }
 
   async getPost(id:number):Promise<ApiResponse>{
-    const req = Request(this)
     try{
-      let res = await req.get(`/posts/${id}`)
+      let res = await request.get(`/posts/${id}`)
       let obj = {
         errors: [],
         data: res.data
       } 
       return new ApiResponse(obj)  
     }catch(err){
-      console.error(err)
       let obj = {
         errors: err.response.data.errors,
         data:null
@@ -54,14 +51,14 @@ export class PostUsecase {
     })
   }
 
-  async changeStatus(id:number, status:boolean){
+  async changeStatus(id:number, status:boolean):Promise<AxiosResponse<any>>{
     let params = {
       status: status
     }
     return request.put('/change-status/' + id, params)
   }
 
-  async deletePost(id:number){
+  async deletePost(id:number):Promise<AxiosResponse<any>>{
     return request.delete('/posts/' + id)
   }
 

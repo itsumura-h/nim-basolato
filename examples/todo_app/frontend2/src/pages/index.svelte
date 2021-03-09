@@ -1,6 +1,6 @@
 <script lang="ts">
   import {onMount} from 'svelte'
-  import {goto} from '@roxi/routify'
+  import { navigate } from 'svelte-routing'
   import {title, content} from '../stores/post'
   import Header from '../components/post/header.svelte'
   import Input from '../components/post/input.svelte'
@@ -17,7 +17,7 @@
   onMount(async() => {
     isLogin = sessionStorage.getItem('isLogin') === 'true'
     if(!isLogin){
-      $goto('/signin')
+      navigate('/signin')
     }
 
     getPosts()

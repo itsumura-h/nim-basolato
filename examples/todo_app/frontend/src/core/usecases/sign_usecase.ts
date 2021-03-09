@@ -1,18 +1,19 @@
-import {goto} from '@roxi/routify'
-import request from "../libs/request"
-
+import {goto} from '@sapper/app'
+// import request from '../libs/api'
+import {AxiosRequest} from '../libs/api_request'
 
 export default class SignUsecase{
 
-  async signin(email, password:string){
+  async signin(email, password:string):Promise<string>{
     let params = {
       email: email,
       password: password
     }
-    return request.post("/signin", params)
+    let request = new AxiosRequest
+    request.post("/signin", params)
     .then(response=>{
       sessionStorage.setItem('isLogin', 'true')
-      $goto('/')
+      goto('/')
     })
     .catch(err=>{
       return err.response.data.error
@@ -20,8 +21,9 @@ export default class SignUsecase{
   }
 
   async signout(){
-    await request.delete('/signout')
+    let request = new AxiosRequest
+    // await request.delete('/signout')
     sessionStorage.removeItem('isLogin')
-    $goto('/signin')
+    goto('/signin')
   }
 }

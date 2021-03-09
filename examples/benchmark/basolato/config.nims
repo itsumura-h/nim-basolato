@@ -1,10 +1,11 @@
 import os
 
+# Security
+putEnv("SECRET_KEY", "rHp(F[&&O>geIRvX!Q;lD=OB") # 24 length
+
 # DB Connection
 putEnv("DB_DRIVER", "postgres")
 putEnv("DB_CONNECTION", "tfb-database-pg:5432")
-# putEnv("DB_DRIVER", "mysql")
-# putEnv("DB_CONNECTION", "tfb-database-my:3306")
 putEnv("DB_USER", "benchmarkdbuser")
 putEnv("DB_PASSWORD", "benchmarkdbpass")
 putEnv("DB_DATABASE", "hello_world")
@@ -20,3 +21,12 @@ putEnv("CSRF_TIME", "525600") # minutes of 1 year
 putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
 putEnv("SESSION_DB", "/root/project/examples/benchmark/basolato/session.db")
 putEnv("IS_SESSION_MEMORY", "false")
+
+
+# Session db
+putEnv("SESSION_TYPE", "file") # "file" or "redis"
+putEnv("SESSION_DB", "/root/project/examples/benchmark/basolato/session.db")
+putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
+putEnv("REDIS_PORT", "6379")
+putEnv("ENABLE_ANONYMOUS_COOKIE", "true")
+putEnv("COOKIE_DOMAINS", "")

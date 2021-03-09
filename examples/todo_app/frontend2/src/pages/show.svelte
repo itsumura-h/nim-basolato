@@ -1,10 +1,9 @@
 <script lang="ts">
   import {onMount} from 'svelte'
-  import {url, goto} from '@roxi/routify'
-  import {params} from '@roxi/routify'
+  import { navigate } from 'svelte-routing'
   import Errors from '../components/errors.svelte'
   import {PostUsecase} from '../core/usecases/post_usecase'
-  export let id
+  export let params
   let res
   let title:string
   let content:string
@@ -13,9 +12,9 @@
 
   let usecase = new PostUsecase
   onMount(async()=>{
-    console.log($params)
+    console.log(params)
 
-    res = await usecase.getPost(id)
+    res = await usecase.getPost(params.id)
     if(res.hasError()){
       errors = res.errors
     }else{
@@ -27,7 +26,14 @@
 
   const update=async()=>{
     await usecase.updatePost(id, title, content, isFinished)
-    $goto('/')
+    navigate('/')
+  }
+
+  const deletePost=async()=>{
+    console.log('=== deletePost')
+    console.log(id)
+    // await usecase.deletePost(id)
+    // $goto('/')
   }
 
 </script>
@@ -80,7 +86,7 @@
         <div>
           <div class="field">
             <div class="controll">
-              <button type="button" class="button is-danger is-light is-outlined">delete</button>
+              <button type="button" on:click={deletePost} class="button is-danger is-light is-outlined">delete111</button>
             </div>
           </div>
         </div>

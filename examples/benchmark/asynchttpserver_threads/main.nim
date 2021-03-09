@@ -1,25 +1,45 @@
-import asynchttpserver, asyncdispatch, osproc, random, json
+import asynchttpserver, asyncdispatch, osproc, random, json, net, selectors, nativesockets, times, os, options
 import allographer/query_builder
 randomize()
 const range1_10000 = 1..10000
 
-proc serveCore(params:(string, string)) {.thread.} =
-  var server = newAsyncHttpServer(true, true)
+proc createResponse():string =
+  return "Hello World"
 
-  proc createResponse():string =
-    return "Hello World"
+type
+  Cd = proc(req: Request)
 
-  proc cb(req: Request) {.async, gcsafe.} =
-    case req.url.path
-    of "/plaintext":
-      await req.respond(Http200, "Hello World")
-    of "/plaintext/method":
-      let respose = createResponse()
-      await req.respond(Http200, respose)
-    of "/updates":
-      var countNum = 500
+proc cb(req: Request) {.async, gcsafe, thread.} =
+  case req.url.path
+  of "/plaintext":
+    await req.respond(Http200, "Hello World")
+  of "/plaintext/method":
+    let respose = createResponse()
+    await req.respond(Http200, respose)
+  of "/db":
+    let i = rand(1..10000)
+    var response:Option[JsonNode]
+    when getEnv("DB_DRIVER") == "mysql":
+      response = rdb().table("World").select("id", "randomNumber").find(i)
+    else:
+      response = await rdb().table("World").select("id", "randomNumber").asyncFind(i)
+    await req.respond(Http200, $(%*response))
+  of "/updates":
+    var countNum = 500
 
-      var response = newSeq[JsonNode](countNum)
+    var response = newSeq[JsonNode](countNum)
+
+    when getEnv("DB_DRIVER") == "mysql":
+      for i in 1..countNum:
+        let index = rand(range1_10000)
+        let number = rand(range1_10000)
+        discard rdb().table("World").select("id", "randomNumber").findPlain(index)
+        rdb()
+          .table("World")
+          .where("id", "=", index)
+          .update(%*{"randomNumber": number})
+        response[i-1] = %*{"id":index, "randomNumber": number}
+    else:
       var getFutures = newSeq[Future[Row]](countNum)
       var updateFutures = newSeq[Future[void]](countNum)
       for i in 1..countNum:
@@ -37,26 +57,30 @@ proc serveCore(params:(string, string)) {.thread.} =
         await all(updateFutures)
       except:
         discard
-      await req.respond(Http200, $response)
-    else:
-      await req.respond(Http404, "")
 
-  waitFor server.serve(Port(5000), cb)
+    await req.respond(Http200, $response)
+  else:
+    await req.respond(Http404, "")
 
-proc serve() =
+proc serveCore(port:int) {.thread.} =
+  var server = newAsyncHttpServer(true, true)
+  waitFor server.serve(Port(port), cb)
+
+proc serve(port:int) =
   let numThreads =
     when compileOption("threads"):
       countProcessors()
     else:
       1
+  echo numThreads
   when compileOption("threads"):
-    var threads = newSeq[Thread[(string, string)]](numThreads)
+    var threads = newSeq[Thread[int]](numThreads)
     for i in 0 ..< numThreads:
-      createThread[(string, string)](
-        threads[i], serveCore, ("a", "b")
+      createThread[int](
+        threads[i], serveCore, port
       )
     joinThreads(threads)
   else:
-    serveCore(("a", "b"))
+    serveCore(port)
 
-serve()
+serve(5000)

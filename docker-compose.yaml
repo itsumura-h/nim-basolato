@@ -23,6 +23,7 @@ services:
       - 3000:3000
     volumes:
       - ./examples/todo_app/frontend:/root/project
+      - ./examples/todo_app/frontend2:/root/project2
 
   tfb-database-my:
     image: mariadb

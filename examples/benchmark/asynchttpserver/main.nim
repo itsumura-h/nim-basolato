@@ -11,6 +11,10 @@ proc serve(port:int) =
       case req.url.path
       of "/plaintext":
         await req.respond(Http200, "Hello World")
+      of "/db":
+        let i = rand(1..10000)
+        let response = await rdb().table("World").select("id", "randomNumber").asyncFind(i)
+        await req.respond(Http200, $(%*response))
       of "/updates":
         var countNum = 500
 

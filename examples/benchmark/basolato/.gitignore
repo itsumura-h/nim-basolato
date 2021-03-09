@@ -7,7 +7,7 @@
 coverage/*
 lcov.info
 
-config.nims
+# config.nims
 *.out
 *.log
 *.log.*

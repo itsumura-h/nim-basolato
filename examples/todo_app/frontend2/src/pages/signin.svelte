@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {goto} from '@roxi/routify'
+  import { navigate } from 'svelte-routing'
   import SignUsecase from '../core/usecases/sign_usecase'
   import {onMount} from 'svelte'
 
@@ -11,7 +11,7 @@
   onMount(()=>{
     isLogin = sessionStorage.getItem('isLogin') === 'true'
     if(isLogin){
-      $goto('/')
+      navigate('/')
     }
   })
 

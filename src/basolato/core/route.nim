@@ -68,7 +68,7 @@ proc add*(this:var Routes, httpMethod:HttpMethod, path:string, action:proc(r:Req
     this.withParams.add(route)
   else:
     this.withoutParams[ $httpMethod & ":" & path ] = route
-    if not @[HttpGet, HttpHead, HttpPost].contains(httpMethod):
+    if not [HttpGet, HttpHead, HttpPost].contains(httpMethod):
       this.withoutParams[ $(HttpOptions) & ":" & path ] = route
 
 proc middleware*(
