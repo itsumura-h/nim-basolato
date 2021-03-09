@@ -1,26 +1,22 @@
-import {FetchRequest, AxiosRequest, Response} from '../libs/api_request'
+import { Response, IApiRequest, initRequest } from '../libs/api_request'
 
-export default class SignRepository{
+
+export default class SignRepository {
   request: IApiRequest
 
-  constructor(obj?:object){
-    if(typeof obj === 'undefined'){
-      this.request = new AxiosRequest
-    }else{
-      this.request = new FetchRequest(obj)
-    }
+  constructor(obj?: object) {
+    this.request = initRequest(obj)
   }
 
-  async signin(email, password:string):Response{
+  async signin(email, password: string): Promise<Response> {
     let params = {
       email: email,
       password: password
     }
-    let res = await this.request.post("/signin", params)
-    return res
+    return await this.request.post("/signin", params)
   }
 
-  async signout(){
+  async signout() {
     await this.request.delete('/signout')
   }
 }

@@ -1,11 +1,14 @@
 <script lang="ts">
-  import SignUsecase from '../../core/usecases/sign_usecase'
+    import {goto} from '@sapper/app'
+  import SignRepository from '../../core/repositories/sign_repository'
 
   export let name: string
+  let repository = new SignRepository
 
-  const signout=()=>{
-    let usecase = new SignUsecase
-    usecase.signout()
+  const signout=async()=>{
+    sessionStorage.removeItem('isLogin')
+    await repository.signout()
+    goto('/signin')
   }
 </script>
 

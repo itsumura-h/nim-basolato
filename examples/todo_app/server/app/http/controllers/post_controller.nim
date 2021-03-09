@@ -81,7 +81,7 @@ proc showApi*(request:Request, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
   let post = di.queryService.getPostByUserId(id)
   if not post.isSome:
-    return render(Http404, %*{"errors": ["Post not found"]})
+    return render(Http404, %*{"error": "Post not found"})
   let auth = await newAuth(request)
   return render(%*{
     "title": post.get["title"].getStr,
@@ -100,7 +100,7 @@ proc storeApi*(request:Request, params:Params):Future[Response] {.async.} =
     usecase.store(userId, title, content)
     return render("")
   except:
-    return render(Http422, %*{"errors": [getCurrentExceptionMsg()]})
+    return render(Http422, %*{"error": getCurrentExceptionMsg()})
 
 proc changeStatusApi*(request:Request, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
@@ -129,4 +129,4 @@ proc updateApi*(request:Request, params:Params):Future[Response] {.async.} =
     usecase.update(id, title, content, isFinished)
     return render("")
   except:
-    return render(Http422, %*{"error": [getCurrentExceptionMsg()]})
+    return render(Http422, %*{"error": getCurrentExceptionMsg()})

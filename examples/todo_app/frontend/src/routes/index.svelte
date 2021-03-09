@@ -2,10 +2,12 @@
   import {onMount} from 'svelte'
   import {goto} from '@sapper/app'
   import {title, content} from '../stores/post'
+  import Error from '../components/errors.svelte'
   import Header from '../components/post/Header.svelte'
   import Input from '../components/post/Input.svelte'
   import Table from '../components/post/Table.svelte'
   import PostRepository from '../core/repositories/post_repository'
+import { compute_slots } from 'svelte/internal';
   
   let isLogin: boolean
   let name: string
@@ -30,11 +32,13 @@
   }
 
   const storePost=async()=>{
-    error = await repository.storePost($title, $content)
-    if(!error){
+    let res = await repository.storePost($title, $content)
+    if(res.ok){
       getPosts()
       title.set('')
       content.set('')
+    }else{
+      error = res.data.error
     }
   }
 
@@ -58,12 +62,9 @@
       {:then posts}
         <Header name={name}/>
         <Input storePost={storePost}/>
-        <!-- {#await error}
-        {:then error} 
-          {#if error}
-            {error}
-          {/if}
-        {/await} -->
+        {#if error}
+          <Error errors={[error]} />
+        {/if}
         <Table posts={posts} changeStatus={changeStatus} deletePost={deletePost}/>
       {/await}
     </div>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let posts:Array<any>
+  export let posts:Array<any> = []
   export let changeStatus:(id:number, status:boolean)=>void
   export let deletePost:(id:number)=>void
 </script>
@@ -17,7 +17,7 @@
 </style>
 
 <div class="container">
-  {#if posts}
+  {#if posts.length > 0}
     <table class="table is-striped">
       <tr>
         <th>title</th><th>status</th><th>delete</th>
