@@ -14,6 +14,7 @@ services:
       - 9000:5000
     volumes:
       - .:/root/project
+
   frontend:
     build:
       context: .
@@ -23,7 +24,6 @@ services:
       - 3000:3000
     volumes:
       - ./examples/todo_app/frontend:/root/project
-      - ./examples/todo_app/frontend2:/root/project2
 
   tfb-database-my:
     image: mariadb
