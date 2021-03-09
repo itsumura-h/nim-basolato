@@ -11,8 +11,7 @@ nimcache/
 # End of https://www.gitignore.io/api/nim
 
 !LICENSE
-!app_Dockerfile
-!tool_Dockerfile
+!Dockerfile
 
 coverage/*
 lcov.info
