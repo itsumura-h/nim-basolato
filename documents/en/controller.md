@@ -24,6 +24,9 @@ Table of Contents
 
 <!--te-->
 
+## Introduction
+Controller is the layer that resolves web-specific responsibilities and invokes business logic.
+
 ## Creating a Controller
 Use `ducere` command  
 [ducere make controller](./ducere.md#controller)
@@ -84,7 +87,7 @@ view
 controller
 ```nim
 proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let email = params.requestParams.get("email")
+  let email = params.getStr("email")
 ```
 
 ### Url params
@@ -97,7 +100,7 @@ routes.get("/{id:int}", some_controller.show)
 controller
 ```nim
 proc show*(request:Request, params:Params):Future[Response] {.async.} =
-  let id = params.urlParams["id"].getInt
+  let id = params.getInt("id")
 ```
 
 ### Query params
@@ -109,7 +112,7 @@ URL
 controller
 ```nim
 proc update*(request:Request, params:Params):Future[Response] {.async.} =
-  let queries = params.queryParams["queries"].parseInt
+  let queries = params.getInt("queries")
 ```
 
 ## Response
@@ -121,20 +124,20 @@ return render("index")
 
 ### Returning HTML file
 If you set html file path in `html` proc, controller returns HTML.  
-This file path should be relative path from `resources` dir
+This file path should be relative path from `app/http/views` dir
 
 ```nim
-return render(html("sample/index.html"))
+return render(html("pages/sample/index.html"))
 # or
-return render(await asyncHtml("sample/index.html"))
+return render(await asyncHtml("pages/sample/index.html"))
 
->> display /resources/sample/index.html
+>> display app/http/views/pages/sample/index.html
 ```
 
 ### Returning template
 Call template proc with args in `render` will return template
 
-resources/sample/index_view.nim
+app/http/views/pages/sample/index_view.nim
 ```nim
 import basolato/view
 
@@ -158,7 +161,7 @@ return render(%*{"key": "value"})
 ### Response with status
 Put response status code arge1 and response body arge2
 ```nim
-return render(HTTP500, "It is a response body")
+return render(Http500, "It is a response body")
 ```
 
 [Here](https://nim-lang.org/docs/httpcore.html#10) is the list of response status code available.  

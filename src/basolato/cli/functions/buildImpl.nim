@@ -1,6 +1,6 @@
 import os, strformat, strutils
 
-proc build*(ports="5000", args:seq[string]) =
+proc build*(ports="5000", threads="off", args:seq[string]) =
   ## Build for production setting
   var outputFileName = "main"
   try:
@@ -21,9 +21,10 @@ proc build*(ports="5000", args:seq[string]) =
     discard execShellCmd(&"""
       nim c \
       -d:release \
-      --threads:on \
+      --threads:{threads} \
       --threadAnalysis:off \
       --out:{outputFileName} \
       --putenv:port={ports} \
+      --gc:orc \
       main.nim
     """)

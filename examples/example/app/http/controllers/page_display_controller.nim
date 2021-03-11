@@ -13,7 +13,8 @@ import ../views/pages/sample/with_style_view
 let indexHtml = html("pages/sample/index.html")
 
 proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  return render(indexHtml)
+  # return render(indexHtml)
+  return render(await asyncHtml("pages/sample/index.html"))
 
 proc welcome*(request:Request, params:Params):Future[Response] {.async.} =
   let name = "Basolato " & basolatoVersion

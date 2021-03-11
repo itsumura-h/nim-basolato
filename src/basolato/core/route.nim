@@ -271,9 +271,11 @@ proc serveCore(params:(Routes, int)){.thread.} =
       # anonymous user login should run only for response from controler
       if doesRunAnonymousLogin(req, response):
         let auth = await newAuth(req)
-        if await auth.anonumousCreateSession():
+        if await anonumousCreateSession(auth, req):
+          # create new session
           response = await response.setAuth(auth)
         else:
+          # keep session id from request and update expire
           var cookie = newCookie(req)
           cookie.updateExpire(SESSION_TIME, Minutes)
           response = response.setCookie(cookie)

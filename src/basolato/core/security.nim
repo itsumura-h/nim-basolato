@@ -462,8 +462,12 @@ proc login*(this:Auth) {.async.} =
 proc logout*(this:Auth) {.async.} =
   await this.set("is_login", $false)
 
-proc anonumousCreateSession*(this:Auth):Future[bool] {.async.} =
-  if this.session.isNil or not await checkSessionIdValid(await this.getToken):
+proc anonumousCreateSession*(this:Auth, req:Request):Future[bool] {.async.} =
+  ## Recreate session because session id from request is invalid
+  let sessionId = newCookie(req).get("session_id")
+  if not await checkSessionIdValid(sessionId):
+    return true
+  elif this.session.isNil or not await checkSessionIdValid(await this.getToken):
     this.session = await newSession()
     await this.set("is_login", "false")
     await this.set("last_access", $getTime())
@@ -493,14 +497,13 @@ proc hasFlash*(this:Auth, key:string):Future[bool] {.async.} =
 
 proc getFlash*(this:Auth):Future[JsonNode] {.async.} =
   result = newJObject()
-  if await this.isLogin:
-    let rows = await this.session.db.getRows()
-    for key, val in rows.pairs:
-      if key.contains("flash_"):
-        var newKey = key
-        newKey.delete(0, 5)
-        result[newKey] = val
-        await this.delete(key)
+  let rows = await this.session.db.getRows()
+  for key, val in rows.pairs:
+    if key.contains("flash_"):
+      var newKey = key
+      newKey.delete(0, 5)
+      result[newKey] = val
+      await this.delete(key)
 
 
 # ========== CsrfToken ====================

@@ -10,11 +10,11 @@ export
 
 proc asyncHtml*(path:string):Future[string] {.async.} =
   ## Open html file asynchronous.
-  ## arg path is relative path from /resources/
+  ## arg path is relative path from app/http/views
   ## .. code-block:: nim
   ##   let indexHtml = await asyncHtml("pages/index.html")
   ##   return render(indexHtml)
-  let path = getCurrentDir() & "/resources/" & path
+  let path = getCurrentDir() / "app/http/views" / path
   let f = openAsync(path, fmRead)
   defer: f.close()
   let data = await f.readAll()
@@ -22,7 +22,7 @@ proc asyncHtml*(path:string):Future[string] {.async.} =
 
 proc html*(path:string):string =
   ## Open html file.
-  ## arg path is relative path from /resources/
+  ## arg path is relative path from app/http/views
   ## .. code-block:: nim
   ##   let indexHtml = html("pages/index.html")
   ##   return render(indexHtml)

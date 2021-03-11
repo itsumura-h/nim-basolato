@@ -76,3 +76,7 @@ proc define*(this:Css):string =
       row = row.replace("[[", "{").replace("]]", "}")
       result.add(row)
   result.add("</style>")
+
+template style*(typ:string, name, body: untyped):untyped =
+  proc name():string =
+    return "<style type=\"text/css\">" & body & "</style>"
