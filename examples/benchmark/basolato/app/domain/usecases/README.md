@@ -18,7 +18,7 @@ proc newLoginUsecase*():LoginUsecase =
   return LoginUsecase()
 
 
-proc login*(this:LoginUsecase, email, password:string):int =
+proc login*(self:LoginUsecase, email, password:string):int =
   let email = newEmail(email)
   let password = newPassword(password)
   let userService = newUserService()

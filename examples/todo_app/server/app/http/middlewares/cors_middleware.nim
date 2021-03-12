@@ -3,7 +3,7 @@ import asyncdispatch
 import ../../../../../../src/basolato/middleware
 
 
-proc corsHeader*(): Headers =
+proc corsHeader(): Headers =
   let allowedMethods = [
     "OPTIONS",
     "GET",
@@ -18,15 +18,15 @@ proc corsHeader*(): Headers =
 
   return {
     "Cache-Control": "no-cache",
+    "Access-Control-Allow-Credentials": $true,
     "Access-Control-Allow-Origin": "http://localhost:3000",
     "Access-Control-Allow-Methods": allowedMethods.join(", "),
     "Access-Control-Allow-Headers": allowedHeaders.join(", "),
-    "Access-Control-Allow-Credentials": "true",
     "Access-Control-Expose-Headers": allowedHeaders.join(", "),
   }.toHeaders()
 
 
-proc secureHeader*(): Headers =
+proc secureHeader(): Headers =
   return {
     "Strict-Transport-Security": ["max-age=63072000", "includeSubdomains"].join(", "),
     "X-Frame-Options": "SAMEORIGIN",

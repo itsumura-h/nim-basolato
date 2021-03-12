@@ -119,6 +119,7 @@ class AxiosRequest implements IApiRequest {
       .then((result) => {
         return new Response(true, result.status, result.data)
       }).catch((err) => {
+        console.log(err)
         return new Response(false, err.response.status, err.response.data)
       })
   }

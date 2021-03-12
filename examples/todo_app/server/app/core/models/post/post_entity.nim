@@ -17,11 +17,11 @@ proc newPost*(userId:UserId, title:PostTitle, content:PostContent):Post =
     content: content
   )
 
-proc toStoreData*(this:Post):JsonNode =
+proc toStoreData*(self:Post):JsonNode =
   return %*{
-    "user_id": this.userId.getInt(),
-    "title": $this.title,
-    "content": $this.content,
+    "user_id": self.userId.getInt(),
+    "title": $self.title,
+    "content": $self.content,
   }
 
 # update
@@ -33,10 +33,10 @@ proc newPost*(postId:PostId, title:PostTitle, content:PostContent, isFinished:bo
     isFinished:isFinished
   )
 
-proc toUpdateData*(this:Post):JsonNode =
+proc toUpdateData*(self:Post):JsonNode =
   return %*{
-    "post_id": this.postId.getInt(),
-    "title": $this.title,
-    "content": $this.content,
-    "is_finished": this.isFinished
+    "post_id": self.postId.getInt(),
+    "title": $self.title,
+    "content": $self.content,
+    "is_finished": self.isFinished
   }

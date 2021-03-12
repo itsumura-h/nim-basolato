@@ -16,8 +16,8 @@ proc newUserName*(value:string):UserName =
     raise newException(Exception, "Name should be shorter than 10")
   return UserName(value:value)
 
-proc get*(this:UserName):string =
-  return this.value
+proc get*(self:UserName):string =
+  return self.value
 ```
 
 ---
@@ -82,20 +82,20 @@ type User* = ref object
   email:Email
   password:Password
 
-proc getId*(this:User):int =
-  return this.id.get
+proc getId*(self:User):int =
+  return self.id.get
 
-proc getName*(this:User):string =
-  return this.name.get
+proc getName*(self:User):string =
+  return self.name.get
 
-proc getEmail*(this:User):string =
-  return this.email.get
+proc getEmail*(self:User):string =
+  return self.email.get
 
-proc getPassword*(this:User):string =
-  return this.password.get
+proc getPassword*(self:User):string =
+  return self.password.get
 
-proc getHashedPassword*(this:User):string =
-  return this.password.getHashed
+proc getHashedPassword*(self:User):string =
+  return self.password.getHashed
 
 
 # =============================================================================
@@ -132,10 +132,10 @@ type IUserRepository* = ref object
 proc newIUserRepository*():IUserRepository =
   return IUserRepository()
 
-proc find*(this:IUserRepository, email:Email):Option[User] =
+proc find*(self:IUserRepository, email:Email):Option[User] =
   return DiContainer.userRepository().find(email)
 
-proc save*(this:IUserRepository, user:User):int =
+proc save*(self:IUserRepository, user:User):int =
   return DiContainer.userRepository().save(user)
 ```
 
@@ -149,10 +149,10 @@ proc newUserRdbRepository*():UserRdbRepository =
   return UserRdbRepository()
 
 
-proc show*(this:UserRdbRepository, user:User):JsonNode =
+proc show*(self:UserRdbRepository, user:User):JsonNode =
   return newUser().find(user.getId)
 
-proc store*(this:UserRdbRepository, user:User):int =
+proc store*(self:UserRdbRepository, user:User):int =
   newUser().insertID(%*{
     "name": user.getName(),
     "email": user.getEmail(),

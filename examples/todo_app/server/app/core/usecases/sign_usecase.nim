@@ -15,19 +15,19 @@ proc newSignUsecase*(repository:IUserRepository):SignUsecase =
     service: newUserService(repository)
   )
 
-proc signUp*(this:SignUsecase, name, email, password:string):JsonNode =
+proc signUp*(self:SignUsecase, name, email, password:string):JsonNode =
   let name = newUserName(name)
   let email = newUserEmail(email)
   let password = newPassword(password).getHashed()
-  let userId = this.repository.storeUser(name, email, password)
+  let userId = self.repository.storeUser(name, email, password)
   return %*{"id": userId.getInt, "name": name}
 
-proc signIn*(this:SignUsecase, email, password:string):JsonNode =
+proc signIn*(self:SignUsecase, email, password:string):JsonNode =
   let email = newUserEmail(email)
-  let user = this.repository.getUser(email)
+  let user = self.repository.getUser(email)
   let password = newPassword(password)
   let hashedPassword = user.hashedPassword()
-  if this.service.isMatchPassword(password, hashedPassword):
+  if self.service.isMatchPassword(password, hashedPassword):
     return %*{"id": user.id().getInt, "name": $(user.name())}
   else:
     raise newException(Exception, "password not match")

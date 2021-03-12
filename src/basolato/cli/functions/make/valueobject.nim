@@ -13,8 +13,8 @@ proc new{target}*(value:string):{target} =
   result = new {target}
   result.value = value
 
-proc get*(this:{target}):string =
-  return this.value
+proc get*(self:{target}):string =
+  return self.value
 """
 
   createDir(parentDir(targetPath))

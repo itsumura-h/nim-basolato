@@ -9,7 +9,7 @@ proc digits(value:string, digit:int):seq[string] =
     r.add(&"the number of digits in {value} should less than {digit}")
   return r
 
-proc digits*(this:Validation, value:string, digit:int):bool =
+proc digits*(self:Validation, value:string, digit:int):bool =
   if digits(value, digit).len > 0:
     return false
   else:
@@ -23,7 +23,7 @@ proc email(value:string):seq[string] =
     r.add("invalid form of email")
   return r
 
-proc email*(this:Validation, value:string):bool =
+proc email*(self:Validation, value:string):bool =
   if email(value).len > 0:
     return false
   else:
@@ -96,7 +96,7 @@ proc domain(value:string):seq[string] =
     r.add(getCurrentExceptionMsg())
   return r
 
-proc domain*(this:Validation, value:string):bool =
+proc domain*(self:Validation, value:string):bool =
   if domain(value).len > 0:
     return false
   else:
@@ -162,7 +162,7 @@ proc strictEmail(value:string):seq[string] =
     r.add(getCurrentExceptionMsg())
   return r
 
-proc strictEmail*(this:Validation, value:string):bool =
+proc strictEmail*(self:Validation, value:string):bool =
   if strictEmail(value).len > 0:
     return false
   else:
@@ -174,7 +174,7 @@ proc equals(sub:any, target:any):seq[string] =
     r.add(&"{$sub} should be {$target}")
   return r
 
-proc equals*(this:Validation, sub:any, target:any):bool =
+proc equals*(self:Validation, sub:any, target:any):bool =
   if equals(sub, target).len > 0:
     return false
   else:
@@ -186,7 +186,7 @@ proc gratorThan(sub, target:int|float):seq[string] =
     r.add(&"{$sub} should be grator than {$target}")
   return r
 
-proc gratorThan*(this:Validation, sub, target:int|float):bool =
+proc gratorThan*(self:Validation, sub, target:int|float):bool =
   if gratorThan(sub, target).len > 0:
     return false
   else:
@@ -199,13 +199,13 @@ proc inRange(value, min, max:int|float):seq[string] =
       r.add(&"{value} should be in range between {min} and {max}")
   return r
 
-proc inRange*(this:Validation, value, min, max:int|float):bool =
+proc inRange*(self:Validation, value, min, max:int|float):bool =
   if inRange(value, min, max).len > 0:
     return false
   else:
     return true
 
-proc ip*(this:Validation, value:string):bool =
+proc ip*(self:Validation, value:string):bool =
   if domain(&"[{value}]").len > 0:
     return false
   else:
@@ -219,7 +219,7 @@ proc isBool(value:string):seq[string] =
     r.add(&"{value} is not float")
   return r
 
-proc isBool*(this:Validation, value:string):bool =
+proc isBool*(self:Validation, value:string):bool =
   if isBool(value).len > 0:
     return false
   else:
@@ -233,7 +233,7 @@ proc isFloat(value:string):seq[string] =
     r.add(&"{value} is not float")
   return r
 
-proc isFloat*(this:Validation, value:string):bool =
+proc isFloat*(self:Validation, value:string):bool =
   if isFloat(value).len > 0:
     return false
   else:
@@ -247,7 +247,7 @@ proc isInt(value:string):seq[string] =
     r.add(&"{value} is not integer")
   return r
 
-proc isInt*(this:Validation, value:string):bool =
+proc isInt*(self:Validation, value:string):bool =
   if isInt(value).len > 0:
     return false
   else:
@@ -259,7 +259,7 @@ proc isString(value:string):seq[string] =
     r.add(&"{value} is not a string")
   return r
 
-proc isString*(this:Validation, value:string):bool =
+proc isString*(self:Validation, value:string):bool =
   if isString(value).len > 0:
     return false
   else:
@@ -271,7 +271,7 @@ proc lessThan(sub, target:int|float):seq[string] =
     r.add(&"{sub} should be less than {target}")
   return r
 
-proc lessThan*(this:Validation, sub, target:int|float):bool =
+proc lessThan*(self:Validation, sub, target:int|float):bool =
   if lessThan(sub, target).len > 0:
     return false
   else:
@@ -285,7 +285,7 @@ proc numeric(value:string):seq[string] =
     r.add(&"{value} should be numeric")
   return r
 
-proc numeric*(this:Validation, value:string):bool =
+proc numeric*(self:Validation, value:string):bool =
   if numeric(value).len > 0:
     return false
   else:
@@ -303,7 +303,7 @@ proc password(value:string):seq[string] =
     r.add("invalid form of password")
   return r
 
-proc password*(this:Validation, value:string):bool =
+proc password*(self:Validation, value:string):bool =
   if password(value).len > 0:
     return false
   else:

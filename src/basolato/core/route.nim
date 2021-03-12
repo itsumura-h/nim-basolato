@@ -62,21 +62,21 @@ proc newRoute(httpMethod:HttpMethod, path:string, action:proc(r:Request, p:Param
     action:action
   )
 
-proc add*(this:var Routes, httpMethod:HttpMethod, path:string, action:proc(r:Request, p:Params):Future[Response]) =
+proc add*(self:var Routes, httpMethod:HttpMethod, path:string, action:proc(r:Request, p:Params):Future[Response]) =
   let route = newRoute(httpMethod, path, action)
   if path.contains("{"):
-    this.withParams.add(route)
+    self.withParams.add(route)
   else:
-    this.withoutParams[ $httpMethod & ":" & path ] = route
+    self.withoutParams[ $httpMethod & ":" & path ] = route
     if not [HttpGet, HttpHead, HttpPost].contains(httpMethod):
-      this.withoutParams[ $(HttpOptions) & ":" & path ] = route
+      self.withoutParams[ $(HttpOptions) & ":" & path ] = route
 
 proc middleware*(
-  this:var Routes,
+  self:var Routes,
   path:Regex,
   action:proc(r:Request, p:Params):Future[Response]
 ) =
-  this.middlewares.add(
+  self.middlewares.add(
     MiddlewareRoute(
       httpMethods: newSeq[HttpMethod](),
       path: path,
@@ -85,12 +85,12 @@ proc middleware*(
   )
 
 proc middleware*(
-  this:var Routes,
+  self:var Routes,
   httpMethods:seq[HttpMethod],
   path:Regex,
   action:proc(r:Request, p:Params):Future[Response]
 ) =
-  this.middlewares.add(
+  self.middlewares.add(
     MiddlewareRoute(
       httpMethods: httpMethods,
       path: path,
@@ -98,32 +98,32 @@ proc middleware*(
     )
   )
 
-proc get*(this:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
-  add(this, HttpGet, path, action)
+proc get*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
+  add(self, HttpGet, path, action)
 
-proc post*(this:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
-  add(this, HttpPost, path, action)
+proc post*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
+  add(self, HttpPost, path, action)
 
-proc put*(this:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
-  add(this, HttpPut, path, action)
+proc put*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
+  add(self, HttpPut, path, action)
 
-proc patch*(this:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
-  add(this, HttpPatch, path, action)
+proc patch*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
+  add(self, HttpPatch, path, action)
 
-proc delete*(this:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
-  add(this, HttpDelete, path, action)
+proc delete*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
+  add(self, HttpDelete, path, action)
 
-proc head*(this:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
-  add(this, HttpHead, path, action)
+proc head*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
+  add(self, HttpHead, path, action)
 
-proc options*(this:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
-  add(this, HttpOptions, path, action)
+proc options*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
+  add(self, HttpOptions, path, action)
 
-proc trace*(this:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
-  add(this, HttpTrace, path, action)
+proc trace*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
+  add(self, HttpTrace, path, action)
 
-proc connect*(this:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
-  add(this, HttpConnect, path, action)
+proc connect*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
+  add(self, HttpConnect, path, action)
 
 macro groups*(head, body:untyped):untyped =
   var newNode = ""
@@ -231,19 +231,20 @@ proc serveCore(params:(Routes, int)){.thread.} =
         headers.set("Content-Type", contentType)
         response = Response(status:Http200, body:data, headers:headers)
     else:
-      # check controller routing
+      # check path match with controller routing → run middleware → run controller
       try:
         let key = $(req.httpMethod) & ":" & req.path
-        response = await runMiddleware(req, routes, headers)
-        if routes.withoutParams.hasKey(key):
+        if req.httpMethod == HttpOptions:
+          response = await runMiddleware(req, routes, headers)
+        elif routes.withoutParams.hasKey(key):
+          response = await runMiddleware(req, routes, headers)
           let route = routes.withoutParams[key]
-          if req.httpMethod != HttpOptions:
-            headers = headers & response.headers
-            response = await runController(req, route, headers)
+          headers = headers & response.headers
+          response = await runController(req, route, headers)
         else:
           for route in routes.withParams:
-            response = await runMiddleware(req, routes, headers)
             if route.httpMethod == req.httpMethod and isMatchUrl(req.path, route.path):
+              response = await runMiddleware(req, routes, headers)
               if req.httpMethod != HttpOptions:
                 headers = headers & response.headers
                 response = await runController(req, route, headers)

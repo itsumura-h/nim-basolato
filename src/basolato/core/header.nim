@@ -14,7 +14,7 @@ proc toHeaders*(headersArg:openArray[tuple]): Headers =
     headers[i] = (row[0], row[1])
   return headers
 
-proc toHeaders*(headersArg:Table): Headers =
+proc toHeaders*(headersArg:TableRef): Headers =
   ## table => header
   var headers = newHeaders(headersArg.len)
   var i = 0
@@ -23,7 +23,7 @@ proc toHeaders*(headersArg:Table): Headers =
     i.inc()
   return headers
 
-proc toHeaders*(headersArg:OrderedTable): Headers =
+proc toHeaders*(headersArg:OrderedTableRef): Headers =
   ## OrderdTable => header
   var headers = newHeaders(headersArg.len)
   var i = 0
@@ -56,36 +56,36 @@ proc toHeaders*(headersArg:JsonNode): Headers =
     i.inc()
   return headers
 
-proc hasKey*(this:Headers, key:string):bool =
+proc hasKey*(self:Headers, key:string):bool =
   result = false
-  for header in this:
+  for header in self:
     if header.key.toLowerAscii() == key.toLowerAscii():
       result = true
       break
 
-proc set*(this:var Headers, key, val:string) =
-  this.add((key, val))
+proc set*(self:var Headers, key, val:string) =
+  self.add((key, val))
 
-proc set*(this:var Headers, key:string, val:openArray[string]) =
-  this.add(
+proc set*(self:var Headers, key:string, val:openArray[string]) =
+  self.add(
     (key, val.join(", "))
   )
 
-proc setDefaultHeaders*(this:var Headers) =
-  this.set("Server", &"Nim/{NimVersion}, Basolato/{basolatoVersion}")
+proc setDefaultHeaders*(self:var Headers) =
+  self.set("Server", &"Nim/{NimVersion}, Basolato/{basolatoVersion}")
   let formatter = initTimeFormat("ddd, dd MMM YYYY HH:mm:ss 'GMT'")
-  this.set("Date", now().format(formatter))
-  this.set("Connection", "Keep-Alive")
+  self.set("Date", now().format(formatter))
+  self.set("Connection", "Keep-Alive")
 
 proc newDefaultHeaders*():Headers =
   var headers = newHeaders()
   headers.setDefaultHeaders()
   return headers
 
-proc toResponse*(this:Headers):HttpHeaders =
+proc toResponse*(self:Headers):HttpHeaders =
   var response = newTable[string, seq[string]](defaultInitialSize)
   result = newHttpHeaders()
-  for header in this:
+  for header in self:
     if response.hasKey(header.key):
       response[header.key].add(header.val)
     else:

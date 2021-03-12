@@ -15,13 +15,13 @@ Table of Contents
 ## API
 ```nim
 proc middleware*(
-  this:var Routes,
+  self:var Routes,
   path:Regex,
   action:proc(r:Request, p:Params):Future[Response]
 ) =
 
 proc middleware*(
-  this:var Routes,
+  self:var Routes,
   httpMethods:seq[HttpMethod],
   path:Regex,
   action:proc(r:Request, p:Params):Future[Response]

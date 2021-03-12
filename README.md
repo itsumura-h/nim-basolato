@@ -161,7 +161,6 @@ nim c -r main
 - [Error](./documents/en/error.md)
 - [Validation](./documents/en/validation.md)
 - [Security (CsrfToken, Cookie, Session, Auth)](./documents/en/security.md)
-- [Password](./documents/en/password.md)
 - [Helper](./documents/en/helper.md)
 - [Logging](./documents/en/logging.md)
 

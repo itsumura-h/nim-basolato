@@ -7,11 +7,11 @@ proc newUserId*(value:int):UserId =
   result = new UserId
   result.value = value
 
-proc getInt*(this:UserId):int =
-  if this.isNil:
+proc getInt*(self:UserId):int =
+  if self.isNil:
     return 0
   else:
-    return this.value
+    return self.value
 
 
 type UserName* = ref object
@@ -21,8 +21,8 @@ proc newUserName*(value:string):UserName =
   result = new UserName
   result.value = value
 
-proc `$`*(this:UserName):string =
-  return this.value
+proc `$`*(self:UserName):string =
+  return self.value
 
 
 type UserEmail* = ref object
@@ -32,8 +32,8 @@ proc newUserEmail*(value:string):UserEmail =
   result = new UserEmail
   result.value = value
 
-proc `$`*(this:UserEmail):string =
-  return this.value
+proc `$`*(self:UserEmail):string =
+  return self.value
 
 
 type HashedPassword* = ref object
@@ -43,8 +43,8 @@ proc newHashedPassword*(value:string):HashedPassword =
   result = new HashedPassword
   result.value = value
 
-proc `$`*(this:HashedPassword):string =
-  return this.value
+proc `$`*(self:HashedPassword):string =
+  return self.value
 
 
 type Password* = ref object
@@ -54,11 +54,11 @@ proc newPassword*(value:string):Password =
   result = new Password
   result.value = value
 
-proc `$`*(this:Password):string =
-  return this.value
+proc `$`*(self:Password):string =
+  return self.value
 
-proc getHashed*(this:Password):HashedPassword =
-  let value = this.value.genHashedPassword()
+proc getHashed*(self:Password):HashedPassword =
+  let value = self.value.genHashedPassword()
   return newHashedPassword(value)
 
 
@@ -71,8 +71,8 @@ proc newPostId*(value:int):PostId =
   result = new PostId
   result.value = value
 
-proc getInt*(this:PostId):int =
-  return this.value
+proc getInt*(self:PostId):int =
+  return self.value
 
 
 type PostTitle* = ref object
@@ -84,8 +84,8 @@ proc newPostTitle*(value:string):PostTitle =
   result = new PostTitle
   result.value = value
 
-proc `$`*(this:PostTitle):string =
-  return this.value
+proc `$`*(self:PostTitle):string =
+  return self.value
 
 
 type PostContent* = ref object
@@ -97,5 +97,5 @@ proc newPostContent*(value:string):PostContent =
   result = new PostContent
   result.value = value
 
-proc `$`*(this:PostContent):string =
-  return this.value
+proc `$`*(self:PostContent):string =
+  return self.value

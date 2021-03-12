@@ -32,11 +32,11 @@ type MiddlewareResult* = ref object
   isError: bool
   message: string
 
-proc isError*(this:MiddlewareResult):bool =
-  return this.isError
+proc isError*(self:MiddlewareResult):bool =
+  return self.isError
 
-proc message*(this:MiddlewareResult):string =
-  return this.message
+proc message*(self:MiddlewareResult):string =
+  return self.message
 ```
 
 ### CSRF Token
@@ -111,29 +111,29 @@ type Auth* = ref object
 ```nim
 proc newAuth*(request:Request):Future[Auth] {.async.} =
 
-proc login*(this:Auth) {.async.} =
+proc login*(self:Auth) {.async.} =
 
-proc logout*(this:Auth) {.async.} =
+proc logout*(self:Auth) {.async.} =
 
-proc isLogin*(this:Auth):Future[bool] {.async.} =
+proc isLogin*(self:Auth):Future[bool] {.async.} =
 
-proc getToken*(this:Auth):Future[string] {.async.} =
+proc getToken*(self:Auth):Future[string] {.async.} =
 
-proc set*(this:Auth, key, value:string) {.async.} =
+proc set*(self:Auth, key, value:string) {.async.} =
 
-proc some*(this:Auth, key:string):Future[bool] {.async.} =
+proc some*(self:Auth, key:string):Future[bool] {.async.} =
 
-proc get*(this:Auth, key:string):Future[string] {.async.} =
+proc get*(self:Auth, key:string):Future[string] {.async.} =
 
-proc delete*(this:Auth, key:string) {.async.} =
+proc delete*(self:Auth, key:string) {.async.} =
 
-proc destroy*(this:Auth) {.async.} =
+proc destroy*(self:Auth) {.async.} =
 
-proc setFlash*(this:Auth, key, value:string) {.async.} =
+proc setFlash*(self:Auth, key, value:string) {.async.} =
 
-proc hasFlash*(this:Auth, key:string):Future[bool] {.async.} =
+proc hasFlash*(self:Auth, key:string):Future[bool] {.async.} =
 
-proc getFlash*(this:Auth):Future[JsonNode] {.async.} =
+proc getFlash*(self:Auth):Future[JsonNode] {.async.} =
 ```
 
 ### Sample
@@ -208,7 +208,7 @@ proc store*(request:Request, params:Params):Response =
 
 get flash message
 ```nim
-proc show*(this:Controller):Response =
+proc show*(self:Controller):Response =
   let auth = await newAuth(request)
   let flash = await auth.getFlash("success")
   return render(showHtml(user, flash))
@@ -265,22 +265,22 @@ type
 ```nim
 proc newCookie*(request:Request):Cookie =
 
-proc get*(this:Cookie, name:string):string =
+proc get*(self:Cookie, name:string):string =
 
-proc set*(this:var Cookie, name, value: string, expire:DateTime,
+proc set*(self:var Cookie, name, value: string, expire:DateTime,
       sameSite: SameSite=Lax, secure = false, httpOnly = false, domain = "",
       path = "/") =
 
-proc set*(this:var Cookie, name, value: string, sameSite: SameSite=Lax,
+proc set*(self:var Cookie, name, value: string, sameSite: SameSite=Lax,
       secure = false, httpOnly = false, domain = "", path = "/") =
 
-proc updateExpire*(this:var Cookie, name:string, num:int, timeUnit:TimeUnit, path="/") =
+proc updateExpire*(self:var Cookie, name:string, num:int, timeUnit:TimeUnit, path="/") =
 
-proc updateExpire*(this:var Cookie, num:int, time:TimeUnit) =
+proc updateExpire*(self:var Cookie, num:int, time:TimeUnit) =
 
-proc delete*(this:Cookie, key:string, path="/"):Cookie =
+proc delete*(self:Cookie, key:string, path="/"):Cookie =
 
-proc destroy*(this:Cookie, path="/"):Cookie =
+proc destroy*(self:Cookie, path="/"):Cookie =
 
 proc setCookie*(response:Response, cookie:Cookie):Response =
 ```
@@ -354,17 +354,17 @@ proc newSession*(token=""):Future[Session] {.async.} =
   # If you set valid token, it connect to existing session.
   # If you don't set token, it creates new session.
 
-proc getToken*(this:Session):Future[string] {.async.} =
+proc getToken*(self:Session):Future[string] {.async.} =
 
-proc set*(this:Session, key, value:string) {.async.} =
+proc set*(self:Session, key, value:string) {.async.} =
 
-proc some*(this:Session, key:string):Future[bool] {.async.} =
+proc some*(self:Session, key:string):Future[bool] {.async.} =
 
-proc get*(this:Session, key:string):Future[string] {.async.} =
+proc get*(self:Session, key:string):Future[string] {.async.} =
 
-proc delete*(this:Session, key:string) {.async.} =
+proc delete*(self:Session, key:string) {.async.} =
 
-proc destroy*(this:Session) {.async.} =
+proc destroy*(self:Session) {.async.} =
 ```
 
 ### Sample
@@ -378,15 +378,15 @@ set value in session
 ```nim
 proc store(request:Request, params:Params):Future[Response] {.async.} =
   let key = request.params["key"]
-  let value = this.request.params["value"]
+  let value = self.request.params["value"]
   discard newSession().set(key, value)
 ```
 
 check and get value in session
 ```nim
-proc index(this:Controller):Future[Response] {.async.} =
-  let sessionId = newCookie(this.request).get("session_id")
-  let key = this.request.params["key"]
+proc index(self:Controller):Future[Response] {.async.} =
+  let sessionId = newCookie(self.request).get("session_id")
+  let key = self.request.params["key"]
   let session = newSession(sessionId)
   var value:string
   if session.some(key):
@@ -395,15 +395,15 @@ proc index(this:Controller):Future[Response] {.async.} =
 
 delete one key-value pair of session
 ```nim
-proc destroy(this:Controller):Future[Response] {.async.} =
-  let sessionId = newCookie(this.request).getToken()
-  let key = this.request.params["key"]
+proc destroy(self:Controller):Future[Response] {.async.} =
+  let sessionId = newCookie(self.request).getToken()
+  let key = self.request.params["key"]
   discard newSession(sessionId).delete(key)
 ```
 
 destroy session
 ```nim
-proc destroy(this:Controller):Future[Response] {.async.} =
-  let sessionId = newCookie(this.request).getToken()
+proc destroy(self:Controller):Future[Response] {.async.} =
+  let sessionId = newCookie(self.request).getToken()
   newSession(sessionId).destroy()
 ```

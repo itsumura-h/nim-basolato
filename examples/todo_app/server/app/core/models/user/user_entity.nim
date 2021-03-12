@@ -25,14 +25,14 @@ proc newUser*(id:UserId, name:UserName, email:UserEmail, hashedPassword:HashedPa
   result.email = email
   result.hashedPassword = hashedPassword
 
-proc id*(this:User):UserId =
-  return this.id
+proc id*(self:User):UserId =
+  return self.id
 
-proc name*(this:User):UserName =
-  return this.name
+proc name*(self:User):UserName =
+  return self.name
 
-proc email*(this:User):UserEmail =
-  return this.email
+proc email*(self:User):UserEmail =
+  return self.email
 
-proc hashedPassword*(this:User):HashedPassword =
-  return this.hashedPassword
+proc hashedPassword*(self:User):HashedPassword =
+  return self.hashedPassword

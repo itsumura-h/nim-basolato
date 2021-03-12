@@ -53,11 +53,11 @@ proc newToken*(token=""):Token =
   token = token.encryptCtr()
   return Token(token:token)
 
-proc getToken*(this:Token):string =
-  return this.token
+proc getToken*(self:Token):string =
+  return self.token
 
-proc toTimestamp*(this:Token): int =
-  return this.getToken().decryptCtr().parseInt()
+proc toTimestamp*(self:Token): int =
+  return self.getToken().decryptCtr().parseInt()
 
 
 # ========== Session DB ====================
@@ -93,20 +93,20 @@ when SESSION_TYPE == "redis":
     else:
       return false
 
-  proc getToken*(this:SessionDb):Future[string] {.async.} =
-    return this.token
+  proc getToken*(self:SessionDb):Future[string] {.async.} =
+    return self.token
 
-  proc set*(this:SessionDb, key, value: string) {.async.} =
-    discard await this.conn.hSet(this.token, key, value)
+  proc set*(self:SessionDb, key, value: string) {.async.} =
+    discard await self.conn.hSet(self.token, key, value)
 
-  proc some*(this:SessionDb, key:string):Future[bool] {.async.} =
-    return await this.conn.hExists(this.token, key)
+  proc some*(self:SessionDb, key:string):Future[bool] {.async.} =
+    return await self.conn.hExists(self.token, key)
 
-  proc get*(this:SessionDb, key:string):Future[string] {.async.} =
-    return await this.conn.hGet(this.token, key)
+  proc get*(self:SessionDb, key:string):Future[string] {.async.} =
+    return await self.conn.hGet(self.token, key)
 
-  proc getRows*(this:SessionDb):Future[JsonNode] {.async.} =
-    let rows = await this.conn.hGetAll(this.token)
+  proc getRows*(self:SessionDb):Future[JsonNode] {.async.} =
+    let rows = await self.conn.hGetAll(self.token)
     # list to JsonNode
     var str = "{"
     for i, val in rows:
@@ -117,11 +117,11 @@ when SESSION_TYPE == "redis":
     str.add("}")
     return str.parseJson
 
-  proc delete*(this:SessionDb, key:string) {.async.} =
-    discard await this.conn.hDel(this.token, key)
+  proc delete*(self:SessionDb, key:string) {.async.} =
+    discard await self.conn.hDel(self.token, key)
 
-  proc destroy*(this:SessionDb) {.async.} =
-    discard await this.conn.del(@[this.token])
+  proc destroy*(self:SessionDb) {.async.} =
+    discard await self.conn.del(@[self.token])
 
 else:
   # ========= Flat DB ==================
@@ -129,7 +129,7 @@ else:
     conn: FlatDb
     token: string
 
-  proc clean(this:SessionDb) {.async.} =
+  proc clean(self:SessionDb) {.async.} =
     var buffer = newSeq[string]()
     for line in SESSION_DB_PATH.lines:
       if line.len == 0: break
@@ -172,45 +172,45 @@ else:
     var token = sessionId.decryptCtr()
     return await db.isTokenValid(token)
 
-  proc getToken*(this:SessionDb):Future[string] {.async.} =
-    return this.token.encryptCtr()
+  proc getToken*(self:SessionDb):Future[string] {.async.} =
+    return self.token.encryptCtr()
 
-  proc set*(this:SessionDb, key, value:string) {.async.} =
-    let db = this.conn
+  proc set*(self:SessionDb, key, value:string) {.async.} =
+    let db = self.conn
     defer: db.close()
-    db[this.token][key] = %value
+    db[self.token][key] = %value
     db.flush()
 
-  proc some*(this:SessionDb, key:string):Future[bool] {.async.} =
+  proc some*(self:SessionDb, key:string):Future[bool] {.async.} =
     try:
-      let db = this.conn
+      let db = self.conn
       defer: db.close()
-      if db[this.token]{key}.isNil():
+      if db[self.token]{key}.isNil():
         return false
       else:
         return true
     except:
       return false
 
-  proc get*(this:SessionDb, key:string):Future[string] {.async.} =
-    let db = this.conn
+  proc get*(self:SessionDb, key:string):Future[string] {.async.} =
+    let db = self.conn
     defer: db.close()
-    return db[this.token]{key}.getStr("")
+    return db[self.token]{key}.getStr("")
 
-  proc getRows*(this:SessionDb):Future[JsonNode] {.async.} =
-    return %*(this.conn[this.token])
+  proc getRows*(self:SessionDb):Future[JsonNode] {.async.} =
+    return %*(self.conn[self.token])
 
-  proc delete*(this:SessionDb, key:string) {.async.} =
-    let db = this.conn
+  proc delete*(self:SessionDb, key:string) {.async.} =
+    let db = self.conn
     defer: db.close()
-    let row = db[this.token]
+    let row = db[self.token]
     if row.hasKey(key):
       row.delete(key)
       db.flush()
 
-  proc destroy*(this:SessionDb) {.async.} =
-    this.conn.delete(this.token)
-    defer: this.conn.close()
+  proc destroy*(self:SessionDb) {.async.} =
+    self.conn.delete(self.token)
+    defer: self.conn.close()
 
 
 # ========= Session ==================
@@ -221,26 +221,26 @@ proc newSession*(token=""):Future[Session] {.async.} =
   # if SESSION_TYPE == "file":
   return Session(db:await newSessionDb(token))
 
-proc db*(this:Session):Future[SessionDb] {.async.} =
-  return this.db
+proc db*(self:Session):Future[SessionDb] {.async.} =
+  return self.db
 
-proc getToken*(this:Session):Future[string] {.async.} =
-  return await this.db.getToken()
+proc getToken*(self:Session):Future[string] {.async.} =
+  return await self.db.getToken()
 
-proc set*(this:Session, key, value:string) {.async.} =
-  await this.db.set(key, value)
+proc set*(self:Session, key, value:string) {.async.} =
+  await self.db.set(key, value)
 
-proc some*(this:Session, key:string):Future[bool] {.async.} =
-  return await this.db.some(key)
+proc some*(self:Session, key:string):Future[bool] {.async.} =
+  return await self.db.some(key)
 
-proc get*(this:Session, key:string):Future[string] {.async.} =
-  return await this.db.get(key)
+proc get*(self:Session, key:string):Future[string] {.async.} =
+  return await self.db.get(key)
 
-proc delete*(this:Session, key:string) {.async.} =
-  await this.db.delete(key)
+proc delete*(self:Session, key:string) {.async.} =
+  await self.db.delete(key)
 
-proc destroy*(this:Session) {.async.} =
-  await this.db.destroy()
+proc destroy*(self:Session) {.async.} =
+  await self.db.destroy()
 
 
 # ========== Cookie ====================
@@ -283,9 +283,9 @@ proc timeForward*(num:int, timeUnit:TimeUnit):DateTime =
   of Nanoseconds:
     return getTime().utc + initTimeInterval(nanoseconds = num)
 
-proc toCookieStr*(this:CookieData):string =
-  makeCookie(this.name, this.value, this.expire, this.domain, this.path,
-              this.secure, this.httpOnly, this.sameSite)
+proc toCookieStr*(self:CookieData):string =
+  makeCookie(self.name, self.value, self.expire, self.domain, self.path,
+              self.secure, self.httpOnly, self.sameSite)
 
 
 proc newCookieData*(name, value:string, expire:DateTime, sameSite:SameSite=Lax,
@@ -310,78 +310,78 @@ proc newCookie*(request:Request):Cookie =
 proc cookies(request:Request):Cookie =
   return request.newCookie()
 
-proc get*(this:Cookie, name:string):string =
+proc get*(self:Cookie, name:string):string =
   result = ""
-  if not this.request.headers.hasKey("Cookie"):
+  if not self.request.headers.hasKey("Cookie"):
     return result
-  let cookiesStrArr = this.request.headers["Cookie"].split("; ")
+  let cookiesStrArr = self.request.headers["Cookie"].split("; ")
   for row in cookiesStrArr:
     let rowArr = row.split("=")
     if rowArr[0] == name:
       result = rowArr[1]
       break
 
-proc hasKey*(this:Cookie, name:string):bool =
-  if this.get(name).len > 0:
+proc hasKey*(self:Cookie, name:string):bool =
+  if self.get(name).len > 0:
     return true
   else:
     return false
 
-proc set*(this:var Cookie, name, value: string, expire:DateTime,
+proc set*(self:var Cookie, name, value: string, expire:DateTime,
       sameSite: SameSite=Lax, secure = false, httpOnly = false, domain = "",
       path = "/") =
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(expire.utc, f)
-  this.cookies.add(
+  self.cookies.add(
     newCookieData(name=name, value=value, expire=expireStr, sameSite=sameSite,
       secure=secure, httpOnly=httpOnly, domain=domain, path=path)
   )
 
-proc set*(this:var Cookie, name, value: string, sameSite: SameSite=Lax,
+proc set*(self:var Cookie, name, value: string, sameSite: SameSite=Lax,
       secure = false, httpOnly = false, domain = "", path = "/") =
   let expires = timeForward(SESSION_TIME, Minutes)
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(expires.utc, f)
-  this.cookies.add(
+  self.cookies.add(
     newCookieData(name=name, value=value, expire=expireStr, sameSite=sameSite,
       secure=secure, httpOnly=httpOnly, domain=domain, path=path)
   )
 
-proc updateExpire*(this:var Cookie, name:string, num:int,
+proc updateExpire*(self:var Cookie, name:string, num:int,
                     timeUnit:TimeUnit, path="/") =
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(timeForward(num, timeUnit).utc, f)
-  if this.request.headers.hasKey("Cookie"):
-    let cookiesStrArr = this.request.headers["Cookie"].split("; ")
+  if self.request.headers.hasKey("Cookie"):
+    let cookiesStrArr = self.request.headers["Cookie"].split("; ")
     for i, row in cookiesStrArr:
       let rowArr = row.split("=")
       if rowArr[0] == name:
-        this.cookies.add(newCookieData(rowArr[0], rowArr[1], expire=expireStr))
+        self.cookies.add(newCookieData(rowArr[0], rowArr[1], expire=expireStr))
         break
 
-proc updateExpire*(this:var Cookie, num:int, time:TimeUnit) =
+proc updateExpire*(self:var Cookie, num:int, time:TimeUnit) =
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(timeForward(num, time).utc, f)
-  if this.request.headers.hasKey("Cookie"):
-    let cookiesStrArr = this.request.headers["Cookie"].split("; ")
+  if self.request.headers.hasKey("Cookie"):
+    let cookiesStrArr = self.request.headers["Cookie"].split("; ")
     for row in cookiesStrArr:
       let name = row.split("=")[0]
       let value = row.split("=")[1]
-      this.cookies.add(
+      self.cookies.add(
         newCookieData(name=name, value=value, expire=expireStr)
       )
 
-proc delete*(this:var Cookie, key:string, path="/") =
-  this.cookies.add(
+proc delete*(self:var Cookie, key:string, path="/") =
+  self.cookies.add(
     newCookieData(name=key, value="", expire=timeForward(-1, Days), path=path)
   )
 
-proc destroy*(this:var Cookie, path="/") =
-  if this.request.headers.hasKey("Cookie"):
-    let cookiesStrArr = this.request.headers["Cookie"].split("; ")
+proc destroy*(self:var Cookie, path="/") =
+  if self.request.headers.hasKey("Cookie"):
+    let cookiesStrArr = self.request.headers["Cookie"].split("; ")
     for row in cookiesStrArr:
       let name = row.split("=")[0]
-      this.cookies.add(
+      self.cookies.add(
         newCookieData(name=name, value="", expire=timeForward(-1, Days), path=path)
       )
 
@@ -432,82 +432,82 @@ proc newAuth*(sessionId:string):Future[Auth] {.async.} =
 #   return auth
 
 
-proc getToken*(this:Auth):Future[string] {.async.} =
-  return await this.session.getToken()
+proc getToken*(self:Auth):Future[string] {.async.} =
+  return await self.session.getToken()
 
-proc set*(this:Auth, key, value:string) {.async.} =
-  if this.session.isNil:
-    this.session = await newSession()
-  await this.session.set(key, value)
+proc set*(self:Auth, key, value:string) {.async.} =
+  if self.session.isNil:
+    self.session = await newSession()
+  await self.session.set(key, value)
 
-proc some*(this:Auth, key:string):Future[bool] {.async.} =
-  if this.isNil:
+proc some*(self:Auth, key:string):Future[bool] {.async.} =
+  if self.isNil:
     return false
-  elif this.session.isNil:
+  elif self.session.isNil:
     return false
   else:
-    return await this.session.some(key)
+    return await self.session.some(key)
 
-proc get*(this:Auth, key:string):Future[string] {.async.} =
-  if await this.some(key):
-    return await this.session.get(key)
+proc get*(self:Auth, key:string):Future[string] {.async.} =
+  if await self.some(key):
+    return await self.session.get(key)
   else:
     return ""
 
-proc delete*(this:Auth, key:string) {.async.} =
-  await this.session.delete(key)
+proc delete*(self:Auth, key:string) {.async.} =
+  await self.session.delete(key)
 
-proc destroy*(this:Auth) {.async.} =
-  await this.session.destroy()
+proc destroy*(self:Auth) {.async.} =
+  await self.session.destroy()
 
-proc login*(this:Auth) {.async.} =
-  await this.set("is_login", $true)
+proc login*(self:Auth) {.async.} =
+  await self.set("is_login", $true)
 
-proc logout*(this:Auth) {.async.} =
-  await this.set("is_login", $false)
+proc logout*(self:Auth) {.async.} =
+  await self.set("is_login", $false)
 
-proc anonumousCreateSession*(this:Auth, req:Request):Future[bool] {.async.} =
+proc anonumousCreateSession*(self:Auth, req:Request):Future[bool] {.async.} =
   ## Recreate session because session id from request is invalid
   let sessionId = newCookie(req).get("session_id")
   if not await checkSessionIdValid(sessionId):
     return true
-  elif this.session.isNil or not await checkSessionIdValid(await this.getToken):
-    this.session = await newSession()
-    await this.set("is_login", "false")
-    await this.set("last_access", $getTime())
+  elif self.session.isNil or not await checkSessionIdValid(await self.getToken):
+    self.session = await newSession()
+    await self.set("is_login", "false")
+    await self.set("last_access", $getTime())
     return true
   else:
     return false
 
-proc isLogin*(this:Auth):Future[bool] {.async.} =
-  if await this.some("is_login"):
-    return parseBool(await this.session.get("is_login"))
+proc isLogin*(self:Auth):Future[bool] {.async.} =
+  if await self.some("is_login"):
+    return parseBool(await self.session.get("is_login"))
   else:
     return false
 
 
 # ========== Flash ====================
-proc setFlash*(this:Auth, key, value:string) {.async.} =
+proc setFlash*(self:Auth, key, value:string) {.async.} =
   let key = "flash_" & key
-  await this.set(key, value)
+  await self.set(key, value)
 
-proc hasFlash*(this:Auth, key:string):Future[bool] {.async.} =
+proc hasFlash*(self:Auth, key:string):Future[bool] {.async.} =
   result = false
-  let rows = await this.session.db.getRows()
+  let rows = await self.session.db.getRows()
   for k, v in rows.pairs:
     if k.contains("flash_" & key):
       result = true
       break
 
-proc getFlash*(this:Auth):Future[JsonNode] {.async.} =
+proc getFlash*(self:Auth):Future[JsonNode] {.async.} =
   result = newJObject()
-  let rows = await this.session.db.getRows()
+  let rows = await self.session.db.getRows()
   for key, val in rows.pairs:
     if key.contains("flash_"):
       var newKey = key
       newKey.delete(0, 5)
       result[newKey] = val
-      await this.delete(key)
+      await self.delete(key)
 
 
 # ========== CsrfToken ====================
@@ -518,17 +518,17 @@ type CsrfToken* = ref object
 proc newCsrfToken*(token=""):CsrfToken =
   return CsrfToken(token: newToken(token))
 
-proc getToken*(this:CsrfToken): string =
-  this.token.getToken()
+proc getToken*(self:CsrfToken): string =
+  self.token.getToken()
 
 proc csrfToken*(token=""):string =
   var token = newCsrfToken(token).getToken()
   return &"""<input type="hidden" name="csrf_token" value="{token}">"""
 
-proc checkCsrfTimeout*(this:CsrfToken):bool =
+proc checkCsrfTimeout*(self:CsrfToken):bool =
   var timestamp:int
   try:
-    timestamp = this.token.toTimestamp()
+    timestamp = self.token.toTimestamp()
   except:
     raise newException(Exception, "Invalid csrf token")
 

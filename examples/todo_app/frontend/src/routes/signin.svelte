@@ -36,7 +36,6 @@
 </style>
 
 
-
 <section class="section">
   <div class="container is-max-desktop">
     <div class="card">

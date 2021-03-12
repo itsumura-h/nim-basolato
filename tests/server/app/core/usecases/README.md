@@ -20,12 +20,12 @@ type UsersUsecase* = ref object
 proc newUsersUsecase*():UsersUsecase =
   return UsersUsecase(repository:newIUserRepository())
 
-proc store*(this:UsersUsecase, name="", email="", password=""):int =
+proc store*(self:UsersUsecase, name="", email="", password=""):int =
   let name = newUserName(name)
   let email = newEmail(email)
   let password = newPassword(password)
   let user = newUser(name=name, email=email, password=password)
-  let id = this.repository.store(user)
+  let id = self.repository.store(user)
   let userId = newId(id).get()
   return userId
 ```

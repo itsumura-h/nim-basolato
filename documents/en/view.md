@@ -284,7 +284,7 @@ proc withStyleView*():string =
   return applicationView(title, impl())
 ```
 
-This is compiled to html like this.
+This is compiled to html like self.
 ```html
 <!DOCTYPE html>
 <html lang="en">
@@ -317,9 +317,9 @@ At first time if you create view for component.
 ```nim
 proc newCss*():Css =
 
-proc `$`*(this:Css):string =
+proc `$`*(self:Css):string =
 
-proc get*(this:Css, name:string):string =
+proc get*(self:Css, name:string):string =
 ```
 
 ## Helper functions
@@ -373,6 +373,6 @@ proc impl(params=newJObject()):string = tmpli html"""
 
 proc signinView*(params=newJObject()):string =
   let title = "SignIn"
-  return this.applicationView(title, impl(params))
+  return self.applicationView(title, impl(params))
 ```
 It display value if `params` has key `email`, otherwise display empty string.

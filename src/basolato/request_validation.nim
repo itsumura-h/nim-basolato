@@ -22,173 +22,173 @@ proc newValidation*(params: Params):RequestValidation =
   )
 
 
-proc putValidate*(this: var RequestValidation, key: string, error: JsonNode) =
-  if isNil(this.errors):
-    this.errors = %{key: error}
+proc putValidate*(self: var RequestValidation, key: string, error: JsonNode) =
+  if isNil(self.errors):
+    self.errors = %{key: error}
   else:
-    this.errors[key] = error
+    self.errors[key] = error
 
-proc putValidate*(this: var RequestValidation, key: string, msg: string) =
-  if isNil(this.errors):
-    this.errors = %*{key: [msg]}
-  elif this.errors.hasKey(key):
-    this.errors[key].add(%(msg))
+proc putValidate*(self: var RequestValidation, key: string, msg: string) =
+  if isNil(self.errors):
+    self.errors = %*{key: [msg]}
+  elif self.errors.hasKey(key):
+    self.errors[key].add(%(msg))
   else:
-    this.errors[key] = %[(msg)]
+    self.errors[key] = %[(msg)]
 
-proc valid*(this:RequestValidation) =
-  if this.errors.len > 0:
+proc valid*(self:RequestValidation) =
+  if self.errors.len > 0:
     raise newException(ValidationError, "")
 
 # =============================================================================
 
-proc accepted*(this: var RequestValidation, key: string, val = "on") =
-  if this.params.hasKey(key):
-    if this.params.getStr(key) != val:
-      this.putValidate(key, &"{key} should be accepted")
+proc accepted*(self: var RequestValidation, key: string, val = "on") =
+  if self.params.hasKey(key):
+    if self.params.getStr(key) != val:
+      self.putValidate(key, &"{key} should be accepted")
 
 
-proc contains*(this: var RequestValidation, key: string, val: string) =
-  if this.params.hasKey(key):
-    if not this.params.getStr(key).contains(val):
-      this.putValidate(key, &"{key} should contain {val}")
+proc contains*(self: var RequestValidation, key: string, val: string) =
+  if self.params.hasKey(key):
+    if not self.params.getStr(key).contains(val):
+      self.putValidate(key, &"{key} should contain {val}")
 
 
-proc digits*(this: var RequestValidation, key: string, digit: int) =
-  let error = %digits(this.params.getStr(key), digit)
+proc digits*(self: var RequestValidation, key: string, digit: int) =
+  let error = %digits(self.params.getStr(key), digit)
   if error.len > 0:
-    this.putValidate(key, error)
+    self.putValidate(key, error)
 
 
-proc domain*(this: var RequestValidation, key = "domain") =
-  let error = %domain(this.params.getStr(key))
+proc domain*(self: var RequestValidation, key = "domain") =
+  let error = %domain(self.params.getStr(key))
   if error.len > 0:
-    this.putValidate(key, error)
+    self.putValidate(key, error)
 
 
-proc email*(this: var RequestValidation, key = "email") =
-  let error = %email(this.params.getStr(key))
+proc email*(self: var RequestValidation, key = "email") =
+  let error = %email(self.params.getStr(key))
   if error.len > 0:
-    this.putValidate(key, error)
+    self.putValidate(key, error)
 
 
-proc strictEmail*(this: var RequestValidation, key = "email") =
-  let error = %strictEmail(this.params.getStr(key))
+proc strictEmail*(self: var RequestValidation, key = "email") =
+  let error = %strictEmail(self.params.getStr(key))
   if error.len > 0:
-    this.putValidate(key, error)
+    self.putValidate(key, error)
 
 
-proc equals*(this: var RequestValidation, key: string, val: string) =
-  let error = %equals(this.params.getStr(key), val)
+proc equals*(self: var RequestValidation, key: string, val: string) =
+  let error = %equals(self.params.getStr(key), val)
   if error.len > 0:
-    this.putValidate(key, error)
+    self.putValidate(key, error)
 
 
-proc exists*(this: var RequestValidation, key: string) =
-  if not this.params.hasKey(key):
-    this.putValidate(key, &"{key} should exists in request params")
+proc exists*(self: var RequestValidation, key: string) =
+  if not self.params.hasKey(key):
+    self.putValidate(key, &"{key} should exists in request params")
 
 
-proc gratorThan*(this: var RequestValidation, key: string, val: float) =
-  let error = %gratorThan(this.params.getStr(key).parseFloat, val)
+proc gratorThan*(self: var RequestValidation, key: string, val: float) =
+  let error = %gratorThan(self.params.getStr(key).parseFloat, val)
   if error.len > 0:
-    this.putValidate(key, error)
+    self.putValidate(key, error)
 
 
-proc inRange*(this: var RequestValidation, key: string, min: float,
+proc inRange*(self: var RequestValidation, key: string, min: float,
               max: float) =
-  let error = %inRange(this.params.getStr(key).parseFloat, min, max)
+  let error = %inRange(self.params.getStr(key).parseFloat, min, max)
   if error.len > 0:
-    this.putValidate(key, error)
+    self.putValidate(key, error)
 
 
-proc ip*(this: var RequestValidation, key: string) =
-  let error = %domain(&"[{this.params.getStr(key)}]")
+proc ip*(self: var RequestValidation, key: string) =
+  let error = %domain(&"[{self.params.getStr(key)}]")
   if error.len > 0:
-    this.putValidate(key, error)
+    self.putValidate(key, error)
 
 
-proc isBool*(this: var RequestValidation, key: string) =
-  let error = %isBool(this.params.getStr(key))
+proc isBool*(self: var RequestValidation, key: string) =
+  let error = %isBool(self.params.getStr(key))
   if error.len > 0:
-    this.putValidate(key, error)
+    self.putValidate(key, error)
 
 
-proc isFloat*(this: var RequestValidation, key: string) =
-  let error = %isFloat(this.params.getStr(key))
+proc isFloat*(self: var RequestValidation, key: string) =
+  let error = %isFloat(self.params.getStr(key))
   if error.len > 0:
-    this.putValidate(key, error)
+    self.putValidate(key, error)
 
 
-proc isIn*(this: var RequestValidation, key: string,
+proc isIn*(self: var RequestValidation, key: string,
             vals: openArray[int|float|string]) =
-  if this.params.hasKey(key):
+  if self.params.hasKey(key):
     var count = 0
     for val in vals:
-      if this.params.getStr(key) == $val:
+      if self.params.getStr(key) == $val:
         count.inc
     if count == 0:
-      this.putValidate(key, &"{key} should be in {vals}")
+      self.putValidate(key, &"{key} should be in {vals}")
 
 
-proc isInt*(this: var RequestValidation, key: string) =
-  let error = %isInt(this.params.getStr(key))
+proc isInt*(self: var RequestValidation, key: string) =
+  let error = %isInt(self.params.getStr(key))
   if error.len > 0:
-    this.putValidate(key, error)
+    self.putValidate(key, error)
 
 
-proc isString*(this: var RequestValidation, key: string) =
-  let error = %isString(this.params.getStr(key))
+proc isString*(self: var RequestValidation, key: string) =
+  let error = %isString(self.params.getStr(key))
   if error.len > 0:
-    this.putValidate(key, error)
+    self.putValidate(key, error)
 
 
-proc lessThan*(this: var RequestValidation, key: string, val: float) =
-  let error = %lessThan(this.params.getStr(key).parseFloat, val)
+proc lessThan*(self: var RequestValidation, key: string, val: float) =
+  let error = %lessThan(self.params.getStr(key).parseFloat, val)
   if error.len > 0:
-    this.putValidate(key, error)
+    self.putValidate(key, error)
 
 
-proc numeric*(this: var RequestValidation, key: string) =
-  let error = %numeric(this.params.getStr(key))
+proc numeric*(self: var RequestValidation, key: string) =
+  let error = %numeric(self.params.getStr(key))
   if error.len > 0:
-    this.putValidate(key, error)
+    self.putValidate(key, error)
 
 
-proc oneOf*(this: var RequestValidation, keys: openArray[string]) =
+proc oneOf*(self: var RequestValidation, keys: openArray[string]) =
   var count = 0
-  for key, val in this.params:
+  for key, val in self.params:
     if keys.contains(key):
       count.inc
   if count == 0:
-    this.putValidate("oneOf", &"at least one of {keys} is required")
+    self.putValidate("oneOf", &"at least one of {keys} is required")
 
 
-proc password*(this: var RequestValidation, key = "password") =
+proc password*(self: var RequestValidation, key = "password") =
   var error = newJArray()
-  if this.params.getStr(key).len == 0:
+  if self.params.getStr(key).len == 0:
     error.add(%"this field is required")
 
-  if this.params.getStr(key).len < 8:
+  if self.params.getStr(key).len < 8:
     error.add(%"password needs at least 8 chars")
 
-  if not this.params.getStr(key).match(re"(?=.*?[a-z])(?=.*?[A-Z])(?=.*?\d)[!-~a-zA-Z\d]*"):
+  if not self.params.getStr(key).match(re"(?=.*?[a-z])(?=.*?[A-Z])(?=.*?\d)[!-~a-zA-Z\d]*"):
     error.add(%"invalid form of password")
 
   if error.len > 0:
-    this.putValidate(key, error)
+    self.putValidate(key, error)
 
 
-proc required*(this: var RequestValidation, keys: openArray[string]) =
+proc required*(self: var RequestValidation, keys: openArray[string]) =
   for key in keys:
-    if not this.params.hasKey(key) or this.params.getStr(key).len == 0:
-      this.putValidate(key, &"{key} is required")
+    if not self.params.hasKey(key) or self.params.getStr(key).len == 0:
+      self.putValidate(key, &"{key} is required")
 
 
-proc unique*(this: var RequestValidation, key: string, table: string,
+proc unique*(self: var RequestValidation, key: string, table: string,
     column: string) =
-  if this.params.hasKey(key):
-    let val = this.params.getStr(key)
+  if self.params.hasKey(key):
+    let val = self.params.getStr(key)
     let num = RDB().table(table).where(column, "=", val).count()
     if num > 0:
-      this.putValidate(key, &"{key} should be unique")
+      self.putValidate(key, &"{key} should be unique")

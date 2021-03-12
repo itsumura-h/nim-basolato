@@ -7,11 +7,11 @@ type MiddlewareResult* = ref object
   isError: bool
   message: string
 
-proc isError*(this:MiddlewareResult):bool =
-  return this.isError
+proc isError*(self:MiddlewareResult):bool =
+  return self.isError
 
-proc message*(this:MiddlewareResult):string =
-  return this.message
+proc message*(self:MiddlewareResult):string =
+  return self.message
 
 proc next*(status:HttpCode=HttpCode(200), body="", headers:Headers=newHeaders()):Response =
   return Response(status:status, body:body, headers:headers)

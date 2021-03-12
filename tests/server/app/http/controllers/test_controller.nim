@@ -1,8 +1,8 @@
 import json
-import ../../../../src/basolato/controller
-import ../../../../src/basolato/core/security
+import ../../../../../src/basolato/controller
+import ../../../../../src/basolato/core/security
 # template
-import ../../resources/pages/test_view
+import ../views/pages/test_view
 
 
 # test controller

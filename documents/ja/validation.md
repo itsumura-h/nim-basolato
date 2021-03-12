@@ -206,19 +206,19 @@ import bcrypt
 import allographer/query_builder
 import basolato/request_validation
 
-proc checkPassword*(this:RequestValidation, key:string): RequestValidation =
-  let password = this.params["password"]
+proc checkPassword*(self:RequestValidation, key:string): RequestValidation =
+  let password = self.params["password"]
   let response = RDB().table("users")
                   .select("password")
-                  .where("email", "=", this.params["email"])
+                  .where("email", "=", self.params["email"])
                   .first()
   let dbPass = if response.kind != JNull: response["password"].getStr else: ""
   let hash = dbPass.substr(0, 28)
   let hashed = hash(password, hash)
   let isMatch = compare(hashed, dbPass)
   if not isMatch:
-    this.putValidate(key, "password is not match")
-  return this
+    self.putValidate(key, "password is not match")
+  return self
 ```
 
 ## Available Rules

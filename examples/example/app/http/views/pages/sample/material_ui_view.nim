@@ -44,7 +44,7 @@
       class App extends React.PureComponent {
         constructor(props) {
           super(props);
-          this.state = {
+          self.state = {
             users: JSON.parse('$users')
           };
         }
@@ -63,7 +63,7 @@
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {this.state.users.map(user => (
+                    {self.state.users.map(user => (
                       <TableRow key={user.id}>
                         <TableCell component="th" scope="row">{user.id}</TableCell>
                         <TableCell align="right">{user.name}</TableCell>

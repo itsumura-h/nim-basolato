@@ -13,7 +13,7 @@ self.addEventListener('install', (event: ExtendableEvent) => {
 			.open(ASSETS)
 			.then(cache => cache.addAll(to_cache))
 			.then(() => {
-				((self as any) as ServiceWorkerGlobalScope).skipWaiting();
+				((this as any) as ServiceWorkerGlobalScope).skipWaiting();
 			})
 	);
 });
@@ -26,7 +26,7 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
 				if (key !== ASSETS) await caches.delete(key);
 			}
 
-			((self as any) as ServiceWorkerGlobalScope).clients.claim();
+			((this as any) as ServiceWorkerGlobalScope).clients.claim();
 		})
 	);
 });
@@ -74,7 +74,7 @@ self.addEventListener('fetch', (event: FetchEvent) => {
 				// which Sapper has generated for you. It's not right for every
 				// app, but if it's right for yours then uncomment this section
 				/*
-				if (!cachedAsset && url.origin === self.origin && routes.find(route => route.pattern.test(url.pathname))) {
+				if (!cachedAsset && url.origin === this.origin && routes.find(route => route.pattern.test(url.pathname))) {
 					return caches.match('/service-worker-index.html');
 				}
 				*/

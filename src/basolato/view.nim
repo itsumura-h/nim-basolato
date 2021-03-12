@@ -41,11 +41,11 @@ type Css* = ref object
 proc newCss*(body, saffix:string):Css =
   return Css(body:body, saffix:saffix)
 
-proc `$`*(this:Css):string =
-  return this.body
+proc `$`*(self:Css):string =
+  return self.body
 
-proc get*(this:Css, name:string):string =
-  return name & this.saffix
+proc get*(self:Css, name:string):string =
+  return name & self.saffix
 
 when isExistsLibsass():
   import sass

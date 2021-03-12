@@ -12,7 +12,7 @@ proc newUserRdbRepository*():UserRdbRepository =
 
 
 proc storeUser*(
-  this:UserRdbRepository,
+  self:UserRdbRepository,
   name:UserName,
   email:UserEmail,
   hashedPassword:HashedPassword
@@ -27,7 +27,7 @@ proc storeUser*(
   let userId = newUserId(userIdData)
   return userId
 
-proc getUser*(this:UserRdbRepository, email:UserEmail):User =
+proc getUser*(self:UserRdbRepository, email:UserEmail):User =
   let userData = rdb().table("users").where("email", "=", $email).first()
   if not userData.isSome():
     raise newException(Exception, "user not found")
@@ -38,10 +38,10 @@ proc getUser*(this:UserRdbRepository, email:UserEmail):User =
   return user
 
 
-proc toInterface*(this:UserRdbRepository):IUserRepository =
+proc toInterface*(self:UserRdbRepository):IUserRepository =
   return (
     storeUser: proc(
         name:UserName, email:UserEmail, hashedPassword:HashedPassword
-      ):UserId = this.storeUser(name, email, hashedPassword),
-    getUser: proc(email:UserEmail):User = this.getUser(email)
+      ):UserId = self.storeUser(name, email, hashedPassword),
+    getUser: proc(email:UserEmail):User = self.getUser(email)
   )

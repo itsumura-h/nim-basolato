@@ -39,7 +39,7 @@ proc new{targetCaptalized}Repository*():{targetCaptalized}RdbRepository =
   return {targetCaptalized}RdbRepository()
 
 
-proc toInterface*(this:{targetCaptalized}RdbRepository):I{targetCaptalized}Repository =
+proc toInterface*(self:{targetCaptalized}RdbRepository):I{targetCaptalized}Repository =
   return ()
 """
 
