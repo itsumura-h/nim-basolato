@@ -168,10 +168,10 @@ proc checkHttpCode(exception:ref Exception):HttpCode =
   createHttpCodeError
 
 
-proc runMiddleware(req:Request, routes:Routes, headers:Headers):Future[Response] {.async, gcsafe.} =
+proc runMiddleware(req:Request, routes:Routes, headers:HttpHeaders):Future[Response] {.async, gcsafe.} =
   var
     response = Response()
-    headers = headers
+    headers = if not headers.isNil: headers else: newHttpHeaders()
     status = HttpCode(0)
   for route in routes.middlewares:
     if route.httpMethods.len > 0:
@@ -190,7 +190,7 @@ proc runMiddleware(req:Request, routes:Routes, headers:Headers):Future[Response]
   response.status = status
   return response
 
-proc runController(req:Request, route:Route, headers: Headers):Future[Response] {.async, gcsafe.} =
+proc runController(req:Request, route:Route, headers: HttpHeaders):Future[Response] {.async, gcsafe.} =
   var response: Response
   let params = req.params(route)
   response = await route.action(req, params)
@@ -219,7 +219,7 @@ proc serveCore(params:(Routes, int)){.thread.} =
 
   proc cb(req: Request) {.async, gcsafe.} =
     var
-      headers: Headers
+      headers = newHttpHeaders()
       response: Response
     # static file response
     if req.path.contains("."):
@@ -228,7 +228,7 @@ proc serveCore(params:(Routes, int)){.thread.} =
         let file = openAsync(filepath, fmRead)
         let data = await file.readAll()
         let contentType = newMimetypes().getMimetype(req.path.split(".")[^1])
-        headers.set("Content-Type", contentType)
+        headers["content-type"] = contentType
         response = Response(status:Http200, body:data, headers:headers)
     else:
       # check path match with controller routing → run middleware → run controller
@@ -250,18 +250,18 @@ proc serveCore(params:(Routes, int)){.thread.} =
                 response = await runController(req, route, headers)
                 break
       except:
-        headers.set("Content-Type", "text/html; charset=UTF-8")
+        headers["content-type"] = "text/html; charset=utf-8"
         let exception = getCurrentException()
         if exception.name == "DD".cstring:
           var msg = exception.msg
           msg = msg.replace(re"Async traceback:[.\s\S]*")
           response = Response(status:Http200, body:ddPage(msg), headers:headers)
         elif exception.name == "ErrorAuthRedirect".cstring:
-          headers.set("Location", exception.msg)
-          headers.set("Set-Cookie", "session_id=; expires=31-Dec-1999 23:59:59 GMT") # Delete session id
+          headers["location"] = exception.msg
+          headers["set-cookie"] = "session_id=; expires=31-Dec-1999 23:59:59 GMT" # Delete session id
           response = Response(status:Http302, body:"", headers:headers)
         elif exception.name == "ErrorRedirect".cstring:
-          headers.set("Location", exception.msg)
+          headers["location"] = exception.msg
           response = Response(status:Http302, body:"", headers:headers)
         else:
           let status = checkHttpCode(exception)
@@ -282,13 +282,13 @@ proc serveCore(params:(Routes, int)){.thread.} =
           response = response.setCookie(cookie)
 
     if response.isNil:
-      headers.set("Content-Type", "text/html; charset=UTF-8")
+      headers["content-type"] = "text/html; charset=utf-8"
       response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)
       echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
 
     response.headers.setDefaultHeaders()
 
-    await req.respond(response.status, response.body, response.headers.toResponse())
+    await req.respond(response.status, response.body, response.headers)
     # keep-alive
     req.dealKeepAlive()
   waitFor server.serve(Port(port), cb)

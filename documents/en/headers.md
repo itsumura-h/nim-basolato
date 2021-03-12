@@ -37,30 +37,27 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 
 ## Response header
 ### Type of headers
-`toHeaders()` generate `Header` object from `array`, `seq`, `table` and `JsonNode`.  
-[sample code](../../tests/test_header.nim)
-
+`newHttpHeaders()` generate `HttpHeaders` object from `array[tuple[key: string, val: string]]`.  
+https://nim-lang.org/docs/httpcore.html#HttpHeaders
 
 ```nim
-let headers = [
-  ("Strict-Transport-Security", ["max-age=63072000", "includeSubdomains"].join(", ")),
-  ("X-Frame-Options", "SAMEORIGIN"),
-  ("X-XSS-Protection", ["1", "mode=block"].join(", ")),
-  ("X-Content-Type-Options", "nosniff"),
-  ("Referrer-Policy", ["no-referrer", "strict-origin-when-cross-origin"].join(", ")),
-  ("Cache-control", ["no-cache", "no-store", "must-revalidate"].join(", ")),
-  ("Pragma", "no-cache"),
-].toHeaders()
+let headers = {
+  "Strict-Transport-Security": "max-age=63072000, includeSubdomains",
+  "X-Frame-Options": "SAMEORIGIN",
+  "X-XSS-Protection": "1, mode=block",
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "no-referrer, strict-origin-when-cross-origin",
+  "Cache-control": "no-cache, no-store, must-revalidate",
+  "Pragma": "no-cache",
+}.newHttpHeaders()
 ```
 
-
 ### Set headers in controller
-Create header instance by `newHeaders()` and add by `set()`. Finally, set header at the last arge of response.
+Create header instance by `newHttpHeaders()` and add by `[]=`. Finally, set header at the last arge of response.
 ```nim
 proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  var header = newHeaders()
-  header.set("Controller-Header-Key1", "Controller-Header-Val1")
-  header.set("Controller-Header-Key1", "Controller-Header-Val2")
-  header.set("Controller-Header-Key2", ["val1", "val2", "val3"])
+  let header = newHttpHeaders()
+  header["Controller-Header-Key1"] = "Controller-Header-Val1, Controller-Header-Val2"
+  header["Controller-Header-Key2"] = "val1; val2; val3"
   return render("with header", header)
 ```

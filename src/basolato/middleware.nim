@@ -13,7 +13,7 @@ proc isError*(self:MiddlewareResult):bool =
 proc message*(self:MiddlewareResult):string =
   return self.message
 
-proc next*(status:HttpCode=HttpCode(200), body="", headers:Headers=newHeaders()):Response =
+proc next*(status:HttpCode=HttpCode(200), body="", headers:HttpHeaders=newHttpHeaders()):Response =
   return Response(status:status, body:body, headers:headers)
 
 proc checkCsrfToken*(request:Request, params:Params):Future[MiddlewareResult] {.async.} =
@@ -43,5 +43,4 @@ proc checkSessionId*(request:Request):Future[MiddlewareResult] {.async.} =
         raise newException(Exception, "Invalid session id")
     except:
       result.isError = true
-      echo getCurrentExceptionMsg()
       result.message = getCurrentExceptionMsg()
