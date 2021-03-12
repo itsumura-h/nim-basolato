@@ -1,4 +1,4 @@
-import random, json
+import random, json, options
 import asynchttpserver, asyncdispatch
 import allographer/query_builder
 randomize()
@@ -14,9 +14,9 @@ proc serve(port:int) =
       of "/db":
         let i = rand(1..10000)
         let response = await rdb().table("World").select("id", "randomNumber").asyncFind(i)
-        await req.respond(Http200, $(%*response))
+        await req.respond(Http200, $(%*response.get))
       of "/updates":
-        var countNum = 500
+        var countNum = 1
 
         var response = newSeq[JsonNode](countNum)
         var getFutures = newSeq[Future[Row]](countNum)

@@ -1,35 +1,36 @@
 import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
-style "sass", style1:
+style "scss", style1:
   """
-.background1{
+.background{
   height: 200px;
   width: 200px;
   background-color: red;
+  &:hover{
+    background-color: blue;
+  }
 }
 """
-
 proc component1():string = tmpli html"""
-$(style1())
-<div class="background1"></div>
+$(style1)
+<div class="$(style1.get("background"))"></div>
 """
 
 style "css", style2:
   """
-.background2{
+.background{
   height: 200px;
   width: 200px;
   background-color: blue;
 }
-.background2:hover{
+.background:hover{
   background-color: green;
 }
 """
-
 proc component2():string = tmpli html"""
-$(style2())
-<div class="background2"></div>
+$(style2)
+<div class="$(style2.get("background"))"></div>
 """
 
 proc impl():string = tmpli html"""

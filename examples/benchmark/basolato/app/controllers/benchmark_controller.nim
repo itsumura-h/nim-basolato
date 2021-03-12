@@ -1,4 +1,4 @@
-import json, random, algorithm, cgi, sequtils, strutils
+import json, random, algorithm, cgi, sequtils, strutils, options
 # framework
 import ../../../../../src/basolato/controller
 import allographer/query_builder
@@ -26,7 +26,7 @@ proc db*(request:Request, params:Params):Future[Response] {.async.} =
 proc query*(request:Request, params:Params):Future[Response] {.async.} =
   var countNum =
     try:
-      params.queryParams["queries"].parseInt
+      params.getInt("queries")
     except:
       1
 
@@ -35,11 +35,11 @@ proc query*(request:Request, params:Params):Future[Response] {.async.} =
   elif countNum > 500:
     countNum = 500
 
-  var response = newJArray()
-  for _ in 1..countNum:
+  var response = newSeq[JsonNode](countNum)
+  for index in 1..countNum:
     let i = rand(1..10000)
     let data = await rdb().table("World").select("id", "randomNumber").asyncFind(i)
-    response.add(data)
+    response[index-1] = data.get
   return render(%*response)
 
 proc fortune*(request:Request, params:Params):Future[Response] {.async.} =
@@ -62,7 +62,7 @@ proc fortune*(request:Request, params:Params):Future[Response] {.async.} =
 proc update*(request:Request, params:Params):Future[Response] {.async.} =
   var countNum =
     try:
-      params.queryParams["queries"].parseInt
+      params.getInt("queries")
     except:
       1
 

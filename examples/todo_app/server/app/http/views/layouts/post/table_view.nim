@@ -1,18 +1,18 @@
 import json
 import ../../../../../../../../src/basolato/view
 
-let style = block:
-  var css = newCss()
-  css.set("table", "", """
-    width: 100%;
-  """)
-  css.set("table", "td", """
+style "scss", style:
+  """
+.table{
+  width: 100%;
+  td{
     text-align: center;
-  """)
-  css
+  }
+}
+"""
 
 proc tableView*(posts=newSeq[JsonNode]()):string = tmpli html"""
-$(style.define())
+$(style)
 <div class="container">
   $if posts.len > 0 {
     <table class="table is-striped $(style.get("table"))">

@@ -35,7 +35,7 @@ return errorRedirect("/login")
 ```
 
 ## How to display custom error page
-Basolato has its own error page. However if you put your original error page in dir `./resources/errors/{http code}.html`, these are returned with priority.  
+Basolato has its own error page. However if you put your original error page in dir `app/http/views/errors/{http code}.html`, these are returned with priority.  
 If http status code html file is not found and `error.html` exists, `error.html` is returned.
 
 ・priority  
@@ -45,9 +45,9 @@ This function is avaiable only in `release` enviroment　(When you compile with 
 In develop enviroment (compile **without** `-d:release`), framerwork's error page is always returned.
 
 ```
-└── resources
-    └── errors
-        ├── 404.html # user custom error
-        ├── 500.html # user custom error
-        └── error.html # user custom error
+── views
+    └── errors
+         ├── 400.html
+         ├── 404.html
+         └── error.html
 ```

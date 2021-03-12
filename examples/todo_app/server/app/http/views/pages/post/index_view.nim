@@ -6,10 +6,6 @@ import ../../layouts/post/input_view
 import ../../layouts/post/errors_view
 import ../../layouts/post/table_view
 
-let style = block:
-  var css = newCss()
-  css
-
 proc impl(auth:Auth, posts:seq[JsonNode], params, errors:JsonNode):Future[string] {.async.} = tmpli html"""
 <section class="section">
   <div class="container is-max-desktop">

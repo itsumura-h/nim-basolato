@@ -1,4 +1,4 @@
-import json, strutils, strformat, options
+import json, strutils, options
 # framework
 import ../../../../../../src/basolato/controller
 # model

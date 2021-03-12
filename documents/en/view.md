@@ -244,10 +244,11 @@ proc impl(title:string, params:JsonNode):Future[string] {.async.} = tmpli html""
   </ul>
 ```
 
-
 ## Component design
 Basolato view is designed for component oriented design like React and Vue.  
 Component is a single chunk of html and css, and just a procedure that return html string.
+
+If you install [libsass](https://github.com/sass/libsass/), SCSS is going to be avaiable otherwise only CSS is avaiable.
 
 controller
 ```nim
@@ -261,25 +262,21 @@ view
 ```nim
 import basolato/view
 
-let style = block:
-  var css = newCss()
-  css.set("background", "", """
-    height: 200px;
-    width: 200px;
-    background-color: blue;
-  """)
-  css.set("background", ":hover", """
-    background-color: green;
-  """)
-  css
+style "scss", style1:
+  """
+.background {
+  height: 200px;
+  width: 200px;
+  background-color: blue;
 
-proc component():string = tmpli html"""
-$(style.define())
-<div class="$(style.get("background"))"></div>
-"""
+  &:hover {
+    background-color: green;
+  }
+}
 
 proc impl():string = tmpli html"""
-$(component())
+$(style1)
+<div class="$(style1.get("background"))"></div>
 """
 
 proc withStyleView*():string =
@@ -287,7 +284,7 @@ proc withStyleView*():string =
   return applicationView(title, impl())
 ```
 
-This is compiled to this html
+This is compiled to html like this.
 ```html
 <!DOCTYPE html>
 <html lang="en">
@@ -298,16 +295,16 @@ This is compiled to this html
   </head>
   <body>
     <style type="text/css">
-      .background_jtshlgnucxj {
+      .background_jtshlgnucx {
         height: 200px;
         width: 200px;
         background-color: blue;
       }
-      .background_jtshlgnucxj:hover {
+      .background_jtshlgnucx:hover {
         background-color: green;
       }
     </style>
-    <div class="background_jtshlgnucxj"></div>
+    <div class="background_jtshlgnucx"></div>
   </body>
 </html>
 ```
@@ -320,13 +317,10 @@ At first time if you create view for component.
 ```nim
 proc newCss*():Css =
 
-proc set*(this:var Css, className, option:string, value:string) =
+proc `$`*(this:Css):string =
 
-proc get*(this:Css, className:string):string =
-
-proc define*(this:Css):string =
+proc get*(this:Css, name:string):string =
 ```
-
 
 ## Helper functions
 

@@ -29,9 +29,8 @@ putEnv("LOG_DIR", "{getCurrentDir()}/logs")
 
 # Session db
 putEnv("SESSION_TYPE", "file") # "file" or "redis"
-putEnv("SESSION_DB_PATH", "{getCurrentDir()}/session.db") # Session file path or IP address or Docker service name
+putEnv("SESSION_DB_PATH", "{getCurrentDir()}/session.db") # Session file path or host:port
 putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
-putEnv("REDIS_PORT", "6379")
 putEnv("ENABLE_ANONYMOUS_COOKIE", "true") # true or false
 putEnv("COOKIE_DOMAINS", "")
 """

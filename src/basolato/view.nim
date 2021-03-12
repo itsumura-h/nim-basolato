@@ -1,7 +1,7 @@
 import
-  templates, json, random, tables, strformat, strutils, asyncdispatch, cgi
-export templates, asyncdispatch
-import core/security
+  templates, json, random, tables, strformat, strutils, asyncdispatch, cgi, re
+export templates, asyncdispatch, re
+import core/security, core/utils
 export security
 
 proc get*(val:JsonNode):string =
@@ -34,49 +34,62 @@ proc old*(params:TableRef, key:string):string =
   else:
     return ""
 
-
-type CssRow = ref object
-  key:string
-  class:string
-  value:string
-
 type Css* = ref object
-  suffix: string
-  values: OrderedTable[string, OrderedTable[string, CssRow]]
+  body:string
+  saffix:string
 
-randomize()
+proc newCss*(body, saffix:string):Css =
+  return Css(body:body, saffix:saffix)
 
-proc newCss*():Css =
-  var random:string
-  for _ in 0..10:
-    random.add(char(rand(int('a')..int('z'))))
-  return Css(suffix:random)
+proc `$`*(this:Css):string =
+  return this.body
 
-proc set*(this:var Css, className, option:string, value:string) =
-  if not this.values.hasKey(className):
-    this.values[className] = OrderedTable[string, CssRow]()
-  this.values[className][option] = CssRow(
-    key: &"{className}_{this.suffix}{option}",
-    class: &"{className}_{this.suffix}",
-    value:value
-  )
+proc get*(this:Css, name:string):string =
+  return name & this.saffix
 
-proc get*(this:Css, className:string):string =
-  for option, cssRow in this.values[className]:
-    return cssRow.class
+when isExistsLibsass():
+  import sass
+  import random
+  randomize()
+  template style*(typ:string, name, body: untyped):untyped =
+    if not ["css", "scss"].contains(typ):
+      raise newException(Exception, "style type css/scss is only avaiable")
+    let name = (proc ():Css =
+      var css =
+        if typ == "scss":
+          compile(body)
+        else:
+          body
+      var matches = newSeq[string]()
+      for row in css.findAll(re"\.[\d\w]+"):
+        if not matches.contains(row):
+          matches.add(row)
 
-proc define*(this:Css):string =
-  result = "<style type=\"text/css\">\n"
-  for className, cssRows in this.values:
-    for option, cssRow in cssRows:
-      var row = &"""
-.{cssRow.key} [[
-{cssRow.value}]]
-"""
-      row = row.replace("[[", "{").replace("]]", "}")
-      result.add(row)
-  result.add("</style>")
+      var saffix = "_"
+      for _ in 0..9:
+        saffix.add(char(rand(int('a')..int('z'))))
 
-template style*(typ:string, name, body: untyped):untyped =
-  proc name():string =
-    return "<style type=\"text/css\">" & body & "</style>"
+      for match in matches:
+        css = css.replace(match, match & saffix)
+      let cssBody = "<style type=\"text/css\">" & css & "</style>"
+      return newCss(cssBody, saffix)
+    )()
+else:
+  template style*(typ:string, name, body: untyped):untyped =
+    if typ != "css": raise newException(Exception, "You can use only css for the style type.\nTo use scss, please install libsass.\nhttps://github.com/sass/libsass")
+    let name = (proc():Css =
+      var saffix = "_"
+      for _ in 0..9:
+        saffix.add(char(rand(int('a')..int('z'))))
+
+      var css = body
+      var matches = newSeq[string]()
+      for row in css.findAll(re"\.[\d\w]+"):
+        if not matches.contains(row):
+          matches.add(row)
+
+      for match in matches:
+        css = css.replace(match, match & saffix)
+      let cssBody = "<style type=\"text/css\">" & css & "</style>"
+      return newCss(cssBody, saffix)
+    )()

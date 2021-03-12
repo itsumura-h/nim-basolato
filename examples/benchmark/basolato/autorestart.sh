@@ -1,7 +1,7 @@
+ducere build -p:5000,5001,5002,5003
 while [ 1 ]; do
-  nim c -r -d:relese --gc:arc --putenv:port=5000 main
+  ./main5000 & \
+  ./main5001 & \
+  ./main5002 & \
+  ./main5003
 done
-
-# while [ 1 ]; do
-#   nim c -r -d:relese --gc:arc --putenv:port=5000 --threads:on --threadAnalysis:off main
-# done

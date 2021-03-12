@@ -3,15 +3,15 @@ import ../../../../../../../../src/basolato/view
 import ../../layouts/application_view
 import ../../layouts/post/errors_view
 
-let style = block:
-  var css = newCss()
-  css.set("form", "", """
-    padding: 10px 0px;
-  """)
-  css
+style "css", style:
+  """
+.form{
+  padding: 10px 0px;
+}
+"""
 
 proc impl(auth:Auth, post:JsonNode):Future[string] {.async.} = tmpli html"""
-$(style.define())
+$(style)
 <section class="section">
   <div class="container is-max-desktop">
     <a href="/">back</a>

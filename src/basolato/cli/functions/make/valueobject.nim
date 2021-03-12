@@ -2,7 +2,7 @@ import os, strformat, terminal
 
 
 proc makeValueObject*(target, targetPath, message:var string):int =
-  let targetPath = &"{getCurrentDir()}/app/model/aggregates" / targetPath & ".nim"
+  let targetPath = &"{getCurrentDir()}/app/core/models" / targetPath & ".nim"
   let VALUEOBJECT = &"""
 
 

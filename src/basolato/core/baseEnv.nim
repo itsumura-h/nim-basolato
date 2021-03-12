@@ -12,7 +12,6 @@ const
   SESSION_TYPE* = getEnv("SESSION_TYPE", "file").string
   SESSION_DB_PATH* = getEnv("SESSION_DB_PATH").string
   SESSION_TIME* = getEnv("SESSION_TIME", "20160").string.parseInt
-  REDIS_PORT* = getEnv("REDIS_PORT", "6379").string.parseInt
   COOKIE_DOMAINS* = getEnv("COOKIE_DOMAINS").string
   ENABLE_ANONYMOUS_COOKIE* = getEnv("ENABLE_ANONYMOUS_COOKIE").string.parseBool
 

@@ -24,5 +24,8 @@ If the environment variable `LOG_IS_ERROR_FILE` is set to `true`, arges of `echo
 import basolato/logging
 
 proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  echoLog("index")
+  try:
+    echoLog("index")
+  except:
+    echoErrorMsg( getCurrentExceptionMsg() )
 ```

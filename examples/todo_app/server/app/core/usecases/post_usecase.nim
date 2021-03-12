@@ -1,4 +1,3 @@
-import json
 import ../value_objects
 import ../models/post/post_entity
 import ../models/post/post_repository_interface

@@ -2,17 +2,16 @@ import json, tables
 import ../../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
-
-let style = block:
-  var css = newCss()
-  css.set("errors", "", """
-    background-color: pink;
-    color: red;
-  """)
-  css
+style "css", style:
+  """
+.errors{
+  background-color: pink;
+  color: red;
+}
+"""
 
 proc impl(params:JsonNode, errors:JsonNode):string = tmpli html"""
-$(style.define())
+$(style)
 <section class="section">
   <div class="container is-max-desktop">
     <div class="card">

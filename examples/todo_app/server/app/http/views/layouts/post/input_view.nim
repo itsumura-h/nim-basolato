@@ -1,15 +1,15 @@
 import json
 import ../../../../../../../../src/basolato/view
 
-let style = block:
-  var css = newCss()
-  css.set("form", "", """
-    padding: 10px 0px;
-  """)
-  css
+style "css", style:
+  """
+.form{
+  padding: 10px 0px;
+}
+"""
 
 proc inputView*(params=newJObject(), errors=newJObject()):string = tmpli html"""
-$(style.define())
+$(style)
 <div class="container">
   <form method="POST" class="field $(style.get("form"))">
     $(csrfToken())

@@ -25,6 +25,5 @@ proc build*(ports="5000", threads="off", args:seq[string]) =
       --threadAnalysis:off \
       --out:{outputFileName} \
       --putenv:port={ports} \
-      --gc:orc \
       main.nim
     """)

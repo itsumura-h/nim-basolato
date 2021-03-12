@@ -1,14 +1,14 @@
 import ../../../../../../../../src/basolato/view
 
-let style = block:
-  var css = newCss()
-  css.set("right", "", """
-    float: right;
-  """)
-  css
+style "css", style:
+  """
+.right{
+  float: right;
+}
+"""
 
 proc headerView*(name:string):string = tmpli html"""
-$(style.define())
+$(style)
 <div class="container">
   <span>Login: $name</span>
   <form method="POST" action="/signout" class="$(style.get("right"))">

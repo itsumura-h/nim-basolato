@@ -33,6 +33,7 @@ proc encryptCtr*(input:string):string =
   return input
 
 proc decryptCtr*(input:string):string =
+  if input.len == 0: return ""
   try:
     let input = input.parseHexStr().commonCtr()
     return input[16..high(input)]
@@ -66,6 +67,9 @@ when SESSION_TYPE == "redis":
     conn: AsyncRedis
     token: string
 
+  const REDIS_IP = SESSION_DB_PATH.split(":")[0]
+  const REDIS_PORT = SESSION_DB_PATH.split(":")[1].parseInt
+
   proc newSessionDb*(sessionId=""):Future[SessionDb] {.async.} =
     let token =
       if sessionId.len == 0:
@@ -73,7 +77,7 @@ when SESSION_TYPE == "redis":
       else:
         sessionId
 
-    let conn = await openAsync(SESSION_DB_PATH, Port(REDIS_PORT))
+    let conn = await openAsync(REDIS_IP, Port(REDIS_PORT))
     discard await conn.hSet(token, "last_access", $getTime())
     discard await conn.expire(token, SESSION_TIME * 60)
 
@@ -83,7 +87,7 @@ when SESSION_TYPE == "redis":
     )
 
   proc checkSessionIdValid*(sessionId:string):Future[bool] {.async.} =
-    let conn = await openAsync(SESSION_DB_PATH, Port(REDIS_PORT))
+    let conn = await openAsync(REDIS_IP, Port(REDIS_PORT))
     if await conn.hExists(sessionId, "last_access"):
       return true
     else:

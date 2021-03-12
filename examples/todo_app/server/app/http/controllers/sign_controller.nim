@@ -12,7 +12,8 @@ import ../../repositories/user/user_rdb_repository
 
 
 proc signUpPage*(request:Request, params:Params):Future[Response] {.async.} =
-  return render(signupView())
+  let auth = await newAuth(request)
+  return await render(signupView()).setAuth(auth)
 
 proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
   let name = params.getStr("name")
@@ -44,7 +45,8 @@ proc deleteAccount*(request:Request, params:Params):Future[Response] {.async.} =
   return render("delete account")
 
 proc signInPage*(request:Request, params:Params):Future[Response] {.async.} =
-  return render(signinView())
+  let auth = await newAuth(request)
+  return await render(signinView()).setAuth(auth)
 
 proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
   let email = params.getStr("email")
