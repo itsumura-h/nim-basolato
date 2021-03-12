@@ -3,19 +3,19 @@ import json, re, tables, strformat, strutils, unicode
 type Validation* = ref object
 
 
-proc digits(value:string, digit:int):seq[string] =
+func digits(value:string, digit:int):seq[string] =
   var r = newSeq[string]()
   if value.len > digit:
     r.add(&"the number of digits in {value} should less than {digit}")
   return r
 
-proc digits*(self:Validation, value:string, digit:int):bool =
+func digits*(self:Validation, value:string, digit:int):bool =
   if digits(value, digit).len > 0:
     return false
   else:
     return true
 
-proc email(value:string):seq[string] =
+func email(value:string):seq[string] =
   var r = newSeq[string]()
   if value.len == 0:
     r.add("this field is required")
@@ -23,7 +23,7 @@ proc email(value:string):seq[string] =
     r.add("invalid form of email")
   return r
 
-proc email*(self:Validation, value:string):bool =
+func email*(self:Validation, value:string):bool =
   if email(value).len > 0:
     return false
   else:
@@ -168,38 +168,38 @@ proc strictEmail*(self:Validation, value:string):bool =
   else:
     return true
 
-proc equals(sub:any, target:any):seq[string] =
+func equals(sub:any, target:any):seq[string] =
   var r = newSeq[string]()
   if sub != target:
     r.add(&"{$sub} should be {$target}")
   return r
 
-proc equals*(self:Validation, sub:any, target:any):bool =
+func equals*(self:Validation, sub:any, target:any):bool =
   if equals(sub, target).len > 0:
     return false
   else:
     return true
 
-proc gratorThan(sub, target:int|float):seq[string] =
+func gratorThan(sub, target:int|float):seq[string] =
   var r = newSeq[string]()
   if sub <= target:
     r.add(&"{$sub} should be grator than {$target}")
   return r
 
-proc gratorThan*(self:Validation, sub, target:int|float):bool =
+func gratorThan*(self:Validation, sub, target:int|float):bool =
   if gratorThan(sub, target).len > 0:
     return false
   else:
     return true
 
-proc inRange(value, min, max:int|float):seq[string] =
+func inRange(value, min, max:int|float):seq[string] =
   var r = newSeq[string]()
   block:
     if value < min or max < value:
       r.add(&"{value} should be in range between {min} and {max}")
   return r
 
-proc inRange*(self:Validation, value, min, max:int|float):bool =
+func inRange*(self:Validation, value, min, max:int|float):bool =
   if inRange(value, min, max).len > 0:
     return false
   else:
@@ -211,7 +211,7 @@ proc ip*(self:Validation, value:string):bool =
   else:
     return true
 
-proc isBool(value:string):seq[string] =
+func isBool(value:string):seq[string] =
   var r = newSeq[string]()
   try:
     discard value.parseBool()
@@ -219,13 +219,13 @@ proc isBool(value:string):seq[string] =
     r.add(&"{value} is not float")
   return r
 
-proc isBool*(self:Validation, value:string):bool =
+func isBool*(self:Validation, value:string):bool =
   if isBool(value).len > 0:
     return false
   else:
     return true
 
-proc isFloat(value:string):seq[string] =
+func isFloat(value:string):seq[string] =
   var r = newSeq[string]()
   try:
     discard value.parseFloat()
@@ -233,13 +233,13 @@ proc isFloat(value:string):seq[string] =
     r.add(&"{value} is not float")
   return r
 
-proc isFloat*(self:Validation, value:string):bool =
+func isFloat*(self:Validation, value:string):bool =
   if isFloat(value).len > 0:
     return false
   else:
     return true
 
-proc isInt(value:string):seq[string] =
+func isInt(value:string):seq[string] =
   var r = newSeq[string]()
   try:
     discard value.parseInt()
@@ -247,37 +247,37 @@ proc isInt(value:string):seq[string] =
     r.add(&"{value} is not integer")
   return r
 
-proc isInt*(self:Validation, value:string):bool =
+func isInt*(self:Validation, value:string):bool =
   if isInt(value).len > 0:
     return false
   else:
     return true
 
-proc isString(value:string):seq[string] =
+func isString(value:string):seq[string] =
   var r = newSeq[string]()
   if not value.match(re"^(?=[a-zA-Z]+)(?!.*(true|false)).*$"):
     r.add(&"{value} is not a string")
   return r
 
-proc isString*(self:Validation, value:string):bool =
+func isString*(self:Validation, value:string):bool =
   if isString(value).len > 0:
     return false
   else:
     return true
 
-proc lessThan(sub, target:int|float):seq[string] =
+func lessThan(sub, target:int|float):seq[string] =
   var r = newSeq[string]()
   if sub >= target:
     r.add(&"{sub} should be less than {target}")
   return r
 
-proc lessThan*(self:Validation, sub, target:int|float):bool =
+func lessThan*(self:Validation, sub, target:int|float):bool =
   if lessThan(sub, target).len > 0:
     return false
   else:
     return true
 
-proc numeric(value:string):seq[string] =
+func numeric(value:string):seq[string] =
   var r = newSeq[string]()
   try:
     let _ = value.parseFloat
@@ -285,13 +285,13 @@ proc numeric(value:string):seq[string] =
     r.add(&"{value} should be numeric")
   return r
 
-proc numeric*(self:Validation, value:string):bool =
+func numeric*(self:Validation, value:string):bool =
   if numeric(value).len > 0:
     return false
   else:
     return true
 
-proc password(value:string):seq[string] =
+func password(value:string):seq[string] =
   var r = newSeq[string]()
   if value.len == 0:
     r.add("this field is required")
@@ -303,7 +303,7 @@ proc password(value:string):seq[string] =
     r.add("invalid form of password")
   return r
 
-proc password*(self:Validation, value:string):bool =
+func password*(self:Validation, value:string):bool =
   if password(value).len > 0:
     return false
   else:

@@ -7,7 +7,7 @@ proc setDefaultHeaders*(self:HttpHeaders) =
   self["Date"] = now().format(formatter)
   self["Connection"] = "Keep-Alive"
 
-proc `&`*(a, b:HttpHeaders = newHttpHeaders()):HttpHeaders =
+func `&`*(a, b:HttpHeaders = newHttpHeaders()):HttpHeaders =
   for pair in b.pairs:
     if a.hasKey(pair.key):
       var arr = a.table[pair.key]

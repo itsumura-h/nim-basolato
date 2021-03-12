@@ -48,7 +48,7 @@ const errorStatusArray* = [505, 504, 503, 502, 501, 500, 451, 431, 429, 428, 426
   422, 421, 418, 417, 416, 415, 414, 413, 412, 411, 410, 409, 408, 407, 406,
   405, 404, 403, 401, 400, 307, 305, 304, 303, 302, 301, 300]
 
-proc dd*(outputs: varargs[string]) =
+func dd*(outputs: varargs[string]) =
   when not defined(release):
     var output:string
     for i, row in outputs:

@@ -4,7 +4,7 @@ export templates, asyncdispatch, re
 import core/security, core/utils
 export security
 
-proc get*(val:JsonNode):string =
+func get*(val:JsonNode):string =
   case val.kind
   of JString:
     return val.getStr.xmlEncode
@@ -19,16 +19,16 @@ proc get*(val:JsonNode):string =
   else:
     raise newException(JsonKindError, "val is array")
 
-proc get*(val:string|TaintedString):string =
+func get*(val:string|TaintedString):string =
   return val.string.xmlEncode
 
-proc old*(params:JsonNode, key:string):string =
+func old*(params:JsonNode, key:string):string =
   if params.hasKey(key):
     return params[key].get()
   else:
     return ""
 
-proc old*(params:TableRef, key:string):string =
+func old*(params:TableRef, key:string):string =
   if params.hasKey(key):
     return params[key].xmlEncode
   else:
@@ -38,13 +38,13 @@ type Css* = ref object
   body:string
   saffix:string
 
-proc newCss*(body, saffix:string):Css =
+func newCss*(body, saffix:string):Css =
   return Css(body:body, saffix:saffix)
 
-proc `$`*(self:Css):string =
+func `$`*(self:Css):string =
   return self.body
 
-proc get*(self:Css, name:string):string =
+func get*(self:Css, name:string):string =
   return name & self.saffix
 
 when isExistsLibsass():
@@ -54,7 +54,7 @@ when isExistsLibsass():
   template style*(typ:string, name, body: untyped):untyped =
     if not ["css", "scss"].contains(typ):
       raise newException(Exception, "style type css/scss is only avaiable")
-    let name = (proc ():Css =
+    let name = (proc():Css =
       var css =
         if typ == "scss":
           compile(body)

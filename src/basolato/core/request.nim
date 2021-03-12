@@ -3,10 +3,10 @@ import
   parseutils, net, uri
 
 
-proc path*(request:Request):string =
+func path*(request:Request):string =
   return request.url.path
 
-proc httpMethod*(request:Request):HttpMethod =
+func httpMethod*(request:Request):HttpMethod =
   return request.reqMethod
 
 proc dealKeepAlive*(req:Request) =
@@ -22,13 +22,13 @@ proc dealKeepAlive*(req:Request) =
   ):
     req.client.close()
 
-proc isNumeric(str:string):bool =
+func isNumeric(str:string):bool =
   result = true
   for c in str:
     if not c.isDigit:
       return false
 
-proc isMatchUrl*(requestPath, routePath:string):bool =
+func isMatchUrl*(requestPath, routePath:string):bool =
   let requestPath = requestPath.split("/")[1..^1]
   let routePath = routePath.split("/")[1..^1]
   if requestPath.len != routePath.len:
@@ -55,28 +55,28 @@ type Param* = ref object
 type Params* = TableRef[string, Param]
 
 
-proc `[]`(params:Params, key:string):Param =
+func `[]`(params:Params, key:string):Param =
   return tables.`[]`(params, key)
 
-proc getStr*(params:Params, key:string, default=""):string =
+func getStr*(params:Params, key:string, default=""):string =
   if params.hasKey(key):
     return params[key].value
   else:
     return default
 
-proc getInt*(params:Params, key:string, default=0):int =
+func getInt*(params:Params, key:string, default=0):int =
   if params.hasKey(key):
     return params[key].value.parseInt
   else:
     return default
 
-proc getFloat*(params:Params, key:string, default=0.0):float =
+func getFloat*(params:Params, key:string, default=0.0):float =
   if params.hasKey(key):
     return params[key].value.parseFloat
   else:
     return default
 
-proc getBool*(params:Params, key:string, default=false):bool =
+func getBool*(params:Params, key:string, default=false):bool =
   if params.hasKey(key):
     return params[key].value.parseBool
   else:
@@ -85,10 +85,10 @@ proc getBool*(params:Params, key:string, default=false):bool =
 proc getJson*(params:Params, key:string, default=newJObject()):JsonNode =
   return params[key].value.parseJson
 
-proc hasKey*(params:Params, key:string):bool =
+func hasKey*(params:Params, key:string):bool =
   return tables.hasKey(params, key)
 
-proc getUrlParams*(requestPath, routePath:string):Params =
+func getUrlParams*(requestPath, routePath:string):Params =
   let params = Params()
   if routePath.contains("{"):
     let requestPath = requestPath.split("/")[1..^1]
@@ -100,7 +100,7 @@ proc getUrlParams*(requestPath, routePath:string):Params =
         params[key] = Param(value:requestPath[i].split(":")[0])
   return params
 
-proc getQueryParams*(request:Request):Params =
+func getQueryParams*(request:Request):Params =
   let params = Params()
   let query = request.url.query
   for key, val in cgi.decodeData(query):
@@ -147,7 +147,7 @@ template parseContentDisposition() =
       inc(hCount)
       hCount += hValue.skipWhitespace(hCount)
 
-proc parseMultiPart*(body: string, boundary: string): MultiData =
+func parseMultiPart*(body: string, boundary: string): MultiData =
   result = initOrderedTable[string, tuple[fields: StringTableRef, body: string]]()
   var mboundary = "--" & boundary
 
@@ -195,12 +195,12 @@ proc parseMultiPart*(body: string, boundary: string): MultiData =
 
     result[name] = newPart
 
-proc parseMPFD*(contentType: string, body: string): MultiData =
+func parseMPFD*(contentType: string, body: string): MultiData =
   var boundaryEqIndex = contentType.find("boundary=")+9
   var boundary = contentType.substr(boundaryEqIndex, contentType.len()-1)
   return parseMultiPart(body, boundary)
 
-proc getRequestParams*(request:Request):Params =
+func getRequestParams*(request:Request):Params =
   var params = Params()
   if request.headers.hasKey("content-type"):
     let contentType = request.headers["content-type"].toString

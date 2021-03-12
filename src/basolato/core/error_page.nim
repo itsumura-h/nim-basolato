@@ -1,7 +1,7 @@
 import os, httpcore, strformat
 import resources/original_error_page
 
-proc errorPage*(status:HttpCode, msg:string):string =
+func errorPage*(status:HttpCode, msg:string):string =
   when defined(release):
     try:
       let customNumberPath = getCurrentDir() / fmt"./resources/errors/{status.int}.html"

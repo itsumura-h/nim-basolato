@@ -7,13 +7,13 @@ type MiddlewareResult* = ref object
   isError: bool
   message: string
 
-proc isError*(self:MiddlewareResult):bool =
+func isError*(self:MiddlewareResult):bool =
   return self.isError
 
-proc message*(self:MiddlewareResult):string =
+func message*(self:MiddlewareResult):string =
   return self.message
 
-proc next*(status:HttpCode=HttpCode(200), body="", headers:HttpHeaders=newHttpHeaders()):Response =
+func next*(status:HttpCode=HttpCode(200), body="", headers:HttpHeaders=newHttpHeaders()):Response =
   return Response(status:status, body:body, headers:headers)
 
 proc checkCsrfToken*(request:Request, params:Params):Future[MiddlewareResult] {.async.} =

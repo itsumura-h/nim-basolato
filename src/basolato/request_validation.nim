@@ -15,20 +15,20 @@ type RequestValidation* = ref object
 type ValidationError* = object of CatchableError
 
 
-proc newValidation*(params: Params):RequestValidation =
+func newValidation*(params: Params):RequestValidation =
   return RequestValidation(
     params: params,
     errors: newJObject()
   )
 
 
-proc putValidate*(self: var RequestValidation, key: string, error: JsonNode) =
+func putValidate*(self: var RequestValidation, key: string, error: JsonNode) =
   if isNil(self.errors):
     self.errors = %{key: error}
   else:
     self.errors[key] = error
 
-proc putValidate*(self: var RequestValidation, key: string, msg: string) =
+func putValidate*(self: var RequestValidation, key: string, msg: string) =
   if isNil(self.errors):
     self.errors = %*{key: [msg]}
   elif self.errors.hasKey(key):
@@ -36,25 +36,25 @@ proc putValidate*(self: var RequestValidation, key: string, msg: string) =
   else:
     self.errors[key] = %[(msg)]
 
-proc valid*(self:RequestValidation) =
+func valid*(self:RequestValidation) =
   if self.errors.len > 0:
     raise newException(ValidationError, "")
 
 # =============================================================================
 
-proc accepted*(self: var RequestValidation, key: string, val = "on") =
+func accepted*(self: var RequestValidation, key: string, val = "on") =
   if self.params.hasKey(key):
     if self.params.getStr(key) != val:
       self.putValidate(key, &"{key} should be accepted")
 
 
-proc contains*(self: var RequestValidation, key: string, val: string) =
+func contains*(self: var RequestValidation, key: string, val: string) =
   if self.params.hasKey(key):
     if not self.params.getStr(key).contains(val):
       self.putValidate(key, &"{key} should contain {val}")
 
 
-proc digits*(self: var RequestValidation, key: string, digit: int) =
+func digits*(self: var RequestValidation, key: string, digit: int) =
   let error = %digits(self.params.getStr(key), digit)
   if error.len > 0:
     self.putValidate(key, error)
@@ -66,7 +66,7 @@ proc domain*(self: var RequestValidation, key = "domain") =
     self.putValidate(key, error)
 
 
-proc email*(self: var RequestValidation, key = "email") =
+func email*(self: var RequestValidation, key = "email") =
   let error = %email(self.params.getStr(key))
   if error.len > 0:
     self.putValidate(key, error)
@@ -78,24 +78,24 @@ proc strictEmail*(self: var RequestValidation, key = "email") =
     self.putValidate(key, error)
 
 
-proc equals*(self: var RequestValidation, key: string, val: string) =
+func equals*(self: var RequestValidation, key: string, val: string) =
   let error = %equals(self.params.getStr(key), val)
   if error.len > 0:
     self.putValidate(key, error)
 
 
-proc exists*(self: var RequestValidation, key: string) =
+func exists*(self: var RequestValidation, key: string) =
   if not self.params.hasKey(key):
     self.putValidate(key, &"{key} should exists in request params")
 
 
-proc gratorThan*(self: var RequestValidation, key: string, val: float) =
+func gratorThan*(self: var RequestValidation, key: string, val: float) =
   let error = %gratorThan(self.params.getStr(key).parseFloat, val)
   if error.len > 0:
     self.putValidate(key, error)
 
 
-proc inRange*(self: var RequestValidation, key: string, min: float,
+func inRange*(self: var RequestValidation, key: string, min: float,
               max: float) =
   let error = %inRange(self.params.getStr(key).parseFloat, min, max)
   if error.len > 0:
@@ -108,19 +108,19 @@ proc ip*(self: var RequestValidation, key: string) =
     self.putValidate(key, error)
 
 
-proc isBool*(self: var RequestValidation, key: string) =
+func isBool*(self: var RequestValidation, key: string) =
   let error = %isBool(self.params.getStr(key))
   if error.len > 0:
     self.putValidate(key, error)
 
 
-proc isFloat*(self: var RequestValidation, key: string) =
+func isFloat*(self: var RequestValidation, key: string) =
   let error = %isFloat(self.params.getStr(key))
   if error.len > 0:
     self.putValidate(key, error)
 
 
-proc isIn*(self: var RequestValidation, key: string,
+func isIn*(self: var RequestValidation, key: string,
             vals: openArray[int|float|string]) =
   if self.params.hasKey(key):
     var count = 0
@@ -131,31 +131,31 @@ proc isIn*(self: var RequestValidation, key: string,
       self.putValidate(key, &"{key} should be in {vals}")
 
 
-proc isInt*(self: var RequestValidation, key: string) =
+func isInt*(self: var RequestValidation, key: string) =
   let error = %isInt(self.params.getStr(key))
   if error.len > 0:
     self.putValidate(key, error)
 
 
-proc isString*(self: var RequestValidation, key: string) =
+func isString*(self: var RequestValidation, key: string) =
   let error = %isString(self.params.getStr(key))
   if error.len > 0:
     self.putValidate(key, error)
 
 
-proc lessThan*(self: var RequestValidation, key: string, val: float) =
+func lessThan*(self: var RequestValidation, key: string, val: float) =
   let error = %lessThan(self.params.getStr(key).parseFloat, val)
   if error.len > 0:
     self.putValidate(key, error)
 
 
-proc numeric*(self: var RequestValidation, key: string) =
+func numeric*(self: var RequestValidation, key: string) =
   let error = %numeric(self.params.getStr(key))
   if error.len > 0:
     self.putValidate(key, error)
 
 
-proc oneOf*(self: var RequestValidation, keys: openArray[string]) =
+func oneOf*(self: var RequestValidation, keys: openArray[string]) =
   var count = 0
   for key, val in self.params:
     if keys.contains(key):
@@ -164,7 +164,7 @@ proc oneOf*(self: var RequestValidation, keys: openArray[string]) =
     self.putValidate("oneOf", &"at least one of {keys} is required")
 
 
-proc password*(self: var RequestValidation, key = "password") =
+func password*(self: var RequestValidation, key = "password") =
   var error = newJArray()
   if self.params.getStr(key).len == 0:
     error.add(%"this field is required")
@@ -179,7 +179,7 @@ proc password*(self: var RequestValidation, key = "password") =
     self.putValidate(key, error)
 
 
-proc required*(self: var RequestValidation, keys: openArray[string]) =
+func required*(self: var RequestValidation, keys: openArray[string]) =
   for key in keys:
     if not self.params.hasKey(key) or self.params.getStr(key).len == 0:
       self.putValidate(key, &"{key} is required")

@@ -4,7 +4,7 @@ type
   SameSite* = enum
     None, Lax, Strict
 
-proc makeCookie*(key, value, expires: string, domain = "", path = "",
+func makeCookie*(key, value, expires: string, domain = "", path = "",
                  secure = false, httpOnly = false,
                  sameSite = Lax): string =
   result = ""
@@ -17,7 +17,7 @@ proc makeCookie*(key, value, expires: string, domain = "", path = "",
   if sameSite != None:
     result.add("; SameSite=" & $sameSite)
 
-proc isExistsLibsass*():bool =
+func isExistsLibsass*():bool =
   ## used in /view
   when defined(macosx):
     const query = "ldconfig -p | grep libsass"
@@ -25,7 +25,7 @@ proc isExistsLibsass*():bool =
     return res.exitCode == 0 and res.output.len > 0
   elif defined(linux) or defined(bsd):
     const f = staticRead("/etc/os-release")
-    const osName = (proc():string =
+    const osName = (func():string =
         for row in f.split("\n"):
           let kv = row.split("=")
           if kv[0] == "ID":

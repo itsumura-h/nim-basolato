@@ -53,7 +53,7 @@ proc newToken*(token=""):Token =
   token = token.encryptCtr()
   return Token(token:token)
 
-proc getToken*(self:Token):string =
+func getToken*(self:Token):string =
   return self.token
 
 proc toTimestamp*(self:Token): int =
@@ -283,7 +283,7 @@ proc timeForward*(num:int, timeUnit:TimeUnit):DateTime =
   of Nanoseconds:
     return getTime().utc + initTimeInterval(nanoseconds = num)
 
-proc toCookieStr*(self:CookieData):string =
+func toCookieStr*(self:CookieData):string =
   makeCookie(self.name, self.value, self.expire, self.domain, self.path,
               self.secure, self.httpOnly, self.sameSite)
 
@@ -297,20 +297,20 @@ proc newCookieData*(name, value:string, expire:DateTime, sameSite:SameSite=Lax,
   CookieData(name:name, value:value,expire:expireStr, sameSite:sameSite,
     secure:secure, httpOnly:httpOnly, domain:domain, path:path)
 
-proc newCookieData*(name, value:string, expire="", sameSite: SameSite=Lax,
+func newCookieData*(name, value:string, expire="", sameSite: SameSite=Lax,
       secure=false, httpOnly=true, domain = "", path = "/"):CookieData =
   when defined(release):
     let secure = true
   CookieData(name:name, value:value,expire:expire, sameSite:sameSite,
     secure:secure, httpOnly:httpOnly, domain:domain, path:path)
 
-proc newCookie*(request:Request):Cookie =
+func newCookie*(request:Request):Cookie =
   return Cookie(request:request, cookies:newSeq[CookieData](0))
 
-proc cookies(request:Request):Cookie =
+func cookies(request:Request):Cookie =
   return request.newCookie()
 
-proc get*(self:Cookie, name:string):string =
+func get*(self:Cookie, name:string):string =
   result = ""
   if not self.request.headers.hasKey("Cookie"):
     return result
@@ -321,7 +321,7 @@ proc get*(self:Cookie, name:string):string =
       result = rowArr[1]
       break
 
-proc hasKey*(self:Cookie, name:string):bool =
+func hasKey*(self:Cookie, name:string):bool =
   if self.get(name).len > 0:
     return true
   else:
@@ -412,14 +412,14 @@ proc newAuth*(sessionId:string):Future[Auth] {.async.} =
   else:
     return Auth()
 
-# proc newAuth():Future[Auth] {.async.} =
+# func newAuth():Future[Auth] {.async.} =
 #   ## use in constructor
 #   let session = await newSession()
 #   await session.set("isLogin", "false")
 #   await session.set("last_access", $getTime())
 #   return Auth(session:session)
 
-# proc newAuthIfInvalid*(request:Request):Future[Auth] {.async.} =
+# func newAuthIfInvalid*(request:Request):Future[Auth] {.async.} =
 #   var auth:Auth
 #   if not request.cookies.hasKey("session_id"):
 #     auth = await newAuth()
@@ -518,7 +518,7 @@ type CsrfToken* = ref object
 proc newCsrfToken*(token=""):CsrfToken =
   return CsrfToken(token: newToken(token))
 
-proc getToken*(self:CsrfToken): string =
+func getToken*(self:CsrfToken): string =
   self.token.getToken()
 
 proc csrfToken*(token=""):string =
