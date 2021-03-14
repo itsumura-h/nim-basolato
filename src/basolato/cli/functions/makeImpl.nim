@@ -55,9 +55,6 @@ proc make*(args:seq[string]):int =
   of "usecase":
     getTarget
     return makeUsecase(target, message)
-  # of "aggregate":
-  #   getTarget
-  #   return makeAggregate(target, message)
   of "model":
     getTarget
     return makeModel(target, message)

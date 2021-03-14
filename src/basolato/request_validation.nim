@@ -6,7 +6,7 @@ import core/request
 import allographer/query_builder
 
 let message_templats = getCurrentDir() / &"resources/lang/{LANGUAGE}/validation.json"
-
+echo message_templats
 
 type RequestValidation* = ref object
   params*: Params

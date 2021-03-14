@@ -288,7 +288,7 @@ proc serveCore(params:(Routes, int)){.thread.} =
 
     response.headers.setDefaultHeaders()
 
-    await req.respond(response.status, response.body, response.headers)
+    await req.respond(response.status, response.body, response.headers.format())
     # keep-alive
     req.dealKeepAlive()
   waitFor server.serve(Port(port), cb)

@@ -7,8 +7,13 @@ Table of Contents
 <!--ts-->
    * [Healper](#healper)
       * [dd](#dd)
+         * [API](#api)
+         * [Example](#example)
+      * [password](#password)
+         * [API](#api-1)
+         * [Example](#example-1)
 
-<!-- Added by: root, at: Sun Dec 27 18:18:55 UTC 2020 -->
+<!-- Added by: root, at: Sun Mar 14 02:11:03 UTC 2021 -->
 
 <!--te-->
 

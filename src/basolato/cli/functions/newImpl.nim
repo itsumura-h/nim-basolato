@@ -27,17 +27,13 @@ proc create(dirPath:string, packageDir:string):int =
     discard execShellCmd(&"""
   cd {dirPath}
   ducere make config
-  cp config.nims config.nims.dev
-  cp config.nims config.nims.stg
-  cp config.nims config.nims.prd
   """)
-    # create session.db
-    block:
-      let f = open(&"{dirPath}/session.db", fmWrite)
-      defer: f.close()
-      f.write("")
+    copyFile(dirPath / "config.nims", dirPath / "config.nims.dev")
+    copyFile(dirPath / "config.nims", dirPath / "config.nims.stg")
+    copyFile(dirPath / "config.nims", dirPath / "config.nims.prd")
+
     # create empty dirs
-    createDir(&"{dirPath}/resources/errors")
+    # createDir(&"{dirPath}/resources/errors")
     createDir(&"{dirPath}/tests")
     createDir(&"{dirPath}/public/js")
     createDir(&"{dirPath}/public/css")
@@ -59,8 +55,9 @@ requires "templates >= 0.5"
 requires "bcrypt >= 0.2.1"
 requires "nimAES >= 0.1.2"
 requires "flatdb >= 0.2.4"
-requires "allographer >= 0.9.0"
-requires "faker >= 0.12.1"
+requires "allographer >= 0.16.0"
+requires "faker >= 0.13.1"
+requires "sass >= 0.1.0"
 """
     block:
       let f = open(&"{dirPath}/{packageDir}.nimble", fmWrite)

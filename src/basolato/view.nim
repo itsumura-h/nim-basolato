@@ -4,6 +4,8 @@ export templates, asyncdispatch, re
 import core/security, core/utils
 export security
 
+randomize()
+
 func get*(val:JsonNode):string =
   case val.kind
   of JString:
@@ -49,8 +51,6 @@ func get*(self:Css, name:string):string =
 
 when isExistsLibsass():
   import sass
-  import random
-  randomize()
   template style*(typ:string, name, body: untyped):untyped =
     if not ["css", "scss"].contains(typ):
       raise newException(Exception, "style type css/scss is only avaiable")
@@ -71,7 +71,7 @@ when isExistsLibsass():
 
       for match in matches:
         css = css.replace(match, match & saffix)
-      let cssBody = "<style type=\"text/css\">" & css & "</style>"
+      let cssBody = "<style type=\"text/css\">\n" & css & "</style>"
       return newCss(cssBody, saffix)
     )()
 else:
@@ -90,6 +90,6 @@ else:
 
       for match in matches:
         css = css.replace(match, match & saffix)
-      let cssBody = "<style type=\"text/css\">" & css & "</style>"
+      let cssBody = "<style type=\"text/css\">\n" & css & "</style>"
       return newCss(cssBody, saffix)
     )()

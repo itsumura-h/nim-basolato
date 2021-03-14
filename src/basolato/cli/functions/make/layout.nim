@@ -9,15 +9,19 @@ proc makeLayout*(target:string, message:var string):int =
   var VIEW = &"""
 import basolato/view
 
-let style = block:
-  var css = newCss()
-  css
+style "css", style:'''
+.className [[
+]]
+'''
 
 proc {targetCaptalized}View*():string = tmpli html'''
+$(style)
+<div class="$(style.get("className"))">
+</div>
 '''
 """
 
-  VIEW = VIEW.replace("'", "\"")
+  VIEW = VIEW.replace("'", "\"").replace("[[", "{").replace("]]", "}")
 
   if isFileExists(targetPath): return 1
   createDir(parentDir(targetPath))
@@ -26,6 +30,6 @@ proc {targetCaptalized}View*():string = tmpli html'''
   f.write(VIEW)
   defer: f.close()
 
-  message = &"Created layout view {targetPath}"
+  message = &"Created layout view in {targetPath}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
   return 0

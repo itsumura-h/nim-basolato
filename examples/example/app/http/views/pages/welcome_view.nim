@@ -1,6 +1,78 @@
 import ../../../../../../src/basolato/view
 import ../layouts/application_view
 
+style "css", style:"""
+body {
+  background-color: black;
+}
+article {
+  margin: 16px;
+}
+
+.title {
+  color: goldenrod;
+  text-align: center;
+}
+
+.topImage {
+  background-color: gray;
+  text-align: center;
+}
+
+.goldFont {
+  color: goldenrod;
+}
+
+.whiteFont {
+  color: silver;
+}
+
+.ulLink li {
+  margin: 8px;
+}
+
+.ulLink li a {
+  color: skyblue;
+}
+
+.architecture {
+  padding: 10px
+}
+
+.architecture h2 {
+  color: goldenrod;
+}
+
+.components {
+  display:flex;
+}
+
+.discription {
+  width: 50vw;
+}
+
+.discription h3 {
+  color: goldenrod;
+}
+
+.discription p {
+  color: white;
+}
+
+.sourceCode {
+  width: 50vw
+}
+
+.sourceCode p {
+  color: white;
+  margin-bottom: 0;
+}
+
+.sourceCode pre {
+  margin-top: 0;
+}
+"""
+
 proc impl(title, name:string):string = tmpli html"""
 <!DOCTYPE html>
 <html lang="en">
@@ -10,83 +82,13 @@ proc impl(title, name:string):string = tmpli html"""
   <title>$title</title>
   <link rel="stylesheet" href="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/styles/dracula.min.css">
   <script src="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/highlight.min.js"></script>
-  <style>
-    body {
-      background-color: black;
-    }
-    article {
-      margin: 16px;
-    }
-
-    #title {
-      color: goldenrod;
-      text-align: center;
-    }
-
-    #topImage {
-      background-color: gray;
-      text-align: center;
-    }
-
-    .goldFont {
-      color: goldenrod;
-    }
-
-    .whiteFont {
-      color: silver;
-    }
-
-    .ulLink li {
-      margin: 8px;
-    }
-
-    .ulLink li a {
-      color: skyblue;
-    }
-
-    .architecture {
-      padding: 10px
-    }
-
-    .architecture h2 {
-      color: goldenrod;
-    }
-
-    .components {
-      display:flex;
-    }
-
-    .discription {
-      width: 50vw;
-    }
-
-    .discription h3 {
-      color: goldenrod;
-    }
-
-    .discription p {
-      color: white;
-    }
-
-    .sourceCode {
-      width: 50vw
-    }
-
-    .sourceCode p {
-      color: white;
-      margin-bottom: 0;
-    }
-
-    .sourceCode pre {
-      margin-top: 0;
-    }
-  </style>
+  $(style)
 </head>
 <body>
   <article>
     <section>
-      <h1 id="title">Nim $name is successfully running!!!</h1>
-      <div id="topImage">
+      <h1 class="$(style.get("title"))">Nim $name is successfully running!!!</h1>
+      <div class="$(style.get("topImage"))">
         <img
           src="/basolato.svg"
           alt="nim-logo"
@@ -97,13 +99,13 @@ proc impl(title, name:string):string = tmpli html"""
   </article>
   <article>
     <section>
-      <h2 class="goldFont">
+      <h2 class="$(style.get("goldFont"))">
         Full-stack Web Framewrok for Nim
       </h2>
-      <p class="whiteFont">
+      <p class="$(style.get("whiteFont"))">
         <i>—utilitas, firmitas et venustas (utility, strength and beauty)— by De architectura / Marcus Vitruvius Pollio</i>
       </p>
-      <div class="whiteFont">
+      <div class="$(style.get("whiteFont"))">
         <ul>
           <li>Easy syntax as Python thanks to Nim</li>
           <li>Develop as easy as Ruby on Rails</li>
@@ -120,5 +122,5 @@ proc impl(title, name:string):string = tmpli html"""
 """
 
 proc welcomeView*(name:string):string =
-  const title = "Welcome"
+  let title = "Welcome Basolato"
   return impl(title, name)

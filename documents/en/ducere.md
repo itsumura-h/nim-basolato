@@ -5,21 +5,25 @@ Ducere command
 Table of Contents
 
 <!--ts-->
-   * [ducere command](#ducere-command)
-      * [new](#new)
-      * [serve](#serve)
-      * [build](#build)
-      * [migrate](#migrate)
-      * [make](#make)
-         * [config](#config)
-         * [controller](#controller)
-         * [view](#view)
-         * [migration](#migration)
-         * [model](#model)
-         * [usecase](#usecase)
-         * [value object](#value-object)
+   * [Ducere command](#ducere-command)
+      * [Introduction](#introduction)
+      * [Usages](#usages)
+         * [new](#new)
+         * [serve](#serve)
+         * [build](#build)
+         * [migrate](#migrate)
+         * [make](#make)
+            * [config](#config)
+            * [controller](#controller)
+            * [view](#view)
+            * [migration](#migration)
+            * [model](#model)
+               * [Create top level domain model(=aggregate)](#create-top-level-domain-modelaggregate)
+               * [Create child domain model in aggregate](#create-child-domain-model-in-aggregate)
+            * [usecase](#usecase)
+            * [value object](#value-object)
 
-<!-- Added by: root, at: Sun Dec 27 18:20:21 UTC 2020 -->
+<!-- Added by: root, at: Sun Mar 14 02:11:31 UTC 2021 -->
 
 <!--te-->
 
@@ -255,6 +259,6 @@ ducere make valueobject {arg1} {arg2}
 
 example
 ```sh
-ducere make valueobject UserName ./value_objects
->> add UserName in app/domain/models/value_objects
+ducere make valueobject UserName user
+>> add UserName in app/domain/models/user/value_objects
 ```

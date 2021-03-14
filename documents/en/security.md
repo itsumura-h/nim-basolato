@@ -12,6 +12,10 @@ Table of Contents
       * [Auth](#auth)
          * [API](#api)
          * [Sample](#sample)
+         * [Anonymous user cookie](#anonymous-user-cookie)
+            * [anonymous user enabled](#anonymous-user-enabled)
+            * [anonymous user disabled](#anonymous-user-disabled)
+         * [How to create cookie for multiple domains](#how-to-create-cookie-for-multiple-domains)
       * [Cookie](#cookie)
          * [API](#api-1)
          * [Sample](#sample-1)
@@ -19,7 +23,7 @@ Table of Contents
          * [API](#api-2)
          * [Sample](#sample-2)
 
-<!-- Added by: root, at: Sun Dec 27 18:23:11 UTC 2020 -->
+<!-- Added by: root, at: Sun Mar 14 02:11:22 UTC 2021 -->
 
 <!--te-->
 

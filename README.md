@@ -29,7 +29,7 @@ An asynchronous full-stack web framework for Nim, based on [asynchttpserver](htt
       * [Development](#development)
          * [Generate TOC of documents](#generate-toc-of-documents)
 
-<!-- Added by: root, at: Thu Feb  4 19:20:30 UTC 2021 -->
+<!-- Added by: root, at: Sun Mar 14 02:10:54 UTC 2021 -->
 
 <!--te-->
 
@@ -63,11 +63,7 @@ The framework depends on several libraries (installed automatically by Nimble):
 - [bcrypt](https://github.com/runvnc/bcryptnim), used for hashing passwords.
 - [nimAES](https://github.com/jangko/nimAES), for AES support.
 - [faker](https://github.com/jiro4989/faker), for generating fake data.
-
-The following libraries can be used for making views:
-- [Karax](https://github.com/pragmagic/karax), for single-page applications.
-- [react.nim](https://github.com/andreaferretti/react.nim), React.js bindings.
-- [react-16.nim](https://github.com/kristianmandrup/react-16.nim), React 16.x bindings with an example app (WIP).
+- [sass](https://github.com/dom96/sass), provides a Sass/SCSS to CSS compiler for `Nim` through bindings to `libsass`.
 
 
 ### Installation
@@ -92,47 +88,41 @@ ducere new {project_name}
 The overall file structure is as follows:
 
 ```
-├── .gitignore
 ├── app
-│   ├── controllers
-│   │   ├── README.md
-│   │   └── welcome_controller.nim
-│   ├── domain
-│   │   ├── di_container.nim
-│   │   ├── models
-│   │   │   ├── README.md
-│   │   │   └── value_objects.nim
-│   │   ├── query_services
-│   │   │   ├── README.md
-│   │   │   ├── query_service_interface.nim
-│   │   │   └── rdb_query_service.nim
-│   │   └── usecases
-│   │       └── README.md
-│   └── middlewares
-│       ├── README.md
-│       ├── auth_middleware.nim
-│       └── custom_headers_middleware.nim
+│   ├── core
+│   │   ├── models
+│   │   └── usecases
+│   ├── di_container.nim
+│   ├── http
+│   │   ├── controllers
+│   │   │   └── welcome_controller.nim
+│   │   ├── middlewares
+│   │   │   ├── auth_middleware.nim
+│   │   │   └── cors_middleware.nim
+│   │   └── views
+│   │       ├── layouts
+│   │       │   ├── application_view.nim
+│   │       │   └── head_view.nim
+│   │       └── pages
+│   │           └── welcome_view.nim
+│   └── repositories
+│       └── query_services
+│           ├── query_service.nim
+│           └── query_service_interface.nim
 ├── config.nims
+├── config.nims.dev
+├── config.nims.prd
+├── config.nims.stg
 ├── main.nim
 ├── migrations
-│   ├── README.md
-│   ├── migrate.nim
-│   └── migration0001sample.nim
+│   └── migrate.nim
 ├── public
-│   ├── README.md
 │   ├── basolato.svg
 │   ├── css
 │   ├── favicon.ico
 │   └── js
-├── resources
-│   ├── README.md
-│   ├── layouts
-│   │   ├── application_view.nim
-│   │   └── head_view.nim
-│   └── pages
-│       └── welcome_view.nim
 ├── session.db
-├── {project_name}.nimble
+├── test1.nimble
 └── tests
     └── test_sample.nim
 ```

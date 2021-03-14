@@ -1,11 +1,11 @@
 import os, httpcore, strformat
 import resources/original_error_page
 
-func errorPage*(status:HttpCode, msg:string):string =
+proc errorPage*(status:HttpCode, msg:string):string =
   when defined(release):
     try:
-      let customNumberPath = getCurrentDir() / fmt"./resources/errors/{status.int}.html"
-      let customGeneralPath = getCurrentDir() / "./resources/errors/error.html"
+      let customNumberPath = getCurrentDir() / fmt"app/http/views/errors/{status.int}.html"
+      let customGeneralPath = getCurrentDir() / "app/http/views/errors/error.html"
       let path =
         if fileExists(customNumberPath):
           customNumberPath

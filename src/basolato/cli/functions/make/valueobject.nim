@@ -1,8 +1,9 @@
-import os, strformat, terminal
+import os, strformat, terminal, strutils
 
 
 proc makeValueObject*(target, targetPath, message:var string):int =
-  let targetPath = &"{getCurrentDir()}/app/core/models" / targetPath & ".nim"
+  targetPath = getCurrentDir() / "app/core/models" /  targetPath / "value_objects.nim"
+  target = target.capitalizeAscii()
   let VALUEOBJECT = &"""
 
 

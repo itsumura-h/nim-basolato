@@ -89,7 +89,7 @@ func hasKey*(params:Params, key:string):bool =
   return tables.hasKey(params, key)
 
 func getUrlParams*(requestPath, routePath:string):Params =
-  let params = Params()
+  result = Params()
   if routePath.contains("{"):
     let requestPath = requestPath.split("/")[1..^1]
     let routePath = routePath.split("/")[1..^1]
@@ -97,36 +97,33 @@ func getUrlParams*(requestPath, routePath:string):Params =
       if routePath[i].contains("{"):
         let keyInUrl = routePath[i][1..^1].split(":")
         let key = keyInUrl[0]
-        params[key] = Param(value:requestPath[i].split(":")[0])
-  return params
+        result[key] = Param(value:requestPath[i].split(":")[0])
 
 func getQueryParams*(request:Request):Params =
-  let params = Params()
+  result = Params()
   let query = request.url.query
   for key, val in cgi.decodeData(query):
-    params[key.string] = Param(value:val)
-  return params
+    result[key.string] = Param(value:val)
 
 proc getJsonParams*(request:Request):Params =
-  let params = Params()
+  result = Params()
   let jsonParams = request.body.parseJson()
   for k, v in jsonParams.pairs:
     case v.kind
     of JInt:
-      params[k] = Param(value: $(v.getInt))
+      result[k] = Param(value: $(v.getInt))
     of JFloat:
-      params[k] = Param(value: $(v.getFloat))
+      result[k] = Param(value: $(v.getFloat))
     of JBool:
-      params[k] = Param(value: $(v.getBool))
+      result[k] = Param(value: $(v.getBool))
     of JNull:
-      params[k] = Param(value: "")
+      result[k] = Param(value: "")
     of JArray:
-      params[k] = Param(value: $v)
+      result[k] = Param(value: $v)
     of JObject:
-      params[k] = Param(value: $v)
+      result[k] = Param(value: $v)
     else:
-      params[k] = Param(value: v.getStr)
-  return params
+      result[k] = Param(value: v.getStr)
 
 
 type MultiData* = OrderedTable[string, tuple[fields: StringTableRef, body: string]]

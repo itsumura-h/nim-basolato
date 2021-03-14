@@ -6,9 +6,10 @@ Table of Contents
 
 <!--ts-->
    * [Middleware](#middleware)
-      * [Routing middleware](#routing-middleware)
+      * [API](#api)
+      * [Sample](#sample)
 
-<!-- Added by: root, at: Sun Dec 27 18:20:43 UTC 2020 -->
+<!-- Added by: root, at: Sun Mar 14 02:11:27 UTC 2021 -->
 
 <!--te-->
 

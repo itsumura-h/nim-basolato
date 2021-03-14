@@ -11,11 +11,15 @@ proc makePage*(target:string, message:var string):int =
 import basolato/view
 import {relativeToApplicationPath}
 
-let style = block:
-  var css = newCss()
-  css
+style "css", style:'''
+.className [[
+]]
+'''
 
 proc impl():string = tmpli html'''
+$(style)
+<div class="$(style.get("className"))">
+</div>
 '''
 
 proc {targetCaptalized}View*():string =
@@ -23,7 +27,7 @@ proc {targetCaptalized}View*():string =
   return applicationView(title, impl())
 """
 
-  VIEW = VIEW.replace("'", "\"")
+  VIEW = VIEW.replace("'", "\"").replace("[[", "{").replace("]]", "}")
 
   if isFileExists(targetPath): return 1
   createDir(parentDir(targetPath))

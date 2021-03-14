@@ -6,7 +6,7 @@ proc makeModel*(target:string, message:var string):int =
   let targetCaptalized = snakeToCamel(targetName)
   let parent = target.split("/")[0]
   let parentCapitalized = snakeToCamel(parent)
-  let relativeToValueObjectsPath = "../".repeat(target.split("/").len+1) & "value_objects"
+  let relativeToValueObjectsPath = "../".repeat(target.split("/").len-1) & "value_objects"
   let relativeToRepoInterface = "../".repeat(target.split("/").len-1) & parent & "_repository_interface"
 
   let ENTITY = &"""
@@ -20,7 +20,7 @@ proc new{targetCaptalized}*():{targetCaptalized} =
 """
 
   let REPOSITORY_INTERFACE = &"""
-import ../../value_objects
+import value_objects
 import {targetName}_entity
 
 
@@ -29,7 +29,7 @@ type I{targetCaptalized}Repository* = tuple
 
   let REPOSITORY = &"""
 import allographer/query_builder
-import ../../core/value_objects
+import ../../core/models/{targetName}/value_objects
 import ../../core/models/{targetName}/{targetName}_repository_interface
 
 
@@ -77,6 +77,12 @@ proc new{targetCaptalized}Service*(repository:I{parentCapitalized}Repository):{t
   f.write(SERVICE)
 
   if not target.contains("/"):
+    # value objects
+    targetPath = &"{getCurrentDir()}/app/core/models/{target}/value_objects.nim"
+    if isFileExists(targetPath): return 1
+    f = open(targetPath, fmWrite)
+    f.write("")
+
     # create repository dir
     targetPath = &"{getCurrentDir()}/app/repositories/{targetName}"
     if isDirExists(targetPath): return 1
@@ -127,7 +133,7 @@ proc new{targetCaptalized}Service*(repository:I{parentCapitalized}Repository):{t
     f = open(targetPath, fmWrite)
     for i in 0..textArr.len-2:
       f.writeLine(textArr[i])
-    message = &"Updated di_container.nim"
+    message = &"Updated {targetPath}"
     styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
 
   message = &"Created domain model in {getCurrentDir()}/app/core/models/{target}"

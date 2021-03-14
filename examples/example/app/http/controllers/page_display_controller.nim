@@ -74,11 +74,11 @@ proc vuetify*(request:Request, params:Params):Future[Response] {.async.} =
 
 
 proc customHeaders*(request:Request, params:Params):Future[Response] {.async.} =
-  var header = newHeaders()
-  header.set("Controller-Header-Key1", "Controller-Header-Val1")
-  header.set("Controller-Header-Key1", "Controller-Header-Val2")
-  header.set("Controller-Header-Key2", ["val1", "val2", "val3"])
-  header.set("setHeaderTest", "aaaa")
+  var header = newHttpHeaders()
+  header.add("Controller-Header-Key1", "Controller-Header-Val1")
+  header.add("Controller-Header-Key1", "Controller-Header-Val2")
+  header.add("Controller-Header-Key2", ["val1", "val2", "val3"])
+  header.add("setHeaderTest", "aaaa")
   return render("with header", header)
 
 proc presentDd*(request:Request, params:Params):Future[Response] {.async.} =

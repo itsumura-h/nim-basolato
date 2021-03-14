@@ -1,9 +1,8 @@
 import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
-style "scss", style1:
-  """
-.background{
+style "scss", style1:"""
+.className{
   height: 200px;
   width: 200px;
   background-color: red;
@@ -14,23 +13,22 @@ style "scss", style1:
 """
 proc component1():string = tmpli html"""
 $(style1)
-<div class="$(style1.get("background"))"></div>
+<div class="$(style1.get("className"))"></div>
 """
 
-style "css", style2:
-  """
-.background{
+style "css", style2:"""
+.className{
   height: 200px;
   width: 200px;
   background-color: blue;
 }
-.background:hover{
+.className:hover{
   background-color: green;
 }
 """
 proc component2():string = tmpli html"""
 $(style2)
-<div class="$(style2.get("background"))"></div>
+<div class="$(style2.get("className"))"></div>
 """
 
 proc impl():string = tmpli html"""
