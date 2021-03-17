@@ -327,21 +327,25 @@ func hasKey*(self:Cookie, name:string):bool =
   else:
     return false
 
-proc set*(self:var Cookie, name, value: string, expire:DateTime,
-      sameSite: SameSite=Lax, secure = false, httpOnly = false, domain = "",
+proc add*(self:var Cookie, name, value: string, expire:DateTime,
+      sameSite: SameSite=Lax, secure=false, httpOnly=true, domain="",
       path = "/") =
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(expire.utc, f)
+  when defined(release):
+    let secure = true
   self.cookies.add(
     newCookieData(name=name, value=value, expire=expireStr, sameSite=sameSite,
       secure=secure, httpOnly=httpOnly, domain=domain, path=path)
   )
 
-proc set*(self:var Cookie, name, value: string, sameSite: SameSite=Lax,
-      secure = false, httpOnly = false, domain = "", path = "/") =
+proc add*(self:var Cookie, name, value: string, sameSite: SameSite=Lax,
+      secure=false, httpOnly=true, domain="", path="/") =
   let expires = timeForward(SESSION_TIME, Minutes)
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(expires.utc, f)
+  when defined(release):
+    let secure = true
   self.cookies.add(
     newCookieData(name=name, value=value, expire=expireStr, sameSite=sameSite,
       secure=secure, httpOnly=httpOnly, domain=domain, path=path)
@@ -353,11 +357,31 @@ proc updateExpire*(self:var Cookie, name:string, num:int,
   let expireStr = format(timeForward(num, timeUnit).utc, f)
   if self.request.headers.hasKey("Cookie"):
     let cookiesStrArr = self.request.headers["Cookie"].split("; ")
+
+    var
+      value:string
+      httpOnly:bool
+      secure:bool
+      domain:string
+      path = path
     for i, row in cookiesStrArr:
       let rowArr = row.split("=")
       if rowArr[0] == name:
-        self.cookies.add(newCookieData(rowArr[0], rowArr[1], expire=expireStr))
-        break
+        value = rowArr[1]
+      elif rowArr[0].toLowerAscii == "httponly":
+        httpOnly = true
+      elif rowArr[0].toLowerAscii == "secure":
+        secure = true
+      elif rowArr[0].toLowerAscii == "domain":
+        domain = rowArr[1]
+      elif rowArr[0].toLowerAscii == "path":
+        path = rowArr[1]
+
+    self.cookies.add(
+      newCookieData(name, value, expire=expireStr, secure=secure,
+        httpOnly=httpOnly, domain=domain, path=path)
+    )
+
 
 proc updateExpire*(self:var Cookie, num:int, time:TimeUnit) =
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
@@ -376,14 +400,14 @@ proc delete*(self:var Cookie, key:string, path="/") =
     newCookieData(name=key, value="", expire=timeForward(-1, Days), path=path)
   )
 
-proc destroy*(self:var Cookie, path="/") =
-  if self.request.headers.hasKey("Cookie"):
-    let cookiesStrArr = self.request.headers["Cookie"].split("; ")
-    for row in cookiesStrArr:
-      let name = row.split("=")[0]
-      self.cookies.add(
-        newCookieData(name=name, value="", expire=timeForward(-1, Days), path=path)
-      )
+# proc destroy*(self:var Cookie, path="/") =
+#   if self.request.headers.hasKey("Cookie"):
+#     let cookiesStrArr = self.request.headers["Cookie"].split("; ")
+#     for row in cookiesStrArr:
+#       let name = row.split("=")[0]
+#       self.cookies.add(
+#         newCookieData(name=name, value="", expire=timeForward(-1, Days), path=path)
+#       )
 
 
 # ========== Auth ====================

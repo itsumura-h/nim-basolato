@@ -1,4 +1,4 @@
-FROM nimlang/nim:1.4.2-alpine
+FROM nimlang/nim:1.4.4-alpine
 
 RUN echo http://dl-cdn.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories
 RUN apk update && \

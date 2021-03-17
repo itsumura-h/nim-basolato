@@ -20,10 +20,10 @@ proc impl(auth:Auth):string = tmpli html"""
   <input type="text" name="key" placeholder="key">
   <button type="submit">delete</button>
 </form>
-<form method="post" action="/sample/cookie/delete-all">
+<!-- <form method="post" action="/sample/cookie/delete-all">
   $(csrfToken())
   <button type="submit">delete all</button>
-</form>
+</form> -->
 
 <div id="display"></div>
 <script>

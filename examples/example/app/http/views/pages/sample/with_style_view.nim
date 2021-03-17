@@ -1,14 +1,14 @@
 import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
-style "scss", style1:"""
+style "css", style1:"""
 .className{
   height: 200px;
   width: 200px;
   background-color: red;
-  &:hover{
-    background-color: blue;
-  }
+}
+.className:hover{
+  background-color: blue;
 }
 """
 proc component1():string = tmpli html"""

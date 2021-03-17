@@ -1,7 +1,7 @@
 import
   templates, json, random, tables, strformat, strutils, asyncdispatch, cgi, re
 export templates, asyncdispatch, re
-import core/security, core/utils
+import core/security, core/utils, core/request
 export security
 
 randomize()
@@ -24,17 +24,24 @@ func get*(val:JsonNode):string =
 func get*(val:string|TaintedString):string =
   return val.string.xmlEncode
 
-func old*(params:JsonNode, key:string):string =
+func old*(params:JsonNode, key:string, default=""):string =
   if params.hasKey(key):
     return params[key].get()
   else:
-    return ""
+    return default
 
-func old*(params:TableRef, key:string):string =
+func old*(params:TableRef, key:string, default=""):string =
   if params.hasKey(key):
     return params[key].xmlEncode
   else:
-    return ""
+    return default
+
+func old*(params:Params, key:string, default=""):string =
+  if params.hasKey(key):
+    return params.getStr(key).xmlEncode
+  else:
+    return default
+
 
 type Css* = ref object
   body:string

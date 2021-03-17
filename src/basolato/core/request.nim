@@ -52,10 +52,13 @@ type Param* = ref object
   ext:string
   value:string
 
+proc ext*(self:Param):string =
+  return self.ext
+
 type Params* = TableRef[string, Param]
 
 
-func `[]`(params:Params, key:string):Param =
+func `[]`*(params:Params, key:string):Param =
   return tables.`[]`(params, key)
 
 func getStr*(params:Params, key:string, default=""):string =
@@ -128,21 +131,21 @@ proc getJsonParams*(request:Request):Params =
 
 type MultiData* = OrderedTable[string, tuple[fields: StringTableRef, body: string]]
 
-template parseContentDisposition() =
-  var hCount = 0
-  while hCount < hValue.len()-1:
-    var key = ""
-    hCount += hValue.parseUntil(key, {';', '='}, hCount)
-    if hValue[hCount] == '=':
-      var value = hvalue.captureBetween('"', start = hCount)
-      hCount += value.len+2
-      inc(hCount) # Skip ;
-      hCount += hValue.skipWhitespace(hCount)
-      if key == "name": name = value
-      newPart[0][key] = value
-    else:
-      inc(hCount)
-      hCount += hValue.skipWhitespace(hCount)
+# template parseContentDisposition() =
+#   var hCount = 0
+#   while hCount < hValue.len()-1:
+#     var key = ""
+#     hCount += hValue.parseUntil(key, {';', '='}, hCount)
+#     if hValue[hCount] == '=':
+#       var value = hvalue.captureBetween('"', start = hCount)
+#       hCount += value.len+2
+#       inc(hCount) # Skip ;
+#       hCount += hValue.skipWhitespace(hCount)
+#       if key == "name": name = value
+#       newPart[0][key] = value
+#     else:
+#       inc(hCount)
+#       hCount += hValue.skipWhitespace(hCount)
 
 func parseMultiPart*(body: string, boundary: string): MultiData =
   result = initOrderedTable[string, tuple[fields: StringTableRef, body: string]]()
@@ -173,7 +176,22 @@ func parseMultiPart*(body: string, boundary: string): MultiData =
       var hValue = ""
       i += body.parseUntil(hValue, {'\c', '\L'}, i)
       if toLowerAscii(hName) == "content-disposition":
-        parseContentDisposition()
+        # parseContentDisposition()
+        block:
+          var hCount = 0
+          while hCount < hValue.len()-1:
+            var key = ""
+            hCount += hValue.parseUntil(key, {';', '='}, hCount)
+            if hValue[hCount] == '=':
+              var value = hvalue.captureBetween('"', start = hCount)
+              hCount += value.len+2
+              inc(hCount) # Skip ;
+              hCount += hValue.skipWhitespace(hCount)
+              if key == "name": name = value
+              newPart[0][key] = value
+            else:
+              inc(hCount)
+              hCount += hValue.skipWhitespace(hCount)
       newPart[0][hName] = hValue
       i += body.skip("\c\L", i) # Skip *one* \c\L
 
@@ -197,7 +215,7 @@ func parseMPFD*(contentType: string, body: string): MultiData =
   var boundary = contentType.substr(boundaryEqIndex, contentType.len()-1)
   return parseMultiPart(body, boundary)
 
-func getRequestParams*(request:Request):Params =
+proc getRequestParams*(request:Request):Params =
   var params = Params()
   if request.headers.hasKey("content-type"):
     let contentType = request.headers["content-type"].toString
@@ -211,18 +229,21 @@ func getRequestParams*(request:Request):Params =
             value: row.body
           )
         else:
-          params[key] = Param(
-            value: row.body
-          )
+          if params.hasKey(key):
+            params[key].value.add(", " & row.body)
+          else:
+            params[key] = Param(value: row.body)
     elif contentType.contains("application/x-www-form-urlencoded"):
       let rows = request.body.decodeUrl().split("&")
       for row in rows:
         let row = row.split("=")
-        params[row[0]] = Param(
-          value: row[1]
-        )
-    elif contentType.contains("application/json"):
-      params["json"] = Param(value: request.body)
+        if params.hasKey(row[0]):
+          params[row[0]].value.add(", " & row[1])
+        else:
+          params[row[0]] = Param(value: row[1])
+    # elif contentType.contains("application/json"):
+    #   echo "=== application/json"
+    #   params["json"] = Param(value: request.body)
   return params
 
 proc save*(params:Params, key, dir:string) =

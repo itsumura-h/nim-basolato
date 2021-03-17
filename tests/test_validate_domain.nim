@@ -1,0 +1,58 @@
+include ../src/basolato/core/validation
+
+const validDomains = [
+  "domain.com",
+  "domain.com",
+  "subdomain.domain.com",
+  "domain.com",
+  "domain.com",
+  "domain.com",
+  "domain.com",
+  "domain",
+  "ghiGHI789.comCOM012",
+  "ghi.com",
+  "example.com",
+  "example.com",
+  "example.com",
+  "example.com",
+  "example.com",
+  "example.com",
+  "domain.com",
+  "localhost",
+  "example.com",
+  "example.com",
+  "example.com",
+  "example.com",
+  "example.com",
+  "example.com",
+  "example.com",
+  "domain-one.com",
+  "domain.co.jp",
+  "localhost",
+  "a",
+  "0.a",
+  "a-a.com",
+  "0-a.com",
+  "a-0.com",
+  "a-a.a-a",
+  "[123.123.123.123]",
+  "[255.255.255.255]",
+  "[001.002.003.004]",
+  "[2001:0db8:bd05:01d2:288a:1fc0:0001:10ee]",
+  "[2001:db8:20:3:1000:100:20:3]",
+  "[2001:db8::1234:0:0:9abc]",
+  "[2001:db8::9abc]",
+  "[::ffff:255.255.255.255]",
+  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890.com",
+  "example.com",
+  "example.com",
+  "aaaaaaaa01.aaaaaaaa02.aaaaaaaa03.aaaaaaaa04.aaaaaaaa05.aaaaaaaa06.aaaaaaaa07.aaaaaaaa08.aaaaaaaa09.aaaaaaaa10.aaaaaaaa11.aaaaaaaa12.aaaaaaaa13.aaaaaaaa14.aaaaaaaa15.aaaaaaaa16.aaaaaaaa17.aaaaaaaa18.aaaaaaaa19.aaaaaaaa20.aaaaaaaa21.aaaaaaaa22.aaaaaaaa23",
+  "aaaaaaaa01.aaaaaaaa02.aaaaaaaa03.aaaaaaaa04.aaaaaaaa05.aaaaaaaa06.aaaaaaaa07.aaaaaaaa08.aaaaaaaa09.aaaaaaaa10.aaaaaaaa11.aaaaaaaa12.aaaaaaaa13.aaaaaaaa14.aaaaaaaa15.aaaaaaaa16.aaaaaaaa17.aaaaaaaa18.aaaaaaaa19.aaaaaaaa20.aaaaaaaa21.aaaaaaaa22.aaaaaaaa23.zz",
+  "aaaaaaaa01.aaaaaaaa02.aaaaaaaa03.aaaaaaaa04.aaaaaaaa05.aaaaaaaa06.aaaaaaaa07.aaaaaaaa08.aaaaaaaa09.aaaaaaaa10.aaaaaaaa11.aaaaaaaa12.aaaaaaaa13.aaaaaaaa14.aaaaaaaa15.aaaaaaaa16.aaaaaaaa17.aaaaaaaa18.aaaaaaaa19.aaaaaaaa20.com",
+  "aaaaaaaa01.aaaaaaaa02.aaaaaaaa03.aaaaaaaa04.aaaaaaaa05.aaaaaaaa06.aaaaaaaa07.aaaaaaaa08.aaaaaaaa09.aaaaaaaa10.aaaaaaaa11.aaaaaaaa12.aaaaaaaa13.aaaaaaaa14.aaaaaaaa15.aaaaaaaa16.aaaaaaaa17.aaaaaaaa18.aaaaaaaa19.aaaaaaaa20.com"
+]
+
+block:
+  let v = newValidation()
+  for validDomain in validDomains:
+    assert v.domain(validDomain)
