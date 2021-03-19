@@ -297,6 +297,7 @@ block:
   params["file"] = Param(value:"a".repeat(2000), ext:"jpg")
   let v = newRequestValidation(params)
   v.betweenNum("num", 1, 3)
+  v.betweenNum("num", 1.1, 3.3)
   v.betweenStr("str", 1, 3)
   v.betweenArr("arr", 1, 3)
   v.betweenFile("file", 1, 3)
@@ -336,3 +337,178 @@ block:
   v.boolean("a")
   check v.hasError
   check v.errors["a"][0] == "The a field must be true or false."
+
+echo "=== confirmed"
+block:
+  let v = newValidation()
+  check v.confirmed("a", "a")
+  check v.confirmed("a", "b") == false
+
+block:
+  let params = Params()
+  params["password"] = Param(value:"valid")
+  params["password_confirmation"] = Param(value:"valid")
+  var v = newRequestValidation(params)
+  v.confirmed("password")
+  check v.hasError == false
+  params["password_confirmation"] = Param(value:"invalid")
+  v = newRequestValidation(params)
+  v.confirmed("password")
+  check v.hasError
+  check v.errors["password"][0] == "The password confirmation does not match."
+
+echo "=== date"
+block:
+  let v = newValidation()
+  check v.date("2020-01-01", "yyyy-MM-dd")
+  check v.date("aaa", "yyyy-MM-dd") == false
+  check v.date("1577804400")
+  check v.date($high(int))
+  check v.date("aaa") == false
+  check v.date($high(uint64)) == false
+
+block:
+  let params = Params()
+  params["valid"] = Param(value:"2020-01-01")
+  params["invalid"] = Param(value:"aaa")
+  params["validtimestamp"] = Param(value:"1577804400")
+  params["negative"] = Param(value:"-1")
+  params["invalidtimestamp"] = Param(value:"18446744073709551615")
+  let v = newRequestValidation(params)
+  v.date("valid", "yyyy-MM-dd")
+  v.date("validtimestamp")
+  check v.hasError == false
+  v.date("invalid", "yyyy-MM-dd")
+  v.date("negative")
+  v.date("invalidtimestamp")
+  check v.hasError
+  check v.errors["invalid"][0] == "The invalid is not a valid date."
+  check v.errors["negative"][0] == "The negative is not a valid date."
+  check v.errors["invalidtimestamp"][0] == "The invalidtimestamp is not a valid date."
+
+echo "=== date_equals"
+block:
+  let v = newValidation()
+  check v.dateEquals("2020-01-01", "yyyy-MM-dd", "2020-01-01".parse("yyyy-MM-dd"))
+  check v.dateEquals("a", "a", "2020-01-01".parse("yyyy-MM-dd")) == false
+  check v.dateEquals("1577880000", "2020-01-01".parse("yyyy-MM-dd"))
+  check v.dateEquals("1577980000", "2020-01-01".parse("yyyy-MM-dd")) == false
+
+block:
+  let params = Params()
+  params["valid_date"] = Param(value:"2020-01-01")
+  params["invalid_date"] = Param(value:"a")
+  params["valid_timestamp"] = Param(value:"1577880000")
+  params["invalid_timestamp"] = Param(value:"1577980000")
+  let v = newRequestValidation(params)
+  v.dateEquals("valid_date", "yyyy-MM-dd", "2020-01-01".parse("yyyy-MM-dd"))
+  v.dateEquals("valid_timestamp", "2020-01-01".parse("yyyy-MM-dd"))
+  check v.hasError == false
+  v.dateEquals("invalid_date", "yyyy-MM-dd", "2020-01-01".parse("yyyy-MM-dd"))
+  v.dateEquals("invalid_timestamp", "2020-01-01".parse("yyyy-MM-dd"))
+  check v.hasError
+  check v.errors["invalid_date"][0] == "The invalid_date must be a date equal to 2020-01-01."
+  check v.errors["invalid_timestamp"][0] == "The invalid_timestamp must be a date equal to 2020-01-01."
+
+echo "=== different"
+block:
+  let v = newValidation()
+  check v.different("a", "b")
+  check v.different("a", "a") == false
+
+block:
+  let params = Params()
+  params["base"] = Param(value:"a")
+  params["valid"] = Param(value:"b")
+  params["invalid"] = Param(value:"a")
+  let v = newRequestValidation(params)
+  v.different("base", "valid")
+  check v.hasError == false
+  v.different("base", "invalid")
+  check v.hasError
+  check v.errors["base"][0] == "The base and invalid must be different."
+
+echo "=== digits"
+block:
+  let v = newValidation()
+  check v.digits(11, 2)
+  check v.digits(111, 2) == false
+
+block:
+  let params = Params()
+  params["valid"] = Param(value:"11")
+  params["invalid"] = Param(value:"111")
+  let v = newRequestValidation(params)
+  v.digits("valid", 2)
+  check v.hasError == false
+  v.digits("invalid", 2)
+  check v.hasError
+  check v.errors["invalid"][0] == "The invalid must be 2 digits."
+
+echo "=== digits_between"
+block:
+  let v = newValidation()
+  check v.digits_between(11, 1, 3)
+  check v.digits_between(111, 4, 5) == false
+
+block:
+  let params = Params()
+  params["valid"] = Param(value:"11")
+  params["invalid"] = Param(value:"111")
+  let v = newRequestValidation(params)
+  v.digits_between("valid", 1, 3)
+  check v.hasError == false
+  v.digits_between("invalid", 4, 5)
+  check v.hasError
+  check v.errors["invalid"][0] == "The invalid must be between 4 and 5 digits."
+
+echo "=== distinct"
+block:
+  let v = newValidation()
+  check v.distinctArr(@["a", "b", "c"])
+  check v.distinctArr(@["a", "b", "b"]) == false
+
+block:
+  let params = Params()
+  params["valid"] = Param(value:"a, b, c")
+  params["invalid"] = Param(value:"a, b, b")
+  let v = newRequestValidation(params)
+  v.distinctArr("valid")
+  check v.hasError == false
+  v.distinctArr("invalid")
+  check v.hasError
+  check v.errors["invalid"][0] == "The invalid field has a duplicate value."
+
+echo "=== domain"
+block:
+  let v = newValidation()
+  check v.domain("aaa.co.jp")
+  check not v.domain("#%&'/=~`*+?{}^$-|.com")
+
+block:
+  let params = Params()
+  params["valid"] = Param(value:"aaa.co.jp")
+  params["invalid"] = Param(value:"#%&'/=~`*+?{}^$-|.com")
+  let v = newRequestValidation(params)
+  v.domain("valid")
+  check v.hasError == false
+  v.domain("invalid")
+  check v.hasError
+  check v.errors["invalid"][0] == "The invalid must be a valid domain."
+
+echo "=== email"
+block:
+  let v = newValidation()
+  check v.email("email@domain.com")
+  check not v.email("Abc.@example.com")
+
+block:
+  let params = Params()
+  params["valid"] = Param(value:"email@domain.com")
+  params["invalid"] = Param(value:"Abc.@example.com")
+  let v = newRequestValidation(params)
+  v.email("valid")
+  check v.hasError == false
+  v.email("invalid")
+  check v.hasError
+  check v.errors["invalid"][0] == "The invalid must be a valid email address."

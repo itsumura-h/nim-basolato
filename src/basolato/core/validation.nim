@@ -80,35 +80,35 @@ proc beforeOrEqual*(self:Validation, a, b:DateTime):bool =
   return beforeOrEqual(a, b)
 
 
-proc between*(value, min, max:int|float):bool =
+proc between(value, min, max:int|float):bool =
   return min.float <= value.float and value.float <= max.float
 
 proc between*(self:Validation, value, min, max:int|float):bool =
   return between(value, min, max)
 
 
-proc between*(value:string, min, max:int):bool =
+proc between(value:string, min, max:int):bool =
   return min <= value.runeLen and value.runeLen <= max
 
 proc between*(self:Validation, value:string, min, max:int):bool =
   return between(value, min, max)
 
 
-proc between*(value:openArray[string], min, max:int):bool =
+proc between(value:openArray[string], min, max:int):bool =
   return min <= value.len and value.len <= max
 
 proc between*(self:Validation, value:openArray[string], min, max:int):bool =
   return between(value, min, max)
 
 
-proc betweenFile*(value:string, min, max:int):bool =
+proc betweenFile(value:string, min, max:int):bool =
   return min*1024 <= value.len and value.len <= max*1024
 
 proc betweenFile*(self:Validation, value:string, min, max:int):bool =
   return betweenFile(value, min, max)
 
 
-proc boolean*(value:string):bool =
+proc boolean(value:string):bool =
   try:
     discard value.parseBool
     return true
@@ -119,16 +119,106 @@ proc boolean*(self:Validation, value:string):bool =
   return boolean(value)
 
 
+proc confirmed(a,b:string):bool =
+  return a == b
+
+proc confirmed*(self:Validation, a,b:string):bool =
+  return a == b
+
+
+proc date(value, format:string):bool =
+  try:
+    discard value.parse(format)
+    return true
+  except:
+    return false
+
+proc date*(self:Validation, value, format:string):bool =
+  return date(value, format)
+
+
+proc date(value:string):bool =
+  try:
+    if value[0] == '-':
+      raise newException(Exception, "")
+    discard value.parseBiggestUInt.int.fromUnix
+    return true
+  except:
+    return false
+
+proc date*(self:Validation, value:string):bool =
+  return date(value)
+
+
+proc dateEquals(value, format:string, target:DateTime):bool =
+  try:
+    let valDt = value.parse(format)
+    return valDt.month == target.month and valDt.monthday == target.monthday
+  except:
+    return false
+
+proc dateEquals*(self:Validation, value, format:string, target:DateTime):bool =
+  return dateEquals(value, format, target)
+
+proc dateEquals(value:string, target:DateTime):bool =
+  try:
+    if value[0] == '-':
+      raise newException(Exception, "")
+    let valDt = value.parseBiggestUInt.int.fromUnix.utc
+    return valDt.month == target.month and valDt.monthday == target.monthday
+  except:
+    return false
+
+proc dateEquals*(self:Validation, value:string, target:DateTime):bool =
+  return dateEquals(value, target)
+
+
+proc different(a,b:string):bool =
+  return a != b
+
+proc different*(self:Validation, a, b:string):bool =
+  return different(a, b)
+
+
+proc digits(value:SomeInteger, digit:int):bool =
+  return value.`$`.runeLen == digit
+
+proc digits*(self:Validation, value:SomeInteger, digit:int):bool =
+  return digits(value, digit)
+
+
+proc digits_between(value:SomeInteger, min, max:int):bool =
+  let length = value.`$`.runeLen
+  return min <= length and length <= max
+
+proc digits_between*(self:Validation, value:SomeInteger, min, max:int):bool =
+  return digits_between(value, min, max)
+
+
+proc distinctArr(values:openArray[string]):bool =
+  var tmp = newSeq[string](values.len)
+  for i, row in values:
+    if tmp.contains(row):
+      return false
+    else:
+      tmp[i] = row
+  return true
+
+proc distinctArr*(self:Validation, values:openArray[string]):bool =
+  return distinctArr(values)
+
+
 proc domain(value:string):bool =
   try:
     block:
-      let fqdn = re"^(([a-z0-9]{1,2}|[a-z0-9][a-z0-9-]{0,61}[a-z0-9])\.)*([a-z0-9]{1,2}|[a-z0-9][a-z0-9-]{0,61}?[a-z0-9])$"
+      # let fqdn = re"^(([a-z0-9]{1,2}|[a-z0-9][a-z0-9-]{0,61}[a-z0-9])\.)*([a-z0-9]{1,2}|[a-z0-9][a-z0-9-]{0,61}?[a-z0-9])$"
+      let fqdn = re"^(([a-zA-Z0-9]{1,2}|[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9])\.)*([a-zA-Z0-9]{1,2}|[a-zA-Z0-9][a-zA-Z0-9-]{0,61}?[a-zA-Z0-9])$"
       let addr4 = re"(([01]?[0-9]{1,2}|2(?:[0-4]?[0-9]|5[0-5]))\.){3}([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))"
       let addr4Start = re"^(([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))\.){3}([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))$"
       if value.len == 0 or value.len > 255:
         raise newException(Exception, "domain part is missing")
       if not value.startsWith("["):
-        if value.match(addr4) and not value.match(fqdn):
+        if not (not value.match(addr4) and value.match(fqdn)):
           raise newException(Exception, "invalid domain format")
         elif value.find(re"\.[0-9]$|^[0-9]+$") > -1:
           raise newException(Exception, "the last label of domain should not number")
@@ -187,6 +277,64 @@ proc domain(value:string):bool =
 
 proc domain*(self:Validation, value:string):bool =
   return domain(value)
+
+
+proc email(value:string):bool =
+  var value = value
+  try:
+    let valid = "abcdefghijklmnopqrstuvwxyz1234567890!#$%&\'*+-/=?^_`{}|~"
+    if value.len == 0:
+      raise newException(Exception, "email is empty")
+    value = value.toLowerAscii()
+    if not value.contains("@"):
+      raise newException(Exception, "email should have '@'")
+    var i:int
+    if value.startsWith("\""):
+      i = 1
+      while i < min(64, value.len):
+        if (valid & "()<>[]:;@,. ").contains(value[i]):
+          i.inc()
+          continue
+        if $value[i] == "\\":
+          if value[i+1..^1].len > 0 and (valid & """()<>[]:;@,.\\" """).contains($value[i+1]):
+            i.inc(2)
+            continue
+          raise newException(Exception, "invalid email format")
+        if value[i] == '"':
+          break
+      if i == 64:
+        i.dec()
+      if not (value[i+1..^1].len > 0 and $value[i+1] == "@"):
+        raise newException(Exception, "invalid email local-part")
+      return domain(value[i+2..^1])
+    else:
+      i = 0
+      while i < min(64, value.len):
+        if valid.contains(value[i]):
+          i.inc()
+          continue
+        if $value[i] == ".":
+          if i == 0 or value[i+1..^1].len == 0 or ".@".contains(value[i+1]):
+            raise newException(Exception, "invalid email local-part")
+          i.inc()
+          continue
+        if $value[i] == "@":
+          if i == 0:
+            raise newException(Exception, "email has no local-part")
+          i.dec()
+          break
+        raise newException(Exception, "email includes invalid char")
+      if i == 64:
+        i.dec
+      if not (value[i+1..^1].len > 0 and "@".contains(value[i+1])):
+        raise newException(Exception, "email local-part should be shorter than 64")
+      return domain(value[i+2..^1])
+  except:
+    return false
+  return true
+
+proc email*(self:Validation, value:string):bool =
+  return email(value)
 
 # func digits(value:string, digit:int):seq[string] =
 #   var r = newSeq[string]()

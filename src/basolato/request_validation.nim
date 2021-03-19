@@ -26,11 +26,9 @@ let baseMessages = %*{
   "confirmed": "The :attribute confirmation does not match.",
   "date": "The :attribute is not a valid date.",
   "date_equals": "The :attribute must be a date equal to :date.",
-  "date_format": "The :attribute does not match the format :format.",
   "different": "The :attribute and :other must be different.",
   "digits": "The :attribute must be :digits digits.",
   "digits_between": "The :attribute must be between :min and :max digits.",
-  "dimensions": "The :attribute has invalid image dimensions.",
   "distinct": "The :attribute field has a duplicate value.",
   "domain": "The :attribute must be a valid domain.",
   "email": "The :attribute must be a valid email address.",
@@ -111,6 +109,14 @@ let baseMessages = %*{
   "url": "The :attribute format is invalid.",
   "uuid": "The :attribute must be a valid UUID.",
 }
+discard """
+Laravel validation impl
+http://github.com/illuminate/validation/blob/master/Concerns/ValidatesAttributes.php
+
+changed item in message
+delete: active_url, bail, date_format, dimensions
+add: domain
+"""
 
 when defined(testing):
   let messages = baseMessages
@@ -263,7 +269,7 @@ proc beforeOrEqual*(self:RequestValidation, base:string, target:DateTime, format
         .replace(":date", $target)
       self.add(base, message)
 
-proc betweenNum*(self:RequestValidation, key:string, min, max:int) =
+proc betweenNum*(self:RequestValidation, key:string, min, max:int|float) =
   if self.params.hasKey(key):
     try:
       let value = self.params.getFloat(key)
@@ -320,11 +326,100 @@ proc boolean*(self:RequestValidation, key:string) =
         .replace(":attribute", key)
       self.add(key, message)
 
+proc confirmed*(self:RequestValidation, key:string, saffix="_confirmation") =
+  if self.params.hasKey(key) and self.params.hasKey(key & saffix):
+    let a = self.params.getStr(key)
+    let b = self.params.getStr(key & saffix)
+    if not confirmed(a, b):
+      let message = messages["confirmed"].getStr
+        .replace(":attribute", key)
+      self.add(key, message)
+
+proc date*(self:RequestValidation, key, format:string) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not date(value, format):
+      let message = messages["date"].getStr
+        .replace(":attribute", key)
+      self.add(key, message)
+
+proc date*(self:RequestValidation, key:string) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not date(value):
+      let message = messages["date"].getStr
+        .replace(":attribute", key)
+      self.add(key, message)
+
+proc dateEquals*(self:RequestValidation, key, format:string, target:DateTime) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not dateEquals(value, format, target):
+      let message = messages["date_equals"].getStr
+        .replace(":attribute", key)
+        .replace(":date", target.format("yyyy-MM-dd"))
+      self.add(key, message)
+
+proc dateEquals*(self:RequestValidation, key:string, target:DateTime) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not dateEquals(value, target):
+      let message = messages["date_equals"].getStr
+        .replace(":attribute", key)
+        .replace(":date", target.format("yyyy-MM-dd"))
+      self.add(key, message)
+
+proc different*(self:RequestValidation, key, target:string) =
+  if self.params.hasKey(key) and self.params.hasKey(target):
+    let a = self.params.getStr(key)
+    let b = self.params.getStr(target)
+    if not different(a, b):
+      let message = messages["different"].getStr
+        .replace(":attribute", key)
+        .replace(":other", target)
+      self.add(key, message)
+
+proc digits*(self:RequestValidation, key:string, digit:int) =
+  if self.params.hasKey(key):
+    let value = self.params.getInt(key)
+    if not digits(value, digit):
+      let message = messages["digits"].getStr
+        .replace(":attribute", key)
+        .replace(":digits", $digit)
+      self.add(key, message)
+
+proc digits_between*(self:RequestValidation, key:string, min, max:int) =
+  if self.params.hasKey(key):
+    let value = self.params.getInt(key)
+    if not digits_between(value, min, max):
+      let message = messages["digits_between"].getStr
+        .replace(":attribute", key)
+        .replace(":min", $min)
+        .replace(":max", $max)
+      self.add(key, message)
+
+proc distinctArr*(self:RequestValidation, key:string) =
+  if self.params.hasKey(key):
+    let values = self.params.getStr(key).split(", ")
+    if not distinctArr(values):
+      let message = messages["distinct"].getStr
+        .replace(":attribute", key)
+      self.add(key, message)
 
 proc domain*(self:RequestValidation, key:string) =
   if self.params.hasKey(key):
-    if not self.params.getStr(key).domain():
-      let message = messages["domain"].getStr.replace(":attribute", key)
+    let value = self.params.getStr(key)
+    if not domain(value):
+      let message = messages["domain"].getStr
+        .replace(":attribute", key)
+      self.add(key, message)
+
+proc email*(self:RequestValidation, key:string) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not email(value):
+      let message = messages["email"].getStr
+        .replace(":attribute", key)
       self.add(key, message)
 
 # func contains*(self: var RequestValidation, key: string, val: string) =
