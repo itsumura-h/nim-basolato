@@ -1,10 +1,15 @@
-import asynchttpserver, os, json, re, tables, strformat, strutils, unicode
-# from ./core/core import Request, params
-import core/baseEnv
+import
+  asynchttpserver,
+  os,
+  json,
+  re,
+  tables,
+  strformat,
+  strutils,
+  unicode
 include core/validation
 import core/request
 import core/logger
-import allographer/query_builder
 
 let baseMessages = %*{
   "accepted": "The :attribute must be accepted.",
@@ -33,7 +38,6 @@ let baseMessages = %*{
   "domain": "The :attribute must be a valid domain.",
   "email": "The :attribute must be a valid email address.",
   "ends_with": "The :attribute must be end with one of following :values.",
-  "exists": "The selected :attribute is invalid.",
   "file": "The :attribute must be a file.",
   "filled": "The :attribute field must have a value.",
   "gt": {
@@ -52,9 +56,6 @@ let baseMessages = %*{
   "in": "The selected :attribute is invalid.",
   "in_array": "The :attribute field does not exist in :other.",
   "integer": "The :attribute must be an integer.",
-  "ip": "The :attribute must be a valid IP address.",
-  "ipv4": "The :attribute must be a valid IPv4 address.",
-  "ipv6": "The :attribute must be a valid IPv6 address.",
   "json": "The :attribute must be a valid JSON string.",
   "lt": {
     "numeric": "The :attribute must be less than :value.",
@@ -75,7 +76,6 @@ let baseMessages = %*{
     "array": "The :attribute may not have more than :max items.",
   },
   "mimes": "The :attribute must be a file of type: :values.",
-  "mimetypes": "The :attribute must be a file of type: :values.",
   "min": {
     "numeric": "The :attribute must be at least :min.",
     "file": "The :attribute must be at least :min kilobytes.",
@@ -102,10 +102,6 @@ let baseMessages = %*{
     "array": "The :attribute must contain :size items.",
   },
   "starts_with": "The :attribute must be start with one of following :values.",
-  "string": "The :attribute must be a string.",
-  "timezone": "The :attribute must be a valid zone.",
-  "unique": "The :attribute has already been taken.",
-  "uploaded": "The :attribute failed to upload.",
   "url": "The :attribute format is invalid.",
   "uuid": "The :attribute must be a valid UUID.",
 }
@@ -113,8 +109,12 @@ discard """
 Laravel validation impl
 http://github.com/illuminate/validation/blob/master/Concerns/ValidatesAttributes.php
 
+Laravel validation message difinition
+https://github.com/laravel/laravel/blob/7.x/resources/lang/en/validation.php
+
 changed item in message
-delete: active_url, bail, date_format, dimensions
+delete: active_url, bail, date_format, dimensions, exclude_if, exclude_unless, 
+  exists, ip, ipv4, ipv6, mimetypes, string, timezone, unique, uploaded
 add: domain
 """
 
@@ -295,7 +295,7 @@ proc betweenStr*(self:RequestValidation, key:string, min, max:int) =
 proc betweenArr*(self:RequestValidation, key:string, min, max:int) =
   if self.params.hasKey(key):
     try:
-      let value = self.params.getStr(key).split(", ")
+      let value = self.params.getStr(key).split(",")
       if not between(value, min, max):
         let message = messages["between"]["array"].getStr
           .replace(":attribute", key)
@@ -330,7 +330,7 @@ proc confirmed*(self:RequestValidation, key:string, saffix="_confirmation") =
   if self.params.hasKey(key) and self.params.hasKey(key & saffix):
     let a = self.params.getStr(key)
     let b = self.params.getStr(key & saffix)
-    if not confirmed(a, b):
+    if not same(a, b):
       let message = messages["confirmed"].getStr
         .replace(":attribute", key)
       self.add(key, message)
@@ -400,7 +400,7 @@ proc digits_between*(self:RequestValidation, key:string, min, max:int) =
 
 proc distinctArr*(self:RequestValidation, key:string) =
   if self.params.hasKey(key):
-    let values = self.params.getStr(key).split(", ")
+    let values = self.params.getStr(key).split(",")
     if not distinctArr(values):
       let message = messages["distinct"].getStr
         .replace(":attribute", key)
@@ -422,147 +422,521 @@ proc email*(self:RequestValidation, key:string) =
         .replace(":attribute", key)
       self.add(key, message)
 
-# func contains*(self: var RequestValidation, key: string, val: string) =
-#   if self.params.hasKey(key):
-#     if not self.params.getStr(key).contains(val):
-#       self.putValidate(key, &"{key} should contain {val}")
+proc endsWith*(self:RequestValidation, key, expect:string) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not endsWith(value, expect):
+      let message = messages["ends_with"].getStr
+        .replace(":attribute", key)
+        .replace(":values", expect)
+      self.add(key, message)
+
+proc file*(self:RequestValidation, key:string) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    let ext = self.params[key].ext
+    if not file(value, ext):
+      let message = messages["file"].getStr
+        .replace(":attribute", key)
+      self.add(key, message)
+
+proc filled*(self:RequestValidation, key:string) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not filled(value):
+      let message = messages["filled"].getStr
+        .replace(":attribute", key)
+      self.add(key, message)
+
+proc gtNum*(self:RequestValidation, key, target:string) =
+  if self.params.hasKey(key) and self.params.hasKey(target):
+    let a = self.params.getStr(key).parseBiggestInt
+    let b = self.params.getStr(target).parseBiggestInt
+    if not gt(a, b):
+      let message = messages["gt"]["numeric"].getStr
+        .replace(":attribute", key)
+        .replace(":value", target)
+      self.add(key, message)
+
+proc gtFile*(self:RequestValidation, key, target:string) =
+  try:
+    if self.params.hasKey(key) and self.params.hasKey(target):
+      let a = self.params.getStr(key)
+      let b = self.params.getStr(target)
+      if not gt(a, b):
+        let message = messages["gt"]["file"].getStr
+          .replace(":attribute", key)
+          .replace(":value", $(b.len / 1024))
+        self.add(key, message)
+  except:
+    echoErrorMsg( getCurrentExceptionMsg() )
+
+proc gtStr*(self:RequestValidation, key, target:string) =
+  if self.params.hasKey(key) and self.params.hasKey(target):
+    let a = self.params.getStr(key)
+    let b = self.params.getStr(target)
+    if not gt(a, b):
+      let message = messages["gt"]["string"].getStr
+        .replace(":attribute", key)
+        .replace(":value", target)
+      self.add(key, message)
+
+proc gtArr*(self:RequestValidation, key, target:string) =
+  if self.params.hasKey(key) and self.params.hasKey(target):
+    let a = self.params.getStr(key).split(",")
+    let b = self.params.getStr(target).split(",")
+    if not gt(a, b):
+      let message = messages["gt"]["array"].getStr
+        .replace(":attribute", key)
+        .replace(":value", target)
+      self.add(key, message)
+
+proc gteNum*(self:RequestValidation, key, target:string) =
+  if self.params.hasKey(key) and self.params.hasKey(target):
+    let a = self.params.getStr(key).parseBiggestInt
+    let b = self.params.getStr(target).parseBiggestInt
+    if not gte(a, b):
+      let message = messages["gte"]["numeric"].getStr
+        .replace(":attribute", key)
+        .replace(":value", target)
+      self.add(key, message)
+
+proc gteFile*(self:RequestValidation, key, target:string) =
+  try:
+    if self.params.hasKey(key) and self.params.hasKey(target):
+      let a = self.params.getStr(key)
+      let b = self.params.getStr(target)
+      if not gte(a, b):
+        let message = messages["gte"]["file"].getStr
+          .replace(":attribute", key)
+          .replace(":value", $(b.len div 1024))
+        self.add(key, message)
+  except:
+    echoErrorMsg( getCurrentExceptionMsg() )
+
+proc gteStr*(self:RequestValidation, key, target:string) =
+  if self.params.hasKey(key) and self.params.hasKey(target):
+    let a = self.params.getStr(key)
+    let b = self.params.getStr(target)
+    if not gte(a, b):
+      let message = messages["gte"]["string"].getStr
+        .replace(":attribute", key)
+        .replace(":value", target)
+      self.add(key, message)
+
+proc gteArr*(self:RequestValidation, key, target:string) =
+  if self.params.hasKey(key) and self.params.hasKey(target):
+    let a = self.params.getStr(key).split(",")
+    let b = self.params.getStr(target).split(",")
+    if not gte(a, b):
+      let message = messages["gte"]["array"].getStr
+        .replace(":attribute", key)
+        .replace(":value", target)
+      self.add(key, message)
+
+proc image*(self:RequestValidation, key:string) =
+  if self.params.hasKey(key):
+    let ext = self.params[key].ext
+    if not image(ext):
+      let message = messages["image"].getStr
+        .replace(":attribute", key)
+      self.add(key, message)
+
+proc `in`*(self:RequestValidation, key:string, list:openArray[string]) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not `in`(value, list):
+      let message = messages["in"].getStr
+        .replace(":attribute", key)
+      self.add(key, message)
+
+proc inArray*(self:RequestValidation, key, target:string) =
+  if self.params.hasKey(key) and self.params.hasKey(target):
+    let value = self.params.getStr(key)
+    let list = self.params.getStr(target).split(",")
+    if not `in`(value, list):
+      let message = messages["in_array"].getStr
+        .replace(":attribute", key)
+        .replace(":other", target)
+      self.add(key, message)
+
+proc integer*(self:RequestValidation, key:string) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not integer(value):
+      let message = messages["integer"].getStr
+        .replace(":attribute", key)
+      self.add(key, message)
+
+proc json*(self:RequestValidation, key:string) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not json(value):
+      let message = messages["json"].getStr
+        .replace(":attribute", key)
+      self.add(key, message)
+
+proc ltNum*(self:RequestValidation, key, target:string) =
+  if self.params.hasKey(key) and self.params.hasKey(target):
+    let a = self.params.getStr(key).parseBiggestInt
+    let b = self.params.getStr(target).parseBiggestInt
+    if not lt(a, b):
+      let message = messages["lt"]["numeric"].getStr
+        .replace(":attribute", key)
+        .replace(":value", target)
+      self.add(key, message)
+
+proc ltFile*(self:RequestValidation, key, target:string) =
+  try:
+    if self.params.hasKey(key) and self.params.hasKey(target):
+      let a = self.params.getStr(key)
+      let b = self.params.getStr(target)
+      if not lt(a, b):
+        let message = messages["lt"]["file"].getStr
+          .replace(":attribute", key)
+          .replace(":value", $(b.len / 1024))
+        self.add(key, message)
+  except:
+    echoErrorMsg( getCurrentExceptionMsg() )
+
+proc ltStr*(self:RequestValidation, key, target:string) =
+  if self.params.hasKey(key) and self.params.hasKey(target):
+    let a = self.params.getStr(key)
+    let b = self.params.getStr(target)
+    if not lt(a, b):
+      let message = messages["lt"]["string"].getStr
+        .replace(":attribute", key)
+        .replace(":value", target)
+      self.add(key, message)
+
+proc ltArr*(self:RequestValidation, key, target:string) =
+  if self.params.hasKey(key) and self.params.hasKey(target):
+    let a = self.params.getStr(key).split(",")
+    let b = self.params.getStr(target).split(",")
+    if not lt(a, b):
+      let message = messages["lt"]["array"].getStr
+        .replace(":attribute", key)
+        .replace(":value", target)
+      self.add(key, message)
+
+proc lteNum*(self:RequestValidation, key, target:string) =
+  if self.params.hasKey(key) and self.params.hasKey(target):
+    let a = self.params.getStr(key).parseBiggestInt
+    let b = self.params.getStr(target).parseBiggestInt
+    if not lte(a, b):
+      let message = messages["lte"]["numeric"].getStr
+        .replace(":attribute", key)
+        .replace(":value", target)
+      self.add(key, message)
+
+proc lteFile*(self:RequestValidation, key, target:string) =
+  try:
+    if self.params.hasKey(key) and self.params.hasKey(target):
+      let a = self.params.getStr(key)
+      let b = self.params.getStr(target)
+      if not lte(a, b):
+        let message = messages["lte"]["file"].getStr
+          .replace(":attribute", key)
+          .replace(":value", $(b.len div 1024))
+        self.add(key, message)
+  except:
+    echoErrorMsg( getCurrentExceptionMsg() )
+
+proc lteStr*(self:RequestValidation, key, target:string) =
+  if self.params.hasKey(key) and self.params.hasKey(target):
+    let a = self.params.getStr(key)
+    let b = self.params.getStr(target)
+    if not lte(a, b):
+      let message = messages["lte"]["string"].getStr
+        .replace(":attribute", key)
+        .replace(":value", target)
+      self.add(key, message)
+
+proc lteArr*(self:RequestValidation, key, target:string) =
+  if self.params.hasKey(key) and self.params.hasKey(target):
+    let a = self.params.getStr(key).split(",")
+    let b = self.params.getStr(target).split(",")
+    if not lte(a, b):
+      let message = messages["lte"]["array"].getStr
+        .replace(":attribute", key)
+        .replace(":value", target)
+      self.add(key, message)
+
+proc maxNum*(self:RequestValidation, key:string, maximum:int) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key).parseBiggestInt
+    if not maxValidate(value, maximum):
+      let message = messages["max"]["numeric"].getStr
+        .replace(":attribute", key)
+        .replace(":max", $maximum)
+      self.add(key, message)
+
+proc maxFile*(self:RequestValidation, key:string, maximum:int) =
+  try:
+    if self.params.hasKey(key):
+      let value = self.params.getStr(key)
+      if not maxFileValidate(value, maximum):
+        let message = messages["max"]["file"].getStr
+          .replace(":attribute", key)
+          .replace(":max", $maximum)
+        self.add(key, message)
+  except:
+    echoErrorMsg( getCurrentExceptionMsg() )
+
+proc maxStr*(self:RequestValidation, key:string, maximum:int) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not maxValidate(value, maximum):
+      let message = messages["max"]["string"].getStr
+        .replace(":attribute", key)
+        .replace(":max", $maximum)
+      self.add(key, message)
+
+proc maxArr*(self:RequestValidation, key:string, maximum:int) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key).split(",")
+    if not maxValidate(value, maximum):
+      let message = messages["max"]["array"].getStr
+        .replace(":attribute", key)
+        .replace(":max", $maximum)
+      self.add(key, message)
+
+proc mimes*(self:RequestValidation, key:string, types:openArray[string]) =
+  if self.params.hasKey(key):
+    let ext = self.params[key].ext
+    if not mimes(ext, types):
+      let message = messages["mimes"].getStr
+        .replace(":attribute", key)
+        .replace(":values", $types)
+      self.add(key, message)
+
+proc minNum*(self:RequestValidation, key:string, minimum:int) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key).parseBiggestInt
+    if not minValidate(value, minimum):
+      let message = messages["min"]["numeric"].getStr
+        .replace(":attribute", key)
+        .replace(":min", $minimum)
+      self.add(key, message)
+
+proc minFile*(self:RequestValidation, key:string, minimum:int) =
+  try:
+    if self.params.hasKey(key):
+      let value = self.params.getStr(key)
+      if not minFileValidate(value, minimum):
+        let message = messages["min"]["file"].getStr
+          .replace(":attribute", key)
+          .replace(":min", $minimum)
+        self.add(key, message)
+  except:
+    echoErrorMsg( getCurrentExceptionMsg() )
+
+proc minStr*(self:RequestValidation, key:string, minimum:int) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not minValidate(value, minimum):
+      let message = messages["min"]["string"].getStr
+        .replace(":attribute", key)
+        .replace(":min", $minimum)
+      self.add(key, message)
+
+proc minArr*(self:RequestValidation, key:string, minimum:int) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key).split(",")
+    if not minValidate(value, minimum):
+      let message = messages["min"]["array"].getStr
+        .replace(":attribute", key)
+        .replace(":min", $minimum)
+      self.add(key, message)
+
+proc `notIn`*(self:RequestValidation, key:string, list:openArray[string]) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not `notIn`(value, list):
+      let message = messages["in"].getStr
+        .replace(":attribute", key)
+      self.add(key, message)
+
+proc notRegex*(self:RequestValidation, key:string, reg:Regex) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not notRegex(value, reg):
+      let message = messages["not_regex"].getStr
+        .replace(":attribute", key)
+      self.add(key, message)
+
+proc numeric*(self:RequestValidation, key:string) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not numeric(value):
+      let message = messages["numeric"].getStr
+        .replace(":attribute", key)
+      self.add(key, message)
+
+proc present*(self:RequestValidation, key:string) =
+  if not self.params.hasKey(key):
+    let message = messages["present"].getStr
+      .replace(":attribute", key)
+    self.add(key, message)
+
+proc regex*(self:RequestValidation, key:string, reg:Regex) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not regex(value, reg):
+      let message = messages["regex"].getStr
+        .replace(":attribute", key)
+      self.add(key, message)
+
+proc required*(self:RequestValidation, key:string) =
+  if not self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not required(value):
+      let message = messages["required"].getStr
+        .replace(":attribute", key)
+      self.add(key, message)
+
+proc requiredIf*(self:RequestValidation, key, other:string, values:openArray[string]) =
+  if self.params.hasKey(other):
+    let otherValue = self.params.getStr(other)
+    for val in values:
+      if val == otherValue:
+        if (not self.params.hasKey(key)) or (not required(self.params.getStr(key))):
+          let message = messages["required_if"].getStr
+            .replace(":attribute", key)
+            .replace(":other", other)
+            .replace(":value", val)
+          self.add(key, message)
+          break
+
+proc requiredUnless*(self:RequestValidation, key, other:string, values:openArray[string]) =
+  if self.params.hasKey(other):
+    let otherValue = self.params.getStr(other)
+    if not values.contains(otherValue):
+      if (not self.params.hasKey(key)) or (not required(self.params.getStr(key))):
+        let message = messages["required_unless"].getStr
+          .replace(":attribute", key)
+          .replace(":other", other)
+          .replace(":values", $values)
+        self.add(key, message)
+
+proc requiredWith*(self:RequestValidation, key:string, others:openArray[string]) =
+  for other in others:
+    if self.params.hasKey(other):
+      if (not self.params.hasKey(key)) or (not required(self.params.getStr(key))):
+        let message = messages["required_with"].getStr
+          .replace(":attribute", key)
+          .replace(":other", other)
+          .replace(":values", $others)
+        self.add(key, message)
+        break
+
+proc requiredWithAll*(self:RequestValidation, key:string, others:openArray[string]) =
+  var isExists = true
+  for other in others:
+    if not self.params.hasKey(other):
+      isExists = false
+      break
+  if isExists:
+    if (not self.params.hasKey(key)) or (not required(self.params.getStr(key))):
+      let message = messages["required_with_all"].getStr
+        .replace(":attribute", key)
+        .replace(":values", $others)
+      self.add(key, message)
+
+proc requiredWithout*(self:RequestValidation, key:string, others:openArray[string]) =
+  var isExists = false
+  for other in others:
+    if not self.params.hasKey(other):
+      isExists = true
+      break
+  if isExists:
+    if (not self.params.hasKey(key)) or (not required(self.params.getStr(key))):
+      let message = messages["required_without"].getStr
+        .replace(":attribute", key)
+        .replace(":values", $others)
+      self.add(key, message)
+
+proc requiredWithoutAll*(self:RequestValidation, key:string, others:openArray[string]) =
+  var isExists = false
+  for other in others:
+    if self.params.hasKey(other):
+      isExists = true
+      break
+  if not isExists:
+    if (not self.params.hasKey(key)) or (not required(self.params.getStr(key))):
+      let message = messages["required_without_all"].getStr
+        .replace(":attribute", key)
+        .replace(":values", $others)
+      self.add(key, message)
+
+proc same*(self:RequestValidation, key, target:string) =
+  if self.params.hasKey(key) and self.params.hasKey(target):
+    let a = self.params.getStr(key)
+    let b = self.params.getStr(target)
+    if not same(a, b):
+      let message = messages["same"].getStr
+        .replace(":attribute", key)
+        .replace(":other", target)
+      self.add(key, message)
+
+proc sizeNum*(self:RequestValidation, key:string, standard:int) =
+  if self.params.hasKey(key):
+    let value = self.params.getInt(key)
+    if not size(value, standard):
+      let message = messages["size"]["numeric"].getStr
+        .replace(":attribute", key)
+        .replace(":size", $standard)
+      self.add(key, message)
+
+proc sizeFile*(self:RequestValidation, key:string, standard:int) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not sizeFile(value, standard):
+      let message = messages["size"]["file"].getStr
+        .replace(":attribute", key)
+        .replace(":size", $standard)
+      self.add(key, message)
+
+proc sizeStr*(self:RequestValidation, key:string, standard:int) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not size(value, standard):
+      let message = messages["size"]["string"].getStr
+        .replace(":attribute", key)
+        .replace(":size", $standard)
+      self.add(key, message)
+
+proc sizeArr*(self:RequestValidation, key:string, standard:int) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key).split(",")
+    if not size(value, standard):
+      let message = messages["size"]["array"].getStr
+        .replace(":attribute", key)
+        .replace(":size", $standard)
+      self.add(key, message)
 
 
-# func digits*(self: var RequestValidation, key: string, digit: int) =
-#   let error = %digits(self.params.getStr(key), digit)
-#   if error.len > 0:
-#     self.putValidate(key, error)
+proc startsWith*(self:RequestValidation, key:string, targets:openArray[string]) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not startsWith(value, targets):
+      let message = messages["starts_with"].getStr
+        .replace(":attribute", key)
+        .replace(":values", $targets)
+      self.add(key, message)
 
+proc url*(self:RequestValidation, key:string) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not url(value):
+      let message = messages["url"].getStr
+        .replace(":attribute", key)
+      self.add(key, message)
 
-# proc domain*(self: var RequestValidation, key = "domain") =
-#   let error = %domain(self.params.getStr(key))
-#   if error.len > 0:
-#     self.putValidate(key, error)
-
-
-# func email*(self: var RequestValidation, key = "email") =
-#   let error = %email(self.params.getStr(key))
-#   if error.len > 0:
-#     self.putValidate(key, error)
-
-
-# proc strictEmail*(self: var RequestValidation, key = "email") =
-#   let error = %strictEmail(self.params.getStr(key))
-#   if error.len > 0:
-#     self.putValidate(key, error)
-
-
-# func equals*(self: var RequestValidation, key: string, val: string) =
-#   let error = %equals(self.params.getStr(key), val)
-#   if error.len > 0:
-#     self.putValidate(key, error)
-
-
-# func exists*(self: var RequestValidation, key: string) =
-#   if not self.params.hasKey(key):
-#     self.putValidate(key, &"{key} should exists in request params")
-
-
-# func gratorThan*(self: var RequestValidation, key: string, val: float) =
-#   let error = %gratorThan(self.params.getStr(key).parseFloat, val)
-#   if error.len > 0:
-#     self.putValidate(key, error)
-
-
-# func inRange*(self: var RequestValidation, key: string, min: float,
-#               max: float) =
-#   let error = %inRange(self.params.getStr(key).parseFloat, min, max)
-#   if error.len > 0:
-#     self.putValidate(key, error)
-
-
-# proc ip*(self: var RequestValidation, key: string) =
-#   let error = %domain(&"[{self.params.getStr(key)}]")
-#   if error.len > 0:
-#     self.putValidate(key, error)
-
-
-# func isBool*(self: var RequestValidation, key: string) =
-#   let error = %isBool(self.params.getStr(key))
-#   if error.len > 0:
-#     self.putValidate(key, error)
-
-
-# func isFloat*(self: var RequestValidation, key: string) =
-#   let error = %isFloat(self.params.getStr(key))
-#   if error.len > 0:
-#     self.putValidate(key, error)
-
-
-# func isIn*(self: var RequestValidation, key: string,
-#             vals: openArray[int|float|string]) =
-#   if self.params.hasKey(key):
-#     var count = 0
-#     for val in vals:
-#       if self.params.getStr(key) == $val:
-#         count.inc
-#     if count == 0:
-#       self.putValidate(key, &"{key} should be in {vals}")
-
-
-# func isInt*(self: var RequestValidation, key: string) =
-#   let error = %isInt(self.params.getStr(key))
-#   if error.len > 0:
-#     self.putValidate(key, error)
-
-
-# func isString*(self: var RequestValidation, key: string) =
-#   let error = %isString(self.params.getStr(key))
-#   if error.len > 0:
-#     self.putValidate(key, error)
-
-
-# func lessThan*(self: var RequestValidation, key: string, val: float) =
-#   let error = %lessThan(self.params.getStr(key).parseFloat, val)
-#   if error.len > 0:
-#     self.putValidate(key, error)
-
-
-# func numeric*(self: var RequestValidation, key: string) =
-#   let error = %numeric(self.params.getStr(key))
-#   if error.len > 0:
-#     self.putValidate(key, error)
-
-
-# func oneOf*(self: var RequestValidation, keys: openArray[string]) =
-#   var count = 0
-#   for key, val in self.params:
-#     if keys.contains(key):
-#       count.inc
-#   if count == 0:
-#     self.putValidate("oneOf", &"at least one of {keys} is required")
-
-
-# func password*(self: var RequestValidation, key = "password") =
-#   var error = newJArray()
-#   if self.params.getStr(key).len == 0:
-#     error.add(%"this field is required")
-
-#   if self.params.getStr(key).len < 8:
-#     error.add(%"password needs at least 8 chars")
-
-#   if not self.params.getStr(key).match(re"(?=.*?[a-z])(?=.*?[A-Z])(?=.*?\d)[!-~a-zA-Z\d]*"):
-#     error.add(%"invalid form of password")
-
-#   if error.len > 0:
-#     self.putValidate(key, error)
-
-
-# func required*(self: var RequestValidation, keys: openArray[string]) =
-#   for key in keys:
-#     if not self.params.hasKey(key) or self.params.getStr(key).len == 0:
-#       self.putValidate(key, &"{key} is required")
-
-
-# proc unique*(self: var RequestValidation, key: string, table: string,
-#     column: string) =
-#   if self.params.hasKey(key):
-#     let val = self.params.getStr(key)
-#     let num = RDB().table(table).where(column, "=", val).count()
-#     if num > 0:
-#       self.putValidate(key, &"{key} should be unique")
+proc uuid*(self:RequestValidation, key:string) =
+  if self.params.hasKey(key):
+    let value = self.params.getStr(key)
+    if not uuid(value):
+      let message = messages["uuid"].getStr
+        .replace(":attribute", key)
+      self.add(key, message)
