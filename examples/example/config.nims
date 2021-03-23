@@ -24,4 +24,5 @@ putEnv("SESSION_DB_PATH", "/root/project/examples/example/session.db")
 putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
 putEnv("REDIS_PORT", "6379")
 putEnv("ENABLE_ANONYMOUS_COOKIE", "false")
-putEnv("COOKIE_DOMAINS", "localhost, amazon.com, google.com")
+# putEnv("COOKIE_DOMAINS", ", amazon.com, google.com")
+putEnv("COOKIE_DOMAINS", "")

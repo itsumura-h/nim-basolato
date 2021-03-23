@@ -9,7 +9,8 @@ func newHttpHeaders*(keyValuePairs:
   for pair in keyValuePairs:
     {.cast(noSideEffect).}:
       if pair.key in result.table:
-        result.table[pair.key] &= pair.val
+        # result.table[pair.key] &= pair.val
+        result.table[pair.key].add(pair.val)
       else:
         result.table[pair.key] = pair.val
 
@@ -39,12 +40,18 @@ proc format*(self:HttpHeaders):HttpHeaders =
   for key, values in self:
     if key.toLowerAscii == "date":
       newHeaders[key] = values
-      continue
-    for value in values.split(", "):
+    elif key.toLowerAscii == "set-cookie":
       if newHeaders.hasKey(key):
-        let row = newHeaders[key].toString
-        if not row.contains(value):
-          newHeaders[key] = row & ", " & value
+        newHeaders[key] = newHeaders[key].toString & ", " & values
       else:
-        newHeaders[key] = value
+        newHeaders[key] = values
+      # newHeaders[key] = values
+    else:
+      for value in values.split(", "):
+        if newHeaders.hasKey(key):
+          let row = newHeaders[key].toString
+          if not row.contains(value):
+            newHeaders[key] = row & ", " & value
+        else:
+          newHeaders[key] = value
   return newHeaders

@@ -15,7 +15,7 @@ proc create(dirPath:string, packageDir:string):int =
     moveDir(&"{dirpath}/tmp/0.9/app", &"{dirpath}/app")
     moveDir(&"{dirpath}/tmp/0.9/migrations", &"{dirpath}/migrations")
     moveDir(&"{dirpath}/tmp/0.9/public", &"{dirpath}/public")
-    # moveDir(&"{dirpath}/tmp/0.9/resources", &"{dirpath}/resources")
+    moveDir(&"{dirpath}/tmp/0.9/resources", &"{dirpath}/resources")
     moveFile(&"{dirpath}/tmp/0.9/main.nim", &"{dirpath}/main.nim")
     moveFile(&"{dirpath}/tmp/0.9/.gitignore", &"{dirpath}/.gitignore")
     # move static files
@@ -33,7 +33,7 @@ proc create(dirPath:string, packageDir:string):int =
     copyFile(dirPath / "config.nims", dirPath / "config.nims.prd")
 
     # create empty dirs
-    # createDir(&"{dirPath}/resources/errors")
+    createDir(&"{dirPath}/app/http/views/errors")
     createDir(&"{dirPath}/tests")
     createDir(&"{dirPath}/public/js")
     createDir(&"{dirPath}/public/css")
@@ -80,6 +80,7 @@ suite "test suite":
     return 0
   except:
     echo getCurrentExceptionMsg()
+    removeDir(dirPath)
     return 1
 
 proc new*(args:seq[string]):int =

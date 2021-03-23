@@ -41,7 +41,7 @@ proc serve*(port=5000) =
   while true:
     sleep sleepTime * 1000
     for f in walkDirRec(currentDir, {pcFile}):
-      if f.find(re"(\.nim|\.html)$") > -1:
+      if f.find(re"(\.nim|\.nims|\.html)$") > -1:
         var modTime: Time
         try:
           modTime = getFileInfo(f).lastWriteTime
