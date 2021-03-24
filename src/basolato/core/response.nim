@@ -137,7 +137,7 @@ proc setAuth*(response:Response, auth:Auth):Future[Response] {.async.} =
 
 
 # ========== Cookie ====================
-func setCookie*(response:Response, cookie:Cookie):Response =
+proc setCookie*(response:Response, cookie:Cookie):Response =
   for cookieData in cookie.cookies:
     let cookieStr = cookieData.toCookieStr()
     response.headers.add("Set-cookie", cookieStr)

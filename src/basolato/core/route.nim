@@ -182,7 +182,7 @@ proc runMiddleware(req:Request, routes:Routes, headers:HttpHeaders):Future[Respo
       if findAll(req.path, route.path).len > 0:
         let params = req.params(route)
         response = await route.action(req, params)
-    if response.headers.len > 0:
+    if not response.headers.isNil and response.headers.len > 0:
       headers = response.headers & headers
     if response.status != HttpCode(0):
       status = response.status

@@ -16,9 +16,25 @@
 # find tests/ -type f ! -name "*.*" -delete 2>/dev/null
 
 
+# run server
+nimble install -y
+cd /root/project/tests/server
+nim c main
+nohup ./main > /dev/null 2>&1 &
 
-# nimble install -y
+# run test
+cd /root/project/
+touch tests/server/session.db
+touch tests/server/db.sqlite3
 rm -fr ./testresults
-testament p "tests/**/*.nim"
+testament p "tests/test_*.nim"
 testament html
+
+# delete files
+killall main
+rm tests/server/main
+rm tests/server/db.sqlite3
+rm tests/server/session.db
+rm tests/server/session.db.bak
+rm -fr tests/server/logs/*
 find tests/ -type f ! -name "*.*" -delete 2>/dev/null
