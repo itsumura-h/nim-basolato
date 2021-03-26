@@ -20,7 +20,7 @@ block:
   let response = client.get(&"{HOST}/set-cookie")
   check response.headers["set-cookie", 0]
           .contains("key1=value1; Path=/;")
-  check response.headers["set-cookie", 0]
+  check response.headers["set-cookie", 1]
           .contains("key2=value2; Path=/;")
 
 block:

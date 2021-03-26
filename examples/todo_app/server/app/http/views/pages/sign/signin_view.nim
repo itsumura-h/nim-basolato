@@ -10,7 +10,7 @@ style "css", style:
 }
 """
 
-proc impl(params:JsonNode, errors:JsonNode):string = tmpli html"""
+proc impl(params:Params):string = tmpli html"""
 $(style)
 <section class="section">
   <div class="container is-max-desktop">
@@ -29,9 +29,9 @@ $(style)
                 <i class="fas fa-envelope"></i>
               </span>
             </p>
-            $if errors.hasKey("email"){
+            $if params.hasError("email"){
               <ul class="$(style.get("errors"))">
-                $for error in errors["email"] {
+                $for error in params.errors["email"] {
                   <li>$(error.get())</li>
                 }
               </ul>
@@ -45,9 +45,9 @@ $(style)
                 <i class="fas fa-lock"></i>
               </span>
             </p>
-            $if errors.hasKey("password"){
+            $if params.hasError("password"){
               <ul class="$(style.get("errors"))">
-                $for error in errors["password"] {
+                $for error in params.errors["password"] {
                   <li>$(error.get())</li>
                 }
               </ul>
@@ -65,6 +65,6 @@ $(style)
 </section>
 """
 
-proc signinView*(params=newJObject(), errors=newJObject()):string =
+proc signinView*(params:Params):string =
   let title = "Sign in"
-  return applicationView(title, impl(params, errors))
+  return applicationView(title, impl(params))

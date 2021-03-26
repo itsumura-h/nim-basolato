@@ -6,7 +6,7 @@ import ../../../../../src/basolato/request_validation
 import ../views/pages/sample/validation_view
 
 proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  return render(validationView())
+  return render(validationView(params))
 
 proc show*(request:Request, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
@@ -16,16 +16,19 @@ proc create*(request:Request, params:Params):Future[Response] {.async.} =
   return render("create")
 
 proc store*(request:Request, params:Params):Future[Response] {.async.} =
-  var validation = newValidation(params)
-  dd(params.repr)
-  validation.strictEmail("email")
-  validation.password("password")
-  validation.valid()
-  try:
-    validation.valid()
-    return redirect("/sample/validation")
-  except:
-    return render(Http400, validation.errors)
+  params.required(
+    ["name", "email", "password", "password_confirmation", "number", "float"],
+    attributes = @["名前", "メールアドレス", "パスワード", "パスワード確認", "数字", "小数"]
+  )
+  params.email("email", attribute="メールアドレス")
+  params.password("password", attribute="パスワード")
+  params.password("password_confirmation", attribute="パスワード確認")
+  params.confirmed("password", attribute="パスワード")
+  params.betweenNum("number", 1, 10, attribute="数字")
+  params.betweenNum("float", 0.1, 1.0, attribute="小数")
+  if params.hasErrors:
+    return render(validationView(params))
+  return redirect("/sample/validation")
 
 proc edit*(request:Request, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")

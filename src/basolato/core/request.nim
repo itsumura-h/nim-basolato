@@ -55,44 +55,75 @@ type Param* = ref object
 proc ext*(self:Param):string =
   return self.ext
 
-type Params* = TableRef[string, Param]
+type ValidationErros* = TableRef[string, seq[string]]
+
+func add*(self:ValidationErros, key, value:string) =
+  if self.hasKey(key):
+    self[key].add(value)
+  else:
+    self[key] = @[value]
+
+type Params* = ref object
+  data: TableRef[string, Param]
+  errors: ValidationErros
+
+proc newParams*():Params =
+  return Params(
+    data: newTable[string, Param](),
+    errors: newTable[string, seq[string]]()
+  )
+
+func data*(self:Params):TableRef[string, Param] =
+  return self.data
+
+func errors*(self:Params):TableRef[string, seq[string]] =
+  return self.errors
 
 
 func `[]`*(params:Params, key:string):Param =
-  return tables.`[]`(params, key)
+  return tables.`[]`(params.data, key)
+
+func `[]=`*(params:Params, key:string, value:Param) =
+  tables.`[]=`(params.data, key, value)
 
 func getStr*(params:Params, key:string, default=""):string =
-  if params.hasKey(key):
+  if params.data.hasKey(key):
     return params[key].value
   else:
     return default
 
 func getInt*(params:Params, key:string, default=0):int =
-  if params.hasKey(key):
+  try:
     return params[key].value.parseInt
-  else:
+  except:
     return default
 
 func getFloat*(params:Params, key:string, default=0.0):float =
-  if params.hasKey(key):
+  try:
     return params[key].value.parseFloat
-  else:
+  except:
     return default
 
 func getBool*(params:Params, key:string, default=false):bool =
-  if params.hasKey(key):
+  try:
     return params[key].value.parseBool
-  else:
+  except:
     return default
 
 proc getJson*(params:Params, key:string, default=newJObject()):JsonNode =
-  return params[key].value.parseJson
+  return params.data[key].value.parseJson
 
 func hasKey*(params:Params, key:string):bool =
-  return tables.hasKey(params, key)
+  return params.data.hasKey(key)
+
+func hasErrors*(params:Params):bool =
+  return params.errors.len > 0
+
+func hasError*(params:Params, key:string):bool =
+  return params.errors.hasKey(key)
 
 func getUrlParams*(requestPath, routePath:string):Params =
-  result = Params()
+  result = newParams()
   if routePath.contains("{"):
     let requestPath = requestPath.split("/")[1..^1]
     let routePath = routePath.split("/")[1..^1]
@@ -100,33 +131,33 @@ func getUrlParams*(requestPath, routePath:string):Params =
       if routePath[i].contains("{"):
         let keyInUrl = routePath[i][1..^1].split(":")
         let key = keyInUrl[0]
-        result[key] = Param(value:requestPath[i].split(":")[0])
+        result.data[key] = Param(value:requestPath[i].split(":")[0])
 
 func getQueryParams*(request:Request):Params =
-  result = Params()
+  result = newParams()
   let query = request.url.query
   for key, val in cgi.decodeData(query):
-    result[key.string] = Param(value:val)
+    result.data[key.string] = Param(value:val)
 
 proc getJsonParams*(request:Request):Params =
-  result = Params()
+  result = newParams()
   let jsonParams = request.body.parseJson()
   for k, v in jsonParams.pairs:
     case v.kind
     of JInt:
-      result[k] = Param(value: $(v.getInt))
+      result.data[k] = Param(value: $(v.getInt))
     of JFloat:
-      result[k] = Param(value: $(v.getFloat))
+      result.data[k] = Param(value: $(v.getFloat))
     of JBool:
-      result[k] = Param(value: $(v.getBool))
+      result.data[k] = Param(value: $(v.getBool))
     of JNull:
-      result[k] = Param(value: "")
+      result.data[k] = Param(value: "")
     of JArray:
-      result[k] = Param(value: $v)
+      result.data[k] = Param(value: $v)
     of JObject:
-      result[k] = Param(value: $v)
+      result.data[k] = Param(value: $v)
     else:
-      result[k] = Param(value: v.getStr)
+      result.data[k] = Param(value: v.getStr)
 
 
 type MultiData* = OrderedTable[string, tuple[fields: StringTableRef, body: string]]
@@ -216,31 +247,31 @@ func parseMPFD*(contentType: string, body: string): MultiData =
   return parseMultiPart(body, boundary)
 
 proc getRequestParams*(request:Request):Params =
-  var params = Params()
+  let params = newParams()
   if request.headers.hasKey("content-type"):
     let contentType = request.headers["content-type"].toString
     if contentType.contains("multipart/form-data"):
       let formdata = parseMPFD(contentType, request.body)
       for key, row in formdata:
         if row.fields.hasKey("filename"):
-          params[key] = Param(
+          params.data[key] = Param(
             fileName: row.fields["filename"],
             ext: row.fields["filename"].split(".")[^1],
             value: row.body
           )
         else:
           if params.hasKey(key):
-            params[key].value.add(", " & row.body)
+            params.data[key].value.add(", " & row.body)
           else:
-            params[key] = Param(value: row.body)
+            params.data[key] = Param(value: row.body)
     elif contentType.contains("application/x-www-form-urlencoded"):
       let rows = request.body.decodeUrl().split("&")
       for row in rows:
         let row = row.split("=")
         if params.hasKey(row[0]):
-          params[row[0]].value.add(", " & row[1])
+          params.data[row[0]].value.add(", " & row[1])
         else:
-          params[row[0]] = Param(value: row[1])
+          params.data[row[0]] = Param(value: row[1])
     # elif contentType.contains("application/json"):
     #   echo "=== application/json"
     #   params["json"] = Param(value: request.body)

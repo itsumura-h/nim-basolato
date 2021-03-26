@@ -1,6 +1,55 @@
 import tables, strutils, httpcore, times, strformat
 import base
 
+
+# type Headers* = ref object
+#   values: seq[tuple[key: string, val: seq[string]]]
+
+
+# proc newHeaders*():Headers =
+#   return Headers()
+
+# proc hasKey*(headers:Headers, key:string):bool =
+#   for header in headers.values:
+#     if header.key.toLowerAscii == key:
+#       return true
+#   return false
+
+# proc getIndex*(headers:Headers, key:string):int =
+#   result = -1
+#   for i, header in headers.values:
+#     if header.key.toLowerAscii == key:
+#       return i
+
+# proc add*(self:Headers, key, value:string) =
+#   if key.toLowerAscii == "set-cookie":
+#     self.values.add((key.toLowerAscii, @[value]))
+#   else:
+#     let i = self.getIndex(key)
+#     if i >= 0:
+#       self.values[i].val.add(value)
+#     else:
+#       self.values.add((key.toLowerAscii, @[value]))
+
+# proc setDefaultHeaders*(self:Headers):Headers =
+#   self.add("Server", &"Nim/{NimVersion}; Basolato/{basolatoVersion}")
+#   let formatter = initTimeFormat("ddd, dd MMM YYYY HH:mm:ss 'GMT'")
+#   self.add("Date", now().format(formatter))
+#   self.add("Connection", "Keep-Alive")
+
+# proc format*(self:Headers):HttpHeaders =
+#   var tmpHeader: seq[tuple[key: string, val:string]]
+#   for header in self.values:
+#     tmpHeader.add((header.key, header.val.join(", ")))
+#   return tmpHeader.newHttpHeaders()
+
+
+
+
+
+
+
+
 func newHttpHeaders*(keyValuePairs:
     openArray[tuple[key: string, val: seq[string]]], titleCase=false): HttpHeaders =
   new result
@@ -15,10 +64,14 @@ func newHttpHeaders*(keyValuePairs:
         result.table[pair.key] = pair.val
 
 proc setDefaultHeaders*(self:HttpHeaders) =
-  self["Server"] = &"Nim/{NimVersion}; Basolato/{basolatoVersion}"
+  # self["Server"] = &"Nim/{NimVersion}; Basolato/{basolatoVersion}"
+  # let formatter = initTimeFormat("ddd, dd MMM YYYY HH:mm:ss 'GMT'")
+  # self["Date"] = now().format(formatter)
+  # self["Connection"] = "Keep-Alive"
+  self.add("Server", &"Nim/{NimVersion}; Basolato/{basolatoVersion}")
   let formatter = initTimeFormat("ddd, dd MMM YYYY HH:mm:ss 'GMT'")
-  self["Date"] = now().format(formatter)
-  self["Connection"] = "Keep-Alive"
+  self.add("Date",  now().format(formatter))
+  self.add("Connection", "Keep-Alive")
 
 func add*(headers: HttpHeaders, key: string, values: openArray[string]) =
   if headers.table.hasKey(key):
@@ -29,29 +82,22 @@ func add*(headers: HttpHeaders, key: string, values: openArray[string]) =
 
 func `&`*(a, b:HttpHeaders = newHttpHeaders()):HttpHeaders =
   for key, value in b:
-    if a.hasKey(key):
-      a.add(key, value)
-    else:
-      a[key] = @[value]
+    # if a.hasKey(key):
+    #   a.add(key, value)
+    # else:
+    #   a[key] = @[value]
+    a.add(key, value)
   return a
 
 proc format*(self:HttpHeaders):HttpHeaders =
-  let newHeaders = newHttpHeaders()
-  for key, values in self:
+  var tmp: seq[tuple[key, val:string]]
+  for key, values in self.table:
     if key.toLowerAscii == "date":
-      newHeaders[key] = values
+      tmp.add((key, values[0]))
     elif key.toLowerAscii == "set-cookie":
-      if newHeaders.hasKey(key):
-        newHeaders[key] = newHeaders[key].toString & ", " & values
-      else:
-        newHeaders[key] = values
-      # newHeaders[key] = values
+      for value in values:
+        tmp.add((key, value))
     else:
-      for value in values.split(", "):
-        if newHeaders.hasKey(key):
-          let row = newHeaders[key].toString
-          if not row.contains(value):
-            newHeaders[key] = row & ", " & value
-        else:
-          newHeaders[key] = value
-  return newHeaders
+      tmp.add((key, values.join(", ")))
+  return tmp.newHttpHeaders()
+

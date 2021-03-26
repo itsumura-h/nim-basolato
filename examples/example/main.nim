@@ -7,7 +7,7 @@ import app/http/controllers/login_controller
 import app/http/controllers/flash_controller
 import app/http/controllers/file_upload_controller
 import app/http/controllers/benchmark_controller
-# import app/http/controllers/validation_controller
+import app/http/controllers/validation_controller
 # middleware
 import app/http/middlewares/auth_middleware
 import app/http/middlewares/cors_middleware
@@ -52,7 +52,7 @@ groups "/sample":
   routes.post("/file-upload", file_upload_controller.store)
   routes.post("/file-upload/delete", file_upload_controller.destroy)
 
-  # routes.get("/validation", validation_controller.index)
-  # routes.post("/validation", validation_controller.store)
+  routes.get("/validation", validation_controller.index)
+  routes.post("/validation", validation_controller.store)
 
 serve(routes)

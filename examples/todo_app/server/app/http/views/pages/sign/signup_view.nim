@@ -2,15 +2,14 @@ import json, tables
 import ../../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
-style "css", style:
-  """
+style "css", style:"""
 .errors{
   background-color: pink;
   color: red;
 }
 """
 
-proc impl(params:JsonNode, errors:JsonNode):string = tmpli html"""
+proc impl(params:Params):string = tmpli html"""
 $(style)
 <section class="section">
   <div class="container is-max-desktop">
@@ -28,9 +27,9 @@ $(style)
                 <i class="fas fa-user"></i>
               </span>
             </p>
-            $if errors.hasKey("name") {
+            $if params.errors.hasKey("name") {
               <ul class="$(style.get("errors"))">
-                $for error in errors["name"] {
+                $for error in params.errors["name"] {
                   <li>$(error.get())</li>
                 }
               </ul>
@@ -44,9 +43,9 @@ $(style)
                 <i class="fas fa-envelope"></i>
               </span>
             </p>
-            $if errors.hasKey("email") {
+            $if params.errors.hasKey("email") {
               <ul class="$(style.get("errors"))">
-                $for error in errors["email"] {
+                $for error in params.errors["email"] {
                   <li>$(error.get())</li>
                 }
               </ul>
@@ -60,9 +59,9 @@ $(style)
                 <i class="fas fa-lock"></i>
               </span>
             </p>
-            $if errors.hasKey("password") {
+            $if params.errors.hasKey("password") {
               <ul class="$(style.get("errors"))">
-                $for error in errors["password"] {
+                $for error in params.errors["password"] {
                   <li>$(error.get())</li>
                 }
               </ul>
@@ -80,6 +79,6 @@ $(style)
 </section>
 """
 
-proc signupView*(params=newJObject(), errors=newJObject()):string =
+proc signupView*(params:Params):string =
   let title = "Sign up"
-  return applicationView(title, impl(params, errors))
+  return applicationView(title, impl(params))

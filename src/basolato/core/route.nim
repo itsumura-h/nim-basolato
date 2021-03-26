@@ -21,29 +21,29 @@ type MiddlewareRoute* = ref object
 proc params*(request:Request, route:Route):Params =
   let url = request.path
   let path = route.path
-  let params = Params()
-  for k, v in getUrlParams(url, path).pairs:
+  let params = newParams()
+  for k, v in getUrlParams(url, path).data.pairs:
     params[k] = v
-  for k, v in getQueryParams(request).pairs:
+  for k, v in getQueryParams(request).data.pairs:
     params[k] = v
 
   if request.headers.hasKey("content-type") and request.headers["content-type"].split(";")[0] == "application/json":
-    for k, v in getJsonParams(request).pairs:
+    for k, v in getJsonParams(request).data.pairs:
       params[k] = v
   else:
-    for k, v in getRequestParams(request).pairs:
+    for k, v in getRequestParams(request).data.pairs:
       params[k] = v
   return params
 
 proc params*(request:Request, middleware:MiddlewareRoute):Params =
   let url = request.path
   let path = middleware.path
-  let params = Params()
-  # for k, v in getUrlParams(url, path).pairs:
+  let params = newParams()
+  # for k, v in getUrlParams(url, path).data.pairs:
   #   params[k] = v
-  for k, v in getQueryParams(request).pairs:
+  for k, v in getQueryParams(request).data.pairs:
     params[k] = v
-  for k, v in getRequestParams(request).pairs:
+  for k, v in getRequestParams(request).data.pairs:
     params[k] = v
   return params
 

@@ -189,12 +189,12 @@ proc digits*(self:Validation, value:SomeInteger, digit:int):bool =
   return digits(value, digit)
 
 
-proc digits_between(value:SomeInteger, min, max:int):bool =
+proc digitsBetween(value:SomeInteger, min, max:int):bool =
   let length = value.`$`.runeLen
   return min <= length and length <= max
 
-proc digits_between*(self:Validation, value:SomeInteger, min, max:int):bool =
-  return digits_between(value, min, max)
+proc digitsBetween*(self:Validation, value:SomeInteger, min, max:int):bool =
+  return digitsBetween(value, min, max)
 
 
 proc distinctArr(values:openArray[string]):bool =
@@ -569,6 +569,11 @@ proc numeric(value:string):bool =
 proc numeric*(self:Validation, value:string):bool =
   return numeric(value)
 
+proc password(value:string):bool =
+  return value.match(re"^(?=.*?[a-z])(?=.*?[A-Z])(?=.*?\d)[a-zA-Z\d]{8,100}$")
+
+proc password*(self:Validation, value:string):bool =
+  password(value)
 
 proc regex(value:string, reg:Regex):bool =
   return value.match(reg)

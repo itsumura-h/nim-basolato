@@ -13,18 +13,18 @@ import ../../repositories/user/user_rdb_repository
 
 proc signUpPage*(request:Request, params:Params):Future[Response] {.async.} =
   let auth = await newAuth(request)
-  return await render(signupView()).setAuth(auth)
+  return await render(signupView(params)).setAuth(auth)
 
 proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
   let name = params.getStr("name")
   let email = params.getStr("email")
   let password = params.getStr("password")
-  var v = newValidation(params)
-  v.required(["name", "email", "password"])
-  v.strictEmail("email")
-  v.password("password")
+  params.required(["name", "email", "password"])
+  params.email("email")
+  params.password("password")
+  if params.hasErrors:
+    return render(signupView(params))
   try:
-    v.valid()
     let repository = newUserRdbRepository().toInterface()
     let usecase = newSignUsecase(repository)
     let user = usecase.signUp(name, email, password)
@@ -34,8 +34,7 @@ proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
     await auth.set("name", user["name"].getStr)
     return redirect("/")
   except Exception:
-    let params = %*{"name": name, "email": email}
-    return render(signupView(params, v.errors))
+    return render(signupView(params))
 
 
 proc deleteAccountPage*(request:Request, params:Params):Future[Response] {.async.} =
@@ -46,15 +45,15 @@ proc deleteAccount*(request:Request, params:Params):Future[Response] {.async.} =
 
 proc signInPage*(request:Request, params:Params):Future[Response] {.async.} =
   let auth = await newAuth(request)
-  return await render(signinView()).setAuth(auth)
+  return await render(signinView(params)).setAuth(auth)
 
 proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
   let email = params.getStr("email")
   let password = params.getStr("password")
-  var v = newValidation(params)
-  v.required(["email", "password"])
-  v.strictEmail("email")
-  v.password("password")
+  params.required("email"); params.required("password")
+  params.email("email")
+  if params.hasErrors:
+    return render(signInView(params))
   try:
     let repository = newUserRdbRepository().toInterface()
     let usecase = newSignUsecase(repository)
@@ -65,8 +64,7 @@ proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
     await auth.set("name", user["name"].getStr)
     return redirect("/")
   except:
-    let params = %*{"email": email}
-    return render(signInView(params, v.errors))
+    return render(signInView(params))
 
 
 proc signOut*(request:Request, params:Params):Future[Response] {.async.} =
@@ -77,6 +75,12 @@ proc signOut*(request:Request, params:Params):Future[Response] {.async.} =
 # ==================== API ====================
 
 proc signInApi*(request:Request, params:Params):Future[Response] {.async.} =
+  params.required(["email", "password"])
+  params.email("email")
+  params.password("password")
+  if params.hasErrors:
+    return render(Http400, %*params.errors)
+
   let email = params.getStr("email")
   let password = params.getStr("password")
   try:

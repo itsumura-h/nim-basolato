@@ -1,7 +1,7 @@
 import unittest
-include ../../src/basolato/core/request
+include ../src/basolato/core/request
 
-let params = Params()
+let params = newParams()
 params["a"] = Param(value:"a")
 params["one"] = Param(value:"1")
 check params.getStr("a") == "a"

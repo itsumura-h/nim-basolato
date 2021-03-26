@@ -79,7 +79,7 @@
   "not_in": "選択された:attributeは正しくありません。",
   "not_regex": ":attributeの形式が正しくありません。",
   "numeric": ":attributeには、数字を指定してください。",
-  "password": ":attributeは大文字小文字数字全て含む8文字以上にしてください。",
+  "password": ":attributeは少なくとも8文字で大文字小文字数字全て含んでください。.",
   "present": ":attributeが存在していません。",
   "regex": ":attributeに正しい形式を指定してください。",
   "required": ":attributeは必ず指定してください。",
