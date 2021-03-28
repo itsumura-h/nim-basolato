@@ -1,6 +1,7 @@
 import json, strutils, options
 # framework
 import ../../../../../../src/basolato/controller
+import ../../../../../../src/basolato/request_validation
 # model
 import ../../di_container
 import ../../repositories/query_services/query_service
@@ -14,7 +15,7 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
   let auth = await newAuth(request)
   let id = await(auth.get("id")).parseInt
   let posts = di.queryService.getPostsByUserId(id)
-  return render(await indexView(auth, posts))
+  return render(await indexView(auth, params, posts))
 
 proc show*(request:Request, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
@@ -25,6 +26,12 @@ proc show*(request:Request, params:Params):Future[Response] {.async.} =
   return render(await showView(auth, post.get))
 
 proc store*(request:Request, params:Params):Future[Response] {.async.} =
+  params.required("title")
+  params.required("content")
+  if params.hasErrors:
+    let auth = await newAuth(request)
+    return render(await indexView(auth, params))
+
   let title = params.getStr("title")
   let content = params.getStr("content")
   let auth = await newAuth(request)

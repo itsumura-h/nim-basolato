@@ -969,8 +969,6 @@ proc required*(self:Params, key:string, attribute="") =
       self.errors.add(key, message)
 
 proc required*(self:Params, keys:openArray[string], attributes=newSeq[string]()) =
-  if attributes.len > 0:
-    doAssert keys.len == attributes.len
   for i, key in keys:
     self.required(key, attributes[i])
 

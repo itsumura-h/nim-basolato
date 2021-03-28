@@ -1,5 +1,5 @@
 import unittest
-include ../../src/basolato/core/validation
+include ../src/basolato/core/validation
 
 const validDomains = [
   "domain.com",

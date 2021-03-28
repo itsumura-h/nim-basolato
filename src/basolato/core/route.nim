@@ -170,9 +170,9 @@ func checkHttpCode(exception:ref Exception):HttpCode =
 
 proc runMiddleware(req:Request, routes:Routes, headers:HttpHeaders):Future[Response] {.async, gcsafe.} =
   var
-    response = Response()
+    response = Response(headers:newHttpHeaders())
     headers = if not headers.isNil: headers else: newHttpHeaders()
-    status = HttpCode(0)
+    # status = HttpCode(0)
   for route in routes.middlewares:
     if route.httpMethods.len > 0:
       if findAll(req.path, route.path).len > 0 and route.httpMethods.contains(req.httpMethod):
@@ -182,20 +182,22 @@ proc runMiddleware(req:Request, routes:Routes, headers:HttpHeaders):Future[Respo
       if findAll(req.path, route.path).len > 0:
         let params = req.params(route)
         response = await route.action(req, params)
-    if not response.headers.isNil and response.headers.len > 0:
-      headers = response.headers & headers
-    if response.status != HttpCode(0):
-      status = response.status
-  response.headers = headers
-  response.status = status
+    # if not response.headers.isNil and response.headers.len > 0:
+    #   headers = response.headers & headers
+    # if response.status != HttpCode(0):
+    #   status = response.status
+  # response.headers = headers
+  response.headers &= headers
+  # response.status = status
   return response
 
 proc runController(req:Request, route:Route, headers: HttpHeaders):Future[Response] {.async, gcsafe.} =
   var response: Response
   let params = req.params(route)
   response = await route.action(req, params)
-  response.headers = response.headers & headers
-  echoLog($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
+  # response.headers = response.headers & headers
+  response.headers &= headers
+  echoLog(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
   return response
 
 func doesRunAnonymousLogin(req:Request, res:Response):bool =
@@ -220,7 +222,7 @@ proc serveCore(params:(Routes, int)){.thread.} =
   proc cb(req: Request) {.async, gcsafe.} =
     var
       headers = newHttpHeaders()
-      response: Response
+      response = Response(status:HttpCode(0), headers:newHttpHeaders())
     # static file response
     if req.path.contains("."):
       let filepath = getCurrentDir() & "/public" & req.path
@@ -239,15 +241,17 @@ proc serveCore(params:(Routes, int)){.thread.} =
         elif routes.withoutParams.hasKey(key):
           response = await runMiddleware(req, routes, headers)
           let route = routes.withoutParams[key]
-          headers = headers & response.headers
-          response = await runController(req, route, headers)
+          # headers = headers & response.headers
+          # headers &= response.headers
+          response = await runController(req, route, response.headers)
         else:
           for route in routes.withParams:
             if route.httpMethod == req.httpMethod and isMatchUrl(req.path, route.path):
-              response = await runMiddleware(req, routes, headers)
+              response = await runMiddleware(req, routes, response.headers)
               if req.httpMethod != HttpOptions:
-                headers = headers & response.headers
-                response = await runController(req, route, headers)
+                # headers = headers & response.headers
+                # headers &= response.headers
+                response = await runController(req, route, response.headers)
                 break
       except:
         headers["content-type"] = "text/html; charset=utf-8"
@@ -266,7 +270,7 @@ proc serveCore(params:(Routes, int)){.thread.} =
         else:
           let status = checkHttpCode(exception)
           response = Response(status:status, body:errorPage(status, exception.msg), headers:headers)
-          echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
+          echoErrorMsg(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
           echoErrorMsg(exception.msg)
 
       # anonymous user login should run only for response from controler
@@ -281,10 +285,11 @@ proc serveCore(params:(Routes, int)){.thread.} =
           cookie.updateExpire(SESSION_TIME, Minutes)
           response = response.setCookie(cookie)
 
-    if response.isNil:
+    # if response.isNil:
+    if response.status == HttpCode(0):
       headers["content-type"] = "text/html; charset=utf-8"
       response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)
-      echoErrorMsg($response.status & "  " & req.hostname & "  " & $req.httpMethod & "  " & req.path)
+      echoErrorMsg(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
 
     response.headers.setDefaultHeaders()
 

@@ -11,16 +11,17 @@ import
 export
   templates,
   asyncdispatch,
-  re
+  re,
+  tables
 import
   core/security,
   core/utils,
-  core/request,
-  request_validation
+  core/request
+  # request_validation
 export
   security,
-  request,
-  request_validation
+  request
+  # request_validation
 
 randomize()
 
@@ -44,7 +45,7 @@ func get*(val:string|TaintedString):string =
 
 func old*(params:JsonNode, key:string, default=""):string =
   if params.hasKey(key):
-    return params[key].get()
+    return params[key].get().xmlEncode
   else:
     return default
 

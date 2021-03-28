@@ -52,7 +52,7 @@ type Param* = ref object
   ext:string
   value:string
 
-proc ext*(self:Param):string =
+func ext*(self:Param):string =
   return self.ext
 
 type ValidationErros* = TableRef[string, seq[string]]
@@ -265,13 +265,15 @@ proc getRequestParams*(request:Request):Params =
           else:
             params.data[key] = Param(value: row.body)
     elif contentType.contains("application/x-www-form-urlencoded"):
-      let rows = request.body.decodeUrl().split("&")
-      for row in rows:
-        let row = row.split("=")
-        if params.hasKey(row[0]):
-          params.data[row[0]].value.add(", " & row[1])
-        else:
-          params.data[row[0]] = Param(value: row[1])
+      let body = request.body.decodeUrl()
+      if body.len > 0:
+        let rows = body.split("&")
+        for row in rows:
+          let row = row.split("=")
+          if params.hasKey(row[0]):
+            params.data[row[0]].value.add(", " & row[1])
+          else:
+            params.data[row[0]] = Param(value: row[1])
     # elif contentType.contains("application/json"):
     #   echo "=== application/json"
     #   params["json"] = Param(value: request.body)

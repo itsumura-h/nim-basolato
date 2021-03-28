@@ -64,10 +64,6 @@ func newHttpHeaders*(keyValuePairs:
         result.table[pair.key] = pair.val
 
 proc setDefaultHeaders*(self:HttpHeaders) =
-  # self["Server"] = &"Nim/{NimVersion}; Basolato/{basolatoVersion}"
-  # let formatter = initTimeFormat("ddd, dd MMM YYYY HH:mm:ss 'GMT'")
-  # self["Date"] = now().format(formatter)
-  # self["Connection"] = "Keep-Alive"
   self.add("Server", &"Nim/{NimVersion}; Basolato/{basolatoVersion}")
   let formatter = initTimeFormat("ddd, dd MMM YYYY HH:mm:ss 'GMT'")
   self.add("Date",  now().format(formatter))
@@ -82,12 +78,11 @@ func add*(headers: HttpHeaders, key: string, values: openArray[string]) =
 
 func `&`*(a, b:HttpHeaders = newHttpHeaders()):HttpHeaders =
   for key, value in b:
-    # if a.hasKey(key):
-    #   a.add(key, value)
-    # else:
-    #   a[key] = @[value]
     a.add(key, value)
   return a
+
+func `&=`*(a, b:HttpHeaders) =
+  discard a & b
 
 proc format*(self:HttpHeaders):HttpHeaders =
   var tmp: seq[tuple[key, val:string]]

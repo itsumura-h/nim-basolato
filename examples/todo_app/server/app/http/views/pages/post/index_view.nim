@@ -6,17 +6,17 @@ import ../../layouts/post/input_view
 import ../../layouts/post/errors_view
 import ../../layouts/post/table_view
 
-proc impl(auth:Auth, posts:seq[JsonNode], params, errors:JsonNode):Future[string] {.async.} = tmpli html"""
+proc impl(auth:Auth, params:Params, posts:seq[JsonNode]):Future[string] {.async.} = tmpli html"""
 <section class="section">
   <div class="container is-max-desktop">
     $(headerView(await auth.get("name")))
-    $(inputView(params, errors))
+    $(inputView(params))
     $(await errorsView(auth))
     $(tableView(posts))
   </div>
 </div>
 """
 
-proc indexView*(auth:Auth, posts=newSeq[JsonNode](), params=newJObject(), errors=newJObject()):Future[string] {.async.} =
+proc indexView*(auth:Auth, params:Params, posts=newSeq[JsonNode]()):Future[string] {.async.} =
   let title = "Todo App"
-  return applicationView(title, await impl(auth, posts, params, errors))
+  return applicationView(title, await impl(auth, params, posts))

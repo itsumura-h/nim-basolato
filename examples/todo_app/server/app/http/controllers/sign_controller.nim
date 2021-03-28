@@ -48,12 +48,14 @@ proc signInPage*(request:Request, params:Params):Future[Response] {.async.} =
   return await render(signinView(params)).setAuth(auth)
 
 proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
-  let email = params.getStr("email")
-  let password = params.getStr("password")
-  params.required("email"); params.required("password")
+  params.required("email")
+  params.required("password")
   params.email("email")
   if params.hasErrors:
     return render(signInView(params))
+
+  let email = params.getStr("email")
+  let password = params.getStr("password")
   try:
     let repository = newUserRdbRepository().toInterface()
     let usecase = newSignUsecase(repository)

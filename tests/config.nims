@@ -12,15 +12,15 @@ putEnv("DB_DATABASE", "")
 putEnv("DB_MAX_CONNECTION", "95")
 
 # Logging
-putEnv("LOG_IS_DISPLAY", "true")
-putEnv("LOG_IS_FILE", "true")
-putEnv("LOG_IS_ERROR_FILE", "true")
+putEnv("LOG_IS_DISPLAY", $true)
+putEnv("LOG_IS_FILE", $true)
+putEnv("LOG_IS_ERROR_FILE", $true)
 putEnv("LOG_DIR", "/root/project/tests/server/logs")
 
 putEnv("SESSION_TYPE", "file") # file or redis
 putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
 putEnv("SESSION_DB_PATH", "/root/project/tests/server/session.db")
-putEnv("ENABLE_ANONYMOUS_COOKIE", "true")
+putEnv("ENABLE_ANONYMOUS_COOKIE", $true)
 putEnv("COOKIE_DOMAINS", "")
 
 putEnv("port", "5000")

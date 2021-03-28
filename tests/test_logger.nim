@@ -1,10 +1,10 @@
 import unittest, os, strformat, strutils
-from ../../src/basolato/core/baseEnv import LOG_DIR
-import ../../src/basolato/core/logger
+from ../src/basolato/core/baseEnv import LOG_DIR
+import ../src/basolato/core/logger
 
 block:
   echoLog("test log message")
-  check existsFile(&"{LOG_DIR}/log.log")
+  check fileExists(&"{LOG_DIR}/log.log")
   let f = open(&"{LOG_DIR}/log.log")
   defer: close(f)
   let content = f.readAll()
@@ -14,7 +14,7 @@ block:
 
 block:
   echoErrorMsg("test log error message")
-  check existsFile(&"{LOG_DIR}/error.log")
+  check fileExists(&"{LOG_DIR}/error.log")
   let f = open(&"{LOG_DIR}/error.log")
   defer: close(f)
   let content = f.readAll()

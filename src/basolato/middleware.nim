@@ -4,11 +4,11 @@ import core/base, core/route, core/security, core/header, core/response
 export base, route, security, header, response
 
 type MiddlewareResult* = ref object
-  isError: bool
+  hasError: bool
   message: string
 
-func isError*(self:MiddlewareResult):bool =
-  return self.isError
+func hasError*(self:MiddlewareResult):bool =
+  return self.hasError
 
 func message*(self:MiddlewareResult):string =
   return self.message
@@ -25,7 +25,7 @@ proc checkCsrfToken*(request:Request, params:Params):Future[MiddlewareResult] {.
       let token = params.getStr("csrf_token")
       discard newCsrfToken(token).checkCsrfTimeout()
     except:
-      result.isError = true
+      result.hasError = true
       result.message = getCurrentExceptionMsg()
 
 proc checkSessionId*(request:Request):Future[MiddlewareResult] {.async.} =
@@ -42,5 +42,5 @@ proc checkSessionId*(request:Request):Future[MiddlewareResult] {.async.} =
       if not await checkSessionIdValid(sessionId):
         raise newException(Exception, "Invalid session id")
     except:
-      result.isError = true
+      result.hasError = true
       result.message = getCurrentExceptionMsg()

@@ -198,19 +198,11 @@ block:
   let p = newParams()
   p["valid"] = Param(value:"2020-01-01")
   p["invalid"] = Param(value:"aaa")
-  p["validtimestamp"] = Param(value:"1577804400")
-  p["negative"] = Param(value:"-1")
-  p["invalidtimestamp"] = Param(value:"18446744073709551615")
   p.date("valid", "yyyy-MM-dd")
-  p.timestamp("validtimestamp")
   check p.hasErrors == false
   p.date("invalid", "yyyy-MM-dd")
-  p.timestamp("negative")
-  p.timestamp("invalidtimestamp")
   check p.hasErrors
   check p.errors["invalid"][0] == "The invalid is not a valid date."
-  check p.errors["negative"][0] == "The negative is not a valid timestamp."
-  check p.errors["invalidtimestamp"][0] == "The invalidtimestamp is not a valid timestamp."
 
 block:
   let p = newParams()
@@ -879,6 +871,17 @@ block:
   check p.hasErrors
   check p.errors["base"][0] == "The base must be start with one of following [\"bcd\", \"cde\"]."
 
+block:
+  let p = newParams()
+  p["validtimestamp"] = Param(value:"1577804400")
+  p["invalidtimestamp"] = Param(value:"18446744073709551615")
+  p["negative"] = Param(value:"-1")
+  p.timestamp("validtimestamp")
+  check p.hasErrors == false
+  p.timestamp("negative")
+  p.timestamp("invalidtimestamp")
+  check p.errors["negative"][0] == "The negative is not a valid timestamp."
+  check p.errors["invalidtimestamp"][0] == "The invalidtimestamp is not a valid timestamp."
 
 block:
   let p = newParams()
