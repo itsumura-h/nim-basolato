@@ -1,4 +1,5 @@
 import
+  asyncdispatch,
   asynchttpserver,
   os,
   json,
@@ -12,6 +13,7 @@ include core/validation
 import core/baseEnv
 import core/request
 import core/logger
+import core/security
 
 let baseMessages = %*{
   "accepted": "The :attribute must be accepted.",
@@ -180,6 +182,10 @@ proc hasMessage(key, key2:string):bool =
 
 proc setAttribute(key, attribute:string):string =
   return if attribute.len == 0: key else: attribute
+
+proc getErrors*(self:Params):JsonNode =
+  return %self.errors
+
 # =============================================================================
 
 

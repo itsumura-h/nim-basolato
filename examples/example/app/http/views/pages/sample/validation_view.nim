@@ -1,4 +1,4 @@
-import tables
+import tables, json
 import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
@@ -11,47 +11,47 @@ style "css", style:"""
 }
 """
 
-proc impl(params:Params):string = tmpli html"""
+proc impl(params, errors:JsonNode):string = tmpli html"""
 $(style)
 <div class="$(style.get("className"))">
   <form method="POST">
     $(csrfToken())
-    <p><input type="text" name="name" placeholder="name"></p>
-    $if params.hasError("name"){
+    <p><input type="text" name="name" placeholder="name" value="$(params.old("name"))"></p>
+    $if errors.haskey("name"){
       <ul class="$(style.get("error"))">
-        $for error in params.errors["name"] {
+        $for error in errors["name"] {
           <li>$(error.get)</li>
         }
       </ul>
     }
     <p><input type="password" name="password" placeholder="password"></p>
-    $if params.hasError("password"){
+    $if errors.haskey("password"){
       <ul class="$(style.get("error"))">
-        $for error in params.errors["password"] {
+        $for error in errors["password"] {
           <li>$(error.get)</li>
         }
       </ul>
     }
     <p><input type="password" name="password_confirmation" placeholder="password confirmation"></p>
-    $if params.hasError("password_confirmation"){
+    $if errors.haskey("password_confirmation"){
       <ul class="$(style.get("error"))">
-        $for error in params.errors["password_confirmation"] {
+        $for error in errors["password_confirmation"] {
           <li>$(error.get)</li>
         }
       </ul>
     }
-    <p><input type="number" name="number" placeholder="number between 1 ~ 10"></p>
-    $if params.hasError("number"){
+    <p><input type="number" name="number" placeholder="number between 1 ~ 10" value="$(params.old("number"))"></p>
+    $if errors.haskey("number"){
       <ul class="$(style.get("error"))">
-        $for error in params.errors["number"] {
+        $for error in errors["number"] {
           <li>$(error.get)</li>
         }
       </ul>
     }
-    <p><input type="text" name="float" placeholder="float between 0.1 ~ 1.0"></p>
-    $if params.hasError("float"){
+    <p><input type="text" name="float" placeholder="float between 0.1 ~ 1.0" value="$(params.old("float"))"></p>
+    $if errors.haskey("float"){
       <ul class="$(style.get("error"))">
-        $for error in params.errors["float"] {
+        $for error in errors["float"] {
           <li>$(error.get)</li>
         }
       </ul>
@@ -61,6 +61,7 @@ $(style)
 </div>
 """
 
-proc validationView*(params:Params):string =
+proc validationView*(auth:Auth):Future[string] {.async.} =
   let title = ""
-  return applicationView(title, impl(params))
+  let (params, errors) = await auth.getSession()
+  return applicationView(title, impl(params, errors))

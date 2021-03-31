@@ -1,7 +1,8 @@
 import
-  asynchttpserver, asyncnet, json, strutils, cgi, tables, os, strformat, strtabs,
-  parseutils, net, uri
+  asyncdispatch, asynchttpserver, asyncnet, json, strutils, cgi, tables, os, strformat,
+  strtabs, parseutils, net, uri
 
+import security
 
 func path*(request:Request):string =
   return request.url.path
@@ -55,9 +56,9 @@ type Param* = ref object
 func ext*(self:Param):string =
   return self.ext
 
-type ValidationErros* = TableRef[string, seq[string]]
+type ValidationErrors* = TableRef[string, seq[string]]
 
-func add*(self:ValidationErros, key, value:string) =
+func add*(self:ValidationErrors, key, value:string) =
   if self.hasKey(key):
     self[key].add(value)
   else:
@@ -65,7 +66,7 @@ func add*(self:ValidationErros, key, value:string) =
 
 type Params* = ref object
   data: TableRef[string, Param]
-  errors: ValidationErros
+  errors: ValidationErrors
 
 proc newParams*():Params =
   return Params(
@@ -159,6 +160,14 @@ proc getJsonParams*(request:Request):Params =
     else:
       result.data[k] = Param(value: v.getStr)
 
+proc saveSession*(auth:Auth, params:Params) {.async.} =
+  var data = newJObject()
+  for key, param in params.data:
+    if param.ext.len == 0:
+      data[key] = %param.value
+  let errors = %params.errors
+  await auth.setFlash("params", data)
+  await auth.setFlash("errors", errors)
 
 type MultiData* = OrderedTable[string, tuple[fields: StringTableRef, body: string]]
 

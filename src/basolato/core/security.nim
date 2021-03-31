@@ -99,6 +99,9 @@ when SESSION_TYPE == "redis":
   proc set*(self:SessionDb, key, value: string) {.async.} =
     discard await self.conn.hSet(self.token, key, value)
 
+  proc set*(self:SessionDb, key:string, value: JsonNode) {.async.} =
+    discard await self.conn.hSet(self.token, key, $value)
+
   proc some*(self:SessionDb, key:string):Future[bool] {.async.} =
     return await self.conn.hExists(self.token, key)
 
@@ -112,8 +115,16 @@ when SESSION_TYPE == "redis":
     for i, val in rows:
       if i == 0 or i mod 2 == 0:
         str.add(&"\"{val}\":")
+      elif rows.len-1 != i:
+        if val.contains("{") or val.contains("["):
+          str.add(&"{val}, ")
+        else:
+          str.add(&"\"{val}\", ")
       else:
-        str.add(&"\"{val}\", ")
+        if val.contains("{") or val.contains("["):
+          str.add(&"{val}")
+        else:
+          str.add(&"\"{val}\"")
     str.add("}")
     return str.parseJson
 
@@ -181,6 +192,12 @@ else:
     db[self.token][key] = %value
     db.flush()
 
+  proc set*(self:SessionDb, key:string, value:JsonNode) {.async.} =
+    let db = self.conn
+    defer: db.close()
+    db[self.token][key] = value
+    db.flush()
+
   proc some*(self:SessionDb, key:string):Future[bool] {.async.} =
     try:
       let db = self.conn
@@ -228,6 +245,9 @@ proc getToken*(self:Session):Future[string] {.async.} =
   return await self.db.getToken()
 
 proc set*(self:Session, key, value:string) {.async.} =
+  await self.db.set(key, value)
+
+proc set*(self:Session, key:string, value:JsonNode) {.async.} =
   await self.db.set(key, value)
 
 proc some*(self:Session, key:string):Future[bool] {.async.} =
@@ -464,6 +484,11 @@ proc set*(self:Auth, key, value:string) {.async.} =
     self.session = await newSession()
   await self.session.set(key, value)
 
+proc set*(self:Auth, key:string, value:JsonNode) {.async.} =
+  if self.session.isNil:
+    self.session = await newSession()
+  await self.session.set(key, value)
+
 proc some*(self:Auth, key:string):Future[bool] {.async.} =
   if self.isNil:
     return false
@@ -515,6 +540,10 @@ proc setFlash*(self:Auth, key, value:string) {.async.} =
   let key = "flash_" & key
   await self.set(key, value)
 
+proc setFlash*(self:Auth, key:string, value:JsonNode) {.async.} =
+  let key = "flash_" & key
+  await self.set(key, value)
+
 proc hasFlash*(self:Auth, key:string):Future[bool] {.async.} =
   result = false
   let rows = await self.session.db.getRows()
@@ -532,6 +561,25 @@ proc getFlash*(self:Auth):Future[JsonNode] {.async.} =
       newKey.delete(0, 5)
       result[newKey] = val
       await self.delete(key)
+
+proc getErrors(self:Auth):Future[JsonNode] {.async.} =
+  result = newJObject()
+  let rows = await self.session.db.getRows()
+  for key, val in rows.pairs:
+    if key == "flash_errors":
+      await self.delete(key)
+      return val
+
+proc getParams(self:Auth):Future[JsonNode] {.async.} =
+  result = newJObject()
+  let rows = await self.session.db.getRows()
+  for key, val in rows.pairs:
+    if key == "flash_params":
+      await self.delete(key)
+      return val
+
+proc getSession*(self:Auth):Future[tuple[params:JsonNode, errors:JsonNode]] {.async.} =
+  return (await self.getParams(), await self.getErrors())
 
 
 # ========== CsrfToken ====================

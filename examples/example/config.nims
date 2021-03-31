@@ -18,9 +18,10 @@ putEnv("LOG_IS_ERROR_FILE", "true")
 putEnv("LOG_DIR", "/root/project/examples/example/logs")
 
 # Session db
-putEnv("SESSION_TYPE", "file") # file or redis
-putEnv("SESSION_DB_PATH", "/root/project/examples/example/session.db")
-# putEnv("SESSION_DB_PATH", "redis:6379")
+# putEnv("SESSION_TYPE", "file") # file or redis
+# putEnv("SESSION_DB_PATH", "/root/project/examples/example/session.db")
+putEnv("SESSION_TYPE", "redis") # file or redis
+putEnv("SESSION_DB_PATH", "redis:6379")
 putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
 putEnv("ENABLE_ANONYMOUS_COOKIE", "false")
 putEnv("COOKIE_DOMAINS", ", amazon.com, google.com")

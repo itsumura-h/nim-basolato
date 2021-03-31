@@ -9,7 +9,7 @@ style "css", style:"""
 }
 """
 
-proc impl(params:Params):string = tmpli html"""
+proc impl(params, errors:JsonNode):string = tmpli html"""
 $(style)
 <section class="section">
   <div class="container is-max-desktop">
@@ -27,9 +27,9 @@ $(style)
                 <i class="fas fa-user"></i>
               </span>
             </p>
-            $if params.errors.hasKey("name") {
+            $if errors.hasKey("name") {
               <ul class="$(style.get("errors"))">
-                $for error in params.errors["name"] {
+                $for error in errors["name"] {
                   <li>$(error.get())</li>
                 }
               </ul>
@@ -43,9 +43,9 @@ $(style)
                 <i class="fas fa-envelope"></i>
               </span>
             </p>
-            $if params.errors.hasKey("email") {
+            $if errors.hasKey("email") {
               <ul class="$(style.get("errors"))">
-                $for error in params.errors["email"] {
+                $for error in errors["email"] {
                   <li>$(error.get())</li>
                 }
               </ul>
@@ -59,15 +59,25 @@ $(style)
                 <i class="fas fa-lock"></i>
               </span>
             </p>
-            $if params.errors.hasKey("password") {
+            $if errors.hasKey("password") {
               <ul class="$(style.get("errors"))">
-                $for error in params.errors["password"] {
+                $for error in errors["password"] {
                   <li>$(error.get())</li>
                 }
               </ul>
             }
           </div>
-        
+
+          $if errors.hasKey("core"){
+            <div class="field">
+              <ul class="$(style.get("errors"))">
+                  $for error in errors["core"] {
+                    <li>$(error.get())</li>
+                  }
+                </ul>
+            </div>
+          }
+
           <div class="field">
             <button type="submit" class="button is-primary is-light is-outlined">signup</button>
           </div>
@@ -79,6 +89,7 @@ $(style)
 </section>
 """
 
-proc signupView*(params:Params):string =
+proc signupView*(auth:Auth):Future[string] {.async.} =
   let title = "Sign up"
-  return applicationView(title, impl(params))
+  let (params, errors) = await auth.getSession()
+  return applicationView(title, impl(params, errors))
