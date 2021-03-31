@@ -8,9 +8,14 @@ style "css", style:
 .form{
   padding: 10px 0px;
 }
+
+.error{
+  background-color: pink;
+  color: red;
+}
 """
 
-proc impl(auth:Auth, post:JsonNode):Future[string] {.async.} = tmpli html"""
+proc impl(params, errors, post:JsonNode):Future[string] {.async.} = tmpli html"""
 $(style)
 <section class="section">
   <div class="container is-max-desktop">
@@ -21,12 +26,30 @@ $(style)
         <div class="controll">
           <input type="text" name="title" placeholder="title" class="input" value="$(post["title"].get)">
         </div>
+        $if errors.hasKey("title"){
+          <div class="controll">
+            <ul class="$(style.get("error"))">
+              $for error in errors["title"]{
+                <li>$(error.get)</li>
+              }
+            </ul>
+          </div>
+        }
       </div>
   
       <div class="field">
         <div class="controll">
           <textarea name="content" placeholder="content" class="textarea">$(post["content"].get)</textarea>
         </div>
+        $if errors.hasKey("content"){
+          <div class="controll">
+            <ul class="$(style.get("error"))">
+              $for error in errors["content"]{
+                <li>$(error.get)</li>
+              }
+            </ul>
+          </div>
+        }
       </div>
   
       <div class="field">
@@ -43,9 +66,7 @@ $(style)
           </select>
         </div>
       </div>
-  
-      $(await errorsView(auth))
-  
+      $(errorsView(errors))
       <div class="field">
         <div class="controll">
           <button type="submit" class="button is-primary is-light is-outlined">update</button>
@@ -66,6 +87,7 @@ $(style)
 </section>
 """
 
-proc showView*(auth:Auth, post=newJObject()):Future[string] {.async.} =
+proc showView*(client:Client, post=newJObject()):Future[string] {.async.} =
   let title = ""
-  return applicationView(title, await impl(auth, post))
+  let (params, errors) = await client.getValidationResult()
+  return applicationView(title, await impl(params, errors, post))

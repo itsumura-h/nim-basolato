@@ -13,7 +13,7 @@ style "css", style:
 }
 """
 
-proc inputView*(params:Params):string = tmpli html"""
+proc inputView*(params, errors:JsonNode):string = tmpli html"""
 $(style)
 <div class="container">
   <form method="POST" class="field $(style.get("form"))">
@@ -22,9 +22,9 @@ $(style)
       <div class="controll">
         <input type="text" name="title" placeholder="title" class="input" value="$(old(params, "title"))">
       </div>
-      $if params.hasError("title"){
+      $if errors.hasKey("title"){
         <ul class="$(style.get("errors"))">
-          $for error in params.errors["title"]{
+          $for error in errors["title"]{
             <li>$(error.get)</li>
           }
         </ul>
@@ -35,9 +35,9 @@ $(style)
       <div class="controll">
         <textarea name="content" placeholder="content" class="textarea">$(old(params, "content"))</textarea>
       </div>
-      $if params.hasError("content"){
+      $if errors.hasKey("content"){
         <ul class="$(style.get("errors"))">
-          $for error in params.errors["content"]{
+          $for error in errors["content"]{
             <li>$(error.get)</li>
           }
         </ul>

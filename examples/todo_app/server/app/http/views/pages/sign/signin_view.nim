@@ -75,7 +75,7 @@ $(style)
 </section>
 """
 
-proc signinView*(auth:Auth):Future[string] {.async.} =
+proc signinView*(client:Client):Future[string] {.async.} =
   let title = "Sign in"
-  let (params, errors) = await auth.getSession()
+  let (params, errors) = await client.getValidationResult()
   return applicationView(title, impl(params, errors))

@@ -61,7 +61,7 @@ $(style)
 </div>
 """
 
-proc validationView*(auth:Auth):Future[string] {.async.} =
+proc validationView*(client:Client):Future[string] {.async.} =
   let title = ""
-  let (params, errors) = await auth.getSession()
+  let (params, errors) = await client.getValidationResult()
   return applicationView(title, impl(params, errors))

@@ -430,66 +430,66 @@ proc delete*(self:var Cookie, key:string, path="/") =
 #       )
 
 
-# ========== Auth ====================
-type Auth* = ref object
+# ========== Client ====================
+type Client* = ref object
   session*: Session
 
-proc newAuth*(request:Request):Future[Auth] {.async.} =
+proc newClient*(request:Request):Future[Client] {.async.} =
   ## use in constructor
   var sessionId = newCookie(request).get("session_id")
   if await checkSessionIdValid(sessionId):
     let session = await newSession(sessionId)
     await session.set("last_access", $getTime())
-    return Auth(session:session)
+    return Client(session:session)
   else:
-    # return Auth()
+    # return Client()
     let session = await newSession()
     await session.set("last_access", $getTime())
-    return Auth(session:session)
+    return Client(session:session)
 
-proc newAuth*(sessionId:string):Future[Auth] {.async.} =
+proc newClient*(sessionId:string):Future[Client] {.async.} =
   ## use in constructor
   if await checkSessionIdValid(sessionId):
     let session = await newSession(sessionId)
     await session.set("last_access", $getTime())
-    return Auth(session:session)
+    return Client(session:session)
   else:
-    return Auth()
+    return Client()
 
-# func newAuth():Future[Auth] {.async.} =
+# func newClient():Future[Client] {.async.} =
 #   ## use in constructor
 #   let session = await newSession()
 #   await session.set("isLogin", "false")
 #   await session.set("last_access", $getTime())
-#   return Auth(session:session)
+#   return Client(session:session)
 
-# func newAuthIfInvalid*(request:Request):Future[Auth] {.async.} =
-#   var auth:Auth
+# func newClientIfInvalid*(request:Request):Future[Client] {.async.} =
+#   var client:Client
 #   if not request.cookies.hasKey("session_id"):
-#     auth = await newAuth()
+#     client = await newClient()
 #   else:
 #     var sessionId = newCookie(request).get("session_id")
 #     try:
-#       auth = Auth(session:await newSession(sessionId))
+#       client = Client(session:await newSession(sessionId))
 #     except:
-#       auth = await newAuth()
-#   return auth
+#       client = await newClient()
+#   return client
 
 
-proc getToken*(self:Auth):Future[string] {.async.} =
+proc getToken*(self:Client):Future[string] {.async.} =
   return await self.session.getToken()
 
-proc set*(self:Auth, key, value:string) {.async.} =
+proc set*(self:Client, key, value:string) {.async.} =
   if self.session.isNil:
     self.session = await newSession()
   await self.session.set(key, value)
 
-proc set*(self:Auth, key:string, value:JsonNode) {.async.} =
+proc set*(self:Client, key:string, value:JsonNode) {.async.} =
   if self.session.isNil:
     self.session = await newSession()
   await self.session.set(key, value)
 
-proc some*(self:Auth, key:string):Future[bool] {.async.} =
+proc some*(self:Client, key:string):Future[bool] {.async.} =
   if self.isNil:
     return false
   elif self.session.isNil:
@@ -497,25 +497,25 @@ proc some*(self:Auth, key:string):Future[bool] {.async.} =
   else:
     return await self.session.some(key)
 
-proc get*(self:Auth, key:string):Future[string] {.async.} =
+proc get*(self:Client, key:string):Future[string] {.async.} =
   if await self.some(key):
     return await self.session.get(key)
   else:
     return ""
 
-proc delete*(self:Auth, key:string) {.async.} =
+proc delete*(self:Client, key:string) {.async.} =
   await self.session.delete(key)
 
-proc destroy*(self:Auth) {.async.} =
+proc destroy*(self:Client) {.async.} =
   await self.session.destroy()
 
-proc login*(self:Auth) {.async.} =
+proc login*(self:Client) {.async.} =
   await self.set("is_login", $true)
 
-proc logout*(self:Auth) {.async.} =
+proc logout*(self:Client) {.async.} =
   await self.set("is_login", $false)
 
-proc anonumousCreateSession*(self:Auth, req:Request):Future[bool] {.async.} =
+proc anonumousCreateSession*(self:Client, req:Request):Future[bool] {.async.} =
   ## Recreate session because session id from request is invalid
   let sessionId = newCookie(req).get("session_id")
   if not await checkSessionIdValid(sessionId):
@@ -528,7 +528,7 @@ proc anonumousCreateSession*(self:Auth, req:Request):Future[bool] {.async.} =
   else:
     return false
 
-proc isLogin*(self:Auth):Future[bool] {.async.} =
+proc isLogin*(self:Client):Future[bool] {.async.} =
   if await self.some("is_login"):
     return parseBool(await self.session.get("is_login"))
   else:
@@ -536,15 +536,15 @@ proc isLogin*(self:Auth):Future[bool] {.async.} =
 
 
 # ========== Flash ====================
-proc setFlash*(self:Auth, key, value:string) {.async.} =
+proc setFlash*(self:Client, key, value:string) {.async.} =
   let key = "flash_" & key
   await self.set(key, value)
 
-proc setFlash*(self:Auth, key:string, value:JsonNode) {.async.} =
+proc setFlash*(self:Client, key:string, value:JsonNode) {.async.} =
   let key = "flash_" & key
   await self.set(key, value)
 
-proc hasFlash*(self:Auth, key:string):Future[bool] {.async.} =
+proc hasFlash*(self:Client, key:string):Future[bool] {.async.} =
   result = false
   let rows = await self.session.db.getRows()
   for k, v in rows.pairs:
@@ -552,7 +552,7 @@ proc hasFlash*(self:Auth, key:string):Future[bool] {.async.} =
       result = true
       break
 
-proc getFlash*(self:Auth):Future[JsonNode] {.async.} =
+proc getFlash*(self:Client):Future[JsonNode] {.async.} =
   result = newJObject()
   let rows = await self.session.db.getRows()
   for key, val in rows.pairs:
@@ -562,7 +562,7 @@ proc getFlash*(self:Auth):Future[JsonNode] {.async.} =
       result[newKey] = val
       await self.delete(key)
 
-proc getErrors(self:Auth):Future[JsonNode] {.async.} =
+proc getErrors(self:Client):Future[JsonNode] {.async.} =
   result = newJObject()
   let rows = await self.session.db.getRows()
   for key, val in rows.pairs:
@@ -570,7 +570,7 @@ proc getErrors(self:Auth):Future[JsonNode] {.async.} =
       await self.delete(key)
       return val
 
-proc getParams(self:Auth):Future[JsonNode] {.async.} =
+proc getParams(self:Client):Future[JsonNode] {.async.} =
   result = newJObject()
   let rows = await self.session.db.getRows()
   for key, val in rows.pairs:
@@ -578,7 +578,7 @@ proc getParams(self:Auth):Future[JsonNode] {.async.} =
       await self.delete(key)
       return val
 
-proc getSession*(self:Auth):Future[tuple[params:JsonNode, errors:JsonNode]] {.async.} =
+proc getValidationResult*(self:Client):Future[tuple[params:JsonNode, errors:JsonNode]] {.async.} =
   return (await self.getParams(), await self.getErrors())
 
 

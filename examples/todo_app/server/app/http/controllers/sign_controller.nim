@@ -12,15 +12,15 @@ import ../../repositories/user/user_rdb_repository
 
 
 proc signUpPage*(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
-  return await render(await signupView(auth)).setAuth(auth)
+  let client = await newClient(request)
+  return await render(await signupView(client)).setClient(client)
 
 proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
   params.required("name");params.required("email");params.required("password");
   params.email("email")
-  let auth = await newAuth(request)
+  let client = await newClient(request)
   if params.hasErrors:
-    await auth.saveSession(params)
+    await client.storeValidationResult(params)
     return redirect("/signup")
 
   let name = params.getStr("name")
@@ -30,14 +30,14 @@ proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
     let repository = newUserRdbRepository().toInterface()
     let usecase = newSignUsecase(repository)
     let user = usecase.signUp(name, email, password)
-    await auth.login()
-    await auth.set("id", $(user["id"].getInt))
-    await auth.set("name", user["name"].getStr)
+    await client.login()
+    await client.set("id", $(user["id"].getInt))
+    await client.set("name", user["name"].getStr)
     return redirect("/")
   except Exception:
     params.errors.add("core", getCurrentExceptionMsg())
-    await auth.saveSession(params)
-    return render(await signupView(auth))
+    await client.storeValidationResult(params)
+    return render(await signupView(client))
 
 
 proc deleteAccountPage*(request:Request, params:Params):Future[Response] {.async.} =
@@ -47,16 +47,16 @@ proc deleteAccount*(request:Request, params:Params):Future[Response] {.async.} =
   return render("delete account")
 
 proc signInPage*(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
-  return await render(await signinView(auth)).setAuth(auth)
+  let client = await newClient(request)
+  return await render(await signinView(client)).setClient(client)
 
 proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
   params.required("email")
   params.required("password")
   params.email("email")
-  let auth = await newAuth(request)
+  let client = await newClient(request)
   if params.hasErrors:
-    await auth.saveSession(params)
+    await client.storeValidationResult(params)
     return redirect("/signin")
 
   let email = params.getStr("email")
@@ -65,20 +65,19 @@ proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
     let repository = newUserRdbRepository().toInterface()
     let usecase = newSignUsecase(repository)
     let user = usecase.signIn(email, password)
-    let auth = await newAuth(request)
-    await auth.login()
-    await auth.set("id", $(user["id"].getInt))
-    await auth.set("name", user["name"].getStr)
+    await client.login()
+    await client.set("id", $(user["id"].getInt))
+    await client.set("name", user["name"].getStr)
     return redirect("/")
   except:
     params.errors.add("core", getCurrentExceptionMsg())
-    await auth.saveSession(params)
-    return render(await signInView(auth))
+    await client.storeValidationResult(params)
+    return render(await signInView(client))
 
 
 proc signOut*(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
-  await auth.logout()
+  let client = await newClient(request)
+  await client.logout()
   return redirect("/signin")
 
 # ==================== API ====================
@@ -87,6 +86,7 @@ proc signInApi*(request:Request, params:Params):Future[Response] {.async.} =
   params.required(["email", "password"])
   params.email("email")
   params.password("password")
+  let client = await newClient(request)
   if params.hasErrors:
     return render(Http400, %*params.errors)
 
@@ -96,11 +96,10 @@ proc signInApi*(request:Request, params:Params):Future[Response] {.async.} =
     let repository = newUserRdbRepository().toInterface()
     let usecase = newSignUsecase(repository)
     let user = usecase.signIn(email, password)
-    let auth = await newAuth(request)
-    await auth.login()
-    await auth.set("id", $(user["id"].getInt))
-    await auth.set("name", user["name"].getStr)
-    return await render(Http200, newJObject()).setAuth(auth)
+    await client.login()
+    await client.set("id", $(user["id"].getInt))
+    await client.set("name", user["name"].getStr)
+    return await render(Http200, newJObject()).setClient(client)
   except:
     let params = %*{"email": email}
     return render(Http400, %*{"params":params, "error": getCurrentExceptionMsg()})

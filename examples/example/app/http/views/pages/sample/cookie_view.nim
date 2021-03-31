@@ -1,7 +1,7 @@
 import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
-proc impl(auth:Auth):string = tmpli html"""
+proc impl(client:Client):string = tmpli html"""
 <a href="/">go back</a>
 <form method="post">
   $(csrfToken())
@@ -39,6 +39,6 @@ proc impl(auth:Auth):string = tmpli html"""
 </script>
 """
 
-proc cookieView*(auth:Auth):string =
+proc cookieView*(client:Client):string =
   let title = "Cookie"
-  return applicationView(title, impl(auth))
+  return applicationView(title, impl(client))

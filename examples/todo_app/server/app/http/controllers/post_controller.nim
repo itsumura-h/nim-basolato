@@ -1,4 +1,4 @@
-import json, strutils, options
+import json, strutils, options, strformat
 # framework
 import ../../../../../../src/basolato/controller
 import ../../../../../../src/basolato/request_validation
@@ -12,38 +12,40 @@ import ../views/pages/post/show_view
 
 
 proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
-  let id = await(auth.get("id")).parseInt
+  let client = await newClient(request)
+  let id = await(client.get("id")).parseInt
   let posts = di.queryService.getPostsByUserId(id)
-  return render(await indexView(auth, params, posts))
+  return render(await indexView(client, posts))
 
 proc show*(request:Request, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
   let post = di.queryService.getPostByUserId(id)
   if not post.isSome:
     raise newException(Error404, "Post not found")
-  let auth = await newAuth(request)
-  return render(await showView(auth, post.get))
+  let client = await newClient(request)
+  return render(await showView(client, post.get))
 
 proc store*(request:Request, params:Params):Future[Response] {.async.} =
   params.required("title")
   params.required("content")
+  let client = await newClient(request)
+
   if params.hasErrors:
-    let auth = await newAuth(request)
-    return render(await indexView(auth, params))
+    await client.storeValidationResult(params)
+    let id = params.getStr("id")
+    return redirect($request.url)
 
   let title = params.getStr("title")
   let content = params.getStr("content")
-  let auth = await newAuth(request)
-  let userId = await(auth.get("id")).parseInt
+  let userId = await(client.get("id")).parseInt
   try:
     let repository = di.postRepository
     let usecase = newPostUsecase(repository)
     usecase.store(userId, title, content)
-    return redirect("/")
   except:
-    await auth.setFlash("error", getCurrentExceptionMsg())
-    return redirect("/")
+    await client.setFlash("error", getCurrentExceptionMsg())
+
+  return redirect($request.url)
 
 proc changeStatus*(request:Request, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
@@ -61,35 +63,41 @@ proc destroy*(request:Request, params:Params):Future[Response] {.async.} =
   return redirect("/")
 
 proc update*(request:Request, params:Params):Future[Response] {.async.} =
+  params.required("title"); params.required("content"); params.required("is_finished");
+  params.minStr("content", 5)
+  let client = await newClient(request)
+  if params.hasErrors:
+    await client.storeValidationResult(params)
+    return redirect(request.url.path)
+
   let id = params.getInt("id")
   let title = params.getStr("title")
   let content = params.getStr("content")
   let isFinished = params.getBool("is_finished")
-  let auth = await newAuth(request)
   try:
     let repository = di.postRepository
     let usecase = newPostUsecase(repository)
     usecase.update(id, title, content, isFinished)
     return redirect("/")
   except:
-    await auth.setFlash("error", getCurrentExceptionMsg())
-    let post = %*{"title": title, "content": content, "is_finished": isFinished}
-    return render(await showView(auth, post))
+    params.errors.add("core", getCurrentExceptionMsg())
+    await client.storeValidationResult(params)
+    return redirect(request.url.path)
 
 # ==================== API ====================
 
 proc indexApi*(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
-  let id = await(auth.get("id")).parseInt
+  let client = await newClient(request)
+  let id = await(client.get("id")).parseInt
   let posts = di.queryService.getPostsByUserId(id)
-  return render(%*{"name":await auth.get("name"), "posts":posts})
+  return render(%*{"name":await client.get("name"), "posts":posts})
 
 proc showApi*(request:Request, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
   let post = di.queryService.getPostByUserId(id)
   if not post.isSome:
     return render(Http404, %*{"error": "Post not found"})
-  let auth = await newAuth(request)
+  let client = await newClient(request)
   return render(%*{
     "title": post.get["title"].getStr,
     "content": post.get["content"].getStr,
@@ -99,8 +107,8 @@ proc showApi*(request:Request, params:Params):Future[Response] {.async.} =
 proc storeApi*(request:Request, params:Params):Future[Response] {.async.} =
   let title = params.getStr("title")
   let content = params.getStr("content")
-  let auth = await newAuth(request)
-  let userId = await(auth.get("id")).parseInt
+  let client = await newClient(request)
+  let userId = await(client.get("id")).parseInt
   try:
     let repository = di.postRepository
     let usecase = newPostUsecase(repository)
@@ -129,7 +137,7 @@ proc updateApi*(request:Request, params:Params):Future[Response] {.async.} =
   let title = params.getStr("title")
   let content = params.getStr("content")
   let isFinished = params.getBool("isFinished")
-  let auth = await newAuth(request)
+  let client = await newClient(request)
   try:
     let repository = di.postRepository
     let usecase = newPostUsecase(repository)

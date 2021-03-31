@@ -160,14 +160,14 @@ proc getJsonParams*(request:Request):Params =
     else:
       result.data[k] = Param(value: v.getStr)
 
-proc saveSession*(auth:Auth, params:Params) {.async.} =
+proc storeValidationResult*(client:Client, params:Params) {.async.} =
   var data = newJObject()
   for key, param in params.data:
     if param.ext.len == 0:
       data[key] = %param.value
   let errors = %params.errors
-  await auth.setFlash("params", data)
-  await auth.setFlash("errors", errors)
+  await client.setFlash("params", data)
+  await client.setFlash("errors", errors)
 
 type MultiData* = OrderedTable[string, tuple[fields: StringTableRef, body: string]]
 

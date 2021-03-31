@@ -100,9 +100,9 @@ func errorRedirect*(url:string):Response =
     headers: headers
   )
 
-# ========== Auth ====================
-proc setAuth*(response:Response, auth:Auth):Future[Response] {.async.} =
-  let sessionId = await auth.getToken()
+# ========== Client ====================
+proc setClient*(response:Response, client:Client):Future[Response] {.async.} =
+  let sessionId = await client.getToken()
   if SESSION_TIME > 0 and COOKIE_DOMAINS.len > 0:
     for domain in COOKIE_DOMAINS.split(","):
       let newDomain = domain.strip()
@@ -144,13 +144,13 @@ proc setCookie*(response:Response, cookie:Cookie):Response =
   return response
 
 
-proc destroyAuth*(response:Response, auth:Auth):Future[Response] {.async.} =
-  if await auth.isLogin:
-    let sessionId = await auth.getToken()
+proc destroyClient*(response:Response, client:Client):Future[Response] {.async.} =
+  if await client.isLogin:
+    let sessionId = await client.getToken()
     let cookie = newCookieData("session_id", sessionId, timeForward(-1, Days))
                   .toCookieStr()
     response.headers.add("Set-cookie", cookie)
-    await auth.destroy()
+    await client.destroy()
   else:
-    echoErrorMsg("Tried to destroy auth but not logged in")
+    echoErrorMsg("Tried to destroy client but not logged in")
   return response

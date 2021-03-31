@@ -9,11 +9,11 @@ style "css", style:
 }
 """
 
-proc errorsView*(auth:Auth):Future[string] {.async.} = tmpli html"""
+proc errorsView*(errors:JsonNode):string = tmpli html"""
 $(style)
-$if await auth.hasFlash("error"){
+$if errors.hasKey("core"){
   <div class="container $(style.get("errors"))">
-    $for k, v in await(auth.getFlash()).pairs{
+    $for v in errors["core"]{
       <p class="content">$(v.get)</p>
     }
   </div>

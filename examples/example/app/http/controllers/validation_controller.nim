@@ -6,8 +6,8 @@ import ../../../../../src/basolato/request_validation
 import ../views/pages/sample/validation_view
 
 proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
-  return render(await validationView(auth))
+  let client = await newClient(request)
+  return render(await validationView(client))
 
 proc show*(request:Request, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
@@ -28,8 +28,8 @@ proc store*(request:Request, params:Params):Future[Response] {.async.} =
   params.betweenNum("number", 1, 10, attribute="数字")
   params.betweenNum("float", 0.1, 1.0, attribute="小数")
   if params.hasErrors:
-    let auth = await newAuth(request)
-    await auth.saveSession(params)
+    let client = await newClient(request)
+    await client.storeValidationResult(params)
   return redirect("/sample/validation")
 
 proc edit*(request:Request, params:Params):Future[Response] {.async.} =
