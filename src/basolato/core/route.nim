@@ -278,7 +278,7 @@ proc serveCore(params:(Routes, int)){.thread.} =
         let client = await newClient(req)
         if await anonumousCreateSession(client, req):
           # create new session
-          response = await response.setClient(client)
+          response = await response.setCookie(client)
         else:
           # keep session id from request and update expire
           var cookie = newCookie(req)

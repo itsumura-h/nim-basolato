@@ -101,7 +101,7 @@ func errorRedirect*(url:string):Response =
   )
 
 # ========== Client ====================
-proc setClient*(response:Response, client:Client):Future[Response] {.async.} =
+proc setCookie*(response:Response, client:Client):Future[Response] {.async.} =
   let sessionId = await client.getToken()
   if SESSION_TIME > 0 and COOKIE_DOMAINS.len > 0:
     for domain in COOKIE_DOMAINS.split(","):

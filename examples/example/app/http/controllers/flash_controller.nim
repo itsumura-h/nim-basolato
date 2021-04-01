@@ -5,7 +5,7 @@ import ../views/pages/sample/flash_view
 
 proc index*(request:Request, params:Params):Future[Response] {.async.} =
   let client = await newClient(request)
-  return await render(await indexView(client)).setClient(client)
+  return await render(await indexView(client)).setCookie(client)
 
 proc store*(request:Request, params:Params):Future[Response] {.async.} =
   let client = await newClient(request)

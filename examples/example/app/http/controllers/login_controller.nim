@@ -15,9 +15,9 @@ proc store*(request:Request, params:Params):Future[Response] {.async.} =
   let client = await newClient(request)
   await client.login()
   await client.set("name", name)
-  return await redirect("/sample/login").setClient(client)
+  return await redirect("/sample/login").setCookie(client)
 
 proc destroy*(request:Request, params:Params):Future[Response] {.async.} =
   let client = await newClient(request)
   await client.destroy()
-  return await redirect("/sample/login").setClient(client)
+  return await redirect("/sample/login").setCookie(client)

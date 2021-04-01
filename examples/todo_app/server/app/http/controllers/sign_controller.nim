@@ -13,7 +13,7 @@ import ../../repositories/user/user_rdb_repository
 
 proc signUpPage*(request:Request, params:Params):Future[Response] {.async.} =
   let client = await newClient(request)
-  return await render(await signupView(client)).setClient(client)
+  return await render(await signupView(client)).setCookie(client)
 
 proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
   params.required("name");params.required("email");params.required("password");
@@ -48,7 +48,7 @@ proc deleteAccount*(request:Request, params:Params):Future[Response] {.async.} =
 
 proc signInPage*(request:Request, params:Params):Future[Response] {.async.} =
   let client = await newClient(request)
-  return await render(await signinView(client)).setClient(client)
+  return await render(await signinView(client)).setCookie(client)
 
 proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
   params.required("email")
@@ -57,7 +57,7 @@ proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
   let client = await newClient(request)
   if params.hasErrors:
     await client.storeValidationResult(params)
-    return redirect("/signin")
+    return redirect(request.path)
 
   let email = params.getStr("email")
   let password = params.getStr("password")
@@ -85,10 +85,9 @@ proc signOut*(request:Request, params:Params):Future[Response] {.async.} =
 proc signInApi*(request:Request, params:Params):Future[Response] {.async.} =
   params.required(["email", "password"])
   params.email("email")
-  params.password("password")
   let client = await newClient(request)
   if params.hasErrors:
-    return render(Http400, %*params.errors)
+    return render(Http400, %params.errors)
 
   let email = params.getStr("email")
   let password = params.getStr("password")
@@ -99,10 +98,10 @@ proc signInApi*(request:Request, params:Params):Future[Response] {.async.} =
     await client.login()
     await client.set("id", $(user["id"].getInt))
     await client.set("name", user["name"].getStr)
-    return await render(Http200, newJObject()).setClient(client)
+    return await render(Http200, newJObject()).setCookie(client)
   except:
-    let params = %*{"email": email}
-    return render(Http400, %*{"params":params, "error": getCurrentExceptionMsg()})
+    params.errors.add("core", getCurrentExceptionMsg())
+    return await render(Http400, %*{"params": params.getReturnableParams(), "errors": params.errors}).setCookie(client)
 
 proc signOutApi*(request:Request, params:Params):Future[Response] {.async.} =
   echo params.repr

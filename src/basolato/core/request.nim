@@ -112,7 +112,10 @@ func getBool*(params:Params, key:string, default=false):bool =
     return default
 
 proc getJson*(params:Params, key:string, default=newJObject()):JsonNode =
-  return params.data[key].value.parseJson
+  try:
+    return params.data[key].value.parseJson
+  except:
+    return default
 
 func hasKey*(params:Params, key:string):bool =
   return params.data.hasKey(key)
@@ -159,6 +162,13 @@ proc getJsonParams*(request:Request):Params =
       result.data[k] = Param(value: $v)
     else:
       result.data[k] = Param(value: v.getStr)
+
+proc getReturnableParams*(params:Params):JsonNode =
+  var data = newJObject()
+  for key, param in params.data:
+    if param.ext.len == 0:
+      data[key] = %param.value
+  return data
 
 proc storeValidationResult*(client:Client, params:Params) {.async.} =
   var data = newJObject()

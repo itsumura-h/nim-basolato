@@ -974,9 +974,9 @@ proc required*(self:Params, key:string, attribute="") =
         .replace(":attribute", attribute)
       self.errors.add(key, message)
 
-proc required*(self:Params, keys:openArray[string], attributes=newSeq[string]()) =
+proc required*(self:Params, keys:openArray[string]) =
   for i, key in keys:
-    self.required(key, attributes[i])
+    self.required(key)
 
 proc requiredIf*(self:Params, key, other:string, values:openArray[string], attribute="") =
   let attribute = setAttribute(key, attribute)
