@@ -3,8 +3,7 @@ import ../../../../../../../../src/basolato/view
 import ../../layouts/application_view
 import ../../layouts/post/errors_view
 
-style "css", style:
-  """
+style "css", style:"""
 .form{
   padding: 10px 0px;
 }
@@ -24,7 +23,12 @@ $(style)
       $(csrfToken())
       <div class="field">
         <div class="controll">
-          <input type="text" name="title" placeholder="title" class="input" value="$(post["title"].get)">
+          $if params.len > 0{
+            <input type="text" name="title" placeholder="title" class="input" value="$(params["title"].get)">
+          }
+          $else{
+            <input type="text" name="title" placeholder="title" class="input" value="$(post["title"].get)">
+          }
         </div>
         $if errors.hasKey("title"){
           <div class="controll">
@@ -39,7 +43,12 @@ $(style)
   
       <div class="field">
         <div class="controll">
-          <textarea name="content" placeholder="content" class="textarea">$(post["content"].get)</textarea>
+          $if params.len > 0{
+            <textarea name="content" placeholder="content" class="textarea">$(params["content"].get)</textarea>
+          }
+          $else{
+            <textarea name="content" placeholder="content" class="textarea">$(post["content"].get)</textarea>
+          }
         </div>
         $if errors.hasKey("content"){
           <div class="controll">
@@ -55,13 +64,13 @@ $(style)
       <div class="field">
         <div class="select">
           <select name="is_finished">
-            $if post["is_finished"].getBool{
-              <option value="true" selected>Finished</option>
-              <option value="false">Not finished</option>
+            $if params.len > 0{
+              <option value="true" $if params["is_finished"].getBool{selected}>Finished</option>
+              <option value="false" $if not params["is_finished"].getBool{selected}>Not finished</option>
             }
             $else{
-              <option value="true">Finished</option>
-              <option value="false" selected>Not finished</option>
+              <option value="true" $if post["is_finished"].getBool{selected}>Finished</option>
+              <option value="false" $if not post["is_finished"].getBool{selected}>Not finished</option>
             }
           </select>
         </div>

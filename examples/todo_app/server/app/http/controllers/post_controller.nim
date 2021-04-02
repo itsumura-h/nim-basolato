@@ -10,6 +10,9 @@ import ../../core/usecases/post_usecase
 import ../views/pages/post/index_view
 import ../views/pages/post/show_view
 
+proc rule(v:RequestValidation) =
+  v.required("title"); v.minStr("title", 3);
+  v.required("content"); v.minStr("content", 5);
 
 proc index*(request:Request, params:Params):Future[Response] {.async.} =
   let client = await newClient(request)
@@ -26,14 +29,13 @@ proc show*(request:Request, params:Params):Future[Response] {.async.} =
   return render(await showView(client, post.get))
 
 proc store*(request:Request, params:Params):Future[Response] {.async.} =
-  params.required("title")
-  params.required("content")
+  let v = newRequestValidation(params)
   let client = await newClient(request)
 
-  if params.hasErrors:
-    await client.storeValidationResult(params)
-    let id = params.getStr("id")
-    return redirect($request.url)
+  v.rule()
+  if v.hasErrors:
+    await client.storeValidationResult(v)
+    return redirect(request.path)
 
   let title = params.getStr("title")
   let content = params.getStr("content")
@@ -43,9 +45,10 @@ proc store*(request:Request, params:Params):Future[Response] {.async.} =
     let usecase = newPostUsecase(repository)
     usecase.store(userId, title, content)
   except:
-    await client.setFlash("error", getCurrentExceptionMsg())
+    v.errors.add("core", getCurrentExceptionMsg())
+    await client.storeValidationResult(v)
 
-  return redirect($request.url)
+  return redirect(request.path)
 
 proc changeStatus*(request:Request, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
@@ -63,11 +66,12 @@ proc destroy*(request:Request, params:Params):Future[Response] {.async.} =
   return redirect("/")
 
 proc update*(request:Request, params:Params):Future[Response] {.async.} =
-  params.required("title"); params.required("content"); params.required("is_finished");
-  params.minStr("content", 5)
+  let v = newRequestValidation(params)
   let client = await newClient(request)
-  if params.hasErrors:
-    await client.storeValidationResult(params)
+
+  v.rule()
+  if v.hasErrors:
+    await client.storeValidationResult(v)
     return redirect(request.url.path)
 
   let id = params.getInt("id")
@@ -80,9 +84,9 @@ proc update*(request:Request, params:Params):Future[Response] {.async.} =
     usecase.update(id, title, content, isFinished)
     return redirect("/")
   except:
-    params.errors.add("core", getCurrentExceptionMsg())
-    await client.storeValidationResult(params)
-    return redirect(request.url.path)
+    v.errors.add("core", getCurrentExceptionMsg())
+    await client.storeValidationResult(v)
+    return redirect(request.path)
 
 # ==================== API ====================
 
@@ -105,6 +109,11 @@ proc showApi*(request:Request, params:Params):Future[Response] {.async.} =
   })
 
 proc storeApi*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  v.rule()
+  if v.hasErrors:
+    return render(Http422, %*{"params": params, "errors": v.errors})
+
   let title = params.getStr("title")
   let content = params.getStr("content")
   let client = await newClient(request)
@@ -115,7 +124,7 @@ proc storeApi*(request:Request, params:Params):Future[Response] {.async.} =
     usecase.store(userId, title, content)
     return render("")
   except:
-    return render(Http422, %*{"error": getCurrentExceptionMsg()})
+    return render(Http422, %*{"params": params, "errors": v.errors})
 
 proc changeStatusApi*(request:Request, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
@@ -133,6 +142,11 @@ proc destroyApi*(request:Request, params:Params):Future[Response] {.async.} =
   return render("")
 
 proc updateApi*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  v.rule()
+  if v.hasErrors:
+    return render(Http422, %*{"params":params, "errors":v.errors})
+
   let id = params.getInt("id")
   let title = params.getStr("title")
   let content = params.getStr("content")
@@ -144,4 +158,5 @@ proc updateApi*(request:Request, params:Params):Future[Response] {.async.} =
     usecase.update(id, title, content, isFinished)
     return render("")
   except:
-    return render(Http422, %*{"error": getCurrentExceptionMsg()})
+    v.errors.add("core", getCurrentExceptionMsg())
+    return render(Http422, %*{"params": params, "errors": v.errors})

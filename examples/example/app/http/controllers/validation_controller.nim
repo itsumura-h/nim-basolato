@@ -7,7 +7,7 @@ import ../views/pages/sample/validation_view
 
 proc index*(request:Request, params:Params):Future[Response] {.async.} =
   let client = await newClient(request)
-  return render(await validationView(client))
+  return await render(await validationView(client)).setCookie(client)
 
 proc show*(request:Request, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
@@ -17,19 +17,22 @@ proc create*(request:Request, params:Params):Future[Response] {.async.} =
   return render("create")
 
 proc store*(request:Request, params:Params):Future[Response] {.async.} =
-  params.required(
-    ["name", "email", "password", "password_confirmation", "number", "float"],
-    attributes = @["名前", "メールアドレス", "パスワード", "パスワード確認", "数字", "小数"]
-  )
-  params.email("email", attribute="メールアドレス")
-  params.password("password", attribute="パスワード")
-  params.password("password_confirmation", attribute="パスワード確認")
-  params.confirmed("password", attribute="パスワード")
-  params.betweenNum("number", 1, 10, attribute="数字")
-  params.betweenNum("float", 0.1, 1.0, attribute="小数")
-  if params.hasErrors:
+  let validation = newRequestValidation(params)
+  # email
+  validation.required("email", attribute="mail address")
+  validation.email("email", attribute="mail address")
+  # password
+  validation.required("password")
+  validation.required("password_confirmation", attribute="password confirmation")
+  validation.confirmed("password")
+  # number, float
+  validation.required("number")
+  validation.required("float")
+  validation.betweenNum("number", 1, 10)
+  validation.betweenNum("float", 0.1, 1.0)
+  if validation.hasErrors:
     let client = await newClient(request)
-    await client.storeValidationResult(params)
+    await client.storeValidationResult(validation)
   return redirect("/sample/validation")
 
 proc edit*(request:Request, params:Params):Future[Response] {.async.} =

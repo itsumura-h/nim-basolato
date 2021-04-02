@@ -53,6 +53,9 @@ type Param* = ref object
   ext:string
   value:string
 
+func `$`*(self:Param):string =
+  return self.value
+
 func ext*(self:Param):string =
   return self.ext
 
@@ -66,19 +69,14 @@ func add*(self:ValidationErrors, key, value:string) =
 
 type Params* = ref object
   data: TableRef[string, Param]
-  errors: ValidationErrors
 
 proc newParams*():Params =
   return Params(
     data: newTable[string, Param](),
-    errors: newTable[string, seq[string]]()
   )
 
 func data*(self:Params):TableRef[string, Param] =
   return self.data
-
-func errors*(self:Params):TableRef[string, seq[string]] =
-  return self.errors
 
 
 func `[]`*(params:Params, key:string):Param =
@@ -120,12 +118,6 @@ proc getJson*(params:Params, key:string, default=newJObject()):JsonNode =
 func hasKey*(params:Params, key:string):bool =
   return params.data.hasKey(key)
 
-func hasErrors*(params:Params):bool =
-  return params.errors.len > 0
-
-func hasError*(params:Params, key:string):bool =
-  return params.errors.hasKey(key)
-
 func getUrlParams*(requestPath, routePath:string):Params =
   result = newParams()
   if routePath.contains("{"):
@@ -163,21 +155,12 @@ proc getJsonParams*(request:Request):Params =
     else:
       result.data[k] = Param(value: v.getStr)
 
-proc getReturnableParams*(params:Params):JsonNode =
+proc `%`*(self:Params):JsonNode =
   var data = newJObject()
-  for key, param in params.data:
+  for key, param in self.data:
     if param.ext.len == 0:
       data[key] = %param.value
   return data
-
-proc storeValidationResult*(client:Client, params:Params) {.async.} =
-  var data = newJObject()
-  for key, param in params.data:
-    if param.ext.len == 0:
-      data[key] = %param.value
-  let errors = %params.errors
-  await client.setFlash("params", data)
-  await client.setFlash("errors", errors)
 
 type MultiData* = OrderedTable[string, tuple[fields: StringTableRef, body: string]]
 

@@ -11,11 +11,16 @@ import app/http/controllers/validation_controller
 # middleware
 import app/http/middlewares/auth_middleware
 import app/http/middlewares/cors_middleware
+import app/http/middlewares/middleware1
+import app/http/middlewares/middleware2
 
 var routes = newRoutes()
 
 routes.middleware(re".*", auth_middleware.checkCsrfTokenMiddleware)
 routes.middleware(@[HttpGet, HttpOptions], re"/api/.*", cors_middleware.setCorsMiddleware)
+routes.middleware(re"/sample/custom-headers", middleware1.setMiddleware1)
+routes.middleware(re"/sample/custom-headers", middleware2.setMiddleware2)
+
 
 routes.get("/", page_display_controller.index)
 routes.get("/api/test1", benchmark_controller.test1)

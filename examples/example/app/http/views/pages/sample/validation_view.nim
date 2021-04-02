@@ -3,8 +3,6 @@ import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
 style "css", style:"""
-.className {
-}
 .error {
   background-color: pink;
   color: red;
@@ -16,10 +14,10 @@ $(style)
 <div class="$(style.get("className"))">
   <form method="POST">
     $(csrfToken())
-    <p><input type="text" name="name" placeholder="name" value="$(params.old("name"))"></p>
-    $if errors.haskey("name"){
+    <p><input type="text" name="email" placeholder="email" value="$(params.old("email"))"></p>
+    $if errors.haskey("email"){
       <ul class="$(style.get("error"))">
-        $for error in errors["name"] {
+        $for error in errors["email"] {
           <li>$(error.get)</li>
         }
       </ul>
@@ -62,6 +60,6 @@ $(style)
 """
 
 proc validationView*(client:Client):Future[string] {.async.} =
-  let title = ""
+  let title = "Validation view"
   let (params, errors) = await client.getValidationResult()
   return applicationView(title, impl(params, errors))

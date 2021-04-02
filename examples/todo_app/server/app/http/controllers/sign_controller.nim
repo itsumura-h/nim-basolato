@@ -16,11 +16,14 @@ proc signUpPage*(request:Request, params:Params):Future[Response] {.async.} =
   return await render(await signupView(client)).setCookie(client)
 
 proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
-  params.required("name");params.required("email");params.required("password");
-  params.email("email")
+  let v = newRequestValidation(params)
+  v.required("name")
+  v.required("email"); v.email("email")
+  v.required("password"); v.minStr("password", 8);
+  v.required("password_confirmation", attribute="password confirmation"); v.confirmed("password");
   let client = await newClient(request)
-  if params.hasErrors:
-    await client.storeValidationResult(params)
+  if v.hasErrors:
+    await client.storeValidationResult(v)
     return redirect("/signup")
 
   let name = params.getStr("name")
@@ -35,8 +38,8 @@ proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
     await client.set("name", user["name"].getStr)
     return redirect("/")
   except Exception:
-    params.errors.add("core", getCurrentExceptionMsg())
-    await client.storeValidationResult(params)
+    v.errors.add("core", getCurrentExceptionMsg())
+    await client.storeValidationResult(v)
     return render(await signupView(client))
 
 
@@ -51,12 +54,13 @@ proc signInPage*(request:Request, params:Params):Future[Response] {.async.} =
   return await render(await signinView(client)).setCookie(client)
 
 proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
-  params.required("email")
-  params.required("password")
-  params.email("email")
+  let v = newRequestValidation(params)
+  v.required("email")
+  v.required("password")
+  v.email("email")
   let client = await newClient(request)
-  if params.hasErrors:
-    await client.storeValidationResult(params)
+  if v.hasErrors:
+    await client.storeValidationResult(v)
     return redirect(request.path)
 
   let email = params.getStr("email")
@@ -70,8 +74,8 @@ proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
     await client.set("name", user["name"].getStr)
     return redirect("/")
   except:
-    params.errors.add("core", getCurrentExceptionMsg())
-    await client.storeValidationResult(params)
+    v.errors.add("core", getCurrentExceptionMsg())
+    await client.storeValidationResult(v)
     return render(await signInView(client))
 
 
@@ -83,11 +87,12 @@ proc signOut*(request:Request, params:Params):Future[Response] {.async.} =
 # ==================== API ====================
 
 proc signInApi*(request:Request, params:Params):Future[Response] {.async.} =
-  params.required(["email", "password"])
-  params.email("email")
+  let v = newRequestValidation(params)
+  v.required(["email", "password"])
+  v.email("email")
   let client = await newClient(request)
-  if params.hasErrors:
-    return render(Http400, %params.errors)
+  if v.hasErrors:
+    return render(Http400, %v.errors)
 
   let email = params.getStr("email")
   let password = params.getStr("password")
@@ -100,8 +105,8 @@ proc signInApi*(request:Request, params:Params):Future[Response] {.async.} =
     await client.set("name", user["name"].getStr)
     return await render(Http200, newJObject()).setCookie(client)
   except:
-    params.errors.add("core", getCurrentExceptionMsg())
-    return await render(Http400, %*{"params": params.getReturnableParams(), "errors": params.errors}).setCookie(client)
+    v.errors.add("core", getCurrentExceptionMsg())
+    return await render(Http400, %*{"params": params, "errors": v.errors}).setCookie(client)
 
 proc signOutApi*(request:Request, params:Params):Future[Response] {.async.} =
   echo params.repr

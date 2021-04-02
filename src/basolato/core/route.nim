@@ -170,32 +170,27 @@ func checkHttpCode(exception:ref Exception):HttpCode =
 
 proc runMiddleware(req:Request, routes:Routes, headers:HttpHeaders):Future[Response] {.async, gcsafe.} =
   var
-    response = Response(headers:newHttpHeaders())
-    headers = if not headers.isNil: headers else: newHttpHeaders()
-    # status = HttpCode(0)
+    headers = headers
+    status = HttpCode(0)
   for route in routes.middlewares:
     if route.httpMethods.len > 0:
       if findAll(req.path, route.path).len > 0 and route.httpMethods.contains(req.httpMethod):
         let params = req.params(route)
-        response = await route.action(req, params)
+        let res = await route.action(req, params)
+        headers &= res.headers
+        if res.status != HttpCode(0): status = res.status
     else:
       if findAll(req.path, route.path).len > 0:
         let params = req.params(route)
-        response = await route.action(req, params)
-    # if not response.headers.isNil and response.headers.len > 0:
-    #   headers = response.headers & headers
-    # if response.status != HttpCode(0):
-    #   status = response.status
-  # response.headers = headers
-  response.headers &= headers
-  # response.status = status
+        let res = await route.action(req, params)
+        headers &= res.headers
+        if res.status != HttpCode(0): status = res.status
+  let response = Response(headers:headers, status:status)
   return response
 
 proc runController(req:Request, route:Route, headers: HttpHeaders):Future[Response] {.async, gcsafe.} =
-  var response: Response
   let params = req.params(route)
-  response = await route.action(req, params)
-  # response.headers = response.headers & headers
+  let response = await route.action(req, params)
   response.headers &= headers
   echoLog(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
   return response
@@ -241,16 +236,12 @@ proc serveCore(params:(Routes, int)){.thread.} =
         elif routes.withoutParams.hasKey(key):
           response = await runMiddleware(req, routes, headers)
           let route = routes.withoutParams[key]
-          # headers = headers & response.headers
-          # headers &= response.headers
           response = await runController(req, route, response.headers)
         else:
           for route in routes.withParams:
             if route.httpMethod == req.httpMethod and isMatchUrl(req.path, route.path):
               response = await runMiddleware(req, routes, response.headers)
               if req.httpMethod != HttpOptions:
-                # headers = headers & response.headers
-                # headers &= response.headers
                 response = await runController(req, route, response.headers)
                 break
       except:

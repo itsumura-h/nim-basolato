@@ -68,6 +68,22 @@ $(style)
             }
           </div>
 
+          <div class="field">
+            <p class="control has-icons-left">
+              <input type="password" name="password_confirmation" placeholder="password confirmation" class="input">
+              <span class="icon is-small is-left">
+                <i class="fas fa-lock"></i>
+              </span>
+            </p>
+            $if errors.hasKey("password_confirmation") {
+              <ul class="$(style.get("errors"))">
+                $for error in errors["password_confirmation"] {
+                  <li>$(error.get())</li>
+                }
+              </ul>
+            }
+          </div>
+
           $if errors.hasKey("core"){
             <div class="field">
               <ul class="$(style.get("errors"))">
