@@ -9,7 +9,7 @@ Table of Contents
       * [Check in middleware](#check-in-middleware)
          * [CSRF Token](#csrf-token)
       * [Session DB](#session-db)
-      * [Auth](#auth)
+      * [Client](#client)
          * [API](#api)
          * [Sample](#sample)
          * [Anonymous user cookie](#anonymous-user-cookie)
@@ -23,7 +23,7 @@ Table of Contents
          * [API](#api-2)
          * [Sample](#sample-2)
 
-<!-- Added by: root, at: Sun Mar 14 02:11:22 UTC 2021 -->
+<!-- Added by: root, at: Sat Apr  3 12:46:33 UTC 2021 -->
 
 <!--te-->
 
