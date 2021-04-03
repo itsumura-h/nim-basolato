@@ -140,6 +140,12 @@ type ValidationErrors* = TableRef[string, seq[string]]
 proc newValidationErrors():ValidationErrors =
   return newTable[string, seq[string]]()
 
+func add*(self:ValidationErrors, key, value:string) =
+  if self.hasKey(key):
+    self[key].add(value)
+  else:
+    self[key] = @[value]
+
 
 type RequestValidation* = ref object
   params: Params

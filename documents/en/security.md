@@ -102,58 +102,77 @@ putEnv("SESSION_DB_PATH", "localhost:6379") # Redis IP address
 putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
 ```
 
-## Auth
-Basolato has Auth system. it conceal inconvenient cookie and session process.
+## Client
+Basolato has `Client` type. it has functions for Authentication, and Session.
 
 ```nim
-type Auth* = ref object
-  isLogin*:bool
-  session*:Session
+type Client* = ref object
+  session*: Session
 ```
 
 ### API
+Creating client instance.
 ```nim
-proc newAuth*(request:Request):Future[Auth] {.async.} =
+proc newClient*(request:Request):Future[Client] {.async.} =
 
-proc newAuth*(sessionId:string):Future[Auth] {.async.} =
-
-proc login*(self:Auth) {.async.} =
-
-proc logout*(self:Auth) {.async.} =
-
-proc isLogin*(self:Auth):Future[bool] {.async.} =
-
-proc getToken*(self:Auth):Future[string] {.async.} =
-
-proc set*(self:Auth, key, value:string) {.async.} =
-
-proc some*(self:Auth, key:string):Future[bool] {.async.} =
-
-proc get*(self:Auth, key:string):Future[string] {.async.} =
-
-proc delete*(self:Auth, key:string) {.async.} =
-
-proc destroy*(self:Auth) {.async.} =
-
-proc setFlash*(self:Auth, key, value:string) {.async.} =
-
-proc hasFlash*(self:Auth, key:string):Future[bool] {.async.} =
-
-proc getFlash*(self:Auth):Future[JsonNode] {.async.} =
+proc newClient*(sessionId:string):Future[Client] {.async.} =
 ```
+---
+Accessing session db.
+```nim
+proc set*(self:Client, key, value:string) {.async.} =
+
+proc set*(self:Client, key:string, value:JsonNode) {.async.} =
+
+proc some*(self:Client, key:string):Future[bool] {.async.} =
+
+proc get*(self:Client, key:string):Future[string] {.async.} =
+
+proc delete*(self:Client, key:string) {.async.} =
+
+proc destroy*(self:Client) {.async.} =
+```
+---
+Using for Authentication.
+```nim
+proc login*(self:Client) {.async.} =
+
+proc isLogin*(self:Client):Future[bool] {.async.} =
+
+proc logout*(self:Client) {.async.} =
+```
+---
+Getting session id which is provided to cookie.
+```nim
+proc getToken*(self:Client):Future[string] {.async.} =
+```
+---
+Accessing flash data in session db.
+```nim
+proc setFlash*(self:Client, key, value:string) {.async.} =
+
+proc setFlash*(self:Client, key:string, value:JsonNode) {.async.} =
+
+proc hasFlash*(self:Client, key:string):Future[bool] {.async.} =
+
+proc getFlash*(self:Client):Future[JsonNode] {.async.} =
+
+proc getValidationResult*(self:Client):Future[tuple[params:JsonNode, errors:JsonNode]] {.async.} =
+```
+
 
 ### Sample
-newAuth for MPA(Multi page application)
+newClient for MPA(Multi page application)
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
+  let client = await newClient(request)
 ```
 
-newAuth for API
+newClient for API
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
   let sessionId = request.headers["x-login-token"]
-  let auth = await newAuth(sessionId)
+  let client = await newClient(sessionId)
 ```
 
 login
@@ -162,34 +181,34 @@ proc index(request:Request, params:Params):Future[Response] {.async.} =
   let email = params.getStr("email")
   let password = params.getStr("password")
   let userId = newLoginUsecase().login(email, password)
-  let auth = await newAuth(request)
-  await auth.login()
-  await auth.set("id", $userId)
+  let client = await newClient(request)
+  await client.login()
+  await client.set("id", $userId)
   return redirect("/")
 ```
 
 logout
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
-  if await auth.isLogin():
-    await auth.logout()
+  let client = await newClient(request)
+  if await client.isLogin():
+    await client.logout()
   redirect("/")
 ```
 
 get from session
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
-  let loginName = await auth.get("login_name")
+  let client = await newClient(request)
+  let loginName = await client.get("login_name")
 ```
 
 set value in session
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
   let name = params.getStr("name")
-  let auth = await newAuth(request)
-  await auth.set("login_name", name)
+  let client = await newClient(request)
+  await client.set("login_name", name)
   return render("auth")
 ```
 
@@ -197,39 +216,40 @@ check and get value in session
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
   var loginName:string
-  let auth = await newAuth(request)
-  if await auth.some("login_name"):
-    loginName = await auth.get("login_name")
+  let client = await newClient(reques)
+  if await client.some("login_name"):
+    loginName = await client.get("login_name")
 ```
 
 delete one key-value pair of session
 ```nim
 proc destroy(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
-  await auth.delete("login_name")
+  let client = await newClient(request)
+  await client.delete("login_name")
   return render("auth")
 ```
 
 destroy all session data
 ```nim
 proc destroy(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
+  let client = await newClient(request)
   return render("auth")
 ```
 
 set flash message
 ```nim
 proc store*(request:Request, params:Params):Response =
-  let auth = await newAuth(request)
-  await auth.setFlash("success", "Welcome to the Sample App!")
+  let client = await newClient(request)
+  await client.setFlash("success", "Welcome to the Sample App!")
   return redirect("/auth")
 ```
 
 get flash message
 ```nim
 proc show*(self:Controller):Response =
-  let auth = await newAuth(request)
-  let flash = await auth.getFlash("success")
+  let client = await newClient(request)
+  let flash = await client.getFlash("success")
+  let user = newUserUsecase().show()
   return render(showHtml(user, flash))
 ```
 
@@ -250,8 +270,8 @@ proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
   let email = params.getStr("email")
   let password = params.getStr("password")
   # ..sign in check
-  let auth = await newAuth(request)
-  await auth.login()
+  let client = await newClient(request)
+  await client.login()
   return redirect("/")
 ```
 
@@ -268,9 +288,9 @@ proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
   let email = params.getStr("email")
   let password = params.getStr("password")
   # ..sign in check
-  let auth = await newAuth(request)
-  await auth.login()
-  return await redirect("/").setAuth(auth)
+  let client = await newClient(request)
+  await client.login()
+  return await redirect("/").setCookie(client)
 ```
 
 ### How to create cookie for multiple domains
@@ -278,10 +298,16 @@ You can define multiple domains for cookie in setting of `config.nims`
 
 config.nims
 ```nim
-putEnv("COOKIE_DOMAINS", "localhost, nim-lang.org, github.com")
+putEnv("COOKIE_DOMAINS", "nim-lang.org, github.com")
+```
+`Chrome` doesn't allow domain of cookie `localhost`, and therefore if you want to create cookie for localhost, please specify setting like this.
+
+```nim
+putEnv("COOKIE_DOMAINS", ", nim-lang.org, github.com")
 ```
 
-**⚠ In most cases, Session and Cookies should not be used directly, but using Auth is recommended. ⚠**
+
+**⚠ In most cases, Session and Cookies should not be used directly, but using Client is recommended. ⚠**
 
 ## Cookie
 

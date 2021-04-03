@@ -59,14 +59,6 @@ func `$`*(self:Param):string =
 func ext*(self:Param):string =
   return self.ext
 
-type ValidationErrors* = TableRef[string, seq[string]]
-
-func add*(self:ValidationErrors, key, value:string) =
-  if self.hasKey(key):
-    self[key].add(value)
-  else:
-    self[key] = @[value]
-
 type Params* = ref object
   data: TableRef[string, Param]
 

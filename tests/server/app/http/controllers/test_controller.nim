@@ -53,15 +53,15 @@ proc setCookie*(request:Request, params:Params):Future[Response] {.async.} =
   return render("setCookie").setCookie(cookie)
 
 proc setAuth*(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
-  await auth.set("key1", "value1")
-  await auth.set("key2", "value2")
+  let client = await newClient(request)
+  await client.set("key1", "value1")
+  await client.set("key2", "value2")
   return render("setAuth")
 
 proc destroyAuth*(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
-  await auth.login()
-  await auth.destroy()
+  let client = await newClient(request)
+  await client.login()
+  await client.destroy()
   return render("setAuth")
 
 

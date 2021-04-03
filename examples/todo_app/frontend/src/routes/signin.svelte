@@ -18,7 +18,6 @@
 
   const signin=async ()=>{
     let res = await repository.signin(email, password)
-    console.log(res.data)
     if(res.ok){
       sessionStorage.setItem('isLogin', 'true')
       goto('/')

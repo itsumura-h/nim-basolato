@@ -434,27 +434,20 @@ proc delete*(self:var Cookie, key:string, path="/") =
 type Client* = ref object
   session*: Session
 
-proc newClient*(request:Request):Future[Client] {.async.} =
-  ## use in constructor
-  var sessionId = newCookie(request).get("session_id")
-  if await checkSessionIdValid(sessionId):
-    let session = await newSession(sessionId)
-    await session.set("last_access", $getTime())
-    return Client(session:session)
-  else:
-    # return Client()
-    let session = await newSession()
-    await session.set("last_access", $getTime())
-    return Client(session:session)
-
 proc newClient*(sessionId:string):Future[Client] {.async.} =
   ## use in constructor
-  if await checkSessionIdValid(sessionId):
-    let session = await newSession(sessionId)
-    await session.set("last_access", $getTime())
-    return Client(session:session)
-  else:
-    return Client()
+  let session =
+    if await checkSessionIdValid(sessionId):
+      await newSession(sessionId)
+    else:
+      await newSession()
+  await session.set("last_access", $getTime())
+  return Client(session:session)
+
+proc newClient*(request:Request):Future[Client] {.async.} =
+  ## use in constructor
+  let sessionId = newCookie(request).get("session_id")
+  return await newClient(sessionId)
 
 # func newClient():Future[Client] {.async.} =
 #   ## use in constructor
