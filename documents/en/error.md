@@ -10,7 +10,7 @@ Table of Contents
       * [Raise Error and Redirect](#raise-error-and-redirect)
       * [How to display custom error page](#how-to-display-custom-error-page)
 
-<!-- Added by: root, at: Sat Apr  3 12:46:14 UTC 2021 -->
+<!-- Added by: root, at: Sat Apr 10 18:33:59 UTC 2021 -->
 
 <!--te-->
 
@@ -32,6 +32,11 @@ This proc is able to used only in `controller`.
 
 ```nim
 return errorRedirect("/login")
+```
+
+In out of controller, raise `ErrorRedirect` error.
+```nim
+raise newException(ErrorRedirect, "/login")
 ```
 
 ## How to display custom error page

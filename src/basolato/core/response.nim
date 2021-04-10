@@ -1,5 +1,5 @@
 import httpcore, json, strutils, times, asyncdispatch
-import baseEnv, header, security, logger
+import baseEnv, header, logger, security/client, security/cookie
 
 type Response* = ref object
   status*:HttpCode

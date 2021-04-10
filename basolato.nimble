@@ -14,13 +14,15 @@ skipDirs      = @["basolato/cli"]
 # Dependencies
 
 requires "nim >= 1.0.0"
-requires "cligen >= 0.9.41"
+requires "dotenv >= 1.1.1"
 requires "templates >= 0.5"
+requires "cligen >= 0.9.41"
 requires "bcrypt >= 0.2.1"
 requires "nimAES >= 0.1.2"
 requires "flatdb >= 0.2.4"
 requires "redis >= 0.3.0"
-requires "allographer >= 0.16.0"
+# requires "allographer >= 0.16.0"
+requires "allographer#master"
 requires "faker >= 0.13.1"
 requires "sass >= 0.1.0"
 
@@ -78,3 +80,4 @@ proc generateToc(dir: string) =
 task toc, "Generate TOC":
   generateToc(".")
   generateToc("./documents/en")
+  generateToc("./documents/ja")

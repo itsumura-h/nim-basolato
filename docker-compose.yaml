@@ -5,6 +5,7 @@ services:
     tty: true
     depends_on:
       - app
+
   app:
     build:
       context: .

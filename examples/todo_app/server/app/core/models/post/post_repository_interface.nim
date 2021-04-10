@@ -1,4 +1,4 @@
-import ../../value_objects
+import value_objects
 import post_entity
 
 

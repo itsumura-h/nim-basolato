@@ -3,9 +3,9 @@ export asyncdispatch, asynchttpserver, tables
 
 import
   core/base, core/request, core/response, core/route, core/header,
-  core/security
+  core/security/cookie, core/security/session, core/security/client
 export
-  base, request, response, route, header, security
+  base, request, response, route, header, cookie, session, client
 
 
 proc asyncHtml*(path:string):Future[string] {.async.} =

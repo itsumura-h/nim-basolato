@@ -1,5 +1,5 @@
 import ../../../../../../../src/basolato/password
-import ../../value_objects
+import value_objects
 import user_entity
 import user_repository_interface
 

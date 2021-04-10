@@ -9,7 +9,7 @@ Table of Contents
       * [Introduction](#introduction)
       * [Example](#example)
 
-<!-- Added by: root, at: Sat Apr  3 12:46:48 UTC 2021 -->
+<!-- Added by: root, at: Sat Apr 10 18:34:37 UTC 2021 -->
 
 <!--te-->
 
@@ -28,46 +28,62 @@ To run migration, run `migrate.nim`
 nim c -r migrations/migrate
 ```
 
-## Example
-You have sample migration file.
+You can also use `ducere` command.
+```sh
+ducere migrate
+```
 
-mirations/migration0001.nim
+## Example
+mirations/migration20210410131239user.nim
 ```nim
 import json, strformat
 import allographer/schema_builder
 import allographer/query_builder
 
-proc migration0001*() =
-  # Create table schema
-  schema([
-    table("sample_users", [
+proc migration20210410131239user*() =
+  schema(
+    table("auth", [
+      Column().increments("id"),
+      Column().string("auth")
+    ], reset=true),
+    table("users", [
       Column().increments("id"),
       Column().string("name"),
-      Column().string("email")
-    ])
+      Column().string("email"),
+      Column().foreign("auth_id").reference("id").on("auth").onDelete(SET_NULL),
+      Column().timestamps()
+    ], reset=true)
+  )
+
+  rdb().table("auth").insert([
+    %*{"id": 1, "auth": "admin"},
+    %*{"id": 2, "auth": "user"},
   ])
 
-  # Seeder
   var users: seq[JsonNode]
-  for i in 1..10:
+  for i in 1..100:
     users.add(%*{
       "id": i,
       "name": &"user{i}",
-      "email": &"user{i}@nim.com"
+      "email": &"user{i}@nim.com",
+      "auth_id": if i mod 2 == 0: 1 else: 2
     })
-  RDB().table("sample_users").insert(users)
+  rdb().table("users").insert(users)
+
+  echo rdb().table("users").get()
+
 ```
 
 migrations/migrate.nim
 ```nim
-import migration0001
+import migration20210410131239user
 
 proc main() =
-  migration0001()
+  discard
+  migration20210410131239user()
 
 main()
 ```
-If you don't need to create `sample users` table, delete `migration0001()` from `migrations/migrate.nim`
 
 More details of `Schema Builder` and `Query Builder` is in allographer documents.  
 [Schema Builder](https://github.com/itsumura-h/nim-allographer/blob/master/documents/schema_builder.md)  

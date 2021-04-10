@@ -23,14 +23,14 @@ proc create(dirPath:string, packageDir:string):int =
     moveFile(&"{dirpath}/tmp/assets/favicon.ico", &"{dirpath}/public/favicon.ico")
     # remove tmp
     removeDir(&"{dirpath}/tmp")
-    # create config.nims
+    # create .env
     discard execShellCmd(&"""
   cd {dirPath}
   ducere make config
   """)
-    copyFile(dirPath / "config.nims", dirPath / "config.nims.dev")
-    copyFile(dirPath / "config.nims", dirPath / "config.nims.stg")
-    copyFile(dirPath / "config.nims", dirPath / "config.nims.prd")
+    copyFile(dirPath / ".env", dirPath / ".env.dev")
+    copyFile(dirPath / ".env", dirPath / ".env.stg")
+    copyFile(dirPath / ".env", dirPath / ".env.prd")
 
     # create empty dirs
     createDir(&"{dirPath}/app/http/views/errors")

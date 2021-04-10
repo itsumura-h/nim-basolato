@@ -23,7 +23,7 @@ Table of Contents
          * [API](#api-2)
          * [Sample](#sample-2)
 
-<!-- Added by: root, at: Sat Apr  3 12:46:33 UTC 2021 -->
+<!-- Added by: root, at: Sat Apr 10 18:34:19 UTC 2021 -->
 
 <!--te-->
 
@@ -254,14 +254,14 @@ proc show*(self:Controller):Response =
 ```
 
 ### Anonymous user cookie
-In `config.nims`, if you set `true` for `ENABLE_ANONYMOUS_COOKIE`, Basolato automatically creates cookie for every user.  
+In `.env`, if you set `true` for `ENABLE_ANONYMOUS_COOKIE`, Basolato automatically creates cookie for every user.  
 If you set `false` and you want to create sign in function, you should create it manually in controller.
 
 #### anonymous user enabled
 
-config.nims
-```nim
-putEnv("ENABLE_ANONYMOUS_COOKIE", "true")
+.env
+```env
+ENABLE_ANONYMOUS_COOKIE=true
 ```
 
 controller
@@ -397,7 +397,7 @@ proc index(request:Request, params:Params):Future[Response] {.async.} =
 
 
 ## Session
-Basolato use [nimAES](https://github.com/jangko/nimAES) as session DB. We have a plan to be able to choose Redis in the future.
+Basolato use [nimAES](https://github.com/jangko/nimAES) as file session DB.
 
 If you set `sessionId` in arg of `newSession()`, it return existing session otherwise create new session.
 
@@ -435,8 +435,8 @@ proc index(request:Request, params:Params):Future[Response] {.async.} =
 set value in session
 ```nim
 proc store(request:Request, params:Params):Future[Response] {.async.} =
-  let key = request.params["key"]
-  let value = self.request.params["value"]
+  let key = request.getStr("key")
+  let value = request.getStr("value")
   discard newSession().set(key, value)
 ```
 
@@ -444,7 +444,7 @@ check and get value in session
 ```nim
 proc index(self:Controller):Future[Response] {.async.} =
   let sessionId = newCookie(self.request).get("session_id")
-  let key = self.request.params["key"]
+  let key = request.getStr("key")
   let session = newSession(sessionId)
   var value:string
   if session.some(key):
@@ -455,7 +455,7 @@ delete one key-value pair of session
 ```nim
 proc destroy(self:Controller):Future[Response] {.async.} =
   let sessionId = newCookie(self.request).getToken()
-  let key = self.request.params["key"]
+  let key = request.getStr("key"9
   discard newSession(sessionId).delete(key)
 ```
 

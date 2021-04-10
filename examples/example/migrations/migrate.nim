@@ -1,14 +1,7 @@
-import migration20210122015401users
+import migration20210410131239user
 
 proc main() =
   discard
-  migration20210122015401users()
+  migration20210410131239user()
 
 main()
-
-# import migration0001sample
-
-# proc main() =
-#   migration0001sample()
-
-# main()

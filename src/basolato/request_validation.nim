@@ -13,7 +13,7 @@ include core/validation
 import core/baseEnv
 import core/request
 import core/logger
-import core/security
+import core/security/client
 
 let baseMessages = %*{
   "accepted": "The :attribute must be accepted.",

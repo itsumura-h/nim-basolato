@@ -1,7 +1,8 @@
 import asynchttpserver, asyncdispatch, strutils
 export asynchttpserver
-import core/base, core/route, core/security, core/header, core/response
-export base, route, security, header, response
+import core/base, core/route, core/header, core/response,
+  core/security/cookie, core/security/session_db, core/security/csrf_token
+export base, route, cookie, header, response
 
 type MiddlewareResult* = ref object
   hasError: bool

@@ -2,12 +2,12 @@ Validation
 ===
 [戻る](../../README.md)
 
-Table of Contents
+コンテンツ
 
 <!--ts-->
    * [Validation](#validation)
-   * [Simple Validation](#simple-validation)
-      * [Available Rules](#available-rules)
+   * [シンプルなバリデーション](#シンプルなバリデーション)
+      * [ルール](#ルール)
          * [email](#email)
          * [domain](#domain)
          * [strictEmail](#strictemail)
@@ -21,7 +21,7 @@ Table of Contents
    * [Request Validation](#request-validation)
       * [sample](#sample)
       * [Custom Validation](#custom-validation)
-      * [Available Rules](#available-rules-1)
+      * [Available Rules](#available-rules)
          * [accepted](#accepted)
          * [contains](#contains)
          * [email, strictEmail](#email-strictemail)
@@ -38,19 +38,19 @@ Table of Contents
          * [required](#required)
          * [unique](#unique)
 
-<!-- Added by: root, at: Sun Dec 27 18:19:59 UTC 2020 -->
+<!-- Added by: root, at: Sat Apr 10 18:36:23 UTC 2021 -->
 
 <!--te-->
 
-Basolato has it's own validation function. It recieves request and check request params.  
-There are two validation type. One is used in controller that recieve request and return errors array.
-Another is more simple. Recieve value and return `bool`.
+Basolatoは、独自のバリデーション機能を持っています。この機能は、リクエストを受け取り、リクエストパラメータをチェックします。  
+バリデーションには2つのタイプがあります。一つは、リクエストを受け取って、エラーの配列を返すコントローラで使われます。  
+もう一つはもっとシンプルなものです。値を受け取って `bool` を返すものです。
 
-# Simple Validation
+# シンプルなバリデーション
 ```
 import basolato/validation
 ```
-## Available Rules
+## ルール
 ### email
 ```nim
 echo Validation().email("sample@example.com")

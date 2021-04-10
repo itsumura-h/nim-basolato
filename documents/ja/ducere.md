@@ -5,21 +5,23 @@ Ducereコマンド
 コンテンツ
 
 <!--ts-->
-   * [ducere command](#ducere-command)
-      * [new](#new)
-      * [serve](#serve)
-      * [build](#build)
-      * [migrate](#migrate)
-      * [make](#make)
-         * [config](#config)
-         * [controller](#controller)
-         * [view](#view)
-         * [migration](#migration)
-         * [model](#model)
-         * [usecase](#usecase)
-         * [value object](#value-object)
+   * [Ducereコマンド](#ducereコマンド)
+      * [イントロダクション](#イントロダクション)
+      * [使い方](#使い方)
+         * [new](#new)
+         * [serve](#serve)
+         * [build](#build)
+         * [migrate](#migrate)
+         * [make](#make)
+            * [config](#config)
+            * [controller](#controller)
+            * [view](#view)
+            * [migration](#migration)
+            * [model](#model)
+            * [usecase](#usecase)
+            * [value object](#value-object)
 
-<!-- Added by: root, at: Sun Dec 27 18:20:21 UTC 2020 -->
+<!-- Added by: root, at: Sat Apr 10 18:36:47 UTC 2021 -->
 
 <!--te-->
 
@@ -216,6 +218,6 @@ ducere make valueobject {引数1} {引数2}
 `引数2`は`app/domain/models`から値オブジェクトのファイルへの相対パスです。
 
 ```sh
-ducere make valueobject UserName ./value_objects
+ducere make valueobject UserName value_objects
 >> add UserName in app/domain/models/value_objects
 ```

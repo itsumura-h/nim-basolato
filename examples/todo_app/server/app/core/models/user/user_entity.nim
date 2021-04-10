@@ -1,4 +1,4 @@
-import ../../value_objects
+import value_objects
 
 
 type User* = ref object
@@ -6,17 +6,6 @@ type User* = ref object
   name:UserName
   email:UserEmail
   hashedPassword:HashedPassword
-
-proc newUser*(name:UserName, email:UserEmail, hashedPassword:HashedPassword):User =
-  result = new User
-  result.name = name
-  result.email = email
-  result.hashedPassword = hashedPassword
-
-proc newUser*(email:UserEmail, hashedPassword:HashedPassword):User =
-  result = new User
-  result.email = email
-  result.hashedPassword = hashedPassword
 
 proc newUser*(id:UserId, name:UserName, email:UserEmail, hashedPassword:HashedPassword):User =
   result = new User

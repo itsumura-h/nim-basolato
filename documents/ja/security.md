@@ -9,23 +9,27 @@ Table of Contents
       * [Check in middleware](#check-in-middleware)
          * [CSRF Token](#csrf-token)
       * [Session DB](#session-db)
-      * [Auth](#auth)
+      * [Client](#client)
          * [API](#api)
-         * [Sample](#sample)
-      * [Cookie](#cookie)
+         * [例](#例)
+         * [匿名ユーザーへのクッキー](#匿名ユーザーへのクッキー)
+            * [匿名ユーザーが有効な時](#匿名ユーザーが有効な時)
+            * [匿名ユーザーが無効な時](#匿名ユーザーが無効な時)
+         * [複数のドメインにクッキーを作る時](#複数のドメインにクッキーを作る時)
+      * [クッキー](#クッキー)
          * [API](#api-1)
-         * [Sample](#sample-1)
-      * [Session](#session)
+         * [例](#例-1)
+      * [セッション](#セッション)
          * [API](#api-2)
-         * [Sample](#sample-2)
+         * [例](#例-2)
 
-<!-- Added by: root, at: Sun Dec 27 18:23:11 UTC 2020 -->
+<!-- Added by: root, at: Sat Apr 10 18:36:31 UTC 2021 -->
 
 <!--te-->
 
 ## Check in middleware
-Basolato check whether value is valid in middleware. `checkCsrfToken()` and `checkSessionId()` are available.  
-These procs return `MiddlwareResult` object.
+Basolatoはミドルウェアで値が有効かどうかをチェックします。checkCsrfToken()とcheckSessionId()があります。  
+これらの関数は `MiddlwareResult` オブジェクトを返します。
 
 ```nim
 type MiddlewareResult* = ref object
@@ -40,7 +44,7 @@ proc message*(self:MiddlewareResult):string =
 ```
 
 ### CSRF Token
-Basolato can check whether csrf token is valid if request metod is `post`, `put`, `patch`, `delete`.
+Basolatoは、リクエストメソッドが `post`, `put`, `patch`, `delete` の場合に、csrfトークンが有効かどうかをチェックすることができます。
 
 main.nim
 ```nim
@@ -66,7 +70,7 @@ Set `${csrfToken()}` in view.
 </form>
 ```
 
-You can overwrite your own custom error handring.
+エラーが起きた時の処理を上書きすることができます。
 ```nim
 # If you want to return 403
 let res = await checkCsrfToken(r, p)
@@ -80,169 +84,241 @@ if res.isError:
 ```
 
 ## Session DB
-You can choose two options to use session, `File` or `Redis`.  
-File session uses [flatdb](https://github.com/enthus1ast/flatdb) , a document database like Mongo, inside.
+セッションには`File`か`Redis`が使えます。
+ファイルセッションはMongoに似たドキュメントDBの[flatdb](https://github.com/enthus1ast/flatdb)を使っています。
 
+ファイルセッションの時
 
-config.nims for file session
+config.nims
 ```nim
 putEnv("SESSION_TYPE", "file")
-putEnv("SESSION_DB_PATH", "/your/project/path/session.db") # file path
-putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
+```
+.env
+```env
+SESSION_DB_PATH="/your/project/path/session.db" # db file path
+SESSION_TIME=20160
 ```
 
-config.nims for redis session
+Redisセッションの時
+
+config.nims
 ```nim
 putEnv("SESSION_TYPE", "redis")
-putEnv("SESSION_DB_PATH", "localhost:6379") # Redis IP address
-putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
 ```
 
-## Auth
-Basolato has Auth system. it conceal inconvenient cookie and session process.
+.env
+```env
+SESSION_DB_PATH="localhost:6379" # Redis IP address
+SESSION_TIME=20160
+```
+
+## Client
+Basolatoは認証とセッションを内包した`Client`を持っています。
 
 ```nim
-type Auth* = ref object
-  isLogin*:bool
-  session*:Session
+type Client* = ref object
+  session*: Session
 ```
 
 ### API
+インスタンス作成
 ```nim
-proc newAuth*(request:Request):Future[Auth] {.async.} =
+proc newClient*(request:Request):Future[Client] {.async.} =
 
-proc login*(self:Auth) {.async.} =
+proc newClient*(sessionId:string):Future[Client] {.async.} =
+```
+---
+セッションDBへのアクセス
+```nim
+proc set*(self:Client, key, value:string) {.async.} =
 
-proc logout*(self:Auth) {.async.} =
+proc set*(self:Client, key:string, value:JsonNode) {.async.} =
 
-proc isLogin*(self:Auth):Future[bool] {.async.} =
+proc some*(self:Client, key:string):Future[bool] {.async.} =
 
-proc getToken*(self:Auth):Future[string] {.async.} =
+proc get*(self:Client, key:string):Future[string] {.async.} =
 
-proc set*(self:Auth, key, value:string) {.async.} =
+proc delete*(self:Client, key:string) {.async.} =
 
-proc some*(self:Auth, key:string):Future[bool] {.async.} =
+proc destroy*(self:Client) {.async.} =
+```
+---
+認証
+```nim
+proc login*(self:Client) {.async.} =
 
-proc get*(self:Auth, key:string):Future[string] {.async.} =
+proc isLogin*(self:Client):Future[bool] {.async.} =
 
-proc delete*(self:Auth, key:string) {.async.} =
+proc logout*(self:Client) {.async.} =
+```
+---
+クッキーから送られたセッションIDの取得
+```nim
+proc getToken*(self:Client):Future[string] {.async.} =
+```
+---
+セッションDBのフラッシュデータへのアクセス
+```nim
+proc setFlash*(self:Client, key, value:string) {.async.} =
 
-proc destroy*(self:Auth) {.async.} =
+proc setFlash*(self:Client, key:string, value:JsonNode) {.async.} =
 
-proc setFlash*(self:Auth, key, value:string) {.async.} =
+proc hasFlash*(self:Client, key:string):Future[bool] {.async.} =
 
-proc hasFlash*(self:Auth, key:string):Future[bool] {.async.} =
+proc getFlash*(self:Client):Future[JsonNode] {.async.} =
 
-proc getFlash*(self:Auth):Future[JsonNode] {.async.} =
+proc getValidationResult*(self:Client):Future[tuple[params:JsonNode, errors:JsonNode]] {.async.} =
 ```
 
-### Sample
-login
+
+### 例
+MPA(Multi page application)の時のインスタンス作成
+```nim
+proc index(request:Request, params:Params):Future[Response] {.async.} =
+  let client = await newClient(request)
+```
+
+APIの時のインスタンス作成
+```nim
+proc index(request:Request, params:Params):Future[Response] {.async.} =
+  let sessionId = request.headers["x-login-token"]
+  let client = await newClient(sessionId)
+```
+
+ログイン
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
   let email = params.getStr("email")
   let password = params.getStr("password")
   let userId = newLoginUsecase().login(email, password)
-  let auth = await newAuth(request)
-  await auth.login()
-  await auth.set("id", $userId)
+  let client = await newClient(request)
+  await client.login()
+  await client.set("id", $userId)
   return redirect("/")
 ```
 
-logout
+ログアウト
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
-  if await auth.isLogin():
-    await auth.logout()
+  let client = await newClient(request)
+  if await client.isLogin():
+    await client.logout()
   redirect("/")
 ```
 
-get from session
+セッションから値を取得する
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
-  let loginName = await auth.get("login_name")
+  let client = await newClient(request)
+  let loginName = await client.get("login_name")
 ```
 
-set value in session
+セッションに値を保存する
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
   let name = params.getStr("name")
-  let auth = await newAuth(request)
-  await auth.set("login_name", name)
+  let client = await newClient(request)
+  await client.set("login_name", name)
   return render("auth")
 ```
 
-check and get value in session
+セッションに値が存在するかチェックして取得する
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
   var loginName:string
-  let auth = await newAuth(request)
-  if await auth.some("login_name"):
-    loginName = await auth.get("login_name")
+  let client = await newClient(reques)
+  if await client.some("login_name"):
+    loginName = await client.get("login_name")
 ```
 
-delete one key-value pair of session
+セッションの1つの値を削除する
 ```nim
 proc destroy(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
-  await auth.delete("login_name")
+  let client = await newClient(request)
+  await client.delete("login_name")
   return render("auth")
 ```
 
-destroy all session data
+クライアントに紐付いた全てのセッションデータを削除する
 ```nim
 proc destroy(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
+  let client = await newClient(request)
   return render("auth")
 ```
 
-set flash message
+フラッシュメッセージを保存する
 ```nim
 proc store*(request:Request, params:Params):Response =
-  let auth = await newAuth(request)
-  await auth.setFlash("success", "Welcome to the Sample App!")
+  let client = await newClient(request)
+  await client.setFlash("success", "Welcome to the Sample App!")
   return redirect("/auth")
 ```
 
-get flash message
+フラッシュメッセージを取得する
 ```nim
 proc show*(self:Controller):Response =
-  let auth = await newAuth(request)
-  let flash = await auth.getFlash("success")
+  let client = await newClient(request)
+  let flash = await client.getFlash("success")
+  let user = newUserUsecase().show()
   return render(showHtml(user, flash))
 ```
 
-### Anonymous user cookie
-In `config.nims`, if you set `true` for `ENABLE_ANONYMOUS_COOKIE`, Basolato automatically creates cookie for every user.  
-If you set `false` and you want to create sign in function, you should create it manually in controller.
+### 匿名ユーザーへのクッキー
+`.env`の`ENABLE_ANONYMOUS_COOKIE`に`true`を設定すると、Basolatoは全てのクライアントに自動的にクッキーを発行します。
+`false`を設定しかつログイン機能を有効にしたい場合は、自作してください。
 
-anonymous user enabled
+#### 匿名ユーザーが有効な時
+
+.env
+```env
+ENABLE_ANONYMOUS_COOKIE=true
+```
+
+controller
 ```nim
 proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
   let email = params.getStr("email")
   let password = params.getStr("password")
   # ..sign in check
-  let auth = await newAuth(request)
-  await auth.login()
+  let client = await newClient(request)
+  await client.login()
   return redirect("/")
 ```
 
-anonymous user disabled
+#### 匿名ユーザーが無効な時
+
+.env
+```env
+ENABLE_ANONYMOUS_COOKIE=false
+```
+
+controller
 ```nim
 proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
   let email = params.getStr("email")
   let password = params.getStr("password")
   # ..sign in check
-  let auth = await newAuth(request)
-  await auth.login()
-  return await redirect("/").setAuth(auth)
+  let client = await newClient(request)
+  await client.login()
+  return await redirect("/").setCookie(client)
 ```
 
-**⚠ In most cases, Session and Cookies should not be used directly, but using Auth is recommended. ⚠**
+### 複数のドメインにクッキーを作る時
+`.env`の設定で、クッキーのドメインを複数定義することができます。
 
-## Cookie
+.env
+```env
+COOKIE_DOMAINS="nim-lang.org, github.com"
+```
+`Google Chrome`はクッキーのドメイン「localhost」を許可していないので、localhost用のクッキーを作成したい場合は、以下のように設定してください。
+
+```nim
+COOKIE_DOMAINS=", nim-lang.org, github.com"
+```
+
+**⚠ ほとんどの場合、SessionとCookiesは直接使用すべきではなく、Clientを使用するべきです。 ⚠**
+
+## クッキー
 
 ```nim
 type
@@ -285,23 +361,14 @@ proc destroy*(self:Cookie, path="/"):Cookie =
 proc setCookie*(response:Response, cookie:Cookie):Response =
 ```
 
-### How to create cookie for multiple domains
-You can define multiple domains for cookie in setting of `config.nims`
-
-config.nims
-```nim
-putEnv("COOKIE_DOMAINS", "localhost, nim-lang.org, github.com")
-```
-
-
-### Sample
-get cookie
+### 例
+クッキーの値を取得する
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
   let val = newCookie(request).get("key")
 ```
 
-set cookie
+クッキーに値を保存する
 ```nim
 proc store*(request:Request, params:Params):Future[Response] {.async.} =
   let name = params.getStr("name")
@@ -310,7 +377,7 @@ proc store*(request:Request, params:Params):Future[Response] {.async.} =
   return render("with cookie").setCookie(cookie)
 ```
 
-update cookie expire
+クッキーの有効期限を更新する
 ```nim
 proc store*(request:Request, params:Params):Future[Response] {.async.} =
   var cookie = newCookie(request)
@@ -319,7 +386,7 @@ proc store*(request:Request, params:Params):Future[Response] {.async.} =
   return render("with cookie").setCookie(cookie)
 ```
 
-delete cookie
+指定したキーのクッキーを削除する
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
   var cookie = newCookie(request)
@@ -327,7 +394,7 @@ proc index(request:Request, params:Params):Future[Response] {.async.} =
   return render("with cookie").setCookie(cookie)
 ```
 
-destroy all cookies
+全てのクッキーを削除する
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
   var cookie = newCookie(request)
@@ -335,13 +402,13 @@ proc index(request:Request, params:Params):Future[Response] {.async.} =
   return render("with cookie").setCookie(cookie)
 ```
 
-⚠️ Since cookies are set `Secure` and `HttpOnly` in production environment, they will not be read by JavaScript and can only be used in HTTPS.
+**⚠️ 本番環境ではクッキーは`Secure`と`HttpOnly`に設定されているので、JavaScriptでは読み込まれず、HTTPSでのみ使用できます。**
 
 
-## Session
-Basolato use [nimAES](https://github.com/jangko/nimAES) as session DB. We have a plan to be able to choose Redis in the future.
+## セッション
+Basolatoはファイルセッションのデータベースには[nimAES](https://github.com/jangko/nimAES)を使っています。
 
-If you set `sessionId` in arg of `newSession()`, it return existing session otherwise create new session.
+`newSession()`の引数に`sessionId`を設定すると、既存のセッションを返し、そうでなければ新しいセッションを作成します。
 
 ```nim
 Session* = ref object
@@ -367,22 +434,22 @@ proc delete*(self:Session, key:string) {.async.} =
 proc destroy*(self:Session) {.async.} =
 ```
 
-### Sample
-get session id
+### 例
+セッションIDを取得する
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
   let sessionId = newSession().getToken()
 ```
 
-set value in session
+セッションに値を保存する
 ```nim
 proc store(request:Request, params:Params):Future[Response] {.async.} =
-  let key = request.params["key"]
-  let value = self.request.params["value"]
+  let key = request.getStr("key")
+  let value = request.getStr("value")
   discard newSession().set(key, value)
 ```
 
-check and get value in session
+セッションに値が存在するかチェックして取得する
 ```nim
 proc index(self:Controller):Future[Response] {.async.} =
   let sessionId = newCookie(self.request).get("session_id")
@@ -393,7 +460,7 @@ proc index(self:Controller):Future[Response] {.async.} =
     value = session.get(key)
 ```
 
-delete one key-value pair of session
+セッションの1つの値を削除する
 ```nim
 proc destroy(self:Controller):Future[Response] {.async.} =
   let sessionId = newCookie(self.request).getToken()
@@ -401,7 +468,7 @@ proc destroy(self:Controller):Future[Response] {.async.} =
   discard newSession(sessionId).delete(key)
 ```
 
-destroy session
+クライアントに紐付いた全てのセッションデータを削除する
 ```nim
 proc destroy(self:Controller):Future[Response] {.async.} =
   let sessionId = newCookie(self.request).getToken()

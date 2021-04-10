@@ -29,7 +29,7 @@ An asynchronous full-stack web framework for Nim, based on [asynchttpserver](htt
       * [Development](#development)
          * [Generate TOC of documents](#generate-toc-of-documents)
 
-<!-- Added by: root, at: Sat Apr  3 12:46:10 UTC 2021 -->
+<!-- Added by: root, at: Sat Apr 10 18:33:55 UTC 2021 -->
 
 <!--te-->
 
@@ -109,10 +109,11 @@ The overall file structure is as follows:
 │       └── query_services
 │           ├── query_service.nim
 │           └── query_service_interface.nim
+├── .env
+├── .env.dev
+├── .env.prd
+├── .env.stg
 ├── config.nims
-├── config.nims.dev
-├── config.nims.prd
-├── config.nims.stg
 ├── main.nim
 ├── migrations
 │   └── migrate.nim
@@ -122,7 +123,7 @@ The overall file structure is as follows:
 │   ├── favicon.ico
 │   └── js
 ├── session.db
-├── test1.nimble
+├── {project_name}.nimble
 └── tests
     └── test_sample.nim
 ```

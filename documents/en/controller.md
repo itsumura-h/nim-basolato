@@ -21,7 +21,7 @@ Table of Contents
          * [Response with header](#response-with-header)
       * [Redirect](#redirect)
 
-<!-- Added by: root, at: Sat Apr  3 12:47:00 UTC 2021 -->
+<!-- Added by: root, at: Sat Apr 10 18:34:49 UTC 2021 -->
 
 <!--te-->
 
@@ -74,7 +74,7 @@ Each method should be called according to the following list
 |GET|/posts/create|create|Display new post page|
 |POST|/posts|store|Submit new post|
 |GET|/posts/{id}|show|Display one post|
-|GET|/posts/{id}/edit|edit|Dpsplay one post edit page|
+|GET|/posts/{id}/edit|edit|Display one post edit page|
 |POST|/posts/{id}|update|Update one post|
 |DELETE|/posts/{id}|destroy|Delete one post|
 

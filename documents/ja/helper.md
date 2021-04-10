@@ -5,10 +5,13 @@
 コンテンツ
 
 <!--ts-->
-   * [Healper](#healper)
+   * [ヘルパー関数](#ヘルパー関数)
       * [dd](#dd)
+      * [password](#password)
+         * [API](#api)
+         * [サンプル](#サンプル)
 
-<!-- Added by: root, at: Sun Dec 27 18:18:55 UTC 2020 -->
+<!-- Added by: root, at: Sat Apr 10 18:36:15 UTC 2021 -->
 
 <!--te-->
 
@@ -31,3 +34,31 @@ dd($a,　"abc", request.repr)
 ```
 
 ![dd](../images/helper-dd.jpg)
+
+## password
+
+Basolatoは内部で`bcrypt`を使った、便利なパスワードライブラリを持っています。  
+https://github.com/runvnc/bcryptnim
+
+### API
+```nim
+proc genHashedPassword*(val:string):string =
+
+proc isMatchPassword*(input, hashedPassword:string):bool =
+```
+
+### サンプル
+```nim
+import basolato/password
+
+let pass1 = "Password!"
+let pass2 = "Password!"
+let pass3 = "WrongPassword"
+let hashed = genHashedPassword(pass1)
+
+echo isMatchPassword(pass2, hashed)
+>> true
+
+echo isMatchPassword(pass3, hashed)
+>> false
+```

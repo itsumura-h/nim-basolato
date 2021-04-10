@@ -9,7 +9,7 @@ Table of Contents
       * [API](#api)
       * [Sample](#sample)
 
-<!-- Added by: root, at: Sat Apr  3 12:46:37 UTC 2021 -->
+<!-- Added by: root, at: Sat Apr 10 18:34:25 UTC 2021 -->
 
 <!--te-->
 
@@ -27,6 +27,8 @@ proc middleware*(
   path:Regex,
   action:proc(r:Request, p:Params):Future[Response]
 ) =
+
+proc next*(status:HttpCode=HttpCode(200), body="", headers:Headers=newHeaders()):Response =
 ```
 
 ## Sample
@@ -65,6 +67,10 @@ If `X-login-id` or `X-login-token` are missing in request header, return 403 oth
 ---
 
 If you want to redirect to login page when login check is fail, you can use `ErrorRedirect`. It calls `Error 302`.
+
+---
+
+If you want to redirect the user to the login page when the login check fails, use `ErrorRedirect`. This will call `Error 302`.
 
 app/middleware/auth_middlware.nim
 ```nim

@@ -11,7 +11,7 @@ Table of Contents
          * [Type of headers](#type-of-headers)
          * [Set headers in controller](#set-headers-in-controller)
 
-<!-- Added by: root, at: Sat Apr  3 12:46:56 UTC 2021 -->
+<!-- Added by: root, at: Sat Apr 10 18:34:45 UTC 2021 -->
 
 <!--te-->
 
@@ -37,7 +37,7 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 
 ## Response header
 ### Type of headers
-`newHttpHeaders()` generate `HttpHeaders` object from `array[tuple[key: string, val: string]]`.  
+`newHttpHeaders()` generate `HttpHeaders` object from `openArray[tuple[key: string, val: string]]`.  
 https://nim-lang.org/docs/httpcore.html#HttpHeaders
 
 ```nim
@@ -53,11 +53,11 @@ let headers = {
 ```
 
 ### Set headers in controller
-Create header instance by `newHttpHeaders()` and add by `[]=`. Finally, set header at the last arge of response.
+Create header instance by `newHttpHeaders()` and add key and value. Finally, set header at the last arge of response.
 ```nim
 proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let header = newHttpHeaders()
-  header["Controller-Header-Key1"] = "Controller-Header-Val1, Controller-Header-Val2"
-  header["Controller-Header-Key2"] = "val1; val2; val3"
-  return render("with header", header)
+  let headers = newHttpHeaders()
+  headers.add("Controller-Header-Key1", ["Controller-Header-Val1", "Controller-Header-Val2"])
+  headers.add("Controller-Header-Key2", ["val1", "val2", "val3"])
+  return render("with header", headers)
 ```

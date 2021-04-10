@@ -5,10 +5,11 @@
 コンテンツ
 
 <!--ts-->
-   * [Middleware](#middleware)
-      * [Routing middleware](#routing-middleware)
+   * [ミドルウェア](#ミドルウェア)
+      * [API](#api)
+      * [サンプル](#サンプル)
 
-<!-- Added by: root, at: Sun Dec 27 18:20:43 UTC 2020 -->
+<!-- Added by: root, at: Sat Apr 10 18:36:43 UTC 2021 -->
 
 <!--te-->
 
@@ -65,7 +66,7 @@ proc checkLoginId*(r:Request, p:Params):Future[Response] {.async.} =
 
 ---
 
-もしログインチェックに失敗した時にログインページにリダイレクトさせた時は、`ErrorRedirect`を使ってください。これは`Error 302`を呼び出します。
+もしログインチェックに失敗した時にログインページにリダイレクトさせたい時は、`ErrorRedirect`を使ってください。これは`Error 302`を呼び出します。
 
 app/middleware/auth_middlware.nim
 ```nim

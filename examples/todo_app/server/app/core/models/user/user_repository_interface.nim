@@ -1,6 +1,6 @@
-import ../../value_objects
+import value_objects
 import ./user_entity
 
 type IUserRepository* = tuple
-  storeUser: proc(name:UserName, email:UserEmail, hashedPassword:HashedPassword):UserId
-  getUser: proc(email:UserEmail):User
+  storeUser: proc(a:UserName, b:UserEmail, c:HashedPassword):UserId
+  getUser: proc(a:UserEmail):User

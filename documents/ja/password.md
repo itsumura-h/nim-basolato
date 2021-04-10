@@ -2,18 +2,18 @@ Password
 ===
 [戻る](../../README.md)
 
-Table of Contents
+コンテンツ
 
 <!--ts-->
    * [Password](#password)
       * [API](#api)
-      * [Example](#example)
+      * [サンプル](#サンプル)
 
-<!-- Added by: root, at: Sun Dec 27 18:21:46 UTC 2020 -->
+<!-- Added by: root, at: Sat Apr 10 18:36:39 UTC 2021 -->
 
 <!--te-->
 
-Basolato has its own useful password library. It uses `bcrypt` package inside.  
+Basolatoは`bcrpt`を使った便利なパスワードライブラリがあります。
 https://github.com/runvnc/bcryptnim
 
 ## API
@@ -23,7 +23,7 @@ proc genHashedPassword*(val:string):string =
 proc isMatchPassword*(input, hashedPassword:string):bool =
 ```
 
-## Example
+## サンプル
 ```nim
 import basolato/password
 

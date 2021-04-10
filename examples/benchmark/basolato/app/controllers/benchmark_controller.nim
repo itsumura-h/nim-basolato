@@ -14,8 +14,8 @@ proc json*(request:Request, params:Params):Future[Response] {.async.} =
   return render(%*{"message":"Hello, World!"})
 
 proc plainText*(request:Request, params:Params):Future[Response] {.async.} =
-  var headers = newHeaders()
-  headers.set("Content-Type", "text/plain; charset=UTF-8")
+  var headers = newHttpHeaders()
+  headers.add("Content-Type", "text/plain; charset=UTF-8")
   return render("Hello, World!", headers)
 
 proc db*(request:Request, params:Params):Future[Response] {.async.} =

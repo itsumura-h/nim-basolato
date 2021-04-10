@@ -2,7 +2,7 @@ import
   asyncdispatch, asynchttpserver, asyncnet, json, strutils, cgi, tables, os, strformat,
   strtabs, parseutils, net, uri
 
-import security
+# import security
 
 func path*(request:Request):string =
   return request.url.path

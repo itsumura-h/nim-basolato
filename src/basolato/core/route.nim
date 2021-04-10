@@ -3,7 +3,7 @@ import
   asyncfile, mimetypes, re, tables, times
 from osproc import countProcessors
 import baseEnv, request, response, header, logger, error_page, resources/ddPage,
-  security
+  security/cookie, security/client
 export request, header
 
 
@@ -195,7 +195,7 @@ proc runController(req:Request, route:Route, headers: HttpHeaders):Future[Respon
   echoLog(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
   return response
 
-func doesRunAnonymousLogin(req:Request, res:Response):bool =
+proc doesRunAnonymousLogin(req:Request, res:Response):bool =
   if res.isNil:
     return false
   if not ENABLE_ANONYMOUS_COOKIE:
@@ -230,7 +230,12 @@ proc serveCore(params:(Routes, int)){.thread.} =
     else:
       # check path match with controller routing → run middleware → run controller
       try:
-        let key = $(req.httpMethod) & ":" & req.path
+        let httpMethod =
+          if req.httpMethod == HttpHead:
+            HttpGet
+          else:
+            req.httpMethod
+        let key = $(httpMethod) & ":" & req.path
         if req.httpMethod == HttpOptions:
           response = await runMiddleware(req, routes, headers)
         elif routes.withoutParams.hasKey(key):
@@ -239,11 +244,13 @@ proc serveCore(params:(Routes, int)){.thread.} =
           response = await runController(req, route, response.headers)
         else:
           for route in routes.withParams:
-            if route.httpMethod == req.httpMethod and isMatchUrl(req.path, route.path):
+            if route.httpMethod == httpMethod and isMatchUrl(req.path, route.path):
               response = await runMiddleware(req, routes, response.headers)
-              if req.httpMethod != HttpOptions:
+              if httpMethod != HttpOptions:
                 response = await runController(req, route, response.headers)
                 break
+        if req.httpMethod == HttpHead:
+          response.body = ""
       except:
         headers["content-type"] = "text/html; charset=utf-8"
         let exception = getCurrentException()

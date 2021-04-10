@@ -1,4 +1,5 @@
-import ../value_objects
+import ../models/user/value_objects as user_value_object
+import ../models/post/value_objects
 import ../models/post/post_entity
 import ../models/post/post_repository_interface
 

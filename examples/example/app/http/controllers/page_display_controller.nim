@@ -40,14 +40,15 @@ proc withStylePage*(request:Request, params:Params):Future[Response] {.async.} =
   return render(withStyleView())
 
 proc react*(request:Request, params:Params):Future[Response] {.async.} =
-  let users = %*RDB().table("users")
+  let users = %*rdb().table("users")
               .select("users.id", "users.name", "users.email", "auth.auth")
               .join("auth", "auth.id", "=", "users.auth_id")
               .get()
+  echo users
   return render(reactHtml($users))
 
 proc materialUi*(request:Request, params:Params):Future[Response] {.async.} =
-  let users = %*RDB().table("users")
+  let users = %*rdb().table("users")
               .select("users.id", "users.name", "users.email", "auth.auth")
               .join("auth", "auth.id", "=", "users.auth_id")
               .get()
@@ -55,8 +56,8 @@ proc materialUi*(request:Request, params:Params):Future[Response] {.async.} =
 
 
 proc vuetify*(request:Request, params:Params):Future[Response] {.async.} =
-  let users = %*RDB().table("users")
-              .select("users.id", "users.name", "users.email", "auth.auth")
+  let users = %*rdb().table("users")
+              .select("users.id", "users.name", "users.email", "auth.auth", "users.created_at", "users.updated_at")
               .join("auth", "auth.id", "=", "users.auth_id")
               .get()
   let header = %*[

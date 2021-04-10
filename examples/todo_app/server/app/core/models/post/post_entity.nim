@@ -1,5 +1,6 @@
 import json
-import ../../value_objects
+import ../user/value_objects as user_vo
+import value_objects
 
 
 type Post* = ref object
