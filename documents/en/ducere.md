@@ -23,7 +23,7 @@ Table of Contents
             * [usecase](#usecase)
             * [value object](#value-object)
 
-<!-- Added by: root, at: Sat Apr 10 18:34:29 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 12 06:15:53 UTC 2021 -->
 
 <!--te-->
 
@@ -52,12 +52,24 @@ ducere new .
 
 ### serve
 Run develop server with hot reload
+
+```sh
+Usage:
+  serve [optional-params] 
+Run dev application with hot reload
+Options:
+  -h, --help                  print this cligen-erated help
+  --help-syntax               advanced: prepend,plurals,..
+  --version      bool  false  print version
+  -p=, --port=   int   5000   set port
 ```
+
+```sh
 ducere serve
 ```
 The default port is 5000. If you want to change it, specify with option `-p`
 
-```
+```sh
 ducere serve -p:8000
 ```
 
@@ -65,10 +77,10 @@ ducere serve -p:8000
 Compiling for production.  
 By default, it will be compiled to run 5000 port and multithreaded for the number of cores in your PC.
 
-```
+```sh
 Usage:
   build [optional-params] [args: string...]
-Build for production setting
+Build for production.
 Options:
   -h, --help                       print this cligen-erated help
   --help-syntax                    advanced: prepend,plurals,..

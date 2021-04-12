@@ -1,7 +1,7 @@
 import json
 # framework
-import basolato/controller
-import basolato/core/base
+import ../../../../../src/basolato/controller
+import ../../../../../src/basolato/core/base
 # view
 import ../views/pages/welcome_view
 

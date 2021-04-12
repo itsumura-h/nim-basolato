@@ -21,7 +21,7 @@ routes.post("/", some_controller.create)
       * [ルーティンググループ](#ルーティンググループ)
       * [URL Params](#url-params)
 
-<!-- Added by: root, at: Sat Apr 10 18:36:19 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 12 06:16:38 UTC 2021 -->
 
 <!--te-->
 

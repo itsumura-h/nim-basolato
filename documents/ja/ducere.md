@@ -21,7 +21,7 @@ Ducereコマンド
             * [usecase](#usecase)
             * [value object](#value-object)
 
-<!-- Added by: root, at: Sat Apr 10 18:36:47 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 12 06:17:08 UTC 2021 -->
 
 <!--te-->
 
@@ -49,6 +49,17 @@ ducere new .
 ```
 
 ### serve
+```sh
+Usage:
+  serve [optional-params] 
+Run dev application with hot reload
+Options:
+  -h, --help                  print this cligen-erated help
+  --help-syntax               advanced: prepend,plurals,..
+  --version      bool  false  print version
+  -p=, --port=   int   5000   set port
+```
+
 ホットリロードが有効になった開発用サーバーを立ち上げます。
 ```sh
 ducere serve
@@ -59,14 +70,31 @@ ducere serve
 ducere serve -p:8000
 ```
 
+ホストを設定するには`.env`の環境変数に追記してください。
+```sh
+HOST="127.0.0.2"
+```
+
 ### build
 本番環境用にプロジェクトをビルドします。
 何もオプションを付けない場合、5000番ポートを使い、実行したコンピューターのコア数分マルチスレッドで起動するようになっています。
 ```sh
+Usage:
+  build [optional-params] [args: string...]
+Build for production.
+Options:
+  -h, --help                       print this cligen-erated help
+  --help-syntax                    advanced: prepend,plurals,..
+  --version        bool    false   print version
+  -p=, --ports=    string  "5000"  set ports
+  -t=, --threads=  string  "off"   set threads
+```
+
+```sh
 ducere build
 ./main
 >> Starting 4 threads
->> Listening on port 5000
+>> Listening on 0.0.0.0:5000
 ```
 
 複数のポートを指定した場合、シングルスレッドで、それぞれのポートを使って起動する実行バイナリが複数出力されます。
@@ -79,14 +107,25 @@ ducere build -p:5000,5001,5002
 
 ./main5000
 >> Starting 1 thread
->> Listening on port 5000
+>> Listening on 0.0.0.0:5000
 
 ./main5001
 >> Starting 1 thread
->> Listening on port 5001
+>> Listening on 0.0.0.0:5001
 ```
 
 以下は本番環境で動かすためのNginxのサンプルです。
+
+autorestart.sh
+```sh
+ducere build -p:5000,5001,5002,5003
+while [ 1 ]; do
+  ./main5000 & \
+  ./main5001 & \
+  ./main5002 & \
+  ./main5003
+done
+```
 
 nginx.conf
 ```nginx
@@ -139,7 +178,7 @@ ducere migrate
 
 #### config
 
-DBコネクション、ログ、セッションタイムなどを定義するための`config.nims`のファイルを作ります。
+DBコネクション、ログ、セッションタイムなどを定義するための`config.nims`、`.env`のファイルを作ります。
 ```
 ducere make config
 ```

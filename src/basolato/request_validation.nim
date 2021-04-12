@@ -127,7 +127,7 @@ add: domain, password, timestamp
 when defined(testing):
   let messages = baseMessages
 else:
-  let messageTemplatePath = getCurrentDir() / &"resources/lang/{LANGUAGE}/validation.json"
+  let messageTemplatePath = getCurrentDir() / &"resources/lang/{LOCALE}/validation.json"
   let messages =
     if messageTemplatePath.fileExists():
       let f = open(messageTemplatePath)

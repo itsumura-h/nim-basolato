@@ -10,7 +10,7 @@
       * [API](#api)
       * [サンプル](#サンプル)
 
-<!-- Added by: root, at: Sat Apr 10 18:36:27 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 12 06:16:47 UTC 2021 -->
 
 <!--te-->
 

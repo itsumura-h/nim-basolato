@@ -1,4 +1,4 @@
-import basolato/view
+import ../../../../../../../src/basolato/view
 proc reactHtml*(users:string): string = tmpli html"""
 <main></main>
 <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>

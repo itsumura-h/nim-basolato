@@ -29,7 +29,7 @@ An asynchronous full-stack web framework for Nim, based on [asynchttpserver](htt
       * [Development](#development)
          * [Generate TOC of documents](#generate-toc-of-documents)
 
-<!-- Added by: root, at: Sat Apr 10 18:33:55 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 12 06:15:20 UTC 2021 -->
 
 <!--te-->
 
@@ -134,14 +134,10 @@ With your project ready, you can start serving requests using `ducere`:
 ducere serve # includes hot reloading
 ```
 
-Or by compiling through Nim:
-```
-nim c -r main
-```
-
 ## Documentation
 
 - [ducere CLI tool](./documents/en/ducere.md)
+- [Settings](./documents/en/settings.md)
 - [Routing](./documents/en/routing.md)
 - [Controller](./documents/en/controller.md)
 - [Request](./documents/en/request.md)

@@ -7,8 +7,11 @@ Table of Contents
 <!--ts-->
    * [Validation](#validation)
    * [Simple Validation](#simple-validation)
-      * [Available Rules](#available-rules)
-         * [email](#email)
+      * [Sample](#sample)
+   * [Request Validation](#request-validation)
+      * [Sample](#sample-1)
+   * [Error messages language](#error-messages-language)
+         * [accepted](#accepted)
          * [domain](#domain)
          * [strictEmail](#strictemail)
          * [equals](#equals)
@@ -18,11 +21,11 @@ Table of Contents
          * [lessThan](#lessthan)
          * [numeric](#numeric)
          * [password](#password)
-   * [Request Validation](#request-validation)
-      * [sample](#sample)
+   * [Request Validation](#request-validation-1)
+      * [sample](#sample-2)
       * [Custom Validation](#custom-validation)
-      * [Available Rules](#available-rules-1)
-         * [accepted](#accepted)
+      * [Available Rules](#available-rules)
+         * [accepted](#accepted-1)
          * [contains](#contains)
          * [email, strictEmail](#email-strictemail)
          * [equals](#equals-1)
@@ -38,20 +41,19 @@ Table of Contents
          * [required](#required)
          * [unique](#unique)
 
-<!-- Added by: root, at: Sat Apr 10 18:34:11 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 12 06:15:37 UTC 2021 -->
 
 <!--te-->
 
 Basolato has it's own validation function. It recieves request and check request params.  
-There are two validation type. One is used in controller that recieve request and return errors array.
+There are two validation type. One is used in controller that recieve request and return errors array.  
 Another is more simple. Recieve value and return `bool`.
 
 # Simple Validation
 ```
 import basolato/core/validation
 ```
-## Available Rules
-### email
+## Sample
 ```nim
 echo Validation().email("sample@example.com")
 >> true
@@ -59,6 +61,31 @@ echo Validation().email("sample@example.com")
 echo Validation().email("sample@example")
 >> false
 ```
+
+# Request Validation
+```
+import basolato/request_validation
+```
+## Sample
+```nim
+proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  v.required("email")
+  v.email("email")
+  let client = await newClient(request)
+  if v.hasErrors:
+    await client.storeValidationResult(v)
+    return redirect("/signup")
+```
+
+# Error messages language
+Definition of error messages is in `resources/lang/{language}/validation.json`.
+
+
+### accepted
+
+
+
 
 ### domain
 ```nim

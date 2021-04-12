@@ -294,10 +294,10 @@ proc serveCore(params:(Routes, int)){.thread.} =
     await req.respond(response.status, response.body, response.headers.format())
     # keep-alive
     req.dealKeepAlive()
-  waitFor server.serve(Port(port), cb)
+  waitFor server.serve(Port(port), cb, HOST_ADDR)
+
 
 proc serve*(routes: var Routes) =
-  let port = PORT_NUM
   let numThreads =
     when compileOption("threads"):
       countProcessors()
@@ -308,13 +308,14 @@ proc serve*(routes: var Routes) =
     echo("Starting 1 thread")
   else:
     echo("Starting ", numThreads, " threads")
-  echo("Listening on port ", port)
+
+  echo("Listening on ", &"{HOST_ADDR}:{PORT_NUM}")
   when compileOption("threads"):
     var threads = newSeq[Thread[(Routes, int)]](numThreads)
     for i in 0 ..< numThreads:
       createThread(
-        threads[i], serveCore, (routes, port)
+        threads[i], serveCore, (routes, PORT_NUM)
       )
     joinThreads(threads)
   else:
-    serveCore((routes, port))
+    serveCore((routes, PORT_NUM))

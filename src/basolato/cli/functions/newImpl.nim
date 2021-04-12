@@ -28,9 +28,6 @@ proc create(dirPath:string, packageDir:string):int =
   cd {dirPath}
   ducere make config
   """)
-    copyFile(dirPath / ".env", dirPath / ".env.dev")
-    copyFile(dirPath / ".env", dirPath / ".env.stg")
-    copyFile(dirPath / ".env", dirPath / ".env.prd")
 
     # create empty dirs
     createDir(&"{dirPath}/app/http/views/errors")
@@ -50,6 +47,7 @@ backend       = "c"
 # Dependencies
 requires "nim >= {NimVersion}"
 requires "https://github.com/itsumura-h/nim-basolato >= {basolatoVersion}"
+requires "dotenv >= 1.1.1"
 requires "cligen >= 0.9.41"
 requires "templates >= 0.5"
 requires "bcrypt >= 0.2.1"
