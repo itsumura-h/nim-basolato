@@ -11,7 +11,7 @@
          * [Header型](#header型)
          * [コントローラーでレスポンスにヘッダーを設定する](#コントローラーでレスポンスにヘッダーを設定する)
 
-<!-- Added by: root, at: Mon Apr 12 06:16:56 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 12 07:20:46 UTC 2021 -->
 
 <!--te-->
 

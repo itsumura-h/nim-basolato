@@ -11,19 +11,19 @@ Table of Contents
       * [Session DB](#session-db)
       * [Client](#client)
          * [API](#api)
-         * [例](#例)
+         * [サンプル](#サンプル)
          * [匿名ユーザーへのクッキー](#匿名ユーザーへのクッキー)
             * [匿名ユーザーが有効な時](#匿名ユーザーが有効な時)
             * [匿名ユーザーが無効な時](#匿名ユーザーが無効な時)
          * [複数のドメインにクッキーを作る時](#複数のドメインにクッキーを作る時)
       * [クッキー](#クッキー)
          * [API](#api-1)
-         * [例](#例-1)
+         * [サンプル](#サンプル-1)
       * [セッション](#セッション)
          * [API](#api-2)
-         * [例](#例-2)
+         * [サンプル](#サンプル-2)
 
-<!-- Added by: root, at: Mon Apr 12 06:16:51 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 12 07:20:42 UTC 2021 -->
 
 <!--te-->
 
@@ -171,7 +171,7 @@ proc getValidationResult*(self:Client):Future[tuple[params:JsonNode, errors:Json
 ```
 
 
-### 例
+### サンプル
 MPA(Multi page application)の時のインスタンス作成
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
@@ -361,7 +361,7 @@ proc destroy*(self:Cookie, path="/"):Cookie =
 proc setCookie*(response:Response, cookie:Cookie):Response =
 ```
 
-### 例
+### サンプル
 クッキーの値を取得する
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
@@ -434,7 +434,7 @@ proc delete*(self:Session, key:string) {.async.} =
 proc destroy*(self:Session) {.async.} =
 ```
 
-### 例
+### サンプル
 セッションIDを取得する
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =

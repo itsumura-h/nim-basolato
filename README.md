@@ -29,7 +29,7 @@ An asynchronous full-stack web framework for Nim, based on [asynchttpserver](htt
       * [Development](#development)
          * [Generate TOC of documents](#generate-toc-of-documents)
 
-<!-- Added by: root, at: Mon Apr 12 06:15:20 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 12 07:19:12 UTC 2021 -->
 
 <!--te-->
 
@@ -57,6 +57,7 @@ export PATH=$PATH:~/.nimble/bin
 ### Dependencies
 
 The framework depends on several libraries (installed automatically by Nimble):
+- [dotenv](https://github.com/euantorano/dotenv.nim), Loads environment variables from `.env`.
 - [nim-templates](https://github.com/onionhammer/nim-templates), a simple string templating library.
 - [allographer](https://github.com/itsumura-h/nim-allographer), a library for building queries.
 - [flatdb](https://github.com/enthus1ast/flatdb), a small Flatfile database, used for sessions.
@@ -110,9 +111,7 @@ The overall file structure is as follows:
 │           ├── query_service.nim
 │           └── query_service_interface.nim
 ├── .env
-├── .env.dev
-├── .env.prd
-├── .env.stg
+├── .env.local
 ├── config.nims
 ├── main.nim
 ├── migrations

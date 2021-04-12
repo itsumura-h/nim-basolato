@@ -9,7 +9,7 @@ Migration
       * [イントロダクション](#イントロダクション)
       * [サンプル](#サンプル)
 
-<!-- Added by: root, at: Mon Apr 12 06:17:19 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 12 07:21:05 UTC 2021 -->
 
 <!--te-->
 

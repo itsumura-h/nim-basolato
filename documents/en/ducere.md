@@ -23,7 +23,7 @@ Table of Contents
             * [usecase](#usecase)
             * [value object](#value-object)
 
-<!-- Added by: root, at: Mon Apr 12 06:15:53 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 12 07:19:45 UTC 2021 -->
 
 <!--te-->
 
