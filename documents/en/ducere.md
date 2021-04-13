@@ -267,10 +267,10 @@ ducere make valueobject {arg1} {arg2}
 ```
 
 `arg1` is a name of value object which should be Camel Case.  
-`arg2` is a relative path to value object file from `app/core/models`.
+`arg2` specifies the name of the aggregate to which the value object will be written. Ex: `app/core/models{aggregate}/{aggregate}_value_object`.
 
 example
 ```sh
 ducere make valueobject UserName user
->> add UserName in app/domain/models/user/value_objects
+>> add UserName in app/domain/models/user/user_value_objects
 ```

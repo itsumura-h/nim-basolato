@@ -15,6 +15,7 @@ proc build*(ports="5000", threads="off", args:seq[string]) =
         nim c \
         -d:release \
         --out:{outputFileName}{port} \
+        --gc:orc \
         --putenv:PORT={port} \
         main.nim
       """)
@@ -23,8 +24,10 @@ proc build*(ports="5000", threads="off", args:seq[string]) =
       nim c \
       -d:release \
       --threads:{threads} \
-      --threadAnalysis:off \
+      --gc:orc \
       --out:{outputFileName} \
       --putenv:PORT={ports} \
       main.nim
     """)
+
+    # --threadAnalysis:off \

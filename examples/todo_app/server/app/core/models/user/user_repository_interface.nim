@@ -1,4 +1,4 @@
-import value_objects
+import user_value_objects
 import ./user_entity
 
 type IUserRepository* = tuple

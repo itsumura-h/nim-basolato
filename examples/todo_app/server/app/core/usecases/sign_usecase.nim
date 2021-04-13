@@ -1,5 +1,5 @@
 import json
-import ../models/user/value_objects
+import ../models/user/user_value_objects
 import ../models/user/user_entity
 import ../models/user/user_repository_interface
 import ../models/user/user_service

@@ -1,8 +1,8 @@
 import os, strformat, terminal, strutils
 
 
-proc makeValueObject*(target, targetPath, message:var string):int =
-  targetPath = getCurrentDir() / "app/core/models" /  targetPath / "value_objects.nim"
+proc makeValueObject*(target, aggregate, message:var string):int =
+  let targetPath = getCurrentDir() / "app/core/models" /  aggregate / &"{aggregate}_value_objects.nim"
   target = target.capitalizeAscii()
   let VALUEOBJECT = &"""
 
@@ -14,7 +14,7 @@ proc new{target}*(value:string):{target} =
   result = new {target}
   result.value = value
 
-proc get*(self:{target}):string =
+proc `$`*(self:{target}):string =
   return self.value
 """
 

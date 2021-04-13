@@ -2,7 +2,7 @@ import json, times
 import allographer/query_builder
 import ../../core/models/post/post_repository_interface
 import ../../core/models/post/post_entity
-import ../../core/models/post/value_objects
+import ../../core/models/post/post_value_objects
 
 
 type PostRdbRepository* = ref object

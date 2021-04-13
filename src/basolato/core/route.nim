@@ -294,7 +294,8 @@ proc serveCore(params:(Routes, int)){.thread.} =
     await req.respond(response.status, response.body, response.headers.format())
     # keep-alive
     req.dealKeepAlive()
-  waitFor server.serve(Port(port), cb, HOST_ADDR)
+  asyncCheck server.serve(Port(port), cb, HOST_ADDR)
+  runForever()
 
 
 proc serve*(routes: var Routes) =

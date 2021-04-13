@@ -2,7 +2,7 @@ import json, options
 import allographer/query_builder
 import ../../core/models/user/user_repository_interface
 import ../../core/models/user/user_entity
-import ../../core/models/user/value_objects
+import ../../core/models/user/user_value_objects
 
 
 type UserRdbRepository* = ref object
