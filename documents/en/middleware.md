@@ -6,31 +6,34 @@ Table of Contents
 
 <!--ts-->
    * [Middleware](#middleware)
-      * [Routing middleware](#routing-middleware)
+      * [API](#api)
+      * [Sample](#sample)
 
-<!-- Added by: root, at: Sun Dec 27 18:20:43 UTC 2020 -->
+<!-- Added by: root, at: Mon Apr 12 07:19:40 UTC 2021 -->
 
 <!--te-->
 
 ## API
 ```nim
 proc middleware*(
-  this:var Routes,
+  self:var Routes,
   path:Regex,
   action:proc(r:Request, p:Params):Future[Response]
 ) =
 
 proc middleware*(
-  this:var Routes,
+  self:var Routes,
   httpMethods:seq[HttpMethod],
   path:Regex,
   action:proc(r:Request, p:Params):Future[Response]
 ) =
+
+proc next*(status:HttpCode=HttpCode(200), body="", headers:Headers=newHeaders()):Response =
 ```
 
 ## Sample
 You can run middleware methods before calling controller.  
-In following example, `checkCsrfTokenMiddleware()` and `checkAuthTokenMiddleware()` definded in `app/middleware/auth_middlware.nim` are called
+In following example, `checkCsrfTokenMiddleware()` and `checkSessionIdMiddleware()` definded in `app/middleware/auth_middlware.nim` are called
 
 main.nim
 ```nim
@@ -64,6 +67,10 @@ If `X-login-id` or `X-login-token` are missing in request header, return 403 oth
 ---
 
 If you want to redirect to login page when login check is fail, you can use `ErrorRedirect`. It calls `Error 302`.
+
+---
+
+If you want to redirect the user to the login page when the login check fails, use `ErrorRedirect`. This will call `Error 302`.
 
 app/middleware/auth_middlware.nim
 ```nim

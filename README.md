@@ -29,7 +29,7 @@ An asynchronous full-stack web framework for Nim, based on [asynchttpserver](htt
       * [Development](#development)
          * [Generate TOC of documents](#generate-toc-of-documents)
 
-<!-- Added by: root, at: Sun Dec 27 18:18:33 UTC 2020 -->
+<!-- Added by: root, at: Mon Apr 12 07:19:12 UTC 2021 -->
 
 <!--te-->
 
@@ -57,17 +57,14 @@ export PATH=$PATH:~/.nimble/bin
 ### Dependencies
 
 The framework depends on several libraries (installed automatically by Nimble):
+- [dotenv](https://github.com/euantorano/dotenv.nim), Loads environment variables from `.env`.
 - [nim-templates](https://github.com/onionhammer/nim-templates), a simple string templating library.
 - [allographer](https://github.com/itsumura-h/nim-allographer), a library for building queries.
 - [flatdb](https://github.com/enthus1ast/flatdb), a small Flatfile database, used for sessions.
 - [bcrypt](https://github.com/runvnc/bcryptnim), used for hashing passwords.
 - [nimAES](https://github.com/jangko/nimAES), for AES support.
 - [faker](https://github.com/jiro4989/faker), for generating fake data.
-
-The following libraries can be used for making views:
-- [Karax](https://github.com/pragmagic/karax), for single-page applications.
-- [react.nim](https://github.com/andreaferretti/react.nim), React.js bindings.
-- [react-16.nim](https://github.com/kristianmandrup/react-16.nim), React 16.x bindings with an example app (WIP).
+- [sass](https://github.com/dom96/sass), provides a Sass/SCSS to CSS compiler for `Nim` through bindings to `libsass`.
 
 
 ### Installation
@@ -92,45 +89,38 @@ ducere new {project_name}
 The overall file structure is as follows:
 
 ```
-├── .gitignore
 ├── app
-│   ├── controllers
-│   │   ├── README.md
-│   │   └── welcome_controller.nim
-│   ├── domain
-│   │   ├── di_container.nim
-│   │   ├── models
-│   │   │   ├── README.md
-│   │   │   └── value_objects.nim
-│   │   ├── query_services
-│   │   │   ├── README.md
-│   │   │   ├── query_service_interface.nim
-│   │   │   └── rdb_query_service.nim
-│   │   └── usecases
-│   │       └── README.md
-│   └── middlewares
-│       ├── README.md
-│       ├── auth_middleware.nim
-│       └── custom_headers_middleware.nim
+│   ├── core
+│   │   ├── models
+│   │   └── usecases
+│   ├── di_container.nim
+│   ├── http
+│   │   ├── controllers
+│   │   │   └── welcome_controller.nim
+│   │   ├── middlewares
+│   │   │   ├── auth_middleware.nim
+│   │   │   └── cors_middleware.nim
+│   │   └── views
+│   │       ├── layouts
+│   │       │   ├── application_view.nim
+│   │       │   └── head_view.nim
+│   │       └── pages
+│   │           └── welcome_view.nim
+│   └── repositories
+│       └── query_services
+│           ├── query_service.nim
+│           └── query_service_interface.nim
+├── .env
+├── .env.local
 ├── config.nims
 ├── main.nim
 ├── migrations
-│   ├── README.md
-│   ├── migrate.nim
-│   └── migration0001sample.nim
+│   └── migrate.nim
 ├── public
-│   ├── README.md
 │   ├── basolato.svg
 │   ├── css
 │   ├── favicon.ico
 │   └── js
-├── resources
-│   ├── README.md
-│   ├── layouts
-│   │   ├── application_view.nim
-│   │   └── head_view.nim
-│   └── pages
-│       └── welcome_view.nim
 ├── session.db
 ├── {project_name}.nimble
 └── tests
@@ -143,14 +133,10 @@ With your project ready, you can start serving requests using `ducere`:
 ducere serve # includes hot reloading
 ```
 
-Or by compiling through Nim:
-```
-nim c -r main
-```
-
 ## Documentation
 
 - [ducere CLI tool](./documents/en/ducere.md)
+- [Settings](./documents/en/settings.md)
 - [Routing](./documents/en/routing.md)
 - [Controller](./documents/en/controller.md)
 - [Request](./documents/en/request.md)
@@ -161,7 +147,6 @@ nim c -r main
 - [Error](./documents/en/error.md)
 - [Validation](./documents/en/validation.md)
 - [Security (CsrfToken, Cookie, Session, Auth)](./documents/en/security.md)
-- [Password](./documents/en/password.md)
 - [Helper](./documents/en/helper.md)
 - [Logging](./documents/en/logging.md)
 

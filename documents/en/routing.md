@@ -21,7 +21,7 @@ Table of Contents
       * [Routing group](#routing-group)
       * [URL Params](#url-params)
 
-<!-- Added by: root, at: Sun Dec 27 18:19:16 UTC 2020 -->
+<!-- Added by: root, at: Mon Apr 12 07:19:24 UTC 2021 -->
 
 <!--te-->
 
@@ -40,9 +40,6 @@ Following HTTP Verbs are valid.
 |options|Gets list of response headers before post/put/patch/delete/ access by client API software such as [Axios/JavaScript](https://github.com/axios/axios) and [Curl/sh](https://curl.haxx.se/).|
 |trace|Performs a message loop-back test along the path to the target resource, providing a useful debugging mechanism.|
 |connect|Starts two-way communications with the requested resource. It can be used to open a tunnel.|
-|error|Catch exception or HttpCode|
-|before|Run before get/post/put/patch/delete access.|
-|after|Run after get/post/put/patch/delete access.|
 
 ## Routing group
 ```nim

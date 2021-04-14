@@ -2,73 +2,91 @@ Migration
 ===
 [戻る](../../README.md)
 
-Table of Contents
+コンテンツ
 
 <!--ts-->
    * [Migration](#migration)
-      * [Introduction](#introduction)
-      * [Example](#example)
+      * [イントロダクション](#イントロダクション)
+      * [サンプル](#サンプル)
 
-<!-- Added by: root, at: Sun Dec 27 18:21:25 UTC 2020 -->
+<!-- Added by: root, at: Mon Apr 12 07:21:05 UTC 2021 -->
 
 <!--te-->
 
-## Introduction
-Use `ducere` command  
+## イントロダクション
+マイグレーションファイルを作るには、`ducere`コマンドを使います。  
 [`ducere make migration`](./ducere.md#migration)
 
 ```sh
 ducere make migration createUsersTable
 >> migrations/migration{datetime}createUsersTable.nim
 ```
-and updated `/migrations/migrate.nim` automatically.
 
-To run migration, run `migrate.nim`
+コマンドを実行すると、`/migrations/migrate.nim`は自動的に更新されます。
+
+マイグレーションを実行するには、`migrate.nim`を実行してください。
 ```sh
 nim c -r migrations/migrate
 ```
 
-## Example
-You have sample migration file.
+ducereコマンドを使うこともできます
+```sh
+ducere migrate
+```
 
-mirations/migration0001.nim
+## サンプル
+
+mirations/migration20210410131239user.nim
 ```nim
 import json, strformat
 import allographer/schema_builder
 import allographer/query_builder
 
-proc migration0001*() =
-  # Create table schema
-  schema([
-    table("sample_users", [
+proc migration20210410131239user*() =
+  schema(
+    table("auth", [
+      Column().increments("id"),
+      Column().string("auth")
+    ], reset=true),
+    table("users", [
       Column().increments("id"),
       Column().string("name"),
-      Column().string("email")
-    ])
+      Column().string("email"),
+      Column().foreign("auth_id").reference("id").on("auth").onDelete(SET_NULL),
+      Column().timestamps()
+    ], reset=true)
+  )
+
+  rdb().table("auth").insert([
+    %*{"id": 1, "auth": "admin"},
+    %*{"id": 2, "auth": "user"},
   ])
 
-  # Seeder
   var users: seq[JsonNode]
-  for i in 1..10:
+  for i in 1..100:
     users.add(%*{
       "id": i,
       "name": &"user{i}",
-      "email": &"user{i}@nim.com"
+      "email": &"user{i}@nim.com",
+      "auth_id": if i mod 2 == 0: 1 else: 2
     })
-  RDB().table("sample_users").insert(users)
+  rdb().table("users").insert(users)
+
+  echo rdb().table("users").get()
+
 ```
 
 migrations/migrate.nim
 ```nim
-import migration0001
+import migration20210410131239user
 
 proc main() =
-  migration0001()
+  discard
+  migration20210410131239user()
 
 main()
 ```
-If you don't need to create `sample users` table, delete `migration0001()` from `migrations/migrate.nim`
 
-More details of `Schema Builder` and `Query Builder` is in allographer documents.  
+「Schema Builder」と「Query Builder」の詳細については、allographerのドキュメントを参照してください。
 [Schema Builder](https://github.com/itsumura-h/nim-allographer/blob/master/documents/schema_builder.md)  
 [Query Builder](https://github.com/itsumura-h/nim-allographer/blob/master/documents/query_builder.md)

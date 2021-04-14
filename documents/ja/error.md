@@ -5,12 +5,12 @@
 コンテンツ
 
 <!--ts-->
-   * [Error](#error)
-      * [Introduction](#introduction)
-      * [Raise Error and Redirect](#raise-error-and-redirect)
-      * [How to display custom error page](#how-to-display-custom-error-page)
+   * [エラー](#エラー)
+      * [イントロダクション](#イントロダクション)
+      * [サンプル外発生させながらリダイレクトさせたい時](#サンプル外発生させながらリダイレクトさせたい時)
+      * [独自のエラーページを表示するには](#独自のエラーページを表示するには)
 
-<!-- Added by: root, at: Sun Dec 27 18:22:07 UTC 2020 -->
+<!-- Added by: root, at: Mon Apr 12 07:20:17 UTC 2021 -->
 
 <!--te-->
 
@@ -27,7 +27,7 @@ Basolatoは`300`から`505`までの全てのレスポンスステータスの�
 [HTTPステータスコード一覧](https://ja.wikipedia.org/wiki/HTTPステータスコード)
 
 
-## 例外発生させながらリダイレクトさせたい時
+## サンプル外発生させながらリダイレクトさせたい時
 もし例外が発生した時に同時にリダイレクトさせたい時は、`errorRedirect`関数を使ってください。
 この関数はコントローラーの中でのみ使えます。
 
@@ -41,7 +41,7 @@ raise newException(ErrorRedirect, "/login")
 ```
 
 ## 独自のエラーページを表示するには
-Basolatoは専用のエラーページを持っています。しかし`./resources/errors/{http code}.html`の形式に沿ってファイルを作ることで、独自のエラーページを表示させることもできます。  
+Basolatoは専用のエラーページを持っています。しかし`app/http/views/errors/{http code}.html`の形式に沿ってファイルを作ることで、独自のエラーページを表示させることもできます。  
 もしHTTPステータスコードと一致するHTMLファイルが存在せず、かつ`error.html`が存在する場合は、`error.html`が表示されます。
 
 ・優先順位  
@@ -51,7 +51,7 @@ Basolatoは専用のエラーページを持っています。しかし`./resour
 開発環境では常にフレームワーク独自のエラーページが表示されます。
 
 ```
-└── resources
+└── views
     └── errors
         ├── 404.html # ユーザーオリジナルエラーページ
         ├── 500.html # ユーザーオリジナルエラーページ

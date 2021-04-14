@@ -1,12 +1,13 @@
 import
-  asynchttpserver, asyncnet, json, strutils, cgi, tables, os, strformat, strtabs,
-  parseutils, net, uri
+  asyncdispatch, asynchttpserver, asyncnet, json, strutils, cgi, tables, os, strformat,
+  strtabs, parseutils, net, uri
 
+# import security
 
-proc path*(request:Request):string =
+func path*(request:Request):string =
   return request.url.path
 
-proc httpMethod*(request:Request):HttpMethod =
+func httpMethod*(request:Request):HttpMethod =
   return request.reqMethod
 
 proc dealKeepAlive*(req:Request) =
@@ -22,13 +23,13 @@ proc dealKeepAlive*(req:Request) =
   ):
     req.client.close()
 
-proc isNumeric(str:string):bool =
+func isNumeric(str:string):bool =
   result = true
   for c in str:
     if not c.isDigit:
       return false
 
-proc isMatchUrl*(requestPath, routePath:string):bool =
+func isMatchUrl*(requestPath, routePath:string):bool =
   let requestPath = requestPath.split("/")[1..^1]
   let routePath = routePath.split("/")[1..^1]
   if requestPath.len != routePath.len:
@@ -52,44 +53,65 @@ type Param* = ref object
   ext:string
   value:string
 
-type Params* = TableRef[string, Param]
+func `$`*(self:Param):string =
+  return self.value
+
+func ext*(self:Param):string =
+  return self.ext
+
+type Params* = ref object
+  data: TableRef[string, Param]
+
+proc newParams*():Params =
+  return Params(
+    data: newTable[string, Param](),
+  )
+
+func data*(self:Params):TableRef[string, Param] =
+  return self.data
 
 
-proc `[]`(params:Params, key:string):Param =
-  return tables.`[]`(params, key)
+func `[]`*(params:Params, key:string):Param =
+  return tables.`[]`(params.data, key)
 
-proc getStr*(params:Params, key:string, default=""):string =
-  if params.hasKey(key):
+func `[]=`*(params:Params, key:string, value:Param) =
+  tables.`[]=`(params.data, key, value)
+
+func getStr*(params:Params, key:string, default=""):string =
+  if params.data.hasKey(key):
     return params[key].value
   else:
     return default
 
-proc getInt*(params:Params, key:string, default=0):int =
-  if params.hasKey(key):
+func getInt*(params:Params, key:string, default=0):int =
+  try:
     return params[key].value.parseInt
-  else:
+  except:
     return default
 
-proc getFloat*(params:Params, key:string, default=0.0):float =
-  if params.hasKey(key):
+func getFloat*(params:Params, key:string, default=0.0):float =
+  try:
     return params[key].value.parseFloat
-  else:
+  except:
     return default
 
-proc getBool*(params:Params, key:string, default=false):bool =
-  if params.hasKey(key):
+func getBool*(params:Params, key:string, default=false):bool =
+  try:
     return params[key].value.parseBool
-  else:
+  except:
     return default
 
-proc getJson*(params:Params):JsonNode =
-  return params["json"].value.parseJson
+proc getJson*(params:Params, key:string, default=newJObject()):JsonNode =
+  try:
+    return params.data[key].value.parseJson
+  except:
+    return default
 
-proc hasKey*(params:Params, key:string):bool =
-  return tables.hasKey(params, key)
+func hasKey*(params:Params, key:string):bool =
+  return params.data.hasKey(key)
 
-proc getUrlParams*(requestPath, routePath:string):Params =
-  let params = Params()
+func getUrlParams*(requestPath, routePath:string):Params =
+  result = newParams()
   if routePath.contains("{"):
     let requestPath = requestPath.split("/")[1..^1]
     let routePath = routePath.split("/")[1..^1]
@@ -97,36 +119,60 @@ proc getUrlParams*(requestPath, routePath:string):Params =
       if routePath[i].contains("{"):
         let keyInUrl = routePath[i][1..^1].split(":")
         let key = keyInUrl[0]
-        params[key] = Param(value:requestPath[i].split(":")[0])
-  return params
+        result.data[key] = Param(value:requestPath[i].split(":")[0])
 
-proc getQueryParams*(request:Request):Params =
-  let params = Params()
+func getQueryParams*(request:Request):Params =
+  result = newParams()
   let query = request.url.query
   for key, val in cgi.decodeData(query):
-    params[key.string] = Param(value:val)
-  return params
+    result.data[key.string] = Param(value:val)
 
+proc getJsonParams*(request:Request):Params =
+  result = newParams()
+  let jsonParams = request.body.parseJson()
+  for k, v in jsonParams.pairs:
+    case v.kind
+    of JInt:
+      result.data[k] = Param(value: $(v.getInt))
+    of JFloat:
+      result.data[k] = Param(value: $(v.getFloat))
+    of JBool:
+      result.data[k] = Param(value: $(v.getBool))
+    of JNull:
+      result.data[k] = Param(value: "")
+    of JArray:
+      result.data[k] = Param(value: $v)
+    of JObject:
+      result.data[k] = Param(value: $v)
+    else:
+      result.data[k] = Param(value: v.getStr)
+
+proc `%`*(self:Params):JsonNode =
+  var data = newJObject()
+  for key, param in self.data:
+    if param.ext.len == 0:
+      data[key] = %param.value
+  return data
 
 type MultiData* = OrderedTable[string, tuple[fields: StringTableRef, body: string]]
 
-template parseContentDisposition() =
-  var hCount = 0
-  while hCount < hValue.len()-1:
-    var key = ""
-    hCount += hValue.parseUntil(key, {';', '='}, hCount)
-    if hValue[hCount] == '=':
-      var value = hvalue.captureBetween('"', start = hCount)
-      hCount += value.len+2
-      inc(hCount) # Skip ;
-      hCount += hValue.skipWhitespace(hCount)
-      if key == "name": name = value
-      newPart[0][key] = value
-    else:
-      inc(hCount)
-      hCount += hValue.skipWhitespace(hCount)
+# template parseContentDisposition() =
+#   var hCount = 0
+#   while hCount < hValue.len()-1:
+#     var key = ""
+#     hCount += hValue.parseUntil(key, {';', '='}, hCount)
+#     if hValue[hCount] == '=':
+#       var value = hvalue.captureBetween('"', start = hCount)
+#       hCount += value.len+2
+#       inc(hCount) # Skip ;
+#       hCount += hValue.skipWhitespace(hCount)
+#       if key == "name": name = value
+#       newPart[0][key] = value
+#     else:
+#       inc(hCount)
+#       hCount += hValue.skipWhitespace(hCount)
 
-proc parseMultiPart*(body: string, boundary: string): MultiData =
+func parseMultiPart*(body: string, boundary: string): MultiData =
   result = initOrderedTable[string, tuple[fields: StringTableRef, body: string]]()
   var mboundary = "--" & boundary
 
@@ -155,7 +201,22 @@ proc parseMultiPart*(body: string, boundary: string): MultiData =
       var hValue = ""
       i += body.parseUntil(hValue, {'\c', '\L'}, i)
       if toLowerAscii(hName) == "content-disposition":
-        parseContentDisposition()
+        # parseContentDisposition()
+        block:
+          var hCount = 0
+          while hCount < hValue.len()-1:
+            var key = ""
+            hCount += hValue.parseUntil(key, {';', '='}, hCount)
+            if hValue[hCount] == '=':
+              var value = hvalue.captureBetween('"', start = hCount)
+              hCount += value.len+2
+              inc(hCount) # Skip ;
+              hCount += hValue.skipWhitespace(hCount)
+              if key == "name": name = value
+              newPart[0][key] = value
+            else:
+              inc(hCount)
+              hCount += hValue.skipWhitespace(hCount)
       newPart[0][hName] = hValue
       i += body.skip("\c\L", i) # Skip *one* \c\L
 
@@ -174,37 +235,42 @@ proc parseMultiPart*(body: string, boundary: string): MultiData =
 
     result[name] = newPart
 
-proc parseMPFD*(contentType: string, body: string): MultiData =
+func parseMPFD*(contentType: string, body: string): MultiData =
   var boundaryEqIndex = contentType.find("boundary=")+9
   var boundary = contentType.substr(boundaryEqIndex, contentType.len()-1)
   return parseMultiPart(body, boundary)
 
 proc getRequestParams*(request:Request):Params =
-  var params = Params()
+  let params = newParams()
   if request.headers.hasKey("content-type"):
     let contentType = request.headers["content-type"].toString
     if contentType.contains("multipart/form-data"):
       let formdata = parseMPFD(contentType, request.body)
       for key, row in formdata:
         if row.fields.hasKey("filename"):
-          params[key] = Param(
+          params.data[key] = Param(
             fileName: row.fields["filename"],
             ext: row.fields["filename"].split(".")[^1],
             value: row.body
           )
         else:
-          params[key] = Param(
-            value: row.body
-          )
+          if params.hasKey(key):
+            params.data[key].value.add(", " & row.body)
+          else:
+            params.data[key] = Param(value: row.body)
     elif contentType.contains("application/x-www-form-urlencoded"):
-      let rows = request.body.decodeUrl().split("&")
-      for row in rows:
-        let row = row.split("=")
-        params[row[0]] = Param(
-          value: row[1]
-        )
-    elif contentType.contains("application/json"):
-      params["json"] = Param(value: request.body)
+      let body = request.body.decodeUrl()
+      if body.len > 0:
+        let rows = body.split("&")
+        for row in rows:
+          let row = row.split("=")
+          if params.hasKey(row[0]):
+            params.data[row[0]].value.add(", " & row[1])
+          else:
+            params.data[row[0]] = Param(value: row[1])
+    # elif contentType.contains("application/json"):
+    #   echo "=== application/json"
+    #   params["json"] = Param(value: request.body)
   return params
 
 proc save*(params:Params, key, dir:string) =

@@ -1,20 +1,21 @@
 import asynchttpserver, asyncdispatch, strutils
 export asynchttpserver
-import core/base, core/route, core/security, core/header, core/response
-export base, route, security, header, response
+import core/base, core/route, core/header, core/response,
+  core/security/cookie, core/security/session_db, core/security/csrf_token
+export base, route, cookie, header, response
 
 type MiddlewareResult* = ref object
-  isError: bool
+  hasError: bool
   message: string
 
-proc isError*(this:MiddlewareResult):bool =
-  return this.isError
+func hasError*(self:MiddlewareResult):bool =
+  return self.hasError
 
-proc message*(this:MiddlewareResult):string =
-  return this.message
+func message*(self:MiddlewareResult):string =
+  return self.message
 
-proc next*(status:HttpCode=HttpCode(0), headers:Headers=newHeaders()):Response =
-  return Response(status:status, body:"", headers:headers)
+func next*(status:HttpCode=HttpCode(200), body="", headers:HttpHeaders=newHttpHeaders()):Response =
+  return Response(status:status, body:body, headers:headers)
 
 proc checkCsrfToken*(request:Request, params:Params):Future[MiddlewareResult] {.async.} =
   result = MiddlewareResult()
@@ -25,21 +26,22 @@ proc checkCsrfToken*(request:Request, params:Params):Future[MiddlewareResult] {.
       let token = params.getStr("csrf_token")
       discard newCsrfToken(token).checkCsrfTimeout()
     except:
-      result.isError = true
+      result.hasError = true
       result.message = getCurrentExceptionMsg()
 
-proc checkAuthToken*(request:Request):Future[MiddlewareResult] {.async.} =
+proc checkSessionId*(request:Request):Future[MiddlewareResult] {.async.} =
   ## Check session id in cookie is valid.
   result = MiddlewareResult()
-  let cookie = newCookie(request)
-  try:
-    if not cookie.hasKey("session_id"):
-      raise newException(Exception, "Missing session id")
-    let sessionId = cookie.get("session_id")
-    if sessionId.len == 0:
-      raise newException(Exception, "Session id is empty")
-    if not await checkSessionIdValid(sessionId):
-      raise newException(Exception, "Invalid session id")
-  except:
-    result.isError = true
-    result.message = getCurrentExceptionMsg()
+  if request.httpMethod != HttpOptions:
+    let cookie = newCookie(request)
+    try:
+      if not cookie.hasKey("session_id"):
+        raise newException(Exception, "Missing session id")
+      let sessionId = cookie.get("session_id")
+      if sessionId.len == 0:
+        raise newException(Exception, "Session id is empty")
+      if not await checkSessionIdValid(sessionId):
+        raise newException(Exception, "Invalid session id")
+    except:
+      result.hasError = true
+      result.message = getCurrentExceptionMsg()

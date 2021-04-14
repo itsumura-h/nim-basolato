@@ -6,7 +6,7 @@ proc makeMigration*(target:string, message:var string):int =
   var targetPath = &"{getCurrentDir()}/migrations/migration{now}{target}.nim"
 
   if isFileExists(targetPath): return 0
-  if isTargetContainSlash(target): return 0
+  if isTargetContainSlash(target, "migration file name"): return 0
 
   createDir(parentDir(targetPath))
 

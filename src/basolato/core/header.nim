@@ -1,93 +1,98 @@
-import tables, json, strutils, httpcore, times, strformat
+import tables, strutils, httpcore, times, strformat
 import base
 
 
-type Headers* = seq[tuple[key, val:string]]
+# type Headers* = ref object
+#   values: seq[tuple[key: string, val: seq[string]]]
 
-proc newHeaders*(i:int=0): Headers =
-  return newSeq[tuple[key, val:string]](i)
 
-proc toHeaders*(headersArg:openArray[tuple]): Headers =
-  ## tuple => header
-  var headers = newHeaders(headersArg.len)
-  for i, row in headersArg:
-    headers[i] = (row[0], row[1])
-  return headers
+# proc newHeaders*():Headers =
+#   return Headers()
 
-proc toHeaders*(headersArg:Table): Headers =
-  ## table => header
-  var headers = newHeaders(headersArg.len)
-  var i = 0
-  for key, val in headersArg.pairs:
-    headers[i] = (key, val)
-    i.inc()
-  return headers
+# proc hasKey*(headers:Headers, key:string):bool =
+#   for header in headers.values:
+#     if header.key.toLowerAscii == key:
+#       return true
+#   return false
 
-proc toHeaders*(headersArg:OrderedTable): Headers =
-  ## OrderdTable => header
-  var headers = newHeaders(headersArg.len)
-  var i = 0
-  for key, val in headersArg.pairs:
-    headers[i] = (key, val)
-    i.inc()
-  return headers
+# proc getIndex*(headers:Headers, key:string):int =
+#   result = -1
+#   for i, header in headers.values:
+#     if header.key.toLowerAscii == key:
+#       return i
 
-proc get(val:JsonNode):string =
-  case val.kind
-  of JString:
-    return val.getStr
-  of JInt:
-    return $(val.getInt)
-  of JFloat:
-    return $(val.getFloat)
-  of JBool:
-    return $(val.getBool)
-  of JNull:
-    return ""
-  else:
-    raise newException(JsonKindError, "val is array")
+# proc add*(self:Headers, key, value:string) =
+#   if key.toLowerAscii == "set-cookie":
+#     self.values.add((key.toLowerAscii, @[value]))
+#   else:
+#     let i = self.getIndex(key)
+#     if i >= 0:
+#       self.values[i].val.add(value)
+#     else:
+#       self.values.add((key.toLowerAscii, @[value]))
 
-proc toHeaders*(headersArg:JsonNode): Headers =
-  ## JsonNode => header
-  var headers = newHeaders(headersArg.len)
-  var i = 0
-  for key, val in headersArg.pairs:
-    headers[i] = (key, val.get)
-    i.inc()
-  return headers
+# proc setDefaultHeaders*(self:Headers):Headers =
+#   self.add("Server", &"Nim/{NimVersion}; Basolato/{basolatoVersion}")
+#   let formatter = initTimeFormat("ddd, dd MMM YYYY HH:mm:ss 'GMT'")
+#   self.add("Date", now().format(formatter))
+#   self.add("Connection", "Keep-Alive")
 
-proc hasKey*(this:Headers, key:string):bool =
-  result = false
-  for header in this:
-    if header.key.toLowerAscii() == key.toLowerAscii():
-      result = true
-      break
+# proc format*(self:Headers):HttpHeaders =
+#   var tmpHeader: seq[tuple[key: string, val:string]]
+#   for header in self.values:
+#     tmpHeader.add((header.key, header.val.join(", ")))
+#   return tmpHeader.newHttpHeaders()
 
-proc set*(this:var Headers, key, val:string) =
-  this.add((key, val))
 
-proc set*(this:var Headers, key:string, val:openArray[string]) =
-  this.add(
-    (key, val.join(", "))
-  )
 
-proc setDefaultHeaders*(this:var Headers) =
-  this.set("Server", &"Nim/{NimVersion}, Basolato/{basolatoVersion}")
+
+
+
+
+
+func newHttpHeaders*(keyValuePairs:
+    openArray[tuple[key: string, val: seq[string]]], titleCase=false): HttpHeaders =
+  new result
+  result.table = newTable[string, seq[string]]()
+
+  for pair in keyValuePairs:
+    {.cast(noSideEffect).}:
+      if pair.key in result.table:
+        # result.table[pair.key] &= pair.val
+        result.table[pair.key].add(pair.val)
+      else:
+        result.table[pair.key] = pair.val
+
+proc setDefaultHeaders*(self:HttpHeaders) =
+  self.add("Server", &"Nim/{NimVersion}; Basolato/{basolatoVersion}")
   let formatter = initTimeFormat("ddd, dd MMM YYYY HH:mm:ss 'GMT'")
-  this.set("Date", now().format(formatter))
-  this.set("Connection", "Keep-Alive")
+  self.add("Date",  now().format(formatter))
+  self.add("Connection", "Keep-Alive")
 
-proc newDefaultHeaders*():Headers =
-  var headers = newHeaders()
-  headers.setDefaultHeaders()
-  return headers
+func add*(headers: HttpHeaders, key: string, values: openArray[string]) =
+  if headers.table.hasKey(key):
+    for value in values:
+      headers.table[key].add(value)
+  else:
+    headers.table[key] = @values
 
-proc toResponse*(this:Headers):HttpHeaders =
-  var response = newTable[string, seq[string]](defaultInitialSize)
-  result = newHttpHeaders()
-  for header in this:
-    if response.hasKey(header.key):
-      response[header.key].add(header.val)
+func `&`*(a, b:HttpHeaders = newHttpHeaders()):HttpHeaders =
+  for key, value in b:
+    a.add(key, value)
+  return a
+
+func `&=`*(a, b:HttpHeaders) =
+  discard a & b
+
+proc format*(self:HttpHeaders):HttpHeaders =
+  var tmp: seq[tuple[key, val:string]]
+  for key, values in self.table:
+    if key.toLowerAscii == "date":
+      tmp.add((key, values[0]))
+    elif key.toLowerAscii == "set-cookie":
+      for value in values:
+        tmp.add((key, value))
     else:
-      response[header.key] = @[header.val]
-  return HttpHeaders(table:response)
+      tmp.add((key, values.join(", ")))
+  return tmp.newHttpHeaders()
+

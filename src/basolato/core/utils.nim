@@ -1,8 +1,10 @@
+import strutils
+
 type
   SameSite* = enum
     None, Lax, Strict
 
-proc makeCookie*(key, value, expires: string, domain = "", path = "",
+func makeCookie*(key, value, expires: string, domain = "", path = "",
                  secure = false, httpOnly = false,
                  sameSite = Lax): string =
   result = ""
@@ -14,3 +16,31 @@ proc makeCookie*(key, value, expires: string, domain = "", path = "",
   if httpOnly: result.add("; HttpOnly")
   if sameSite != None:
     result.add("; SameSite=" & $sameSite)
+
+func isExistsLibsass*():bool =
+  ## used in /view
+  when defined(macosx):
+    const query = "ldconfig -p | grep libsass"
+    const res = gorgeEx(query)
+    return res.exitCode == 0 and res.output.len > 0
+  elif defined(linux) or defined(bsd):
+    const f = staticRead("/etc/os-release")
+    const osName = (func():string =
+        for row in f.split("\n"):
+          let kv = row.split("=")
+          if kv[0] == "ID":
+            return kv[1]
+    )()
+    if osName == "alpine":
+      const f = staticRead("/lib/apk/db/installed")
+      return f.contains("libsass")
+    else: # Ubuntu/Debian/CentOS...
+      const query = "ldconfig -p | grep libsass"
+      const res = gorgeEx(query)
+      return res.exitCode == 0 and res.output.len > 0
+  else: # Windows
+    const libDir = "/usr/lib /usr/local/lib"
+    const libsass = "libsass.dll"
+    const query = "find " & libDir & " -name \"" & libsass & "\""
+    const res = gorgeEx(query)
+    return res.exitCode == 0 and res.output.len > 0

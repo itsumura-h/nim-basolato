@@ -9,9 +9,13 @@ Table of Contents
       * [Check in middleware](#check-in-middleware)
          * [CSRF Token](#csrf-token)
       * [Session DB](#session-db)
-      * [Auth](#auth)
+      * [Client](#client)
          * [API](#api)
          * [Sample](#sample)
+         * [Anonymous user cookie](#anonymous-user-cookie)
+            * [anonymous user enabled](#anonymous-user-enabled)
+            * [anonymous user disabled](#anonymous-user-disabled)
+         * [How to create cookie for multiple domains](#how-to-create-cookie-for-multiple-domains)
       * [Cookie](#cookie)
          * [API](#api-1)
          * [Sample](#sample-1)
@@ -19,12 +23,12 @@ Table of Contents
          * [API](#api-2)
          * [Sample](#sample-2)
 
-<!-- Added by: root, at: Sun Dec 27 18:23:11 UTC 2020 -->
+<!-- Added by: root, at: Mon Apr 12 07:19:37 UTC 2021 -->
 
 <!--te-->
 
 ## Check in middleware
-Basolato check whether value is valid in middleware. `checkCsrfToken()` and `checkAuthToken()` are available.  
+Basolato check whether value is valid in middleware. `checkCsrfToken()` and `checkSessionId()` are available.  
 These procs return `MiddlwareResult` object.
 
 ```nim
@@ -32,11 +36,11 @@ type MiddlewareResult* = ref object
   isError: bool
   message: string
 
-proc isError*(this:MiddlewareResult):bool =
-  return this.isError
+proc isError*(self:MiddlewareResult):bool =
+  return self.isError
 
-proc message*(this:MiddlewareResult):string =
-  return this.message
+proc message*(self:MiddlewareResult):string =
+  return self.message
 ```
 
 ### CSRF Token
@@ -88,91 +92,123 @@ config.nims for file session
 ```nim
 putEnv("SESSION_TYPE", "file")
 putEnv("SESSION_DB_PATH", "/your/project/path/session.db") # file path
-putEnv("REDIS_PORT", "6379")
 putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
 ```
 
 config.nims for redis session
 ```nim
 putEnv("SESSION_TYPE", "redis")
-putEnv("SESSION_DB_PATH", "localhost") # Redis IP address
-putEnv("REDIS_PORT", "6379")
+putEnv("SESSION_DB_PATH", "localhost:6379") # Redis IP address
 putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
 ```
 
-## Auth
-Basolato has Auth system. it conceal inconvenient cookie and session process.
+## Client
+Basolato has `Client` type. it has functions for Authentication, and Session.
 
 ```nim
-type Auth* = ref object
-  isLogin*:bool
-  session*:Session
+type Client* = ref object
+  session*: Session
 ```
 
 ### API
+Creating client instance.
 ```nim
-proc newAuth*(request:Request):Future[Auth] {.async.} =
+proc newClient*(request:Request):Future[Client] {.async.} =
 
-proc login*(this:Auth) {.async.} =
+proc newClient*(sessionId:string):Future[Client] {.async.} =
+```
+---
+Accessing session db.
+```nim
+proc set*(self:Client, key, value:string) {.async.} =
 
-proc logout*(this:Auth) {.async.} =
+proc set*(self:Client, key:string, value:JsonNode) {.async.} =
 
-proc isLogin*(this:Auth):Future[bool] {.async.} =
+proc some*(self:Client, key:string):Future[bool] {.async.} =
 
-proc getToken*(this:Auth):Future[string] {.async.} =
+proc get*(self:Client, key:string):Future[string] {.async.} =
 
-proc set*(this:Auth, key, value:string) {.async.} =
+proc delete*(self:Client, key:string) {.async.} =
 
-proc some*(this:Auth, key:string):Future[bool] {.async.} =
+proc destroy*(self:Client) {.async.} =
+```
+---
+Using for Authentication.
+```nim
+proc login*(self:Client) {.async.} =
 
-proc get*(this:Auth, key:string):Future[string] {.async.} =
+proc isLogin*(self:Client):Future[bool] {.async.} =
 
-proc delete*(this:Auth, key:string) {.async.} =
+proc logout*(self:Client) {.async.} =
+```
+---
+Getting session id which is provided to cookie.
+```nim
+proc getToken*(self:Client):Future[string] {.async.} =
+```
+---
+Accessing flash data in session db.
+```nim
+proc setFlash*(self:Client, key, value:string) {.async.} =
 
-proc destroy*(this:Auth) {.async.} =
+proc setFlash*(self:Client, key:string, value:JsonNode) {.async.} =
 
-proc setFlash*(this:Auth, key, value:string) {.async.} =
+proc hasFlash*(self:Client, key:string):Future[bool] {.async.} =
 
-proc hasFlash*(this:Auth, key:string):Future[bool] {.async.} =
+proc getFlash*(self:Client):Future[JsonNode] {.async.} =
 
-proc getFlash*(this:Auth):Future[JsonNode] {.async.} =
+proc getValidationResult*(self:Client):Future[tuple[params:JsonNode, errors:JsonNode]] {.async.} =
 ```
 
+
 ### Sample
+newClient for MPA(Multi page application)
+```nim
+proc index(request:Request, params:Params):Future[Response] {.async.} =
+  let client = await newClient(request)
+```
+
+newClient for API
+```nim
+proc index(request:Request, params:Params):Future[Response] {.async.} =
+  let sessionId = request.headers["x-login-token"]
+  let client = await newClient(sessionId)
+```
+
 login
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
   let email = params.getStr("email")
   let password = params.getStr("password")
   let userId = newLoginUsecase().login(email, password)
-  let auth = await newAuth(request)
-  await auth.login()
-  await auth.set("id", $userId)
+  let client = await newClient(request)
+  await client.login()
+  await client.set("id", $userId)
   return redirect("/")
 ```
 
 logout
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
-  if await auth.isLogin():
-    await auth.logout()
+  let client = await newClient(request)
+  if await client.isLogin():
+    await client.logout()
   redirect("/")
 ```
 
 get from session
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
-  let loginName = await auth.get("login_name")
+  let client = await newClient(request)
+  let loginName = await client.get("login_name")
 ```
 
 set value in session
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
   let name = params.getStr("name")
-  let auth = await newAuth(request)
-  await auth.set("login_name", name)
+  let client = await newClient(request)
+  await client.set("login_name", name)
   return render("auth")
 ```
 
@@ -180,43 +216,98 @@ check and get value in session
 ```nim
 proc index(request:Request, params:Params):Future[Response] {.async.} =
   var loginName:string
-  let auth = await newAuth(request)
-  if await auth.some("login_name"):
-    loginName = await auth.get("login_name")
+  let client = await newClient(reques)
+  if await client.some("login_name"):
+    loginName = await client.get("login_name")
 ```
 
 delete one key-value pair of session
 ```nim
 proc destroy(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
-  await auth.delete("login_name")
+  let client = await newClient(request)
+  await client.delete("login_name")
   return render("auth")
 ```
 
 destroy all session data
 ```nim
 proc destroy(request:Request, params:Params):Future[Response] {.async.} =
-  let auth = await newAuth(request)
+  let client = await newClient(request)
   return render("auth")
 ```
 
 set flash message
 ```nim
 proc store*(request:Request, params:Params):Response =
-  let auth = await newAuth(request)
-  await auth.setFlash("success", "Welcome to the Sample App!")
+  let client = await newClient(request)
+  await client.setFlash("success", "Welcome to the Sample App!")
   return redirect("/auth")
 ```
 
 get flash message
 ```nim
-proc show*(this:Controller):Response =
-  let auth = await newAuth(request)
-  let flash = await auth.getFlash("success")
+proc show*(self:Controller):Response =
+  let client = await newClient(request)
+  let flash = await client.getFlash("success")
+  let user = newUserUsecase().show()
   return render(showHtml(user, flash))
 ```
 
-**⚠ In most cases, Session and Cookies should not be used directly, but using Auth is recommended. ⚠**
+### Anonymous user cookie
+In `.env`, if you set `true` for `ENABLE_ANONYMOUS_COOKIE`, Basolato automatically creates cookie for every user.  
+If you set `false` and you want to create sign in function, you should create it manually in controller.
+
+#### anonymous user enabled
+
+.env
+```env
+ENABLE_ANONYMOUS_COOKIE=true
+```
+
+controller
+```nim
+proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
+  let email = params.getStr("email")
+  let password = params.getStr("password")
+  # ..sign in check
+  let client = await newClient(request)
+  await client.login()
+  return redirect("/")
+```
+
+#### anonymous user disabled
+
+config.nims
+```nim
+putEnv("ENABLE_ANONYMOUS_COOKIE", "false")
+```
+
+controller
+```nim
+proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
+  let email = params.getStr("email")
+  let password = params.getStr("password")
+  # ..sign in check
+  let client = await newClient(request)
+  await client.login()
+  return await redirect("/").setCookie(client)
+```
+
+### How to create cookie for multiple domains
+You can define multiple domains for cookie in setting of `config.nims`
+
+config.nims
+```nim
+putEnv("COOKIE_DOMAINS", "nim-lang.org, github.com")
+```
+`Chrome` doesn't allow domain of cookie `localhost`, and therefore if you want to create cookie for localhost, please specify setting like this.
+
+```nim
+putEnv("COOKIE_DOMAINS", ", nim-lang.org, github.com")
+```
+
+
+**⚠ In most cases, Session and Cookies should not be used directly, but using Client is recommended. ⚠**
 
 ## Cookie
 
@@ -241,34 +332,25 @@ type
 ```nim
 proc newCookie*(request:Request):Cookie =
 
-proc get*(this:Cookie, name:string):string =
+proc get*(self:Cookie, name:string):string =
 
-proc set*(this:var Cookie, name, value: string, expire:DateTime,
-      sameSite: SameSite=Lax, secure = false, httpOnly = false, domain = "",
+proc set*(self:var Cookie, name, value: string, expire:DateTime,
+      sameSite: SameSite=Lax, secure = false, httpOnly = true, domain = "",
       path = "/") =
 
-proc set*(this:var Cookie, name, value: string, sameSite: SameSite=Lax,
-      secure = false, httpOnly = false, domain = "", path = "/") =
+proc set*(self:var Cookie, name, value: string, sameSite: SameSite=Lax,
+      secure = false, httpOnly = true, domain = "", path = "/") =
 
-proc updateExpire*(this:var Cookie, name:string, num:int, timeUnit:TimeUnit, path="/") =
+proc updateExpire*(self:var Cookie, name:string, num:int, timeUnit:TimeUnit, path="/") =
 
-proc updateExpire*(this:var Cookie, num:int, time:TimeUnit) =
+proc updateExpire*(self:var Cookie, num:int, time:TimeUnit) =
 
-proc delete*(this:Cookie, key:string, path="/"):Cookie =
+proc delete*(self:Cookie, key:string, path="/"):Cookie =
 
-proc destroy*(this:Cookie, path="/"):Cookie =
+proc destroy*(self:Cookie, path="/"):Cookie =
 
 proc setCookie*(response:Response, cookie:Cookie):Response =
 ```
-
-### How to create cookie for multiple domains
-You can define multiple domains for cookie in setting of `config.nims`
-
-config.nims
-```nim
-putEnv("COOKIE_DOMAINS", "localhost, nim-lang.org, github.com")
-```
-
 
 ### Sample
 get cookie
@@ -315,7 +397,7 @@ proc index(request:Request, params:Params):Future[Response] {.async.} =
 
 
 ## Session
-Basolato use [nimAES](https://github.com/jangko/nimAES) as session DB. We have a plan to be able to choose Redis in the future.
+Basolato use [nimAES](https://github.com/jangko/nimAES) as file session DB.
 
 If you set `sessionId` in arg of `newSession()`, it return existing session otherwise create new session.
 
@@ -330,17 +412,17 @@ proc newSession*(token=""):Future[Session] {.async.} =
   # If you set valid token, it connect to existing session.
   # If you don't set token, it creates new session.
 
-proc getToken*(this:Session):Future[string] {.async.} =
+proc getToken*(self:Session):Future[string] {.async.} =
 
-proc set*(this:Session, key, value:string) {.async.} =
+proc set*(self:Session, key, value:string) {.async.} =
 
-proc some*(this:Session, key:string):Future[bool] {.async.} =
+proc some*(self:Session, key:string):Future[bool] {.async.} =
 
-proc get*(this:Session, key:string):Future[string] {.async.} =
+proc get*(self:Session, key:string):Future[string] {.async.} =
 
-proc delete*(this:Session, key:string) {.async.} =
+proc delete*(self:Session, key:string) {.async.} =
 
-proc destroy*(this:Session) {.async.} =
+proc destroy*(self:Session) {.async.} =
 ```
 
 ### Sample
@@ -353,16 +435,16 @@ proc index(request:Request, params:Params):Future[Response] {.async.} =
 set value in session
 ```nim
 proc store(request:Request, params:Params):Future[Response] {.async.} =
-  let key = request.params["key"]
-  let value = this.request.params["value"]
+  let key = request.getStr("key")
+  let value = request.getStr("value")
   discard newSession().set(key, value)
 ```
 
 check and get value in session
 ```nim
-proc index(this:Controller):Future[Response] {.async.} =
-  let sessionId = newCookie(this.request).get("session_id")
-  let key = this.request.params["key"]
+proc index(self:Controller):Future[Response] {.async.} =
+  let sessionId = newCookie(self.request).get("session_id")
+  let key = request.getStr("key")
   let session = newSession(sessionId)
   var value:string
   if session.some(key):
@@ -371,15 +453,15 @@ proc index(this:Controller):Future[Response] {.async.} =
 
 delete one key-value pair of session
 ```nim
-proc destroy(this:Controller):Future[Response] {.async.} =
-  let sessionId = newCookie(this.request).getToken()
-  let key = this.request.params["key"]
+proc destroy(self:Controller):Future[Response] {.async.} =
+  let sessionId = newCookie(self.request).getToken()
+  let key = request.getStr("key"9
   discard newSession(sessionId).delete(key)
 ```
 
 destroy session
 ```nim
-proc destroy(this:Controller):Future[Response] {.async.} =
-  let sessionId = newCookie(this.request).getToken()
+proc destroy(self:Controller):Future[Response] {.async.} =
+  let sessionId = newCookie(self.request).getToken()
   newSession(sessionId).destroy()
 ```

@@ -5,32 +5,35 @@
 コンテンツ
 
 <!--ts-->
-   * [Middleware](#middleware)
-      * [Routing middleware](#routing-middleware)
+   * [ミドルウェア](#ミドルウェア)
+      * [API](#api)
+      * [サンプル](#サンプル)
 
-<!-- Added by: root, at: Sun Dec 27 18:20:43 UTC 2020 -->
+<!-- Added by: root, at: Mon Apr 12 07:20:50 UTC 2021 -->
 
 <!--te-->
 
 ## API
 ```nim
 proc middleware*(
-  this:var Routes,
+  self:var Routes,
   path:Regex,
   action:proc(r:Request, p:Params):Future[Response]
 ) =
 
 proc middleware*(
-  this:var Routes,
+  self:var Routes,
   httpMethods:seq[HttpMethod],
   path:Regex,
   action:proc(r:Request, p:Params):Future[Response]
 ) =
+
+proc next*(status:HttpCode=HttpCode(200), body="", headers:Headers=newHeaders()):Response =
 ```
 
 ## サンプル
 ミドルウェアはコントローラーが呼ばれる前に実行されます。  
-下のサンプルソースでは、`app/middleware/auth_middlware.nim`に定義されている`checkCsrfTokenMiddleware()`と`checkAuthTokenMiddleware()`が動きます。
+下のサンプルソースでは、`app/middleware/auth_middlware.nim`に定義されている`checkCsrfTokenMiddleware()`と`checkSessionIdMiddleware()`が動きます。
 
 main.nim
 ```nim
@@ -51,19 +54,19 @@ import basolato/middleware
 
 proc checkLoginId*(r:Request, p:Params):Future[Response] {.async.} =
   if not r.headers.hasKey("X-login-id"):
-    raise newException(Error403, "X-login-id is missing in request header")
+    raise newException(Error403, "リクエストヘッダーにX-login-idがありません")
 
   if not r.headers.hasKey("X-login-token"):
-    raise newException(Error403, "X-login-token is missing in request header")
+    raise newException(Error403, "リクエストヘッダーにX-login-tokenがありません")
 
   return next()
 ```
 
-If `X-login-id` or `X-login-token` are missing in request header, return 403 otherwise 200.
+もしリクエストヘッダーに`X-login-id` or `X-login-token`のどちらかがなければ、403を返し、そうでなければ200を返します。
 
 ---
 
-If you want to redirect to login page when login check is fail, you can use `ErrorRedirect`. It calls `Error 302`.
+もしログインチェックに失敗した時にログインページにリダイレクトさせたい時は、`ErrorRedirect`を使ってください。これは`Error 302`を呼び出します。
 
 app/middleware/auth_middlware.nim
 ```nim
@@ -80,8 +83,8 @@ proc checkLoginId*(r:Request, p:Params):Future[Response] {.async.} =
 
 ---
 
-As in CORS, if you want to return a response made by the middleware to the client instead of the controller, you can set an argument to the `next` proc.  
-In following example, `setCorsMiddleware` run only in `OPTIONS` requests.
+CORSのように、コントローラーではなくミドルウェアで作られたレスポンスをクライアントに返したい時は、`next`関数の引数に設定することができます。
+以下の例では、`setCorsMiddleware`は`OPTIONS`メソッドでのリクエストの時のみ動きます。
 
 main.nim
 ```nim

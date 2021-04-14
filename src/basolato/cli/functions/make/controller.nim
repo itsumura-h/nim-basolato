@@ -2,7 +2,7 @@ import os, strformat, terminal, strutils
 import utils
 
 proc makeController*(target:string, message:var string):int =
-  let targetPath = &"{getCurrentDir()}/app/controllers/{target}_controller.nim"
+  let targetPath = &"{getCurrentDir()}/app/http/controllers/{target}_controller.nim"
   let targetName = target.split("/").max()
   let controller = &"""
 import json
@@ -44,6 +44,6 @@ proc destroy*(request:Request, params:Params):Future[Response] ASYNC =
   defer: f.close()
   f.write(CONTROLLER)
 
-  message = &"Created controller {target}_controller.nim"
+  message = &"Created controller in {targetPath}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
   return 0

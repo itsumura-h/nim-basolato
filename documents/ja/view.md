@@ -18,7 +18,7 @@ Table of Contents
          * [Csrf Token](#csrf-token)
          * [old helper](#old-helper)
 
-<!-- Added by: root, at: Sun Dec 27 18:19:37 UTC 2020 -->
+<!-- Added by: root, at: Mon Apr 12 07:21:01 UTC 2021 -->
 
 <!--te-->
 
@@ -292,11 +292,11 @@ At first time if you create view for component.
 ```nim
 proc newCss*():Css =
 
-proc set*(this:var Css, className, option:string, value:string) =
+proc set*(self:var Css, className, option:string, value:string) =
 
-proc get*(this:Css, className:string):string =
+proc get*(self:Css, className:string):string =
 
-proc define*(this:Css):string =
+proc define*(self:Css):string =
 ```
 
 
@@ -351,6 +351,6 @@ proc impl(params=newJObject()):string = tmpli html"""
 
 proc signinView*(params=newJObject()):string =
   let title = "SignIn"
-  return this.applicationView(title, impl(params))
+  return self.applicationView(title, impl(params))
 ```
 It display value if `params` has key `email`, otherwise display empty string.

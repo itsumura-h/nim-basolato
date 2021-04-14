@@ -1,6 +1,7 @@
-import migration0001sample
+import migration20210410131239user
 
 proc main() =
-  migration0001sample()
+  discard
+  migration20210410131239user()
 
 main()

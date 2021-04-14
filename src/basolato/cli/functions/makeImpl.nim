@@ -1,7 +1,8 @@
 import os, terminal
 import
-  make/controller, make/migration, make/page, make/layout, make/config,
-  make/model, make/usecase, make/valueobject
+  make/config, make/migration, make/controller,
+  make/usecase, make/model, make/valueobject,
+  make/layout, make/page
 
 
 template getTarget() =
@@ -43,30 +44,30 @@ proc make*(args:seq[string]):int =
     return 0
 
   case todo:
-  of "controller":
-    getTarget
-    return makeController(target, message)
-  of "model":
-    getTarget
-    return makeModel(target, message)
-  of "usecase":
-    getTarget
-    return makeUsecase(target, message)
+  of "config":
+    return makeConfig()
   of "migration":
     getTarget
     return makeMigration(target, message)
+  of "controller":
+    getTarget
+    return makeController(target, message)
+  of "usecase":
+    getTarget
+    return makeUsecase(target, message)
+  of "model":
+    getTarget
+    return makeModel(target, message)
+  of "valueobject":
+    getTarget
+    getTargetPath
+    return makeValueObject(target, targetPath, message)
   of "layout":
     getTarget
     return makelayout(target, message)
   of "page":
     getTarget
     return makePage(target, message)
-  of "config":
-    return makeConfig()
-  of "valueobject":
-    getTarget
-    getTargetPath
-    return makeValueObject(target, targetPath, message)
   else:
     message = "invalid things to make"
     styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)

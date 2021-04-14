@@ -5,21 +5,23 @@ Ducereコマンド
 コンテンツ
 
 <!--ts-->
-   * [ducere command](#ducere-command)
-      * [new](#new)
-      * [serve](#serve)
-      * [build](#build)
-      * [migrate](#migrate)
-      * [make](#make)
-         * [config](#config)
-         * [controller](#controller)
-         * [view](#view)
-         * [migration](#migration)
-         * [model](#model)
-         * [usecase](#usecase)
-         * [value object](#value-object)
+   * [Ducereコマンド](#ducereコマンド)
+      * [イントロダクション](#イントロダクション)
+      * [使い方](#使い方)
+         * [new](#new)
+         * [serve](#serve)
+         * [build](#build)
+         * [migrate](#migrate)
+         * [make](#make)
+            * [config](#config)
+            * [controller](#controller)
+            * [view](#view)
+            * [migration](#migration)
+            * [model](#model)
+            * [usecase](#usecase)
+            * [value object](#value-object)
 
-<!-- Added by: root, at: Sun Dec 27 18:20:21 UTC 2020 -->
+<!-- Added by: root, at: Mon Apr 12 07:20:54 UTC 2021 -->
 
 <!--te-->
 
@@ -47,6 +49,17 @@ ducere new .
 ```
 
 ### serve
+```sh
+Usage:
+  serve [optional-params] 
+Run dev application with hot reload
+Options:
+  -h, --help                  print this cligen-erated help
+  --help-syntax               advanced: prepend,plurals,..
+  --version      bool  false  print version
+  -p=, --port=   int   5000   set port
+```
+
 ホットリロードが有効になった開発用サーバーを立ち上げます。
 ```sh
 ducere serve
@@ -57,14 +70,31 @@ ducere serve
 ducere serve -p:8000
 ```
 
+ホストを設定するには`.env`の環境変数に追記してください。
+```sh
+HOST="127.0.0.2"
+```
+
 ### build
 本番環境用にプロジェクトをビルドします。
 何もオプションを付けない場合、5000番ポートを使い、実行したコンピューターのコア数分マルチスレッドで起動するようになっています。
 ```sh
+Usage:
+  build [optional-params] [args: string...]
+Build for production.
+Options:
+  -h, --help                       print this cligen-erated help
+  --help-syntax                    advanced: prepend,plurals,..
+  --version        bool    false   print version
+  -p=, --ports=    string  "5000"  set ports
+  -t=, --threads=  string  "off"   set threads
+```
+
+```sh
 ducere build
 ./main
 >> Starting 4 threads
->> Listening on port 5000
+>> Listening on 0.0.0.0:5000
 ```
 
 複数のポートを指定した場合、シングルスレッドで、それぞれのポートを使って起動する実行バイナリが複数出力されます。
@@ -77,14 +107,25 @@ ducere build -p:5000,5001,5002
 
 ./main5000
 >> Starting 1 thread
->> Listening on port 5000
+>> Listening on 0.0.0.0:5000
 
 ./main5001
 >> Starting 1 thread
->> Listening on port 5001
+>> Listening on 0.0.0.0:5001
 ```
 
 以下は本番環境で動かすためのNginxのサンプルです。
+
+autorestart.sh
+```sh
+ducere build -p:5000,5001,5002,5003
+while [ 1 ]; do
+  ./main5000 & \
+  ./main5001 & \
+  ./main5002 & \
+  ./main5003
+done
+```
 
 nginx.conf
 ```nginx
@@ -137,7 +178,7 @@ ducere migrate
 
 #### config
 
-DBコネクション、ログ、セッションタイムなどを定義するための`config.nims`のファイルを作ります。
+DBコネクション、ログ、セッションタイムなどを定義するための`config.nims`、`.env`のファイルを作ります。
 ```
 ducere make config
 ```
@@ -216,6 +257,6 @@ ducere make valueobject {引数1} {引数2}
 `引数2`は`app/domain/models`から値オブジェクトのファイルへの相対パスです。
 
 ```sh
-ducere make valueobject UserName ./value_objects
+ducere make valueobject UserName value_objects
 >> add UserName in app/domain/models/value_objects
 ```

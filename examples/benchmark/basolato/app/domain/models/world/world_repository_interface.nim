@@ -7,8 +7,8 @@ type IWorldRepository* = ref object
 proc newIWorldRepository*():IWorldRepository =
   return IWorldRepository()
 
-proc findWorld*(this:IWorldRepository, i:int) {.async.} =
+proc findWorld*(self:IWorldRepository, i:int) {.async.} =
   await DiContainer.worldRepository().findWorld(i)
 
-proc updateRandomNumber*(this:IWorldRepository, i, number:int) {.async.} =
+proc updateRandomNumber*(self:IWorldRepository, i, number:int) {.async.} =
   await DiContainer.worldRepository().updateRandomNumber(i, number)

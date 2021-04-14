@@ -8,11 +8,11 @@ type WorldRdbRepository* = ref object
 proc newWorldRepository*():WorldRdbRepository =
   return WorldRdbRepository()
 
-proc sampleProc*(this:WorldRdbRepository) =
+proc sampleProc*(self:WorldRdbRepository) =
   echo "WorldRdbRepository sampleProc"
 
-proc findWorld*(this:WorldRdbRepository, i:int) {.async.} =
+proc findWorld*(self:WorldRdbRepository, i:int) {.async.} =
   discard await rdb().table("world").asyncFind(i)
 
-proc updateRandomNumber*(this:WorldRdbRepository, i, number:int) {.async.} =
+proc updateRandomNumber*(self:WorldRdbRepository, i, number:int) {.async.} =
   await rdb().table("world").where("id", "=", i).asyncUpdate(%*{"randomNumber": number})

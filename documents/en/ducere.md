@@ -5,21 +5,25 @@ Ducere command
 Table of Contents
 
 <!--ts-->
-   * [ducere command](#ducere-command)
-      * [new](#new)
-      * [serve](#serve)
-      * [build](#build)
-      * [migrate](#migrate)
-      * [make](#make)
-         * [config](#config)
-         * [controller](#controller)
-         * [view](#view)
-         * [migration](#migration)
-         * [model](#model)
-         * [usecase](#usecase)
-         * [value object](#value-object)
+   * [Ducere command](#ducere-command)
+      * [Introduction](#introduction)
+      * [Usages](#usages)
+         * [new](#new)
+         * [serve](#serve)
+         * [build](#build)
+         * [migrate](#migrate)
+         * [make](#make)
+            * [config](#config)
+            * [controller](#controller)
+            * [view](#view)
+            * [migration](#migration)
+            * [model](#model)
+               * [Create top level domain model(=aggregate)](#create-top-level-domain-modelaggregate)
+               * [Create child domain model in aggregate](#create-child-domain-model-in-aggregate)
+            * [usecase](#usecase)
+            * [value object](#value-object)
 
-<!-- Added by: root, at: Sun Dec 27 18:20:21 UTC 2020 -->
+<!-- Added by: root, at: Mon Apr 12 07:19:45 UTC 2021 -->
 
 <!--te-->
 
@@ -48,18 +52,42 @@ ducere new .
 
 ### serve
 Run develop server with hot reload
+
+```sh
+Usage:
+  serve [optional-params] 
+Run dev application with hot reload
+Options:
+  -h, --help                  print this cligen-erated help
+  --help-syntax               advanced: prepend,plurals,..
+  --version      bool  false  print version
+  -p=, --port=   int   5000   set port
 ```
+
+```sh
 ducere serve
 ```
 The default port is 5000. If you want to change it, specify with option `-p`
 
-```
+```sh
 ducere serve -p:8000
 ```
 
 ### build
 Compiling for production.  
 By default, it will be compiled to run 5000 port and multithreaded for the number of cores in your PC.
+
+```sh
+Usage:
+  build [optional-params] [args: string...]
+Build for production.
+Options:
+  -h, --help                       print this cligen-erated help
+  --help-syntax                    advanced: prepend,plurals,..
+  --version        bool    false   print version
+  -p=, --ports=    string  "5000"  set ports
+  -t=, --threads=  string  "off"   set threads
+```
 
 ```
 ducere build
@@ -86,6 +114,17 @@ ducere build -p:5000,5001,5002
 ```
 
 Here is a sample to run in production environment.
+
+autorestart.sh
+```sh
+ducere build -p:5000,5001,5002,5003
+while [ 1 ]; do
+  ./main5000 & \
+  ./main5001 & \
+  ./main5002 & \
+  ./main5003
+done
+```
 
 nginx.conf
 ```nginx
@@ -146,13 +185,13 @@ ducere make config
 Create new controller
 ```sh
 ducere make controller user
->> app/controllers/user_controller.nim
+>> app/http/controllers/user_controller.nim
 
 ducere make controller sample/user
->> app/controllers/sample/user_controller.nim
+>> app/http/controllers/sample/user_controller.nim
 
 ducere make controller sample/sample2/user
->> app/controllers/sample/sample2/user_controller.nim
+>> app/http/controllers/sample/sample2/user_controller.nim
 ```
 
 #### view
@@ -161,12 +200,12 @@ Create new view template.
 
 ```sh
 ducere make layout buttons/success_button
->> resources/layouts/buttons/success_button_view.nim
+>> app/http/views/layouts/buttons/success_button_view.nim
 ```
 
 ```sh
 ducere make page login
->> resources/pages/login_view.nim
+>> app/http/views/pages/login_view.nim
 ```
 
 #### migration
@@ -177,26 +216,47 @@ ducere make migration create_user
 ```
 
 #### model
-create new domain model
-```sh
-ducere make model user
-```
-```
-in app/domain/models
 
-user
- ├── repositories
- │   └── user_rdb_repository.nim
- ├── user_entity.nim
- ├── user_repository_interface.nim
- └── user_service.nim
+##### Create top level domain model(=aggregate)
+
+```sh
+ducere make model circle
+```
+
+in app/core/models
+```
+circle
+├── circle_entity.nim
+├── circle_repository_interface.nim
+└── circle_service.nim
+```
+
+in app/repositories
+```
+circle
+└── circle_rdb_repository.nim
+```
+##### Create child domain model in aggregate
+```sh
+ducere make model circle/user
+```
+
+in app/core/models
+```
+circle
+├── circle_entity.nim
+├── circle_repository_interface.nim
+├── circle_service.nim
+└── user
+    ├── user_entity.nim
+    └── user_service.nim
 ```
 
 #### usecase
 Create new usecase
 ```sh
 ducere make usecase login
->> app/domain/usecases/login_usecase.nim
+>> app/core/usecases/login_usecase.nim
 ```
 
 #### value object
@@ -207,10 +267,10 @@ ducere make valueobject {arg1} {arg2}
 ```
 
 `arg1` is a name of value object which should be Camel Case.  
-`arg2` is a relative path to value object file from `app/domain/models`.
+`arg2` specifies the name of the aggregate to which the value object will be written. Ex: `app/core/models{aggregate}/{aggregate}_value_object`.
 
 example
 ```sh
-ducere make valueobject UserName ./value_objects
->> add UserName in app/domain/models/value_objects
+ducere make valueobject UserName user
+>> add UserName in app/domain/models/user/user_value_objects
 ```

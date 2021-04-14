@@ -2,20 +2,24 @@ import os, strformat, terminal, strutils
 import utils
 
 proc makePage*(target:string, message:var string):int =
-  let targetPath = &"{getCurrentDir()}/resources/pages/{target}_view.nim"
-  let targetName = target.split("/")[^1]
+  let targetPath = &"{getCurrentDir()}/app/http/views/pages/{target}_view.nim"
+  let targetName = target.split("/").max()
   let targetCaptalized = snakeToCamelProcName(targetName)
-  let reativeToApplicationPath = "../".repeat(target.split("/").len) & "layouts/application_view"
+  let relativeToApplicationPath = "../".repeat(target.split("/").len) & "layouts/application_view"
 
   var VIEW = &"""
 import basolato/view
-import {reativeToApplicationPath}
+import {relativeToApplicationPath}
 
-let style = block:
-  var css = newCss()
-  css
+style "css", style:'''
+.className [[
+]]
+'''
 
 proc impl():string = tmpli html'''
+$(style)
+<div class="$(style.get("className"))">
+</div>
 '''
 
 proc {targetCaptalized}View*():string =
@@ -23,7 +27,7 @@ proc {targetCaptalized}View*():string =
   return applicationView(title, impl())
 """
 
-  VIEW = VIEW.replace("'", "\"")
+  VIEW = VIEW.replace("'", "\"").replace("[[", "{").replace("]]", "}")
 
   if isFileExists(targetPath): return 1
   createDir(parentDir(targetPath))

@@ -7,8 +7,11 @@ Table of Contents
 <!--ts-->
    * [Validation](#validation)
    * [Simple Validation](#simple-validation)
-      * [Available Rules](#available-rules)
-         * [email](#email)
+      * [Sample](#sample)
+   * [Request Validation](#request-validation)
+      * [Sample](#sample-1)
+   * [Error messages language](#error-messages-language)
+         * [accepted](#accepted)
          * [domain](#domain)
          * [strictEmail](#strictemail)
          * [equals](#equals)
@@ -18,11 +21,11 @@ Table of Contents
          * [lessThan](#lessthan)
          * [numeric](#numeric)
          * [password](#password)
-   * [Request Validation](#request-validation)
-      * [sample](#sample)
+   * [Request Validation](#request-validation-1)
+      * [sample](#sample-2)
       * [Custom Validation](#custom-validation)
-      * [Available Rules](#available-rules-1)
-         * [accepted](#accepted)
+      * [Available Rules](#available-rules)
+         * [accepted](#accepted-1)
          * [contains](#contains)
          * [email, strictEmail](#email-strictemail)
          * [equals](#equals-1)
@@ -38,20 +41,19 @@ Table of Contents
          * [required](#required)
          * [unique](#unique)
 
-<!-- Added by: root, at: Sun Dec 27 18:19:59 UTC 2020 -->
+<!-- Added by: root, at: Mon Apr 12 07:19:28 UTC 2021 -->
 
 <!--te-->
 
 Basolato has it's own validation function. It recieves request and check request params.  
-There are two validation type. One is used in controller that recieve request and return errors array.
+There are two validation type. One is used in controller that recieve request and return errors array.  
 Another is more simple. Recieve value and return `bool`.
 
 # Simple Validation
 ```
-import basolato/validation
+import basolato/core/validation
 ```
-## Available Rules
-### email
+## Sample
 ```nim
 echo Validation().email("sample@example.com")
 >> true
@@ -59,6 +61,31 @@ echo Validation().email("sample@example.com")
 echo Validation().email("sample@example")
 >> false
 ```
+
+# Request Validation
+```
+import basolato/request_validation
+```
+## Sample
+```nim
+proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  v.required("email")
+  v.email("email")
+  let client = await newClient(request)
+  if v.hasErrors:
+    await client.storeValidationResult(v)
+    return redirect("/signup")
+```
+
+# Error messages language
+Definition of error messages is in `resources/lang/{language}/validation.json`.
+
+
+### accepted
+
+
+
 
 ### domain
 ```nim
@@ -155,21 +182,21 @@ import json
 import basolato/controller
 
 proc store*(request:Request, params:Params):Future[Response] {.async.} =
-  var v = newValidation(params.requestParams)
+  var v = newValidation(params)
   v.required(["name", "email", "password"])
   v.strictEmail("email")
   v.password("password")
   try:
     v.valid()
-    let name = params.requestParams.get("name")
-    let email = params.requestParams.get("email")
-    let password = params.requestParams.get("password")
+    let name = params.getStr("name")
+    let email = params.getStr("email")
+    let password = params.getStr("password")
 
     let usecase = newSignInUsecase()
     usecase.signin(name, email, password)
     return redirect("/")
   except:
-    return render(createVIew(name, email, v.errors))
+    return render(createView(name, email, v.errors))
 ```
 
 View
@@ -206,19 +233,19 @@ import bcrypt
 import allographer/query_builder
 import basolato/request_validation
 
-proc checkPassword*(this:RequestValidation, key:string): RequestValidation =
-  let password = this.params["password"]
+proc checkPassword*(self:RequestValidation, key:string): RequestValidation =
+  let password = self.params["password"]
   let response = RDB().table("users")
                   .select("password")
-                  .where("email", "=", this.params["email"])
+                  .where("email", "=", self.params["email"])
                   .first()
   let dbPass = if response.kind != JNull: response["password"].getStr else: ""
   let hash = dbPass.substr(0, 28)
   let hashed = hash(password, hash)
   let isMatch = compare(hashed, dbPass)
   if not isMatch:
-    this.putValidate(key, "password is not match")
-  return this
+    self.putValidate(key, "password is not match")
+  return self
 ```
 
 ## Available Rules

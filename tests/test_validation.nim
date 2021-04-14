@@ -1,340 +1,323 @@
-import unittest, json, tables
+import unittest, times
 include ../src/basolato/core/request
 include ../src/basolato/request_validation
-import allographer/query_builder
-import allographer/schema_builder
 
-proc createValid(row:JsonNode):RequestValidation =
-  var params = Params()
-  for k, v in row:
-    params[k] = Param(value:v.getStr)
-  return newValidation(params)
+block:
+  let v = newValidation()
+  check v.accepted("on")
+  check v.accepted("yes")
+  check v.accepted("1")
+  check v.accepted("true")
+  check v.accepted("a") == false
 
-suite "validation":
-  test "accepted":
-    var v = createValid(%*{"key": "on"})
-    v.accepted("key")
-    assert v.errors.len == 0
+block:
+  let v = newValidation()
+  let a = "2020-01-02".parse("yyyy-MM-dd")
+  let b = "2020-01-01".parse("yyyy-MM-dd")
+  let c = "2020-01-03".parse("yyyy-MM-dd")
+  check v.after(a, b)
+  check v.after(a, c) == false
 
-  test "accepted invalid":
-    var v = createValid(%*{"key": "***"})
-    v.accepted("key")
-    assert v.errors.len > 0
+block:
+  let v = newValidation()
+  let base = "2020-01-02".parse("yyyy-MM-dd")
+  let before = "2020-01-01".parse("yyyy-MM-dd")
+  let after = "2020-01-03".parse("yyyy-MM-dd")
+  let same = "2020-01-02".parse("yyyy-MM-dd")
+  check v.afterOrEqual(base, before)
+  check v.afterOrEqual(base, same)
+  check v.afterOrEqual(base, after) == false
 
-  # ==========================================================================
-  test "contains":
-    var v = createValid(%*{"key": "111user222"})
-    v.contains("key", "user")
-    check v.errors.len == 0
+block:
+  let v = newValidation()
+  const small = "abcdefghijklmnopqrstuvwxyz"
+  const large = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  const number = "1234567890"
+  const mark = "!\"#$%&'()~=~|`{}*+<>?_@[]:;,./^-"
+  const ja = "あいうえお"
+  check v.alpha(small)
+  check v.alpha(large)
+  check v.alpha(number) == false
+  check v.alpha(mark) == false
+  check v.alpha(ja) == false
 
-  test "contains invalid":
-    var v = createValid(%*{"key": "111user222"})
-    v.contains("key", "owner")
-    check v.errors.len > 0
+block:
+  let v = newValidation()
+  const letter = "abcAbc012"
+  const withDash = "abcAbc012-_"
+  const ja = "aA0あいうえお"
+  check v.alphaDash(letter)
+  check v.alphaDash(withDash)
+  check v.alphaDash(ja) == false
 
-  # ==========================================================================
-  test "digits":
-    var v = createValid(%*{"key": "111"})
-    v.digits("key", 3)
-    check v.errors.len == 0
+block:
+  let v = newValidation()
+  const letter = "abcABC012"
+  const withDash = "abcABC012-_"
+  const ja = "aA0あいうえお"
+  check v.alphaNum(letter)
+  check v.alphaNum(withDash) == false
+  check v.alphaNum(ja) == false
 
-  test "digits invalid":
-    var v = createValid(%*{"key": "111"})
-    v.digits("key", 2)
-    check v.errors.len > 0
+block:
+  let v = newValidation()
+  const valid = "a, b, c"
+  const dict = """{"a": "a", "b": "b"}"""
+  const kv = "a=a, b=b"
+  const str = "adaddadad"
+  const number = "1313193"
+  check v.array(valid)
+  check v.array(dict) == false
+  check v.array(kv) == false
+  check v.array(str) == false
+  check v.array(number) == false
 
-  # ==========================================================================
-  test "email":
-    let validAddresses = %*[
-      "user@example.com",
-      "USER@foo.COM",
-      "A_US-ER@foo.bar.org",
-      "first.last@foo.jp",
-      "alice+bob@baz.cn"
-    ]
-    for row in validAddresses:
-      var v = createValid(%*{"email": row})
-      v.email("email")
-      check v.errors.len == 0
+block:
+  let v = newValidation()
+  let a = "2020-01-02".parse("yyyy-MM-dd")
+  let b = "2020-01-01".parse("yyyy-MM-dd")
+  let c = "2020-01-03".parse("yyyy-MM-dd")
+  check v.before(a, c)
+  check v.before(a, b) == false
 
-  test "email invalid":
-    let validAddresses = %*[
-      "asdadad",
-      "adaasda@asdaa",
-      ";/@;@;:",
-      "foo@bar..com",
-      ""
-    ]
-    for row in validAddresses:
-      var v = createValid(%*{"email": row})
-      v.email("email")
-      check v.errors.len > 0
+block:
+  let v = newValidation()
+  let base = "2020-01-02".parse("yyyy-MM-dd")
+  let before = "2020-01-01".parse("yyyy-MM-dd")
+  let after = "2020-01-03".parse("yyyy-MM-dd")
+  let same = "2020-01-02".parse("yyyy-MM-dd")
+  check v.beforeOrEqual(base, after)
+  check v.beforeOrEqual(base, same)
+  check v.beforeOrEqual(base, before) == false
 
-  # ==========================================================================
-  test "equals":
-    var v = createValid(%*{"key": "John"})
-    v.equals("key", "John")
-    check v.errors.len == 0
+block:
+  let v = newValidation()
+  check v.between(2, 1, 3)
+  check v.between(1, 2, 3) == false
+  check v.between(1.1, 2, 3.1) == false
+  check v.between("aaa", 2, 3)
+  check v.between("a", 2, 3) == false
+  check v.between(["a", "a", "a"], 2, 3)
+  check v.between(["a"], 2, 3) == false
+  check v.betweenFile("a".repeat(2000), 1, 3)
+  check v.betweenFile("a".repeat(2000), 2, 3) == false
 
-  test "equals invalid":
-    var v = createValid(%*{"key": "John"})
-    v.equals("key", "Paul")
-    check v.errors.len > 0
+block:
+  let v = newValidation()
+  check v.boolean("true")
+  check v.boolean("y")
+  check v.boolean("yes")
+  check v.boolean("1")
+  check v.boolean("on")
+  check v.boolean("false")
+  check v.boolean("n")
+  check v.boolean("no")
+  check v.boolean("0")
+  check v.boolean("off")
+  check v.boolean("a") == false
 
-  # ==========================================================================
-  test "exists":
-    var params = %*{"name": "John", "age": "10"}
-    var v = createValid(params)
-    v.exists("name")
-    check v.errors.len == 0
+block:
+  let v = newValidation()
+  check v.date("2020-01-01", "yyyy-MM-dd")
+  check v.date("aaa", "yyyy-MM-dd") == false
+  check v.date("1577804400")
+  check v.date($high(int))
+  check v.date("aaa") == false
+  check v.date($high(uint64)) == false
 
-  test "exists invalid":
-    var params = %*{"age": "10"}
-    var v = createValid(params)
-    v.exists("name")
-    check v.errors.len > 0
+block:
+  let v = newValidation()
+  check v.dateEquals("2020-01-01", "yyyy-MM-dd", "2020-01-01".parse("yyyy-MM-dd"))
+  check v.dateEquals("a", "a", "2020-01-01".parse("yyyy-MM-dd")) == false
+  check v.dateEquals("1577880000", "2020-01-01".parse("yyyy-MM-dd"))
+  check v.dateEquals("1577980000", "2020-01-01".parse("yyyy-MM-dd")) == false
 
-  # ==========================================================================
-  test "gratorThan":
-    var params = %*{"age": "10"}
-    var v = createValid(params)
-    v.gratorThan("age", 9)
-    check v.errors.len == 0
+block:
+  let v = newValidation()
+  check v.different("a", "b")
+  check v.different("a", "a") == false
 
-  test "gratorThan invalid":
-    var params = %*{"age": "10"}
-    var v = createValid(params)
-    v.gratorThan("age", 11)
-    check v.errors.len > 0
+block:
+  let v = newValidation()
+  check v.digits(11, 2)
+  check v.digits(111, 2) == false
 
-  # ==========================================================================
-  test "inRange":
-    var params = %*{"age": "10"}
-    var v = createValid(params)
-    v.inRange("age", min=9, max=11)
-    check v.errors.len == 0
+block:
+  let v = newValidation()
+  check v.digits_between(11, 1, 3)
+  check v.digits_between(111, 4, 5) == false
 
-  test "inRange invalid":
-    var params = %*{"age": "10"}
-    var v = createValid(params)
-    v.inRange("age", min=11, max=15)
-    check v.errors.len > 0
 
-  # ==========================================================================
-  test "ip":
-    var params = [
-      "127.0.0.1",
-      "192.168.0.80",
-      "123.123.123.123",
-      "255.255.255.255",
-      "001.002.003.004",
-      "2001:0db8:bd05:01d2:288a:1fc0:0001:10ee",
-      "2001:db8:20:3:1000:100:20:3",
-      "2001:db8::1234:0:0:9abc",
-      "2001:db8::9abc",
-      "::1",
-      "::ffff:255.255.255.255",
-    ]
-    for param in params:
-      var v = createValid(%*{"ip_address": param})
-      v.ip("ip_address")
-      check v.errors.len == 0
+block:
+  let v = newValidation()
+  check v.distinctArr(@["a", "b", "c"])
+  check v.distinctArr(@["a", "b", "b"]) == false
 
-  test "ip invalid":
-    var params = [
-      "dsdsadads",
-      "127.0.0.1111",
-      "example.com:hoge",
-      "fuga:xxxxxxx",
-      "2001:0db8:bd05:01d2:288a::1fc0:0001:10ee",
-      "2001:0db8:bd05:01d2:288a:1fc0:0001:10ee:11fe",
-      "::",
-      "1::",
-      "1:2:3:4:5:6:7::",
-      "::255.255.255.255",
-      "2001:db8:3:4::192.0.2.33",
-      "64:ff9b::192.0.2.33",
-      "0.0.0.0",
-      "1111.1111.1111.11111",
-    ]
-    for param in params:
-      var v = createValid(%*{"ip_address": param})
-      v.ip("ip_address")
-      check v.errors.len > 0
+block:
+  let v = newValidation()
+  check v.domain("domain.com")
+  check v.domain("[2001:0db8:bd05:01d2:288a:1fc0:0001:10ee]")
+  check v.domain("[2001:0db8:bd05:01d2:288a::1fc0:0001:10ee]") == false
 
-  # ==========================================================================
-  test "isBool":
-    var params = %*{"key": "true"}
-    var v = createValid(params)
-    v.isBool("key")
-    check v.errors.len == 0
+block:
+  let v = newValidation()
+  check v.email("email@domain.com")
+  check not v.email("Abc.@example.com")
 
-    params = %*{"key": "false"}
-    v = createValid(params)
-    v.isBool("key")
-    check v.errors.len == 0
+block:
+  let v = newValidation()
+  check v.endsWith("abcdefg", "fg")
+  check v.endsWith("abcdefg", "gh") == false
 
-  test "isBool invalid":
-    var params = %*{"key": "111"}
-    var v = createValid(params)
-    v.isBool("key")
-    check v.errors.len > 0
+block:
+  let v = newValidation()
+  check v.file("aaa", "jpg")
+  check v.file("aaa", "") == false
 
-  # ==========================================================================
-  test "isFloat":
-    var params = %*{"key": "1.1"}
-    var v = createValid(params)
-    v.isFloat("key")
-    check v.errors.len == 0
+block:
+  let v = newValidation()
+  check v.filled("a")
+  check v.filled("") == false
 
-  test "isFloat invalid":
-    var params = %*{"key": "a"}
-    var v = createValid(params)
-    v.isFloat("key")
-    check v.errors.len > 0
+block:
+  let v = newValidation()
+  check v.gt(2, 1)
+  check v.gt(2, 3) == false
+  check v.gt("ab", "a")
+  check v.gt("ab", "abc") == false
+  check v.gt(["a", "b"], ["a"])
+  check v.gt(["a", "b"], ["a", "b", "c"]) == false
 
-  # ==========================================================================
-  test "isIn":
-    var params = %*{"name": "John"}
-    var v = createValid(params)
-    v.isIn("name", ["John", "Paul", "George", "Ringo"])
-    check v.errors.len == 0
+block:
+  let v = newValidation()
+  check v.gte(2, 1)
+  check v.gte(2, 2)
+  check v.gte(2, 3) == false
+  check v.gte("ab", "a")
+  check v.gte("ab", "aa")
+  check v.gte("ab", "abc") == false
+  check v.gte(["a", "b"], ["a"])
+  check v.gte(["a", "b"], ["a", "b"])
+  check v.gte(["a", "b"], ["a", "b", "c"]) == false
 
-  test "isIn invalid":
-    var params = %*{"name": "David"}
-    var v = createValid(params)
-    v.isIn("name", ["John", "Paul", "George", "Ringo"])
-    check v.errors.len > 0
+block:
+  let v = newValidation()
+  check v.image("jpg")
+  check v.image("nim") == false
 
-  # ==========================================================================
-  test "isInt":
-    var params = %*{"key": "1"}
-    var v = createValid(params)
-    v.isInt("key")
-    check v.errors.len == 0
+block:
+  let v = newValidation()
+  check v.in("a", ["a", "b"])
+  check v.in("c", ["a", "b"]) == false
 
-  test "isInt invalid":
-    var params = %*{"key": "a"}
-    var v = createValid(params)
-    v.isInt("key")
-    check v.errors.len > 0
+block:
+  let v = newValidation()
+  check v.integer("1")
+  check v.integer("1686246286")
+  check v.integer("a") == false
 
-  # ==========================================================================
-  test "isString":
-    var params = %*{"key": "aa"}
-    var v = createValid(params)
-    v.isString("key")
-    check v.errors.len == 0
+block:
+  let v = newValidation()
+  check v.json("""{"str": "value", "int": 1, "float": 1.1, "bool": true}""")
+  check v.json("a") == false
 
-  test "isString invalid":
-    var params = %*{"key": "1"}
-    var v = createValid(params)
-    v.isString("key")
-    check v.errors.len > 0
+block:
+  let v = newValidation()
+  check v.lt(2, 3)
+  check v.lt(2, 1) == false
+  check v.lt("ab", "abc")
+  check v.lt("ab", "ab") == false
+  check v.lt(["a", "b"], ["a", "b", "c"])
+  check v.lt(["a", "b"], ["a"]) == false
 
-    params = %*{"key": "1.1"}
-    v = createValid(params)
-    v.isString("key")
-    check v.errors.len > 0
+block:
+  let v = newValidation()
+  check v.lte(2, 3)
+  check v.lte(2, 2)
+  check v.lte(2, 1) == false
+  check v.lte("ab", "abc")
+  check v.lte("ab", "aa")
+  check v.lte("ab", "a") == false
+  check v.lte(["a", "b"], ["a", "b", "c"])
+  check v.lte(["a", "b"], ["a", "b"])
+  check v.lte(["a", "b"], ["a"]) == false
 
-    params = %*{"key": "true"}
-    v = createValid(params)
-    v.isString("key")
-    check v.errors.len > 0
+block:
+  let v = newValidation()
+  check v.max(2, 3)
+  check v.max(2, 1) == false
+  check v.max("ab", 3)
+  check v.max("ab", 1) == false
+  check v.max(["a", "b"], 3)
+  check v.max(["a", "b"], 1) == false
 
-  # ==========================================================================
-  test "lessThan":
-    var params = %*{"age": "25"}
-    var v = createValid(params)
-    v.gratorThan("age", 24)
-    check v.errors.len == 0
+block:
+  let v = newValidation()
+  check v.mimes("jpg", ["jpg", "png", "gif"])
+  check v.mimes("mp4", ["jpg", "png", "gif"]) == false
 
-  test "lessThan invalid":
-    var params = %*{"age": "25"}
-    var v = createValid(params)
-    v.gratorThan("age", 26)
-    check v.errors.len > 0
+block:
+  let v = newValidation()
+  check v.min(2, 1)
+  check v.min(2, 3) == false
+  check v.min("ab", 1)
+  check v.min("ab", 3) == false
+  check v.min(["a", "b"], 1)
+  check v.min(["a", "b"], 3) == false
 
-  # ==========================================================================
-  test "numeric":
-    var params = %*{"num": "36.2"}
-    var v = createValid(params)
-    v.numeric("num")
-    check v.errors.len == 0
+block:
+  let v = newValidation()
+  check v.notIn("a", ["b", "c"])
+  check v.notIn("b", ["b", "c"]) == false
 
-  test "numeric invalid":
-    var params = %*{"num": "aaaaa"}
-    var v = createValid(params)
-    v.numeric("num")
-    check v.errors.len > 0
+block:
+  let v = newValidation()
+  check v.notRegex("abc", re"\d")
+  check v.notRegex("abc", re"\w") == false
 
-  # ==========================================================================
-  test "oneOf":
-    var params = %*{"name": "John", "email": "John@gmail.com"}
-    var v = createValid(params)
-    v.oneOf(["name", "birth_date", "job"])
-    check v.errors.len == 0
+block:
+  let v = newValidation()
+  check v.numeric("-1.23")
+  check v.numeric("abc") == false
 
-  test "oneOf invalid":
-    var params = %*{"name": "John", "email": "John@gmail.com"}
-    var v = createValid(params)
-    v.oneOf(["birth_date", "job"])
-    check v.errors.len > 0
+block:
+  let v = newValidation()
+  check v.regex("abc", re"\w")
+  check v.regex("abc", re"\d") == false
 
-  # ==========================================================================
-  test "password":
-    var params = %*{"pass": "Password1!"}
-    var v = createValid(params)
-    v.password("pass")
-    check v.errors.len == 0
+block:
+  let v = newValidation()
+  check v.required("abc")
+  check v.required("") == false
+  check v.required("null") == false
 
-  test "password invalid":
-    var params = %*{"pass": "pass12"}
-    var v = createValid(params)
-    v.password("pass")
-    check v.errors.len > 0
+block:
+  let v = newValidation()
+  check v.same("a", "a")
+  check v.same("a", "b") == false
 
-  # ==========================================================================
-  test "required":
-    var params = %*{"name": "John", "email": "John@gmail.com"}
-    var v = createValid(params)
-    v.required(["name", "email"])
-    check v.errors.len == 0
+block:
+  let v = newValidation()
+  check v.size(1, 1)
+  check v.size(1, 2) == false
+  check v.size("a", 1)
+  check v.size("a", 2) == false
+  check v.sizeFile("a".repeat(1025), 1)
+  check v.sizeFile("a".repeat(2048), 1) == false
+  check v.size(["a"], 1)
+  check v.size(["a"], 2) == false
 
-  test "required invalid":
-    var params = %*{"name": "John", "email": "John@gmail.com"}
-    var v = createValid(params)
-    v.required(["name", "email", "job"])
-    check v.errors.len > 0
+block:
+  let v = newValidation()
+  check v.startsWith("abcde", ["abc", "bcd"])
+  check v.startsWith("abcde", ["bcd", "cde"]) == false
 
-  # ==========================================================================
-  test "unique":
-    schema([
-      table("test_users", [
-        Column().increments("id"),
-        Column().string("name"),
-        Column().string("email")
-      ], reset=true)
-    ])
+block:
+  let v = newValidation()
+  check v.url("https://google.com:8000/xxx/yyy/zzz?key=value")
+  check v.url("fnyuaAxmoiniancywcnsnmuaic") == false
 
-    RDB().table("test_users").insert([
-      %*{
-        "name": "user1",
-        "email": "user1@gmail.com",
-      },
-      %*{
-        "name": "user2",
-        "email": "user2@gmail.com",
-      }
-    ])
-
-    var params = %*{"mail": "user3@gmail.com"}
-    var v = createValid(params)
-    v.unique("mail", "test_users", "email")
-    check v.errors.len == 0
-
-  test "unique invalid":
-    var params = %*{"mail": "user2@gmail.com"}
-    var v = createValid(params)
-    v.unique("mail", "test_users", "email")
-    check v.errors.len > 0
+block:
+  let v = newValidation()
+  check v.uuid("a0a2a2d2-0b87-4a18-83f2-2529882be2de")
+  check v.uuid("aiuimacuca") == false

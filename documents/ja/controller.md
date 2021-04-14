@@ -1,37 +1,38 @@
 コントローラー
 ===
-[戻る](../../README.md)
+[back](../../README.md)
 
-コンテンツ
+Table of Contents
 
 <!--ts-->
-   * [Controller](#controller)
-      * [Creating a Controller](#creating-a-controller)
-      * [How to get params](#how-to-get-params)
-         * [Request params](#request-params)
-         * [Url params](#url-params)
-         * [Query params](#query-params)
-      * [Response](#response)
-         * [Returning string](#returning-string)
-         * [Returning HTML file](#returning-html-file)
-         * [Returning template](#returning-template)
-         * [Returning JSON](#returning-json)
-         * [Response with status](#response-with-status)
-         * [Response with header](#response-with-header)
-      * [Redirect](#redirect)
+   * [コントローラー](#コントローラー)
+      * [イントロダクション](#イントロダクション)
+      * [コントローラーの作成](#コントローラーの作成)
+      * [パラメータの取得方法](#パラメータの取得方法)
+         * [リクエストパラメータ](#リクエストパラメータ)
+         * [Urlパラメータ](#urlパラメータ)
+         * [クエリパラメータ](#クエリパラメータ)
+      * [レスポンス](#レスポンス)
+         * [文字列を返す](#文字列を返す)
+         * [HTMLファイルを返す](#htmlファイルを返す)
+         * [テンプレートを返す](#テンプレートを返す)
+         * [JSONを返す](#jsonを返す)
+         * [ステータス付きレスポンス](#ステータス付きレスポンス)
+         * [ヘッダー付きレスポンス](#ヘッダー付きレスポンス)
+      * [リダイレクト](#リダイレクト)
 
-<!-- Added by: root, at: Sun Dec 27 18:22:28 UTC 2020 -->
+<!-- Added by: root, at: Mon Apr 12 07:21:14 UTC 2021 -->
 
 <!--te-->
 
 ## イントロダクション
+コントローラーは、ウェブ特有の責任を解決し、ビジネスロジックを呼び出す層です。
 
+## コントローラーの作成
+`ducere`コマンドを使います。  
+[ducere make controller](./ducere.md#controller)
 
-## コントローラー作成
-コントローラーを作るには、`ducere`コマンドを使います。  
-[ducere make controller](./ducere.md#コントローラー)
-
-リソースコントローラーは、基本的なCRUDを実装するためのリソース指向のメソッドを持っています。
+リソースコントローラは、基本的なCRUD/リソーススタイルのメソッドを持つコントローラです。
 
 ```nim
 from json
@@ -65,19 +66,19 @@ proc destroy*(request:Request, params:Params):Future[Response] {.async.} =
   return render("destroy")
 ```
 
-各メソッドはそれぞれに呼び出されるべきユースケースが決まっています。
+各メソッドは、以下のリストに従って呼び出す必要があります。
 
-|HTTPメソッド|URLパス|コントローラーメソッド|ユースケース|
+|HTTP method|URL path|controller method|usecase|
 |---|---|---|---|
-|GET|/posts|index|全件表示|
-|GET|/posts/create|create|新規登録画面表示|
-|POST|/posts|store|新規登録|
-|GET|/posts/{id}|show|1件表示|
-|GET|/posts/{id}/edit|edit|1件編集画面表示|
-|POST|/posts/{id}|update|1件編集|
-|DELETE|/posts/{id}|destroy|1件削除|
+|GET|/posts|index|すべての記事を表示する|
+|GET|/posts/create|create|新規投稿ページの表示|
+|POST|/posts|store|新規投稿|
+|GET|/posts/{id}|show|1つの記事を表示する|
+|GET|/posts/{id}/edit|edit|1つの記事編集ページを表示|
+|POST|/posts/{id}|update|1つの記事を更新|
+|DELETE|/posts/{id}|destroy|1つの記事を削除する|
 
-## パラメータの取得
+## パラメータの取得方法
 ### リクエストパラメータ
 view
 ```html
@@ -87,7 +88,7 @@ view
 controller
 ```nim
 proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let email = params.requestParams.get("email")
+  let email = params.getStr("email")
 ```
 
 ### Urlパラメータ
@@ -100,7 +101,7 @@ routes.get("/{id:int}", some_controller.show)
 controller
 ```nim
 proc show*(request:Request, params:Params):Future[Response] {.async.} =
-  let id = params.urlParams["id"].getInt
+  let id = params.getInt("id")
 ```
 
 ### クエリパラメータ
@@ -112,31 +113,32 @@ URL
 controller
 ```nim
 proc update*(request:Request, params:Params):Future[Response] {.async.} =
-  let queries = params.queryParams["queries"].parseInt
+  let queries = params.getInt("queries")
 ```
 
 ## レスポンス
 ### 文字列を返す
-`render`関数の引数に文字列を入れると、コントローラーは文字列を返します。
+`render`関数で文字列を設定した場合、コントローラは文字列を返します。
 ```nim
 return render("index")
 ```
 
 ### HTMLファイルを返す
-`html`関数の引数にHTMLファイルへのパスを指定すると、HTMLファイルの中身を返します。  
-ファイルパスには`resources`ディレクトリからの相対パスを指定してください。
-```nim
-return render(html("sample/index.html"))
-# もしくは
-return render(await asyncHtml("sample/index.html"))
+`html`関数にhtmlファイルのパスを設定すると、コントローラはHTMLを返します。  
+このファイルパスは `app/http/views` ディレクトリからの相対パスでなければなりません。
 
->> /resources/sample/index.html が表示される
+```nim
+return render(html("pages/sample/index.html"))
+# or
+return render(await asyncHtml("pages/sample/index.html"))
+
+>> display app/http/views/pages/sample/index.html
 ```
 
 ### テンプレートを返す
-テンプレートの関数を`render`関数の引数に入れて呼ぶことで、テンプレートエンジンによって描画されたHTMLを返します。
+`render`関数で引数を指定してテンプレートの実装関数を呼び出すと、テンプレートが返されます。
 
-resources/sample/index_view.nim
+app/http/views/pages/sample/index_view.nim
 ```nim
 import basolato/view
 
@@ -145,37 +147,37 @@ proc indexView(name:string):string = tmpli html"""
 <p>$name</p>
 """
 ```
-controller
+main.nim
 ```nim
 return render(indexView("John"))
 ```
 
 ### JSONを返す
-`render`関数の引数に`JsonNode`型を入れると、JSONが返ります。
+`render`関数でJsonNodeを設定すると、コントローラはJSONを返します。
+
 ```nim
 return render(%*{"key": "value"})
 ```
 
-### レスポンスステータスを設定する
-`render`関数の第一引数に`HttpCode`を、第二引数にレスポンスボディを入れます。
+### ステータス付きレスポンス
+第一引数にステータスを、第二引数にレスポンスボディを入れてください。
 ```nim
-return render(HTTP500, "It is a response body")
+return render(Http500, "It is a response body")
 ```
 
-[有効なHTTPステータスコード一覧](https://nim-lang.org/docs/httpcore.html#10)
-[HTTPステータスの定義とその意味](https://ja.wikipedia.org/wiki/HTTPステータスコード)
+[使用可能なレスポンスステータス一覧。](https://nim-lang.org/docs/httpcore.html#10)  
+[レスポンスステータスの説明。](https://ja.wikipedia.org/wiki/HTTP%E3%82%B9%E3%83%86%E3%83%BC%E3%82%BF%E3%82%B9%E3%82%B3%E3%83%BC%E3%83%89)
 
-
-### レスポンスヘッダーを設定する
-`render`関数の最後にヘッダーを入れてください
+### ヘッダー付きレスポンス
+`render`関数の最後の引数にヘッダーを入れてください。
 ```nim
-var header = newHeaders()
-header.set("key1", "value1")
-header.set("key2", ["value1", "value2"])
+var header = newHttpHeaders()
+header.add("key1", "value1")
+header.add("key2", ["value1", "value2"])
 return render("setHeader", header)
 ```
 
-`render`関数は以下の様々なレスポンスにもヘッダーを設定することができます
+次のようにJSONレスポンスやステータス付きの場合もheaderを置くことが出来ます。
 ```nim
 return render(%*{"key": "value"}, header)
 return render(Http400, "setHeader", header)
@@ -183,7 +185,8 @@ return render(Http400, %*{"key": "value"}, header)
 ```
 
 ## リダイレクト
-`redirect`関数を使います
+`redirect`関数を使います.
+
 ```nim
 return redirect("https://nim-lang.org")
 

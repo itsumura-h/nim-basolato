@@ -6,6 +6,7 @@ Table of Contents
 
 <!--ts-->
    * [Controller](#controller)
+      * [Introduction](#introduction)
       * [Creating a Controller](#creating-a-controller)
       * [How to get params](#how-to-get-params)
          * [Request params](#request-params)
@@ -20,9 +21,12 @@ Table of Contents
          * [Response with header](#response-with-header)
       * [Redirect](#redirect)
 
-<!-- Added by: root, at: Sun Dec 27 18:22:28 UTC 2020 -->
+<!-- Added by: root, at: Mon Apr 12 07:20:08 UTC 2021 -->
 
 <!--te-->
+
+## Introduction
+Controller is the layer that resolves web-specific responsibilities and invokes business logic.
 
 ## Creating a Controller
 Use `ducere` command  
@@ -70,7 +74,7 @@ Each method should be called according to the following list
 |GET|/posts/create|create|Display new post page|
 |POST|/posts|store|Submit new post|
 |GET|/posts/{id}|show|Display one post|
-|GET|/posts/{id}/edit|edit|Dpsplay one post edit page|
+|GET|/posts/{id}/edit|edit|Display one post edit page|
 |POST|/posts/{id}|update|Update one post|
 |DELETE|/posts/{id}|destroy|Delete one post|
 
@@ -84,7 +88,7 @@ view
 controller
 ```nim
 proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let email = params.requestParams.get("email")
+  let email = params.getStr("email")
 ```
 
 ### Url params
@@ -97,7 +101,7 @@ routes.get("/{id:int}", some_controller.show)
 controller
 ```nim
 proc show*(request:Request, params:Params):Future[Response] {.async.} =
-  let id = params.urlParams["id"].getInt
+  let id = params.getInt("id")
 ```
 
 ### Query params
@@ -109,7 +113,7 @@ URL
 controller
 ```nim
 proc update*(request:Request, params:Params):Future[Response] {.async.} =
-  let queries = params.queryParams["queries"].parseInt
+  let queries = params.getInt("queries")
 ```
 
 ## Response
@@ -121,20 +125,20 @@ return render("index")
 
 ### Returning HTML file
 If you set html file path in `html` proc, controller returns HTML.  
-This file path should be relative path from `resources` dir
+This file path should be relative path from `app/http/views` dir
 
 ```nim
-return render(html("sample/index.html"))
+return render(html("pages/sample/index.html"))
 # or
-return render(await asyncHtml("sample/index.html"))
+return render(await asyncHtml("pages/sample/index.html"))
 
->> display /resources/sample/index.html
+>> display app/http/views/pages/sample/index.html
 ```
 
 ### Returning template
 Call template proc with args in `render` will return template
 
-resources/sample/index_view.nim
+app/http/views/pages/sample/index_view.nim
 ```nim
 import basolato/view
 
@@ -158,7 +162,7 @@ return render(%*{"key": "value"})
 ### Response with status
 Put response status code arge1 and response body arge2
 ```nim
-return render(HTTP500, "It is a response body")
+return render(Http500, "It is a response body")
 ```
 
 [Here](https://nim-lang.org/docs/httpcore.html#10) is the list of response status code available.  

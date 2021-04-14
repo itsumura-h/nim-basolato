@@ -24,9 +24,9 @@ proc runCommand(port:int) =
   try:
     if pid > 0:
       discard execShellCmd(&"kill {pid}")
-    if execShellCmd(&"nim c --putenv:port={port} main") > 0:
+    if execShellCmd(&"nim c --putenv:PORT={port} main") > 0:
       raise newException(Exception, "")
-    echoMsg(bgGreen, "[SUCCESS] Running dev server")
+    echoMsg(bgGreen, "[SUCCESS] Building dev server")
     p = startProcess("./main", currentDir, ["&"],
                     options={poStdErrToStdOut,poParentStreams})
     pid = p.processID()
@@ -36,12 +36,12 @@ proc runCommand(port:int) =
     # quit 1
 
 proc serve*(port=5000) =
-  ## run application with hot reload
+  ## Run dev application with hot reload.
   runCommand(port)
   while true:
     sleep sleepTime * 1000
     for f in walkDirRec(currentDir, {pcFile}):
-      if f.find(re"(\.nim.*|\.html)$") > -1:
+      if f.find(re"(\.nim|\.nims|\.html)$") > -1:
         var modTime: Time
         try:
           modTime = getFileInfo(f).lastWriteTime
