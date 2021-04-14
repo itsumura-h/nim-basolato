@@ -1,5 +1,5 @@
 # framework
-import basolato/controller
+import ../../../../../src/basolato/controller
 # view
 import ../views/pages/welcome_view
 

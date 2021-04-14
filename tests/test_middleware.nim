@@ -1,6 +1,8 @@
 import unittest, httpclient, strformat, json, strutils, asyncdispatch
 import ../src/basolato/middleware
-include ../src/basolato/core/security
+import ../src/basolato/core/security/encrypt as a
+import ../src/basolato/core/security/session as b
+import ../src/basolato/core/security/csrf_token as c
 
 const HOST = "http://0.0.0.0:5000"
 

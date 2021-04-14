@@ -1,5 +1,6 @@
 import unittest, strformat, httpclient, strutils, asyncdispatch
-include ../src/basolato/core/security
+import ../src/basolato/core/security/session as a
+import ../src/basolato/core/security/session_db as b
 
 const HOST = "http://0.0.0.0:5000"
 let session = waitFor newSession()

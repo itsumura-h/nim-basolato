@@ -1,6 +1,11 @@
 import unittest, times, asyncdispatch
 
-include ../src/basolato/core/security
+include ../src/basolato/core/security/encrypt
+include ../src/basolato/core/security/token
+include ../src/basolato/core/security/csrf_token
+include ../src/basolato/core/security/session_db
+include ../src/basolato/core/security/session
+include ../src/basolato/core/security/client
 
 block:
   let input = $(getTime().toUnix().int())
@@ -94,36 +99,36 @@ block:
 
 
 
-let sessionDb = waitFor newSessionDb()
+let sdb = waitFor newSessionDb()
 
 block:
-  echo sessionDb.token
-  check sessionDb.token.len > 0
+  echo sdb.token
+  check sdb.token.len > 0
 
 block:
-  waitFor sessionDb.set("key1", "value1")
-  let result = waitFor sessionDb.get("key1")
+  waitFor sdb.set("key1", "value1")
+  let result = waitFor sdb.get("key1")
   echo result
   check result == "value1"
 
 block:
-  waitFor sessionDb.set("key1", "value1")
-  check true == waitFor sessionDb.some("key1")
-  check false == waitFor sessionDb.some("key2")
+  waitFor sdb.set("key1", "value1")
+  check true == waitFor sdb.some("key1")
+  check false == waitFor sdb.some("key2")
 
 block:
-  waitFor sessionDb.set("key2", "value2")
-  waitFor sessionDb.delete("key2")
-  let result = waitFor sessionDb.get("key2")
+  waitFor sdb.set("key2", "value2")
+  waitFor sdb.delete("key2")
+  let result = waitFor sdb.get("key2")
   check result == ""
 
 block:
-  let sessionDb = waitFor newSessionDb()
-  waitFor sessionDb.set("key_sessionDb", "value sessionDb")
-  waitFor sessionDb.destroy()
+  let sdb = waitFor newSessionDb()
+  waitFor sdb.set("key_sessionDb", "value sessionDb")
+  waitFor sdb.destroy()
   var result = ""
   try:
-    result = waitFor sessionDb.get("key_sessionDb")
+    result = waitFor sdb.get("key_sessionDb")
   except:
     check result == ""
 
@@ -134,7 +139,7 @@ block:
   check waitFor(session.getToken).len > 0
 
 block:
-  let token = waitFor sessionDb.getToken()
+  let token = waitFor sdb.getToken()
   echo token
   try:
     let session = waitFor newSession(token)
@@ -144,13 +149,13 @@ block:
     check false
 
 block:
-  let token = waitFor sessionDb.getToken()
+  let token = waitFor sdb.getToken()
   let session = waitFor newSession(token)
   check waitFor(session.some("key_session")) == true
   check waitFor(session.some("false")) == false
 
 block:
-  let token = waitFor sessionDb.getToken()
+  let token = waitFor sdb.getToken()
   echo token
   let session = waitFor newSession(token)
   let result = waitFor session.get("key_session")
@@ -158,13 +163,13 @@ block:
   check result == "value_session"
 
 block:
-  let token = waitFor sessionDb.getToken()
+  let token = waitFor sdb.getToken()
   let session = waitFor newSession(token)
   waitFor session.delete("key_session")
   check waitFor(session.get("key_session")) == ""
 
 block:
-  let token = waitFor sessionDb.getToken()
+  let token = waitFor sdb.getToken()
   var session = waitFor newSession(token)
   waitFor session.set("key_session2", "value_session2")
   waitFor session.destroy()

@@ -1,6 +1,5 @@
 import json
 import ../../../../../src/basolato/controller
-import ../../../../../src/basolato/core/security
 # template
 import ../views/pages/test_view
 

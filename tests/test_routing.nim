@@ -1,5 +1,5 @@
 import unittest, strformat, httpclient
-import ../src/basolato/core/security
+import ../src/basolato/core/security/csrf_token
 
 const HOST = "http://0.0.0.0:5000"
 let client = newHttpClient()
