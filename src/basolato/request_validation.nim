@@ -160,7 +160,7 @@ func newRequestValidation*(params: Params):RequestValidation =
     errors: newValidationErrors()
   )
 
-func add*(self: RequestValidation, key, error:string) =
+func add(self: RequestValidation, key, error:string) =
   if self.errors.hasKey(key):
     self.errors[key].add(error)
   else:

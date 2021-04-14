@@ -55,10 +55,10 @@ import basolato/core/validation
 ```
 ## Sample
 ```nim
-echo Validation().email("sample@example.com")
+echo newValidation().email("sample@example.com")
 >> true
 
-echo Validation().email("sample@example")
+echo newValidation().email("sample@example")
 >> false
 ```
 
@@ -66,7 +66,34 @@ echo Validation().email("sample@example")
 ```
 import basolato/request_validation
 ```
+### API
+```nim
+func newRequestValidation*(params: Params):RequestValidation =
+
+func hasErrors*(self:RequestValidation):bool =
+
+func hasError*(self:RequestValidation, key:string):bool =
+
+func errors*(self:RequestValidation):ValidationErrors =
+
+func add*(self:ValidationErrors, key, value:string) =
+
+proc storeValidationResult*(client:Client, validation:RequestValidation) {.async.} =
+```
+`storeValidationResult` stores params and validation errors to session as flash message.
+
 ## Sample
+form request
+```html
+<input type="text" name="email" value="user1@example.com">
+```
+or json request
+```json
+{
+  "email": "user1@example.com"
+}
+```
+
 ```nim
 proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
   let v = newRequestValidation(params)
@@ -77,15 +104,64 @@ proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
     await client.storeValidationResult(v)
     return redirect("/signup")
 ```
+```nim
+let client = await newClient(request)
+echo await client.getFlash()
+>> {
+  "errors": {
+    "email": ["The name field is required."]
+  },
+  "params": {
+    "email": "user1@example.com"
+  }
+}
+```
 
-# Error messages language
-Definition of error messages is in `resources/lang/{language}/validation.json`.
+# Error messages
+## Locale
+Definition of error messages is in `resources/lang/{locale}/validation.json`.  
+Default local is `en`. If you want to replace it, please define environment valiable `LOCALE`.
 
+## Replace key name
+Error message has request params key name by default. You can replace it.
 
-### accepted
+default
+```nim
+let v = newRequestValidation(params)
+v.required("name")
+v.errors["name"][0] == "The name field is required."
+```
 
+replace
+```nim
+let v = newRequestValidation(params)
+v.required("name", attribute="User Name")
+v.errors["name"][0] == "The User Name field is required."
+```
 
+# Rules
+See test code of [simple validation](../../tests/test_validation.nim) and [request validation](../../tests/test_request_validation.nim)
 
+## accepted
+Validate if value is not one of `on`, `yes`, `1` or `true`.
+
+### after
+Validate if `arg1` is not after `arg2`.  
+`arg2` can be params name or `DateTime`.
+
+### afterOrEqual
+```nim
+let v = newRequestValidation(p)
+v.afterOrEqual("base", "before", "yyyy-MM-dd")
+v.afterOrEqual("base", "same", "yyyy-MM-dd")
+v.afterOrEqual("base", "2020-01-02".parse("yyyy-MM-dd"), "yyyy-MM-dd")
+check v.hasErrors == false
+v.afterOrEqual("base", "after", "yyyy-MM-dd")
+v.afterOrEqual("base", "2020-01-03".parse("yyyy-MM-dd"), "yyyy-MM-dd")
+check v.hasErrors
+check v.errors["base"][0] == "The base must be a date after or equal to 2020-01-03."
+check v.errors["base"][1] == "The base must be a date after or equal to 2020-01-03T00:00:00+00:00."
+```
 
 ### domain
 ```nim

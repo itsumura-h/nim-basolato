@@ -1,5 +1,5 @@
 import json, strformat, times
-import ../../../src/basolato/password
+import ../../../../src/basolato/password
 import allographer/schema_builder
 import allographer/query_builder
 
