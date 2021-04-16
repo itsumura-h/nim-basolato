@@ -143,25 +143,193 @@ v.errors["name"][0] == "The User Name field is required."
 See test code of [simple validation](../../tests/test_validation.nim) and [request validation](../../tests/test_request_validation.nim)
 
 ## accepted
-Validate if value is not one of `on`, `yes`, `1` or `true`.
-
-### after
-Validate if `arg1` is not after `arg2`.  
-`arg2` can be params name or `DateTime`.
-
-### afterOrEqual
+The field under validation must be "yes", "on", 1, or true. This is useful for validating "Terms of Service" acceptance or similar fields.
 ```nim
-let v = newRequestValidation(p)
-v.afterOrEqual("base", "before", "yyyy-MM-dd")
-v.afterOrEqual("base", "same", "yyyy-MM-dd")
-v.afterOrEqual("base", "2020-01-02".parse("yyyy-MM-dd"), "yyyy-MM-dd")
-check v.hasErrors == false
-v.afterOrEqual("base", "after", "yyyy-MM-dd")
-v.afterOrEqual("base", "2020-01-03".parse("yyyy-MM-dd"), "yyyy-MM-dd")
-check v.hasErrors
-check v.errors["base"][0] == "The base must be a date after or equal to 2020-01-03."
-check v.errors["base"][1] == "The base must be a date after or equal to 2020-01-03T00:00:00+00:00."
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("text") == "on"
+  v.accepted("text")
+  assert v.hasErrors == false
 ```
+
+## after
+The field under validation must be a value after a given date.  
+Instead of passing a date string to be evaluated by `format`, you may specify another field to compare against the `Datetime`
+```nim
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "2020-01-01"
+  assert params.getStr("target") == "2020-01-02"
+  v.after("base", "target", "yyyy-MM-dd")
+  v.after("base", "2020-01-02".parse("yyyy-MM-dd"), "yyyy-MM-dd")
+  assert v.hasErrors == false
+```
+
+## afterOrEqual
+The field under validation must be a value after or equal to the given date.
+```nim
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "2020-01-01"
+  assert params.getStr("same") == "2020-01-01"
+  assert params.getStr("target") == "2020-01-02"
+  v.afterOrEqual("base", "target", "yyyy-MM-dd")
+  v.afterOrEqual("base", "same", "yyyy-MM-dd")
+  v.afterOrEqual("base", "2020-01-01".parse("yyyy-MM-dd"), "yyyy-MM-dd")
+  v.afterOrEqual("base", "2020-01-02".parse("yyyy-MM-dd"), "yyyy-MM-dd")
+  assert v.hasErrors == false
+```
+
+## alpha
+The field under validation must be entirely alphabetic characters.
+```nim
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("small") == "abcdefghijklmnopqrstuvwxyz"
+  assert params.getStr("large") == "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  v.alpha("small")
+  v.alpha("large")
+  assert v.hasErrors == false
+```
+
+## alphaDash
+The field under validation may have alpha-numeric characters, as well as dashes and underscores.
+```nim
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("text") == "abcABC012-_"
+  v.alphaDash("text")
+  assert v.hasErrors == false
+```
+
+## alphaNum
+The field under validation must be entirely alpha-numeric characters.
+```nim
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("text") == "abcABC012"
+  v.alphaNum("text")
+  assert v.hasErrors == false
+```
+
+## array
+The field under validation must be a `array`.
+```nim
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("text") == "a, b, c"
+  v.array("text")
+  assert v.hasErrors == false
+```
+
+## before
+The field under validation must be a value preceding the given date.  
+In addition, like the `after` rule, the name of another field under validation may be supplied as the value of `Datetime`.
+```nim
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "2020-01-02"
+  assert params.getStr("target") == "2020-01-01"
+  v.before("base", "target", "yyyy-MM-dd")
+  v.before("base", "2020-01-01".parse("yyyy-MM-dd")", "yyyy-MM-dd")
+  assert v.hasErrors == false
+```
+
+## beforeOrEqual
+The field under validation must be a value preceding the given date.  
+In addition, like the `after` rule, the name of another field under validation may be supplied as the value of `Datetime`.
+```nim
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "2020-01-02"
+  assert params.getStr("same") == "2020-01-02"
+  assert params.getStr("target") == "2020-01-01"
+  v.beforeOrEqual("base", "target", "yyyy-MM-dd")
+  v.beforeOrEqual("base", "same", "yyyy-MM-dd")
+  v.beforeOrEqual("base", "2020-01-01".parse("yyyy-MM-dd")", "yyyy-MM-dd")
+  v.beforeOrEqual("base", "2020-01-02".parse("yyyy-MM-dd")", "yyyy-MM-dd")
+  assert v.hasErrors == false
+```
+
+## betweenNum
+The field under validation must be between the given min and max.
+```nim
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getInt("int") == 2
+  assert params.getFloat("float") == 2.0
+  v.betweenNum("int", 1, 3)
+  v.betweenNum("float", 1.9, 2.1)
+  assert v.hasErrors == false
+```
+
+## betweenStr
+The field under validation must have a length between the given min and max.
+```nim
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("str") == "ab"
+  v.betweenStr("str", 1, 3)
+  assert v.hasErrors == false
+```
+
+## betweenArr
+The field under validation must have a length between the given min and max.
+```nim
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("arr") == "a, b"
+  v.betweenStr("arr", 1, 3)
+  assert v.hasErrors == false
+```
+
+## betweenFile
+The field under validation must have a length between the given min and max.
+```nim
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("file").len == 2048
+  v.betweenFile("file", 1, 3)
+  assert v.hasErrors == false
+```
+
+## boolean
+The field under validation must be able to be cast as a boolean.  
+Accepted input are `y, yes, true, 1, on, n, no, false, 0, off`
+```nim
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("bool") == "true"
+  v.boolean("bool")
+  assert v.hasErrors == false
+```
+
+## confirmed
+The field under validation must have a matching field of `{field}_confirmation`. For example, if the field under validation is `password`, a matching `password_confirmation` field must be present in the input.
+```nim
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("password") == "aaa"
+  assert params.getStr("password_confirmation") == "aaa"
+  assert params.getStr("password_check") == "aaa"
+  v.confirmed("password")
+  v.confirmed("password", saffix="_check")
+  assert v.hasErrors == false
+```
+
+## date
+The field under validation must be a valid, non-relative `Datetime`
+```nim
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("password") == "aaa"
+  assert params.getStr("password_confirmation") == "aaa"
+  assert params.getStr("password_check") == "aaa"
+  v.confirmed("password")
+  v.confirmed("password", saffix="_check")
+  assert v.hasErrors == false
+```
+
 
 ### domain
 ```nim
