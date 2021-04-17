@@ -6,11 +6,7 @@ proc makeUsecase*(target:string, message:var string):int =
   var targetPath = &"{getCurrentDir()}/app/core/usecases/{target}_usecase.nim"
   let targetName = target.split("/")[^1]
   let targetCaptalized = snakeToCamel(targetName)
-  let reativeToValueObjectPath = "../".repeat(target.split("/").len) & "value_objects"
   let USECASE = &"""
-import {reativeToValueObjectPath}
-
-
 type {targetCaptalized}Usecase* = ref object
 
 proc new{targetCaptalized}Usecase*():{targetCaptalized}Usecase =

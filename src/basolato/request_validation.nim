@@ -530,14 +530,14 @@ proc email*(self:RequestValidation, keys:openArray[string]) =
   for key in keys:
     self.email(key)
 
-proc endsWith*(self:RequestValidation, key, expect:string, attribute="") =
+proc endsWith*(self:RequestValidation, key:string, expects:openArray[string], attribute="") =
   let attribute = setAttribute(key, attribute)
   if self.params.hasKey(key) and hasMessage("ends_with"):
     let value = self.params.getStr(key)
-    if not endsWith(value, expect):
+    if not endsWith(value, expects):
       let message = messages["ends_with"].getStr
         .replace(":attribute", attribute)
-        .replace(":values", expect)
+        .replace(":values", $expects)
       self.errors.add(key, message)
 
 proc file*(self:RequestValidation, key:string, attribute="") =

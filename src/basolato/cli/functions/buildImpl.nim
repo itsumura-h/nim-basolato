@@ -14,6 +14,7 @@ proc build*(ports="5000", threads="off", args:seq[string]) =
       discard execShellCmd(&"""
         nim c \
         -d:release \
+        -d:ssl \
         --out:{outputFileName}{port} \
         --gc:orc \
         --putenv:PORT={port} \
@@ -23,6 +24,7 @@ proc build*(ports="5000", threads="off", args:seq[string]) =
     discard execShellCmd(&"""
       nim c \
       -d:release \
+      -d:ssl \
       --threads:{threads} \
       --gc:orc \
       --out:{outputFileName} \

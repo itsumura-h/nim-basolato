@@ -166,8 +166,8 @@ block:
 
 block:
   let v = newValidation()
-  check v.endsWith("abcdefg", "fg")
-  check v.endsWith("abcdefg", "gh") == false
+  check v.endsWith("abcdefg", ["fg"])
+  check v.endsWith("abcdefg", ["gh"]) == false
 
 block:
   let v = newValidation()

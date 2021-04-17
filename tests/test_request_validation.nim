@@ -317,11 +317,11 @@ block:
   let p = newParams()
   p["item"] = Param(value:"abcdefg")
   let v = newRequestValidation(p)
-  v.endsWith("item", "fg")
+  v.endsWith("item", ["fg"])
   check v.hasErrors == false
-  v.endsWith("item", "gh")
+  v.endsWith("item", ["gh"])
   check v.hasErrors
-  check v.errors["item"][0] == "The item must be end with one of following gh."
+  check v.errors["item"][0] == "The item must be end with one of following [\"gh\"]."
 
 
 block:

@@ -339,12 +339,14 @@ proc email*(self:Validation, value:string):bool =
   return email(value)
 
 
-proc endsWith(value, expect:string):bool =
-  let endWidth = expect.len
-  return value[value.len - endWidth..^1] == expect
+proc endsWith(value:string, expects:openArray[string]):bool =
+  result = false
+  for expect in expects:
+    let endWidth = expect.len
+    return value[value.len - endWidth..^1] == expect
 
-proc endsWith*(self:Validation, value, expect:string):bool =
-  return endsWith(value, expect)
+proc endsWith*(self:Validation, value:string, expects:openArray[string]):bool =
+  return endsWith(value, expects)
 
 
 proc file(value, ext:string):bool =
