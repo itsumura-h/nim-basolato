@@ -786,6 +786,19 @@ block:
   check v.hasErrors
   check v.errors["base"][0] == "The base format is invalid."
 
+block:
+  let p = newParams()
+  p["valid"] = Param(value:"abc")
+  p["invalid1"] = Param(value:"")
+  p["invalid2"] = Param(value:"null")
+  let v = newRequestValidation(p)
+  v.required("valid")
+  check v.hasErrors == false
+  v.required("invalid1")
+  v.required("invalid2")
+  check v.hasErrors
+  check v.errors["invalid1"][0] == "The invalid1 field is required."
+  check v.errors["invalid2"][0] == "The invalid2 field is required."
 
 block:
   let p = newParams()
@@ -838,7 +851,6 @@ block:
   check v.errors["invalid2"][0] == "The invalid2 field is required when [\"other\"] is present."
 
 
-
 block:
   let p = newParams()
   p["other1"] = Param(value:"123")
@@ -857,7 +869,6 @@ block:
   check v.errors["invalid2"][0] == "The invalid2 field is required when [\"other1\", \"other2\"] are present."
 
 
-
 block:
   let p = newParams()
   p["other1"] = Param(value:"123")
@@ -874,7 +885,6 @@ block:
   check v.hasErrors
   check v.errors["invalid1"][0] == "The invalid1 field is required when [\"other1\", \"aaa\"] is not present."
   check v.errors["invalid2"][0] == "The invalid2 field is required when [\"other1\", \"aaa\"] is not present."
-
 
 
 block:

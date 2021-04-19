@@ -9,39 +9,90 @@ Table of Contents
    * [Simple Validation](#simple-validation)
       * [Sample](#sample)
    * [Request Validation](#request-validation)
+         * [API](#api)
       * [Sample](#sample-1)
-   * [Error messages language](#error-messages-language)
-         * [accepted](#accepted)
-         * [domain](#domain)
-         * [strictEmail](#strictemail)
-         * [equals](#equals)
-         * [gratorThan](#gratorthan)
-         * [inRange](#inrange)
-         * [ip](#ip)
-         * [lessThan](#lessthan)
-         * [numeric](#numeric)
-         * [password](#password)
-   * [Request Validation](#request-validation-1)
-      * [sample](#sample-2)
-      * [Custom Validation](#custom-validation)
-      * [Available Rules](#available-rules)
-         * [accepted](#accepted-1)
-         * [contains](#contains)
-         * [email, strictEmail](#email-strictemail)
-         * [equals](#equals-1)
-         * [exists](#exists)
-         * [gratorThan](#gratorthan-1)
-         * [inRange](#inrange-1)
-         * [ip](#ip-1)
-         * [isIn](#isin)
-         * [lessThan](#lessthan-1)
-         * [numeric](#numeric-1)
-         * [oneOf](#oneof)
-         * [password](#password-1)
-         * [required](#required)
-         * [unique](#unique)
+   * [Error messages](#error-messages)
+      * [Locale](#locale)
+      * [Replace key name](#replace-key-name)
+   * [Rules](#rules)
+      * [accepted](#accepted)
+      * [after](#after)
+      * [afterOrEqual](#afterorequal)
+      * [alpha](#alpha)
+      * [alphaDash](#alphadash)
+      * [alphaNum](#alphanum)
+      * [array](#array)
+      * [before](#before)
+      * [beforeOrEqual](#beforeorequal)
+      * [betweenNum](#betweennum)
+      * [betweenStr](#betweenstr)
+      * [betweenArr](#betweenarr)
+      * [betweenFile](#betweenfile)
+      * [boolean](#boolean)
+      * [confirmed](#confirmed)
+      * [date](#date)
+      * [dateEquals](#dateequals)
+      * [different](#different)
+      * [digits](#digits)
+      * [digitsBetween](#digitsbetween)
+      * [distinctArr](#distinctarr)
+      * [domain](#domain)
+      * [email](#email)
+      * [endsWith](#endswith)
+      * [file](#file)
+      * [filled](#filled)
+      * [gtNum](#gtnum)
+      * [gtFile](#gtfile)
+      * [gtStr](#gtstr)
+      * [gtArr](#gtarr)
+      * [gteNum](#gtenum)
+      * [gteFile](#gtefile)
+      * [gteStr](#gtestr)
+      * [gteArr](#gtearr)
+      * [image](#image)
+      * [in](#in)
+      * [inArray](#inarray)
+      * [integer](#integer)
+      * [json](#json)
+      * [ltNum](#ltnum)
+      * [ltFile](#ltfile)
+      * [ltStr](#ltstr)
+      * [ltArr](#ltarr)
+      * [lteNum](#ltenum)
+      * [lteFile](#ltefile)
+      * [lteStr](#ltestr)
+      * [ltArr](#ltarr-1)
+      * [maxNum](#maxnum)
+      * [maxFile](#maxfile)
+      * [maxStr](#maxstr)
+      * [maxArr](#maxarr)
+      * [mimes](#mimes)
+      * [minNum](#minnum)
+      * [minFile](#minfile)
+      * [minStr](#minstr)
+      * [minArr](#minarr)
+      * [notIn](#notin)
+      * [notRegex](#notregex)
+      * [numeric](#numeric)
+      * [present](#present)
+      * [regex](#regex)
+      * [required](#required)
+      * [requiredIf](#requiredif)
+      * [requiredUnless](#requiredunless)
+      * [requiredWith](#requiredwith)
+      * [requiredWithAll](#requiredwithall)
+      * [requiredWithout](#requiredwithout)
+      * [same](#same)
+      * [sizeNum](#sizenum)
+      * [sizeFile](#sizefile)
+      * [sizeStr](#sizestr)
+      * [sizeArr](#sizearr)
+      * [startsWith](#startswith)
+      * [timestamp](#timestamp)
+      * [url](#url)
+      * [uuid](#uuid)
 
-<!-- Added by: root, at: Mon Apr 12 07:19:28 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 19 03:31:25 UTC 2021 -->
 
 <!--te-->
 
@@ -692,376 +743,312 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 
 ## maxFile
 The field under validation must be less size than or equal to a maximum value.
-
-
-
-
 ```nim
-echo Validation().domain("example.com")
->> true
-
-echo Validation().domain("example")
->> false
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base").len == 2048
+  assert params.getStr("small").len == 1024
+  v.maxFile("base", 2)
+  v.maxFile("small", 2)
+  assert v.hasErrors == false
 ```
 
-### strictEmail
+## maxStr
+The field under validation must be less length than or equal to a maximum value.
 ```nim
-echo Validation().strictEmail("sample@example.com")
->> true
-
-echo Validation().strictEmail("sample@example")
->> false
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "ab"
+  assert params.getStr("small") == "a"
+  v.maxStr("base", 2)
+  v.maxStr("small", 2)
+  assert v.hasErrors == false
 ```
 
-### equals
+## maxArr
+The field under validation must be less length than or equal to a maximum value.
 ```nim
-echo Validation().equals("a", "a")
->> true
-
-echo Validation().equals(1, 2)
->> false
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "a, b"
+  assert params.getStr("small") == "a"
+  v.maxArr("base", 2)
+  v.maxArr("small", 2)
+  assert v.hasErrors == false
 ```
 
-### gratorThan
+## mimes
+The file under validation must have a MIME type corresponding to one of the listed extensions.
 ```nim
-echo Validation().gratorThan(1.2, 1.1)
->> true
-
-echo Validation().gratorThan(3, 2)
->> false
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params["base"].ext == "jpg"
+  v.mimes("base", ["jpg", "gif"])
+  assert v.hasErrors == false
 ```
 
-### inRange
+## minNum
+The field under validation must have a minimum value.
 ```nim
-echo Validation().inRange(2, 1, 3)
->> true
-
-echo Validation().gratorThan(1.5, 1, 1.4)
->> false
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getInt("base") == 2
+  v.minNum("base", 1)
+  v.minNum("base", 2)
+  assert v.hasErrors == false
 ```
 
-### ip
+## minFile
+The field under validation must have a minimum value of size.
 ```nim
-echo Validation().ip("12.0.0.1")
->> true
-
-echo Validation().ip("255.255.255.256")
->> false
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base").len == 2048
+  v.minFile("base", 1)
+  v.minFile("base", 2)
+  assert v.hasErrors == false
 ```
 
-### lessThan
+## minStr
+The field under validation must have a minimum value of length.
 ```nim
-echo Validation().lessThan(1.1, 1.2)
->> true
-
-echo Validation().lessThan(3, 2)
->> false
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "ab"
+  v.minStr("base", 1)
+  v.minStr("base", 2)
+  assert v.hasErrors == false
 ```
 
-### numeric
+## minArr
+The field under validation must have a minimum value of length.
 ```nim
-echo Validation().numeric("1")
->> true
-
-echo Validation().numeric("a")
->> false
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "a, b"
+  v.minArr("base", 1)
+  v.minArr("base", 2)
+  assert v.hasErrors == false
 ```
 
-### password
+## notIn
+The field under validation must not be included in the given list of values.
 ```nim
-echo Validation().password("Password1")
->> true
-
-echo Validation().password("pass")
->> false
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "a"
+  v.notIn("base", ["b", "c"])
+  assert v.hasErrors == false
 ```
 
-
-# Request Validation
-```
-import basolato/request_validation
-```
-
-## sample
-
-Controller
+## notRegex
+The field under validation must not match the given regular expression.
 ```nim
-import json
-import basolato/controller
-
-proc store*(request:Request, params:Params):Future[Response] {.async.} =
-  var v = newValidation(params)
-  v.required(["name", "email", "password"])
-  v.strictEmail("email")
-  v.password("password")
-  try:
-    v.valid()
-    let name = params.getStr("name")
-    let email = params.getStr("email")
-    let password = params.getStr("password")
-
-    let usecase = newSignInUsecase()
-    usecase.signin(name, email, password)
-    return redirect("/")
-  except:
-    return render(createView(name, email, v.errors))
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "abc"
+  v.notRegex("base", re"\d")
+  assert v.hasErrors == false
 ```
 
-View
-```html
-import json
-
-proc createViewImpl(name:string, email:string, errors:JsonNode): string = tmpli html"""
-  <form method="post">
-    $(csrfToken())
-    <div>
-      <p>name</p>
-      $if errors.hasKey("name") {
-        <ul>
-          $for error in errors["name"] {
-            <li>$error</li>
-          }
-        </ul>
-      }
-      <p><input type="base" value="$(old(error, "name"))" name="name"></p>
-    </div>
-    .
-    .
-    .
-```
-
-## Custom Validation
-You can also create your own validation middleware. It should recieve `RequestValidation` object and return it.  
-`putValidate()` proc is useful to create/add error in `RequestValidation` object.
-
-middleware/custom_validate_middleware.nim
+## numeric
+The field under validation must be `numeric`.
 ```nim
-import json, tables
-import bcrypt
-import allographer/query_builder
-import basolato/request_validation
-
-proc checkPassword*(self:RequestValidation, key:string): RequestValidation =
-  let password = self.params["password"]
-  let response = RDB().table("users")
-                  .select("password")
-                  .where("email", "=", self.params["email"])
-                  .first()
-  let dbPass = if response.kind != JNull: response["password"].getStr else: ""
-  let hash = dbPass.substr(0, 28)
-  let hashed = hash(password, hash)
-  let isMatch = compare(hashed, dbPass)
-  if not isMatch:
-    self.putValidate(key, "password is not match")
-  return self
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getInt("base") == 1
+  assert params.getFloat("float") == -1.23
+  v.numeric("base")
+  v.numeric("float")
+  assert v.hasErrors == false
 ```
 
-## Available Rules
-
-### accepted
-This will add errors if not checked in checkbox. Default checked value is `on` and if you want overwrite it, set in arg.
-
-```html
-<input type="checkbox" name="sample">
->> If it checked, it return {"sample", "on"}
-
-<input type="checkbox" name="sample2" value="checked">
->> If it checked, it return {"sample2", "checked"}
-```
-
+## present
+The field under validation must be present in the input data but can be empty.
 ```nim
-var v = validate(request)
-v.accepted("sample")
-v.accepted("sample2", "checked")
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == ""
+  v.present("base")
+  assert v.hasErrors == false
 ```
 
-### contains
-This will add errors if value in request doesn't contain a expected string.
-
-```json
-{"email": "user1@gmail.com"}
-```
-
+## regex
+The field under validation must match the given regular expression.
 ```nim
-var v = validate(request)
-v.contains("email", "user")
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "abc"
+  v.regex("base", re"\w")
+  assert v.hasErrors == false
 ```
 
-### email, strictEmail
-This will add errors if value is not match a style of email address.  
-`strictEmail` supports [RFC5321](https://tools.ietf.org/html/rfc5321) and [RFC5322](https://tools.ietf.org/html/rfc5322) completely. References this Python code https://gist.github.com/frodo821/681869a36148b5214632166e0ad293a9  
-
-Original articles
-[メイルアドレス正規表現ふたたび](https://www.nslabs.jp/email-address-regular-expression.rhtml)  
-[正規表現でのメールアドレスチェックは見直すべき – ReDoS](https://blog.ohgaki.net/redos-must-review-mail-address-validation)
-
-
-```json
-{"address": "user1@gmail.com"}
-```
-
+## required
+The field under validation must be present in the input data and not empty. A field is considered "empty" if one of the following conditions are true:
+- The value is `null`.
+- The value is an empty string.
+- The value is an empty array or empty `Countable` object.
+- The value is an uploaded file with no path.
 ```nim
-var v = validate(request)
-v.email("address")
-v.strictEmail("address")
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "abc"
+  v.required("base")
+  assert v.hasErrors == false
 ```
 
-### equals
-This will add errors if value is not same against expectd string.
-
-```json
-{"name": "John"}
-```
-
+## requiredIf
+The field under validation must be present and not empty if the anotherfield field is equal to any value.
 ```nim
-var v = validate(request)
-v.equals("name", "John")
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "abc"
+  assert params.getStr("empty") == ""
+  assert params.getStr("other") == "123"
+  v.requiredIf("base", "other", ["123"])
+  v.requiredIf("empty", "other", ["xyz"])
+  assert v.hasErrors == false
 ```
 
-### exists
-This will add errors if key is not exist in request params.
-
-```json
-{"name": "John", "email": "John@gmail.com"}
-```
-
+## requiredUnless
+The field under validation must be present and not empty unless the anotherfield field is equal to any value.
 ```nim
-var v = validate(request)
-v.exists("name")
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "abc"
+  assert params.getStr("empty") == ""
+  assert params.getStr("other") == "123"
+  v.requiredUnless("base", "other", ["123"])
+  v.requiredUnless("empty", "other", ["123"])
+  assert v.hasErrors == false
 ```
 
-### gratorThan
-This will add errors if value is not grater/larger than expected value.
-
-```json
-{"age": "25"}
-```
-
+## requiredWith
+The field under validation must be present and not empty only if any of the other specified fields are present and not empty.
 ```nim
-var v = validate(request)
-v.gratorThan("age", 26)
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "abc"
+  assert params.getStr("other") == "123"
+  v.requiredWith("base", ["a"])
+  v.requiredWith("base", ["other"])
+  assert v.hasErrors == false
 ```
 
-### inRange
-This will add errors if value is not in rage of expected value.
-
-```json
-{"age": "25"}
-```
-
+## requiredWithAll
+The field under validation must be present and not empty only if all of the other specified fields are present and not empty.
 ```nim
-var v = validate(request)
-v.inRange("age", min=20, max=60)
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "abc"
+  assert params.getStr("empty") == ""
+  assert params.getStr("other1") == "123"
+  assert params.getStr("other2") == "123"
+  v.requiredWithAll("valid", ["other1", "other2"])
+  v.requiredWithAll("empty", ["notExists"])
+  assert v.hasErrors == false
 ```
 
-### ip
-This will add errors if value is not match a style of IP address.
-
-```json
-{"ip_address": "127.0.0.1"}
-```
-
+## requiredWithout
+The field under validation must be present and not empty only when any of the other specified fields are empty or not present.
 ```nim
-var v = validate(request)
-v.ip("ip_address")
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "abc"
+  assert params.getStr("empty") == ""
+  assert params.getStr("other") == "123"
+  v.requiredWithoutAll("base", ["aaa", "bbb"])
+  v.requiredWithoutAll("empty", ["other"])
+  assert v.hasErrors == false
 ```
 
-### isIn
-This will add errors if value is not match for one of expected values.
-
-```json
-{"name": "John"}
-```
-
+## same
+The given field must match the field under validation.
 ```nim
-var v = validate(request)
-v.isIn("name", ["John", "Paul", "George", "Ringo"])
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "abc"
+  assert params.getStr("target") == "abc"
+  v.same("base", "target")
+  assert v.hasErrors == false
 ```
 
-### lessThan
-This will add errors if value is not less/smaller than expected value.
-
-```json
-{"age": "25"}
-```
-
+## sizeNum
+The field under validation must have a size matching the given value. For numeric data, value corresponds to a given integer value (the attribute must also have the numeric or integer rule).
 ```nim
-var v = validate(request)
-v.gratorThan("age", 24)
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getInt("base") == 2
+  v.sizeNum("base", 2)
+  assert v.hasErrors == false
 ```
 
-
-### numeric
-This will add errors if value is not number.
-
-```json
-{"num": 36.2}
-```
-
+## sizeFile
+The field under validation must have a size matching the given value. For files, size corresponds to the file size in kilobytes.
 ```nim
-var v = validate(request)
-v.numeric("num")
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base").len == 2048
+  v.sizeFile("base", 2)
+  assert v.hasErrors == false
 ```
 
-### oneOf
-This will add errors if one of expected keys is not present in request.
-
-```json
-{"name": "John", "email": "John@gmail.com"}
-```
-
+## sizeStr
+The field under validation must have a size matching the given value.
 ```nim
-var v = validate(request)
-v.oneOf(["name", "birth_date", "job"])
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "ab"
+  v.sizeStr("base", 2)
+  assert v.hasErrors == false
 ```
 
-### password
-This will add errors if value is not match a style of password.  
-It needs at least 8 chars, one upper and lower letter, symbol(ex: @-_?!) is available.
-
-```json
-{"pass": "Password1!"}
-```
-
+## sizeArr
+The field under validation must have a size matching the given value.  For an array, size corresponds to the length of the array.
 ```nim
-var v = validate(request)
-v.password("pass")
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "a, b"
+  v.sizeArr("base", 2)
+  assert v.hasErrors == false
 ```
 
-### required
-This will add errors if all of expected keys is not present in request.
-
-```json
-{"name": "John", "email": "John@gmail.com"}
-```
-
+## startsWith
+The field under validation must start with one of the given values.
 ```nim
-var v = validate(request)
-v.required(["name", "email"])
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "abcde"
+  v.startsWith("base", ["abc", "bcd"])
+  assert v.hasErrors == false
 ```
 
-### unique
-This will add errors if expected value is not unique in database.
-
-table: users
-
-|id|name|email|
-|---|---|---|
-|1|user1|user1@gmail.com|
-|2|user2|user2@gmail.com|
-|3|user3|user3@gmail.com|
-|4|user4|user4@gmail.com|
-
-```json
-{"mail": "user5@gmail.com"}
-```
-
+## timestamp
+The field under validation must be a valid timestamp.
 ```nim
-var v = validate(request)
-v.unique("mail", "users", "email")
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "1577804400"
+  v.timestamp("base")
+  assert v.hasErrors == false
 ```
-|arg position|example|content|
-|---|---|---|
-|1|"mail"|response params key|
-|2|"users"|RDB table name|
-|3|"email"|RDB column name|
+
+## url
+The field under validation must be a valid URL.
+```nim
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "https://google.com:8000/xxx/yyy/zzz?key=value"
+  v.url("base")
+  assert v.hasErrors == false
+```
+
+## uuid
+The field under validation must be a valid RFC 4122 (version 1, 3, 4, or 5) universally unique identifier (UUID).
+```nim
+proc index*(request:Request, params:Params):Future[Response] {.async.} =
+  let v = newRequestValidation(params)
+  assert params.getStr("base") == "a0a2a2d2-0b87-4a18-83f2-2529882be2de"
+  v.url("base")
+  assert v.hasErrors == false
+```

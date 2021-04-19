@@ -21,7 +21,7 @@ Ducereコマンド
             * [usecase](#usecase)
             * [value object](#value-object)
 
-<!-- Added by: root, at: Mon Apr 12 07:20:54 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 19 03:33:00 UTC 2021 -->
 
 <!--te-->
 

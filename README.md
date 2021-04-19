@@ -29,7 +29,7 @@ An asynchronous full-stack web framework for Nim, based on [asynchttpserver](htt
       * [Development](#development)
          * [Generate TOC of documents](#generate-toc-of-documents)
 
-<!-- Added by: root, at: Mon Apr 12 07:19:12 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 19 03:31:06 UTC 2021 -->
 
 <!--te-->
 
@@ -135,6 +135,8 @@ ducere serve # includes hot reloading
 
 ## Documentation
 
+<details><summary>English</summary><div>
+
 - [ducere CLI tool](./documents/en/ducere.md)
 - [Settings](./documents/en/settings.md)
 - [Routing](./documents/en/routing.md)
@@ -146,9 +148,30 @@ ducere serve # includes hot reloading
 - [View](./documents/en/view.md)
 - [Error](./documents/en/error.md)
 - [Validation](./documents/en/validation.md)
-- [Security (CsrfToken, Cookie, Session, Auth)](./documents/en/security.md)
+- [Security (CsrfToken, Cookie, Session, Client)](./documents/en/security.md)
 - [Helper](./documents/en/helper.md)
 - [Logging](./documents/en/logging.md)
+
+</div></details>
+
+<details><summary>日本語</summary><div>
+
+- [ducere CLI tool](./documents/ja/ducere.md)
+- [設定](./documents/ja/settings.md)
+- [ルーティング](./documents/ja/routing.md)
+- [コントローラー](./documents/ja/controller.md)
+- [リクエスト](./documents/ja/request.md)
+- [ミドルウェア](./documents/ja/middleware.md)
+- [ヘッダー](./documents/ja/headers.md)
+- [マイグレーション](./documents/ja/migration.md)
+- [ビュー](./documents/ja/view.md)
+- [エラー](./documents/ja/error.md)
+- [バリデーション](./documents/ja/validation.md)
+- [セキュリティ (CsrfToken, クッキー, セッション, Client)](./documents/ja/security.md)
+- [ヘルパー](./documents/ja/helper.md)
+- [ログ](./documents/ja/logging.md)
+
+</div></details>
 
 ## Benchmark
 - https://github.com/the-benchmarker/web-frameworks

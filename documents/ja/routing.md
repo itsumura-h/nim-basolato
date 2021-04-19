@@ -1,4 +1,4 @@
-Routing
+ルーティング
 ===
 [戻る](../../README.md)
 
@@ -16,12 +16,12 @@ routes.post("/", some_controller.create)
 コンテンツ
 
 <!--ts-->
-   * [Routing](#routing)
+   * [ルーティング](#ルーティング)
       * [HTTP動詞](#http動詞)
       * [ルーティンググループ](#ルーティンググループ)
       * [URL Params](#url-params)
 
-<!-- Added by: root, at: Mon Apr 12 07:20:28 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 19 03:32:32 UTC 2021 -->
 
 <!--te-->
 

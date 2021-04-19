@@ -1,124 +1,33 @@
-View
+ビュー
 ===
 [戻る](../../README.md)
 
-Table of Contents
+コンテンツ
 
 <!--ts-->
-   * [View](#view)
-      * [Introduction](#introduction)
-         * [Block component example](#block-component-example)
-            * [nim-templates](#nim-templates)
+   * [ビュー](#ビュー)
+      * [イントロダクション](#イントロダクション)
+      * [XSS](#xss)
+         * [API](#api)
+         * [サンプル](#サンプル)
+      * [コンポーネントスタイルデザイン](#コンポーネントスタイルデザイン)
+         * [SCSS](#scss)
+         * [API](#api-1)
+      * [ヘルパー関数](#ヘルパー関数)
+         * [Csrfトークン](#csrfトークン)
+         * [old関数](#old関数)
+      * [その他のテンプレートライブラリ](#その他のテンプレートライブラリ)
+         * [ブロックコンポーネントの例](#ブロックコンポーネントの例)
             * [htmlgen](#htmlgen)
             * [SCF](#scf)
             * [Karax](#karax)
-      * [Component design](#component-design)
-         * [API](#api)
-      * [Helper functions](#helper-functions)
-         * [Csrf Token](#csrf-token)
-         * [old helper](#old-helper)
 
-<!-- Added by: root, at: Mon Apr 12 07:21:01 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 19 03:33:09 UTC 2021 -->
 
 <!--te-->
 
-## Introduction
-There are 4 ways to render HTML in Basolato. Although each library has it's own benefits and drawbacks, every library can be used.  
-Basolato use `nim-templates` as a default template engin. It can be used by importing `basolato/view`.
-
-- [htmlgen](https://nim-lang.org/docs/htmlgen.html)
-- [SCF](https://nim-lang.org/docs/filters.html)
-- [Karax](https://github.com/pragmagic/karax)
-- [nim-templates](https://github.com/onionhammer/nim-templates)
-
-<table>
-  <tr>
-    <th>Library</th><th>Benefits</th><th>Drawbacks</th>
-  </tr>
-  <tr>
-    <td>htmlgen</td>
-    <td>
-      <ul>
-        <li>Nim standard library</li>
-        <li>Easy to use for Nim programmer</li>
-        <li>Available to define plural Procedures in one file</li>
-      </ul>
-    </td>
-    <td>
-      <ul>
-        <li>Cannot use `if` statement and `for` statement</li>
-        <li>Maybe difficult to collaborate with designer or markup enginner</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td>SCF</td>
-    <td>
-      <li>Nim standard library</li>
-      <li>Available to use `if` statement and `for` statement</li>
-      <li>Easy to collaborate with designer or markup enginner</li>
-    </td>
-    <td>
-      <ul>
-        <li>Cannot define plural Procedures in one file</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td>Karax</td>
-    <td>
-      <li>Available to define plural Procedures in one file</li>
-      <li>Available to use `if` statement and `for` statement</li>
-    </td>
-    <td>
-      <ul>
-        <li>Maybe difficult to collaborate with designer or markup enginner</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td>nim-templates</td>
-    <td>
-      <ul>
-        <li>Available to define plural Procedures in one file</li>
-        <li>Available to use `if` statement and `for` statement</li>
-        <li>Easy to collaborate with designer or markup enginner</li>
-      </ul>
-    </td>
-    <td>
-      <ul>
-        <li>Maintained by a person</li>
-      </ul>
-    </td>
-  </tr>
-</table>
-
-Views file should be in `resources` dir.
-
-### Block component example
-
-Controller and result is same for each example.
-
-controller
-```nim
-proc index*(): Response =
-  let message = "Basolato"
-  return render(indexView(message))
-```
-
-result
-```html
-<html>
-  <head>
-    <title>Basolato</title>
-  </head>
-  <body>
-    <p>Basolato</p>
-  </body>
-</html>
-```
-
-#### nim-templates
+## イントロダクション
+Basolatoでは、デフォルトのテンプレートエンジンとして、`nim-templates`を使用しています。これは `basolato/view` をインポートすることで利用できます。
 
 ```nim
 import basolato/view
@@ -129,17 +38,294 @@ proc baseImpl(content:string): string = tmpli html"""
     <title>Basolato</title>
   </head>
   <body>
-    $(content)
+    $(content.get)
   </body>
 </html>
 """
 
 proc indexImpl(message:string): string = tmpli html"""
-<p>$message</p>
+<p>$(message.get)</p>
 """
 
 proc indexView*(message:string): string =
   baseImpl(indexImpl(message))
+```
+
+## XSS
+XSSを防止するために、**変数に対して`get`関数を使用してください。**内部で[xmlEncode](https://nim-lang.org/docs/cgi.html#xmlEncode,string)が適用されます。
+
+### API
+```nim
+proc get*(val:JsonNode):string =
+
+proc get*(val:string):string =
+```
+
+### サンプル
+```nim
+title = "This is title<script>alert("aaa")</script>"
+params = @["<script>alert("aaa")</script>", "b"].parseJson()
+```
+```nim
+import basolato/view
+
+proc impl(title:string, params:JsonNode):Future[string] {.async.} = tmpli html"""
+  <h1>$(title.get)</h1>
+  <ul>
+    $for param in params {
+      <li>$(param.get)</li>
+    }
+  </ul>
+```
+
+## コンポーネントスタイルデザイン
+Basolato viewは、ReactやVueのようなコンポーネント指向のデザインを採用しています。 
+コンポーネントとは、htmlとcssの単一の塊であり、htmlの文字列を返す関数のことです。
+
+controller
+```nim
+import basolato/controller
+
+proc withStylePage*(request:Request, params:Params):Future[Response] {.async.} =
+  return render(withStyleView())
+```
+
+view
+```nim
+import basolato/view
+
+style "css", style:"""
+.background {
+  height: 200px;
+  width: 200px;
+  background-color: blue;
+}
+
+.background:hover {
+  background-color: green;
+}
+"""
+
+proc impl():string = tmpli html"""
+$(style)
+<div class="$(style.get("background"))"></div>
+"""
+
+proc withStyleView*():string =
+  let title = "Title"
+  return applicationView(title, impl())
+```
+
+これをhtmlにコンパイルすると以下のようになります。
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Title</title>
+  </head>
+  <body>
+    <style type="text/css">
+      .background_jtshlgnucx {
+        height: 200px;
+        width: 200px;
+        background-color: blue;
+      }
+      .background_jtshlgnucx:hover {
+        background-color: green;
+      }
+    </style>
+    <div class="background_jtshlgnucx"></div>
+  </body>
+</html>
+```
+
+`style`テンプレートは、`CSS-in-JS`にインスパイアされた、コンポーネントごとのスタイルを作成するのに便利なタイプです。
+スタイル化されたクラス名は、コンポーネントごとにランダムなサフィックスを持つので、複数のコンポーネントが同じクラス名を持つことができます。
+
+### SCSS
+また、[libsass](https://github.com/sass/libsass/)をインストールすれば、SCSSを使うことができます。
+
+```sh
+apt install libsass-dev
+# or
+apk add --no-cache libsass-dev
+```
+
+そして、次のようにスタイルブロックを書きます。
+```nim
+style "scss", style:"""
+.background {
+  height: 200px;
+  width: 200px;
+  background-color: blue;
+
+  &:hover {
+    background-color: green;
+  }
+}
+```
+
+### API
+`style` テンプレートは `Css` 型のインスタンスを `name` の 引数に格納します。
+
+```nim
+template style*(typ:string, name, body: untyped):untyped =
+
+func `$`*(self:Css):string =
+
+func get*(self:Css, name:string):string =
+```
+
+## ヘルパー関数
+
+### Csrfトークン
+`form`からPOSTリクエストを送信するには、`csrf token`を設定する必要があります。basolato/view` のヘルパー関数を利用することができます。
+
+```nim
+import basolato/view
+
+proc index*():string = tmpli html"""
+<form>
+  $(csrfToken())
+  <input type="text", name="name">
+</form>
+"""
+```
+
+### old関数
+ユーザーの入力値が不正で、入力ページに戻して以前に入力された値を表示したい場合には、`old`ヘルパー関数を使います。
+
+API
+```nim
+proc old*(params:JsonNode, key:string):string =
+
+proc old*(params:TableRef, key:string):string =
+
+```
+
+controller
+```nim
+# getアクセス
+proc signinPage*(request:Request, params:Params):Future[Response] {.async.} =
+  return render(signinView())
+
+# postアクセス
+proc signin*(request:Request, params:Params):Future[Response] {.async.} =
+  let email = params.getStr("email")
+  try
+    ...
+  except:
+    return render(Http422, signinView(%params))
+```
+
+view
+```nim
+proc impl(params=newJObject()):string = tmpli html"""
+<input type="text" name="email" value="$(old(params, "email"))">
+<input type="text" name="password">
+"""
+
+proc signinView*(params=newJObject()):string =
+  let title = "SignIn"
+  return self.applicationView(title, impl(params))
+```
+`params` にキー `email` があれば値を表示し、なければ空の文字列を表示します。
+
+## その他のテンプレートライブラリ
+HTMLを生成する他のライブラリもBasolatoに選択することができます。しかし、それぞれのライブラリには、それぞれの利点と欠点があります。 
+
+- [htmlgen](https://nim-lang.org/docs/htmlgen.html)
+- [SCF](https://nim-lang.org/docs/filters.html)
+- [Karax](https://github.com/pragmagic/karax)
+- [nim-templates](https://github.com/onionhammer/nim-templates)
+
+<table>
+  <tr>
+    <th>ライブラリ</th><th>メリット</th><th>デメリット</th>
+  </tr>
+  <tr>
+    <td>htmlgen</td>
+    <td>
+      <ul>
+        <li>Nim標準ライブラリ</li>
+        <li>Nimプログラマなら簡単に使える</li>
+        <li>1つのファイルに複数の関数を定義できる</li>
+      </ul>
+    </td>
+    <td>
+      <ul>
+        <li>if文やfor文が使えない</li>
+        <li>デザイナーやマークアップエンジニアとの共同作業は難しいかもしれない</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>SCF</td>
+    <td>
+      <li>Nim標準ライブラリ</li>
+      <li>if文、for文が使える</li>
+      <li>デザイナーやマークアップエンジニアとの共同作業が容易</li>
+    </td>
+    <td>
+      <ul>
+        <li>1つのファイルに複数の関数を定義できない</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>Karax</td>
+    <td>
+      <li>1つのファイルに複数の関数を定義できる</li>
+      <li>if文、for文が使える</li>
+    </td>
+    <td>
+      <ul>
+        <li>デザイナーやマークアップエンジニアとの共同作業は難しいかもしれない</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>nim-templates</td>
+    <td>
+      <ul>
+        <li>1つのファイルに複数の関数を定義できる</li>
+        <li>if文、for文が使える</li>
+        <li>デザイナーやマークアップエンジニアとの共同作業が容易</li>
+      </ul>
+    </td>
+    <td>
+      <ul>
+        <li>個人がメンテナンスしている</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+ビューファイルは、`app/http/views`ディレクトリにある必要があります。
+
+### ブロックコンポーネントの例
+
+コントローラと出力結果はそれぞれの例で同じです。
+
+controller
+```nim
+proc index*(): Response =
+  let message = "Basolato"
+  return render(indexView(message))
+```
+
+出力結果
+```html
+<html>
+  <head>
+    <title>Basolato</title>
+  </head>
+  <body>
+    <p>Basolato</p>
+  </body>
+</html>
 ```
 
 #### htmlgen
@@ -163,7 +349,7 @@ proc indexView*(message:string): string =
 ```
 
 #### SCF
-SCF should divide procs for each file
+SCFでは関数毎にファイルを分ける必要があります。
 
 baseImpl.nim
 ```nim
@@ -196,7 +382,7 @@ ${baseImpl(indexImpl(message))}
 ```
 
 #### Karax
-This usage is **Server Side HTML Rendering**
+**Server Side HTML Rendering**の使い方をしています。
 
 ```nim
 import karax / [karasdsl, vdom]
@@ -216,141 +402,3 @@ proc indexImpl(message:string): string =
 proc indexView*(message:string): string =
   baseImpl(indexImpl(message))
 ```
-
-## Component design
-Basolato view is designed for component oriented design like React and Vue.  
-Component is a single chunk of html and css, and just a procedure that return html string.
-
-controller
-```nim
-import basolato/controller
-
-proc withStylePage*(request:Request, params:Params):Future[Response] {.async.} =
-  return render(withStyleView())
-```
-
-view
-```nim
-import basolato/view
-
-let style = block:
-  var css = newCss()
-  css.set("background", "", """
-    height: 200px;
-    width: 200px;
-    background-color: blue;
-  """)
-  css.set("background", ":hover", """
-    background-color: green;
-  """)
-  css
-
-proc component():string = tmpli html"""
-$(style.define())
-<div class="$(style.get("background"))"></div>
-"""
-
-proc impl():string = tmpli html"""
-$(component())
-"""
-
-proc withStyleView*():string =
-  let title = "Title"
-  return applicationView(title, impl())
-```
-
-This is compiled to this html
-```html
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta charset="UTF-8">
-    <title>Title</title>
-  </head>
-  <body>
-    <style type="text/css">
-      .background_jtshlgnucxj {
-        height: 200px;
-        width: 200px;
-        background-color: blue;
-      }
-      .background_jtshlgnucxj:hover {
-        background-color: green;
-      }
-    </style>
-    <div class="background_jtshlgnucxj"></div>
-  </body>
-</html>
-```
-
-`Css` is a useful type for creating per-component style inspired by `CSS-in-JS`.
-Styled class names have a random suffix per component, so multiple components can have the same class name.
-At first time if you create view for component.
-
-### API
-```nim
-proc newCss*():Css =
-
-proc set*(self:var Css, className, option:string, value:string) =
-
-proc get*(self:Css, className:string):string =
-
-proc define*(self:Css):string =
-```
-
-
-## Helper functions
-
-### Csrf Token
-To send POST request from `form`, you have to set `csrf token`. You can use helper function from `basolato/view`
-
-```nim
-import basolato/view
-
-proc index*():string = tmpli html"""
-<form>
-  $(csrfToken())
-  <input type="text", name="name">
-</form>
-"""
-```
-
-### old helper
-If the user's input value is invalid and you want to back the input page and display the previously entered value, you can use `old` helper function.
-
-API
-```nim
-proc old*(params:JsonNode, key:string):string =
-
-proc old*(params:TableRef, key:string):string =
-
-```
-
-controller
-```nim
-# get access
-proc signinPage*(request:Request, params:Params):Future[Response] {.async.} =
-  return render(signinView())
-
-# post access
-proc signin*(request:Request, params:Params):Future[Response] {.async.} =
-  let email = params.getStr("email")
-  try
-    ...
-  except:
-    return render(Http422, signinView(%params))
-```
-
-view
-```nim
-proc impl(params=newJObject()):string = tmpli html"""
-<input type="text" name="email" value="$(old(params, "email"))">
-<input type="text" name="password">
-"""
-
-proc signinView*(params=newJObject()):string =
-  let title = "SignIn"
-  return self.applicationView(title, impl(params))
-```
-It display value if `params` has key `email`, otherwise display empty string.

@@ -1,14 +1,14 @@
-Security
+セキュリティ
 ===
 [戻る](../../README.md)
 
-Table of Contents
+コンテンツ
 
 <!--ts-->
-   * [Security](#security)
-      * [Check in middleware](#check-in-middleware)
-         * [CSRF Token](#csrf-token)
-      * [Session DB](#session-db)
+   * [セキュリティ](#セキュリティ)
+      * [ミドルウェア内でのチェック](#ミドルウェア内でのチェック)
+         * [CSRFトークン](#csrfトークン)
+      * [セッションDB](#セッションdb)
       * [Client](#client)
          * [API](#api)
          * [サンプル](#サンプル)
@@ -23,11 +23,11 @@ Table of Contents
          * [API](#api-2)
          * [サンプル](#サンプル-2)
 
-<!-- Added by: root, at: Mon Apr 12 07:20:42 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 19 03:32:47 UTC 2021 -->
 
 <!--te-->
 
-## Check in middleware
+## ミドルウェア内でのチェック
 Basolatoはミドルウェアで値が有効かどうかをチェックします。checkCsrfToken()とcheckSessionId()があります。  
 これらの関数は `MiddlwareResult` オブジェクトを返します。
 
@@ -43,7 +43,7 @@ proc message*(self:MiddlewareResult):string =
   return self.message
 ```
 
-### CSRF Token
+### CSRFトークン
 Basolatoは、リクエストメソッドが `post`, `put`, `patch`, `delete` の場合に、csrfトークンが有効かどうかをチェックすることができます。
 
 main.nim
@@ -83,7 +83,7 @@ if res.isError:
   raise newException(Error302, "/login")
 ```
 
-## Session DB
+## セッションDB
 セッションには`File`か`Redis`が使えます。
 ファイルセッションはMongoに似たドキュメントDBの[flatdb](https://github.com/enthus1ast/flatdb)を使っています。
 

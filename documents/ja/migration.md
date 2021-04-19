@@ -1,4 +1,4 @@
-Migration
+マイグレーション
 ===
 [戻る](../../README.md)
 
@@ -9,7 +9,7 @@ Migration
       * [イントロダクション](#イントロダクション)
       * [サンプル](#サンプル)
 
-<!-- Added by: root, at: Mon Apr 12 07:21:05 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 19 03:05:09 UTC 2021 -->
 
 <!--te-->
 
