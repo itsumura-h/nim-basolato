@@ -13,7 +13,7 @@ import ../../repositories/user/user_rdb_repository
 
 proc signUpPage*(request:Request, params:Params):Future[Response] {.async.} =
   let client = await newClient(request)
-  return await render(await signupView(client)).setCookie(client)
+  return render(await signupView(client))
 
 proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
   let v = newRequestValidation(params)

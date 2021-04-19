@@ -24,7 +24,7 @@ proc runCommand(port:int) =
   try:
     if pid > 0:
       discard execShellCmd(&"kill {pid}")
-    if execShellCmd(&"nim c --putenv:PORT={port} main") > 0:
+    if execShellCmd(&"nim c --putenv:PORT={port} -d:ssl main") > 0:
       raise newException(Exception, "")
     echoMsg(bgGreen, "[SUCCESS] Building dev server")
     p = startProcess("./main", currentDir, ["&"],
