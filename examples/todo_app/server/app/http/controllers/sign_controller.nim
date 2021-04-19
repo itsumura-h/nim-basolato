@@ -12,8 +12,6 @@ import ../../repositories/user/user_rdb_repository
 
 
 proc signUpPage*(request:Request, params:Params):Future[Response] {.async.} =
-  # let client = await newClient(request)
-  # return await render(await signupView(client)).setCookie(client)
   let client = await newClient(request)
   return render(await signupView(client))
 
