@@ -19,9 +19,9 @@ routes.post("/", some_controller.create)
    * [ルーティング](#ルーティング)
       * [HTTP動詞](#http動詞)
       * [ルーティンググループ](#ルーティンググループ)
-      * [URL Params](#url-params)
+      * [URLパラメータ](#urlパラメータ)
 
-<!-- Added by: root, at: Mon Apr 19 03:32:32 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 19 05:13:30 UTC 2021 -->
 
 <!--te-->
 
@@ -29,7 +29,7 @@ routes.post("/", some_controller.create)
 ## HTTP動詞
 以下のHTTP動詞が使えます。
 
-|verb|explanation|
+|動詞|説明|
 |---|---|
 |get|一覧取得|
 |post|新規作成|
@@ -58,7 +58,7 @@ groups "/dashboard":
 ```
 `/dashboard/url1`と`/dashboard/url2`が有効なURLになります。
 
-## URL Params
+## URLパラメータ
 BasolatoはURLパラメータを`int`と`str`を使って型指定することができます。
 
 ```nim

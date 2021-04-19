@@ -29,7 +29,7 @@ An asynchronous full-stack web framework for Nim, based on [asynchttpserver](htt
       * [Development](#development)
          * [Generate TOC of documents](#generate-toc-of-documents)
 
-<!-- Added by: root, at: Mon Apr 19 03:31:06 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 19 05:12:04 UTC 2021 -->
 
 <!--te-->
 
@@ -143,7 +143,7 @@ ducere serve # includes hot reloading
 - [Controller](./documents/en/controller.md)
 - [Request](./documents/en/request.md)
 - [Middleware](./documents/en/middleware.md)
-- [Headers](./documents/en/headers.md)
+- [Header](./documents/en/header.md)
 - [Migration](./documents/en/migration.md)
 - [View](./documents/en/view.md)
 - [Error](./documents/en/error.md)
@@ -162,7 +162,7 @@ ducere serve # includes hot reloading
 - [コントローラー](./documents/ja/controller.md)
 - [リクエスト](./documents/ja/request.md)
 - [ミドルウェア](./documents/ja/middleware.md)
-- [ヘッダー](./documents/ja/headers.md)
+- [ヘッダー](./documents/ja/header.md)
 - [マイグレーション](./documents/ja/migration.md)
 - [ビュー](./documents/ja/view.md)
 - [エラー](./documents/ja/error.md)

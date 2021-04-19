@@ -18,10 +18,12 @@ Ducereコマンド
             * [view](#view)
             * [migration](#migration)
             * [model](#model)
+               * [最上位のドメインモデル（＝集約）を作る](#最上位のドメインモデル集約を作る)
+               * [集約の子要素のドメインモデルを作る](#集約の子要素のドメインモデルを作る)
             * [usecase](#usecase)
             * [value object](#value-object)
 
-<!-- Added by: root, at: Mon Apr 19 03:33:00 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 19 05:13:58 UTC 2021 -->
 
 <!--te-->
 
@@ -221,21 +223,43 @@ ducere make migration create_user
 ```
 
 #### model
+##### 最上位のドメインモデル（＝集約）を作る
 ドメインモデルを作ります。
 
 ```sh
-ducere make model user
+ducere make model circle
 ```
 
+in app/core/models
 ```
-app/domain/models
+circle
+├── circle_entity.nim
+├── circle_repository_interface.nim
+├── circle_service.nim
+└── circle_value_object.nim
+```
 
-user
- ├── repositories
- │   └── user_rdb_repository.nim
- ├── user_entity.nim
- ├── user_repository_interface.nim
- └── user_service.nim
+in app/repositories
+```
+circle
+└── circle_rdb_repository.nim
+```
+
+##### 集約の子要素のドメインモデルを作る
+```sh
+ducere make model circle/user
+```
+
+in app/core/models
+```
+circle
+├── circle_entity.nim
+├── circle_repository_interface.nim
+├── circle_service.nim
+├── circle_value_object.nim
+└── user
+    ├── user_entity.nim
+    └── user_service.nim
 ```
 
 #### usecase
@@ -254,9 +278,9 @@ ducere make valueobject {引数1} {引数2}
 ```
 
 `引数1`はキャメルケースの値オブジェクトの名前です。  
-`引数2`は`app/domain/models`から値オブジェクトのファイルへの相対パスです。
+`引数2`は`app/domain/models`内の集約名です。
 
 ```sh
-ducere make valueobject UserName value_objects
->> add UserName in app/domain/models/value_objects
+ducere make valueobject UserName user
+>> add UserName in app/domain/models/user/user_value_objects.nim
 ```

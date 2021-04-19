@@ -21,7 +21,7 @@ Table of Contents
          * [Response with header](#response-with-header)
       * [Redirect](#redirect)
 
-<!-- Added by: root, at: Mon Apr 19 03:32:10 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 19 05:13:08 UTC 2021 -->
 
 <!--te-->
 
@@ -162,7 +162,7 @@ return render(%*{"key": "value"})
 ### Response with status
 Put response status code arge1 and response body arge2
 ```nim
-return render(Http500, "It is a response body")
+return render(Http500, "This is a response body")
 ```
 
 [Here](https://nim-lang.org/docs/httpcore.html#10) is the list of response status code available.  

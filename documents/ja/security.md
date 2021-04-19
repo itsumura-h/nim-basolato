@@ -23,7 +23,7 @@
          * [API](#api-2)
          * [サンプル](#サンプル-2)
 
-<!-- Added by: root, at: Mon Apr 19 03:32:47 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 19 05:13:45 UTC 2021 -->
 
 <!--te-->
 
@@ -60,7 +60,7 @@ proc checkCsrfTokenMiddleware*(r:Request, p:Params) {.async.} =
     raise newException(Error403, res.message)
 ```
 
-Set `${csrfToken()}` in view.
+ビューに`${csrfToken()}`をセットします
 ```nim
 <form method="POST">
   $(csrfToken())
@@ -72,12 +72,12 @@ Set `${csrfToken()}` in view.
 
 エラーが起きた時の処理を上書きすることができます。
 ```nim
-# If you want to return 403
+# 403を返したい時
 let res = await checkCsrfToken(r, p)
 if res.isError:
   raise newException(Error403, "Error message")
 
-# If you want to redirect login page
+# ログインページにリダイレクトさせたい時
 let res = await checkCsrfToken(r, p)
 if res.isError:
   raise newException(Error302, "/login")
@@ -243,6 +243,7 @@ proc destroy(request:Request, params:Params):Future[Response] {.async.} =
 ```nim
 proc destroy(request:Request, params:Params):Future[Response] {.async.} =
   let client = await newClient(request)
+  await client.destroy()
   return render("auth")
 ```
 
@@ -402,11 +403,11 @@ proc index(request:Request, params:Params):Future[Response] {.async.} =
   return render("with cookie").setCookie(cookie)
 ```
 
-**⚠️ 本番環境ではクッキーは`Secure`と`HttpOnly`に設定されているので、JavaScriptでは読み込まれず、HTTPSでのみ使用できます。**
+**⚠️ 本番環境ではクッキーは`Secure`と`HttpOnly`が設定されているので、JavaScriptでは読み込まれず、HTTPSでのみ使用できます。**
 
 
 ## セッション
-Basolatoはファイルセッションのデータベースには[nimAES](https://github.com/jangko/nimAES)を使っています。
+Basolatoはファイルセッションのデータベースには[flatdb](https://github.com/enthus1ast/flatdb)を使っています。
 
 `newSession()`の引数に`sessionId`を設定すると、既存のセッションを返し、そうでなければ新しいセッションを作成します。
 
@@ -418,8 +419,8 @@ Session* = ref object
 ### API
 ```nim
 proc newSession*(token=""):Future[Session] {.async.} =
-  # If you set valid token, it connect to existing session.
-  # If you don't set token, it creates new session.
+  # 有効なトークンをセットすれば、存在してるセッションと接続します
+  # 無効なトークンをセットすれば、新しくセッションを作ります
 
 proc getToken*(self:Session):Future[string] {.async.} =
 
