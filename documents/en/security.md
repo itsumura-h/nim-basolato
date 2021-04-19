@@ -23,7 +23,7 @@ Table of Contents
          * [API](#api-2)
          * [Sample](#sample-2)
 
-<!-- Added by: root, at: Mon Apr 19 03:31:34 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 19 05:12:33 UTC 2021 -->
 
 <!--te-->
 
@@ -233,6 +233,7 @@ destroy all session data
 ```nim
 proc destroy(request:Request, params:Params):Future[Response] {.async.} =
   let client = await newClient(request)
+  await client.destroy()
   return render("auth")
 ```
 
@@ -397,7 +398,7 @@ proc index(request:Request, params:Params):Future[Response] {.async.} =
 
 
 ## Session
-Basolato use [nimAES](https://github.com/jangko/nimAES) as file session DB.
+Basolato use [flatdb](https://github.com/enthus1ast/flatdb) as file session DB.
 
 If you set `sessionId` in arg of `newSession()`, it return existing session otherwise create new session.
 

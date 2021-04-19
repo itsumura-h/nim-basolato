@@ -5,11 +5,11 @@
 コンテンツ
 
 <!--ts-->
-   * [Migration](#migration)
+   * [マイグレーション](#マイグレーション)
       * [イントロダクション](#イントロダクション)
       * [サンプル](#サンプル)
 
-<!-- Added by: root, at: Mon Apr 19 03:05:09 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 19 05:14:13 UTC 2021 -->
 
 <!--te-->
 
@@ -88,5 +88,5 @@ main()
 ```
 
 「Schema Builder」と「Query Builder」の詳細については、allographerのドキュメントを参照してください。
-[Schema Builder](https://github.com/itsumura-h/nim-allographer/blob/master/documents/schema_builder.md)  
-[Query Builder](https://github.com/itsumura-h/nim-allographer/blob/master/documents/query_builder.md)
+- [Schema Builder](https://github.com/itsumura-h/nim-allographer/blob/master/documents/schema_builder.md)
+- [Query Builder](https://github.com/itsumura-h/nim-allographer/blob/master/documents/query_builder.md)

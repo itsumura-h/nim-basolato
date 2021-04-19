@@ -1,8 +1,8 @@
 コントローラー
 ===
-[back](../../README.md)
+[戻る](../../README.md)
 
-Table of Contents
+コンテンツ
 
 <!--ts-->
    * [コントローラー](#コントローラー)
@@ -21,7 +21,7 @@ Table of Contents
          * [ヘッダー付きレスポンス](#ヘッダー付きレスポンス)
       * [リダイレクト](#リダイレクト)
 
-<!-- Added by: root, at: Mon Apr 19 03:05:19 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 19 05:14:23 UTC 2021 -->
 
 <!--te-->
 
@@ -162,7 +162,7 @@ return render(%*{"key": "value"})
 ### ステータス付きレスポンス
 第一引数にステータスを、第二引数にレスポンスボディを入れてください。
 ```nim
-return render(Http500, "It is a response body")
+return render(Http500, "This is a response body")
 ```
 
 [使用可能なレスポンスステータス一覧。](https://nim-lang.org/docs/httpcore.html#10)  

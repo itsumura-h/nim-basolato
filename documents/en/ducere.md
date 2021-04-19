@@ -23,7 +23,7 @@ Table of Contents
             * [usecase](#usecase)
             * [value object](#value-object)
 
-<!-- Added by: root, at: Mon Apr 19 03:31:43 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 19 05:12:45 UTC 2021 -->
 
 <!--te-->
 
@@ -269,8 +269,7 @@ ducere make valueobject {arg1} {arg2}
 `arg1` is a name of value object which should be Camel Case.  
 `arg2` specifies the name of the aggregate to which the value object will be written. Ex: `app/core/models{aggregate}/{aggregate}_value_object`.
 
-example
 ```sh
 ducere make valueobject UserName user
->> add UserName in app/domain/models/user/user_value_objects
+>> add UserName in app/domain/models/user/user_value_objects.nim
 ```

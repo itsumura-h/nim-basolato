@@ -9,7 +9,7 @@ Table of Contents
       * [Introduction](#introduction)
       * [Example](#example)
 
-<!-- Added by: root, at: Mon Apr 19 03:31:56 UTC 2021 -->
+<!-- Added by: root, at: Mon Apr 19 05:12:59 UTC 2021 -->
 
 <!--te-->
 
@@ -86,5 +86,5 @@ main()
 ```
 
 More details of `Schema Builder` and `Query Builder` is in allographer documents.  
-[Schema Builder](https://github.com/itsumura-h/nim-allographer/blob/master/documents/schema_builder.md)  
-[Query Builder](https://github.com/itsumura-h/nim-allographer/blob/master/documents/query_builder.md)
+- [Schema Builder](https://github.com/itsumura-h/nim-allographer/blob/master/documents/schema_builder.md)
+- [Query Builder](https://github.com/itsumura-h/nim-allographer/blob/master/documents/query_builder.md)
