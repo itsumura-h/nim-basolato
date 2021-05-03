@@ -3,7 +3,7 @@ import utils
 
 proc makeMigration*(target:string, message:var string):int =
   let now = now().format("yyyyMMddHHmmss")
-  var targetPath = &"{getCurrentDir()}/migrations/migration{now}{target}.nim"
+  var targetPath = &"{getCurrentDir()}/migrations/{now}{target}.nim"
 
   if isFileExists(targetPath): return 0
   if isTargetContainSlash(target, "migration file name"): return 0
