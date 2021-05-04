@@ -273,3 +273,23 @@ ducere make valueobject {arg1} {arg2}
 ducere make valueobject UserName user
 >> add UserName in app/domain/models/user/user_value_objects.nim
 ```
+
+## Bash-completion
+
+Clone this repository if you want to use `bash-completion` for `ducere`.
+
+```sh
+git clone https://github.com/itsumura-h/nim-basolato /path/to/nim-basolato
+```
+
+And add this shell script to `~/.bashrc`.
+
+```sh
+source /path/to/nim-basolato/completions/bash/ducere
+```
+
+Or, copy completion file to directory.
+
+```sh
+sudo install -o root -g root -m 0644 /path/to/nim-basolato/completions/bash/ducere /usr/share/bash-completion/completions/ducere
+```
