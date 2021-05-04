@@ -284,3 +284,24 @@ ducere make valueobject {引数1} {引数2}
 ducere make valueobject UserName user
 >> add UserName in app/domain/models/user/user_value_objects.nim
 ```
+
+## Bash-completion
+
+もし `ducere` でBashのタブ補完機能を使いたければ、この手順を実施してください。
+まず、このリポジトリを任意の場所に clone します。
+
+```sh
+git clone https://github.com/itsumura-h/nim-basolato /path/to/nim-basolato
+```
+
+次に、以下のシェルを `~/.bashrc` に追記します。
+
+```sh
+source /path/to/nim-basolato/completions/bash/ducere
+```
+
+あるいは、 `bash-completion` 用の所定の場所にファイルをコピーします。
+
+```sh
+sudo install -o root -g root -m 0644 /path/to/nim-basolato/completions/bash/ducere /usr/share/bash-completion/completions/ducere
+```
