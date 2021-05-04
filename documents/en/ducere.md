@@ -5,25 +5,26 @@ Ducere command
 Table of Contents
 
 <!--ts-->
-   * [Ducere command](#ducere-command)
-      * [Introduction](#introduction)
-      * [Usages](#usages)
-         * [new](#new)
-         * [serve](#serve)
-         * [build](#build)
-         * [migrate](#migrate)
-         * [make](#make)
-            * [config](#config)
-            * [controller](#controller)
-            * [view](#view)
-            * [migration](#migration)
-            * [model](#model)
-               * [Create top level domain model(=aggregate)](#create-top-level-domain-modelaggregate)
-               * [Create child domain model in aggregate](#create-child-domain-model-in-aggregate)
-            * [usecase](#usecase)
-            * [value object](#value-object)
+* [Ducere command](#ducere-command)
+   * [Introduction](#introduction)
+   * [Usages](#usages)
+      * [new](#new)
+      * [serve](#serve)
+      * [build](#build)
+      * [migrate](#migrate)
+      * [make](#make)
+         * [config](#config)
+         * [controller](#controller)
+         * [view](#view)
+         * [migration](#migration)
+         * [model](#model)
+            * [Create top level domain model(=aggregate)](#create-top-level-domain-modelaggregate)
+            * [Create child domain model in aggregate](#create-child-domain-model-in-aggregate)
+         * [usecase](#usecase)
+         * [value object](#value-object)
+   * [Bash-completion](#bash-completion)
 
-<!-- Added by: root, at: Mon Apr 19 05:12:45 UTC 2021 -->
+<!-- Added by: root, at: Tue May  4 05:45:57 UTC 2021 -->
 
 <!--te-->
 

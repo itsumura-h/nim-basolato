@@ -5,25 +5,26 @@ Ducereコマンド
 コンテンツ
 
 <!--ts-->
-   * [Ducereコマンド](#ducereコマンド)
-      * [イントロダクション](#イントロダクション)
-      * [使い方](#使い方)
-         * [new](#new)
-         * [serve](#serve)
-         * [build](#build)
-         * [migrate](#migrate)
-         * [make](#make)
-            * [config](#config)
-            * [controller](#controller)
-            * [view](#view)
-            * [migration](#migration)
-            * [model](#model)
-               * [最上位のドメインモデル（＝集約）を作る](#最上位のドメインモデル集約を作る)
-               * [集約の子要素のドメインモデルを作る](#集約の子要素のドメインモデルを作る)
-            * [usecase](#usecase)
-            * [value object](#value-object)
+* [Ducereコマンド](#ducereコマンド)
+   * [イントロダクション](#イントロダクション)
+   * [使い方](#使い方)
+      * [new](#new)
+      * [serve](#serve)
+      * [build](#build)
+      * [migrate](#migrate)
+      * [make](#make)
+         * [config](#config)
+         * [controller](#controller)
+         * [view](#view)
+         * [migration](#migration)
+         * [model](#model)
+            * [最上位のドメインモデル（＝集約）を作る](#最上位のドメインモデル集約を作る)
+            * [集約の子要素のドメインモデルを作る](#集約の子要素のドメインモデルを作る)
+         * [usecase](#usecase)
+         * [value object](#value-object)
+   * [Bash-completion](#bash-completion)
 
-<!-- Added by: root, at: Mon Apr 19 05:13:58 UTC 2021 -->
+<!-- Added by: root, at: Tue May  4 05:46:14 UTC 2021 -->
 
 <!--te-->
 
