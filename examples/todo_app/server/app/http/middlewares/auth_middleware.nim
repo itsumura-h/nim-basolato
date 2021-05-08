@@ -12,3 +12,9 @@ proc checkSessionIdMiddleware*(r:Request, p:Params):Future[Response] {.async.} =
   if res.hasError:
     raise newException(ErrorRedirect, "/signin")
   return next()
+
+proc checkLoginMiddleware*(r:Request, p:Params):Future[Response] {.async.} =
+  let client = await newClient(r)
+  if not await client.isLogin():
+    raise newException(ErrorAuthRedirect, "/signin")
+  return next()

@@ -5,25 +5,26 @@ Ducere command
 Table of Contents
 
 <!--ts-->
-   * [Ducere command](#ducere-command)
-      * [Introduction](#introduction)
-      * [Usages](#usages)
-         * [new](#new)
-         * [serve](#serve)
-         * [build](#build)
-         * [migrate](#migrate)
-         * [make](#make)
-            * [config](#config)
-            * [controller](#controller)
-            * [view](#view)
-            * [migration](#migration)
-            * [model](#model)
-               * [Create top level domain model(=aggregate)](#create-top-level-domain-modelaggregate)
-               * [Create child domain model in aggregate](#create-child-domain-model-in-aggregate)
-            * [usecase](#usecase)
-            * [value object](#value-object)
+* [Ducere command](#ducere-command)
+   * [Introduction](#introduction)
+   * [Usages](#usages)
+      * [new](#new)
+      * [serve](#serve)
+      * [build](#build)
+      * [migrate](#migrate)
+      * [make](#make)
+         * [config](#config)
+         * [controller](#controller)
+         * [view](#view)
+         * [migration](#migration)
+         * [model](#model)
+            * [Create top level domain model(=aggregate)](#create-top-level-domain-modelaggregate)
+            * [Create child domain model in aggregate](#create-child-domain-model-in-aggregate)
+         * [usecase](#usecase)
+         * [value object](#value-object)
+   * [Bash-completion](#bash-completion)
 
-<!-- Added by: root, at: Mon Apr 19 05:12:45 UTC 2021 -->
+<!-- Added by: root, at: Tue May  4 05:45:57 UTC 2021 -->
 
 <!--te-->
 
@@ -272,4 +273,24 @@ ducere make valueobject {arg1} {arg2}
 ```sh
 ducere make valueobject UserName user
 >> add UserName in app/domain/models/user/user_value_objects.nim
+```
+
+## Bash-completion
+
+Clone this repository if you want to use `bash-completion` for `ducere`.
+
+```sh
+git clone https://github.com/itsumura-h/nim-basolato /path/to/nim-basolato
+```
+
+And add this shell script to `~/.bashrc`.
+
+```sh
+source /path/to/nim-basolato/completions/bash/ducere
+```
+
+Or, copy completion file to directory.
+
+```sh
+sudo install -o root -g root -m 0644 /path/to/nim-basolato/completions/bash/ducere /usr/share/bash-completion/completions/ducere
 ```

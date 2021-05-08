@@ -6,7 +6,7 @@ proc makeModel*(target:string, message:var string):int =
   let targetCaptalized = snakeToCamel(targetName)
   let parent = target.split("/")[0]
   let parentCapitalized = snakeToCamel(parent)
-  let relativeToValueObjectsPath = "../".repeat(target.split("/").len-1) & &"{targetName}_value_objects"
+  let relativeToValueObjectsPath = "../".repeat(target.split("/").len-1) & &"{parent}_value_objects"
   let relativeToRepoInterface = "../".repeat(target.split("/").len-1) & parent & "_repository_interface"
 
   let ENTITY = &"""
@@ -20,7 +20,7 @@ proc new{targetCaptalized}*():{targetCaptalized} =
 """
 
   let REPOSITORY_INTERFACE = &"""
-import {targetName}_value_objects
+import {parent}_value_objects
 import {targetName}_entity
 
 
