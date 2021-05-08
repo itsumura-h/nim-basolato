@@ -15,6 +15,10 @@ routes.middleware(
   re"^(?!.*(signin|signup|delete-account)).*$",
   auth_middleware.checkSessionIdMiddleware
 )
+routes.middleware(
+  re"^(?!.*(signin|signup|delete-account)).*$",
+  auth_middleware.checkLoginMiddleware
+)
 # routes.middleware(@[HttpGet, HttpOptions, HttpPost, HttpDelete], re"/api/.*", cors_middleware.setCorsHeadersMiddleware)
 routes.middleware(re"/api/.*", cors_middleware.setCorsHeadersMiddleware)
 
