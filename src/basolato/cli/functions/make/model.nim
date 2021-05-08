@@ -2,7 +2,7 @@ import os, strformat, terminal, strutils
 import utils
 
 proc makeModel*(target:string, message:var string):int =
-  let targetName = target.split("/")[^1]
+  let targetName = target.split("/")[0]
   let targetCaptalized = snakeToCamel(targetName)
   let parent = target.split("/")[0]
   let parentCapitalized = snakeToCamel(parent)
