@@ -45,8 +45,8 @@ proc toInterface*(self:{targetCaptalized}RdbRepository):I{targetCaptalized}Repos
 
   let SERVICE = &"""
 import {relativeToValueObjectsPath}
-import {targetName}_entity
 import {relativeToRepoInterface}
+import {targetName}_entity
 
 
 type {targetCaptalized}Service* = ref object
@@ -83,6 +83,12 @@ proc new{targetCaptalized}Service*(repository:I{parentCapitalized}Repository):{t
     f = open(targetPath, fmWrite)
     f.write("")
 
+    # repository interface
+    targetPath = &"{getCurrentDir()}/app/core/models/{targetName}/{targetName}_repository_interface.nim"
+    if isFileExists(targetPath): return 1
+    f = open(targetPath, fmWrite)
+    f.write(REPOSITORY_INTERFACE)
+
     # create repository dir
     targetPath = &"{getCurrentDir()}/app/repositories/{targetName}"
     if isDirExists(targetPath): return 1
@@ -93,12 +99,6 @@ proc new{targetCaptalized}Service*(repository:I{parentCapitalized}Repository):{t
     if isFileExists(targetPath): return 1
     f = open(targetPath, fmWrite)
     f.write(REPOSITORY)
-
-    # repository interface
-    targetPath = &"{getCurrentDir()}/app/core/models/{targetName}/{targetName}_repository_interface.nim"
-    if isFileExists(targetPath): return 1
-    f = open(targetPath, fmWrite)
-    f.write(REPOSITORY_INTERFACE)
 
     # update di_container.nim
     targetPath = &"{getCurrentDir()}/app/di_container.nim"
