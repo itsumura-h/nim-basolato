@@ -25,5 +25,5 @@ let
   ENABLE_ANONYMOUS_COOKIE* = getEnv("ENABLE_ANONYMOUS_COOKIE").string.parseBool
 
   # others
-  HOST_ADDR* = getEnv("HOST").string
+  HOST_ADDR* = getEnv("HOST", "0.0.0.0").string
   LOCALE* = getEnv("LOCALE").string

@@ -1,3 +1,4 @@
+import macros
 # query service
 import repositories/query_services/query_service_interface
 import repositories/query_services/query_service
