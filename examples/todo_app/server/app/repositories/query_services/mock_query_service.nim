@@ -1,5 +1,5 @@
 import json, options
-import implements
+import interface_implements
 import query_service_interface
 
 

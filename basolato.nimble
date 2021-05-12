@@ -24,7 +24,7 @@ requires "redis >= 0.3.0"
 requires "allographer >= 0.17.0"
 requires "faker >= 0.13.1"
 requires "sass >= 0.1.0"
-requires "https://github.com/itsumura-h/nim-to-interface >= 0.1.0"
+requires "interface_implements >= 0.2.0"
 
 import strformat
 # from os import `/`

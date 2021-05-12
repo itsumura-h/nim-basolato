@@ -1,6 +1,6 @@
 import json, options
 import allographer/query_builder
-import implements
+import interface_implements
 import ../../core/models/user/user_repository_interface
 import ../../core/models/user/user_entity
 import ../../core/models/user/user_value_objects

@@ -1,6 +1,6 @@
 import json, options
 import allographer/query_builder
-import implements
+import interface_implements
 import query_service_interface
 
 

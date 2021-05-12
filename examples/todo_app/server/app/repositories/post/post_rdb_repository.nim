@@ -1,6 +1,6 @@
 import json, times
 import allographer/query_builder
-import implements
+import interface_implements
 import ../../core/models/post/post_repository_interface
 import ../../core/models/post/post_entity
 import ../../core/models/post/post_value_objects
