@@ -1,6 +1,6 @@
-import json, times, macros
+import json, times
 import allographer/query_builder
-import to_interface
+import implements
 import ../../core/models/post/post_repository_interface
 import ../../core/models/post/post_entity
 import ../../core/models/post/post_value_objects
@@ -12,7 +12,7 @@ type PostRdbRepository* = ref object
 proc newPostRdbRepository*():PostRdbRepository =
   return PostRdbRepository()
 
-bindInterface IPostRepository, PostRdbRepository:
+implements PostRdbRepository, IPostRepository:
   proc store(self:PostRdbRepository, post:Post) =
     let postData = post.toStoreData()
     rdb().table("posts").insert(%*{

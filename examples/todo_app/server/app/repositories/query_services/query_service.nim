@@ -1,6 +1,6 @@
 import json, options
 import allographer/query_builder
-import to_interface
+import implements
 import query_service_interface
 
 
@@ -9,7 +9,7 @@ type QueryService* = ref object
 proc newQueryService*():QueryService =
   return QueryService()
 
-bindInterface IQueryService, QueryService:
+implements QueryService, IQueryService:
   proc getPostsByUserId(self:QueryService, id:int):seq[JsonNode] =
     return rdb().table("posts").where("user_id", "=", $id).get()
 

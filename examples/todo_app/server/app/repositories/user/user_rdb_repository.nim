@@ -1,6 +1,6 @@
 import json, options
 import allographer/query_builder
-import to_interface
+import implements
 import ../../core/models/user/user_repository_interface
 import ../../core/models/user/user_entity
 import ../../core/models/user/user_value_objects
@@ -11,7 +11,7 @@ type UserRdbRepository* = ref object
 proc newUserRdbRepository*():UserRdbRepository =
   return UserRdbRepository()
 
-bindInterface IUserRepository, UserRdbRepository:
+implements UserRdbRepository, IUserRepository:
   proc storeUser(
       self:UserRdbRepository,
       name:UserName,

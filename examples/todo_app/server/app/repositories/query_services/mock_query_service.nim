@@ -1,5 +1,5 @@
 import json, options
-import to_interface
+import implements
 import query_service_interface
 
 
@@ -8,7 +8,7 @@ type MockQueryService* = ref object
 proc newMockQueryService*():MockQueryService =
   return MockQueryService()
 
-bindInterface IQueryService, MockQueryService:
+implements MockQueryService, IQueryService:
   proc getPostsByUserId(self:MockQueryService, id:int):seq[JsonNode] =
     return @[
       %*{"id":1, "title": "test1", "content": "test1", "is_finished": true},
