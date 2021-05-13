@@ -15,5 +15,5 @@ implements MockQueryService, IQueryService:
       %*{"id":2, "title": "test2", "content": "test2", "is_finished": false},
     ]
 
-  proc getPostByUserId(self:MockQueryService, id:int):Option[JsonNode] =
+  proc getPostById(self:MockQueryService, id:int):Option[JsonNode] =
     return some(%*{"id":1, "title": "test1", "content": "test1", "is_finished": true})
