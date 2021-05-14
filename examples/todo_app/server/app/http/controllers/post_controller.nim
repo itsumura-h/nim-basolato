@@ -22,7 +22,7 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 
 proc show*(request:Request, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
-  let post = di.queryService.getPostByUserId(id)
+  let post = di.queryService.getPostById(id)
   if not post.isSome:
     raise newException(Error404, "Post not found")
   let client = await newClient(request)
@@ -98,7 +98,7 @@ proc indexApi*(request:Request, params:Params):Future[Response] {.async.} =
 
 proc showApi*(request:Request, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
-  let post = di.queryService.getPostByUserId(id)
+  let post = di.queryService.getPostById(id)
   if not post.isSome:
     return render(Http404, %*{"error": "Post not found"})
   let client = await newClient(request)

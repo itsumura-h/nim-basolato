@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.9.3"
+version       = "0.9.4"
 author        = "Hidenobu Itsumura @dumblepytech1 as 'medy'"
 description   = "A full-stack web framework library for Nim"
 license       = "MIT"
@@ -24,6 +24,7 @@ requires "redis >= 0.3.0"
 requires "allographer >= 0.17.0"
 requires "faker >= 0.13.1"
 requires "sass >= 0.1.0"
+requires "interface_implements >= 0.2.0"
 
 import strformat
 # from os import `/`

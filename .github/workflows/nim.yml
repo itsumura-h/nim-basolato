@@ -55,6 +55,8 @@ jobs:
     - uses: jiro4989/setup-nim-action@v1
       with:
         nim-version: ${{ matrix.nim-version }}
+    - name: Package Refresh
+      run: nimble refresh
     - name: Build
       run: nimble build -Y
     - name: Install
