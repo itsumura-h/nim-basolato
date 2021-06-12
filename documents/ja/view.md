@@ -52,7 +52,7 @@ proc indexView*(message:string): string =
 ```
 
 ## XSS
-XSSを防止するために、**変数に対して`get`関数を使用してください。**内部で[xmlEncode](https://nim-lang.org/docs/cgi.html#xmlEncode,string)が適用されます。
+XSSを防止するために、 **変数に対して`get`関数を使用してください。** 内部で[xmlEncode](https://nim-lang.org/docs/cgi.html#xmlEncode,string)が適用されます。
 
 ### API
 ```nim
@@ -382,7 +382,7 @@ ${baseImpl(indexImpl(message))}
 ```
 
 #### Karax
-**Server Side HTML Rendering**の使い方をしています。
+**Server Side HTML Rendering** の使い方をしています。
 
 ```nim
 import karax / [karasdsl, vdom]
