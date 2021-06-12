@@ -175,6 +175,17 @@ ducere migrate
 ```
 これは`nim c -r migrations/migrate`のエイリアスです
 
+#### clear
+```sh
+ducere migrate clear
+```
+データベースを削除します。削除するデータベースは`.env.local`を読みます。
+
+#### fresh
+```sh
+ducere migrate fresh
+```
+データベースを削除し、マイグレーションを実行します。対象となるデータベースは`.env.local`を読みます。
 
 ### make
 予め雛形が書かれた新しいファイルを作ります。

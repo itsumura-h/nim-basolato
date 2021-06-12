@@ -172,6 +172,17 @@ ducere migrate
 ```
 This is a alias for `nim c -r migrations/migrate`
 
+#### clear
+```sh
+ducere migrate clear
+```
+Dropping all tables from the database. Target database is loaded in `.env.local`.
+
+#### fresh
+```sh
+ducere migrate fresh
+```
+Dropping all tables from the database and then execute the migrate command. Target database is loaded in `.env.local`.
 
 ### make
 Create new file
