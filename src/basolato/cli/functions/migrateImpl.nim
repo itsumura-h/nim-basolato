@@ -18,8 +18,8 @@ proc migrate*(args:seq[string]):int =
       defer: f.close()
       f.write("")
     else:
-      discard rdb().raw(&"DROP DATABASE {dbName}")
-      discard rdb().raw(&"CREATE DATABASE {dbName}")
+      rdb().raw(&"DROP DATABASE {dbName}").exec()
+      rdb().raw(&"CREATE DATABASE {dbName}").exec()
   elif arg == "fresh":
     discard execShellCmd("ducere migrate clear")
     discard execShellCmd("ducere migrate")
