@@ -3,7 +3,7 @@ import utils
 
 proc makeController*(target:string, message:var string):int =
   let targetPath = &"{getCurrentDir()}/app/http/controllers/{target}_controller.nim"
-  let targetName = target.split("/").max()
+  # let targetName = target.split("/")[^1]
   let controller = &"""
 import json
 # framework
