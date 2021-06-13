@@ -3,7 +3,7 @@ import utils
 
 proc makePage*(target:string, message:var string):int =
   let targetPath = &"{getCurrentDir()}/app/http/views/pages/{target}_view.nim"
-  let targetName = target.split("/").max()
+  let targetName = target.split("/")[^1]
   let targetCaptalized = snakeToCamelProcName(targetName)
   let relativeToApplicationPath = "../".repeat(target.split("/").len) & "layouts/application_view"
 
