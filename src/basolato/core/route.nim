@@ -22,16 +22,16 @@ proc params*(request:Request, route:Route):Params =
   let url = request.path
   let path = route.path
   let params = newParams()
-  for k, v in getUrlParams(url, path).data.pairs:
+  for k, v in getUrlParams(url, path).pairs:
     params[k] = v
-  for k, v in getQueryParams(request).data.pairs:
+  for k, v in getQueryParams(request).pairs:
     params[k] = v
 
   if request.headers.hasKey("content-type") and request.headers["content-type"].split(";")[0] == "application/json":
-    for k, v in getJsonParams(request).data.pairs:
+    for k, v in getJsonParams(request).pairs:
       params[k] = v
   else:
-    for k, v in getRequestParams(request).data.pairs:
+    for k, v in getRequestParams(request).pairs:
       params[k] = v
   return params
 
@@ -41,9 +41,9 @@ proc params*(request:Request, middleware:MiddlewareRoute):Params =
   let params = newParams()
   # for k, v in getUrlParams(url, path).data.pairs:
   #   params[k] = v
-  for k, v in getQueryParams(request).data.pairs:
+  for k, v in getQueryParams(request).pairs:
     params[k] = v
-  for k, v in getRequestParams(request).data.pairs:
+  for k, v in getRequestParams(request).pairs:
     params[k] = v
   return params
 
