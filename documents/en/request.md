@@ -26,15 +26,17 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 
 ### API
 ```nim
-proc getStr*(params:Params, key:string, default=""):string =
+proc getStr*(params:Params, key:string, default=""):string
 
-proc getInt*(params:Params, key:string, default=0):int =
+proc getInt*(params:Params, key:string, default=0):int
 
-proc getFloat*(params:Params, key:string, default=0.0):float =
+proc getFloat*(params:Params, key:string, default=0.0):float
 
-proc getBool*(params:Params, key:string, default=false):bool =
+proc getBool*(params:Params, key:string, default=false):bool
 
-proc getJson*(params:Params, key:string, default=newJObject()):JsonNode =
+proc getJson*(params:Params, key:string, default=newJObject()):JsonNode
+
+proc getAll*(params:Params):JsonNode
 ```
 
 ## Save file

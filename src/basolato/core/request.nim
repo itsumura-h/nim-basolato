@@ -59,26 +59,20 @@ func `$`*(self:Param):string =
 func ext*(self:Param):string =
   return self.ext
 
-type Params* = ref object
-  data: TableRef[string, Param]
+type Params* = TableRef[string, Param]
 
 proc newParams*():Params =
-  return Params(
-    data: newTable[string, Param](),
-  )
-
-func data*(self:Params):TableRef[string, Param] =
-  return self.data
+  return newTable[string, Param]()
 
 
 func `[]`*(params:Params, key:string):Param =
-  return tables.`[]`(params.data, key)
+  return tables.`[]`(params, key)
 
 func `[]=`*(params:Params, key:string, value:Param) =
-  tables.`[]=`(params.data, key, value)
+  tables.`[]=`(params, key, value)
 
 func getStr*(params:Params, key:string, default=""):string =
-  if params.data.hasKey(key):
+  if params.hasKey(key):
     return params[key].value
   else:
     return default
@@ -103,12 +97,21 @@ func getBool*(params:Params, key:string, default=false):bool =
 
 proc getJson*(params:Params, key:string, default=newJObject()):JsonNode =
   try:
-    return params.data[key].value.parseJson
+    return params[key].value.parseJson
   except:
     return default
 
-func hasKey*(params:Params, key:string):bool =
-  return params.data.hasKey(key)
+proc getAll*(params:Params):JsonNode =
+  result = newJObject()
+  for key, param in params:
+    let ext = param.ext
+    let fileName = param.fileName
+    let value =
+      if ext.len > 0:
+        ""
+      else:
+        param.value
+    result[key] = %*{"ext": ext, "fileName": fileName, "value": value}
 
 func getUrlParams*(requestPath, routePath:string):Params =
   result = newParams()
@@ -119,13 +122,13 @@ func getUrlParams*(requestPath, routePath:string):Params =
       if routePath[i].contains("{"):
         let keyInUrl = routePath[i][1..^1].split(":")
         let key = keyInUrl[0]
-        result.data[key] = Param(value:requestPath[i].split(":")[0])
+        result[key] = Param(value:requestPath[i].split(":")[0])
 
 func getQueryParams*(request:Request):Params =
   result = newParams()
   let query = request.url.query
   for key, val in cgi.decodeData(query):
-    result.data[key.string] = Param(value:val)
+    result[key.string] = Param(value:val)
 
 proc getJsonParams*(request:Request):Params =
   result = newParams()
@@ -133,23 +136,23 @@ proc getJsonParams*(request:Request):Params =
   for k, v in jsonParams.pairs:
     case v.kind
     of JInt:
-      result.data[k] = Param(value: $(v.getInt))
+      result[k] = Param(value: $(v.getInt))
     of JFloat:
-      result.data[k] = Param(value: $(v.getFloat))
+      result[k] = Param(value: $(v.getFloat))
     of JBool:
-      result.data[k] = Param(value: $(v.getBool))
+      result[k] = Param(value: $(v.getBool))
     of JNull:
-      result.data[k] = Param(value: "")
+      result[k] = Param(value: "")
     of JArray:
-      result.data[k] = Param(value: $v)
+      result[k] = Param(value: $v)
     of JObject:
-      result.data[k] = Param(value: $v)
+      result[k] = Param(value: $v)
     else:
-      result.data[k] = Param(value: v.getStr)
+      result[k] = Param(value: v.getStr)
 
 proc `%`*(self:Params):JsonNode =
   var data = newJObject()
-  for key, param in self.data:
+  for key, param in self:
     if param.ext.len == 0:
       data[key] = %param.value
   return data
@@ -248,16 +251,16 @@ proc getRequestParams*(request:Request):Params =
       let formdata = parseMPFD(contentType, request.body)
       for key, row in formdata:
         if row.fields.hasKey("filename"):
-          params.data[key] = Param(
+          params[key] = Param(
             fileName: row.fields["filename"],
             ext: row.fields["filename"].split(".")[^1],
             value: row.body
           )
         else:
           if params.hasKey(key):
-            params.data[key].value.add(", " & row.body)
+            params[key].value.add(", " & row.body)
           else:
-            params.data[key] = Param(value: row.body)
+            params[key] = Param(value: row.body)
     elif contentType.contains("application/x-www-form-urlencoded"):
       let body = request.body.decodeUrl()
       if body.len > 0:
@@ -265,9 +268,9 @@ proc getRequestParams*(request:Request):Params =
         for row in rows:
           let row = row.split("=")
           if params.hasKey(row[0]):
-            params.data[row[0]].value.add(", " & row[1])
+            params[row[0]].value.add(", " & row[1])
           else:
-            params.data[row[0]] = Param(value: row[1])
+            params[row[0]] = Param(value: row[1])
     # elif contentType.contains("application/json"):
     #   echo "=== application/json"
     #   params["json"] = Param(value: request.body)

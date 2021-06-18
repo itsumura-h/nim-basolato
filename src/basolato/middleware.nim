@@ -1,4 +1,4 @@
-import asynchttpserver, asyncdispatch, strutils
+import asynchttpserver, asyncdispatch, strutils, tables
 export asynchttpserver
 import core/base, core/route, core/header, core/response,
   core/security/client, core/security/cookie, core/security/session_db, core/security/csrf_token
