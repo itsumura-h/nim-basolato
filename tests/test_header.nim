@@ -1,5 +1,6 @@
-import unittest, tables, httpcore
+import unittest, tables, httpcore, strformat
 from strutils import join
+import ../src/basolato/core/base
 include ../src/basolato/core/header
 
 block:
@@ -12,7 +13,7 @@ block:
 block:
   let header = newHttpHeaders()
   header.setDefaultHeaders()
-  check header["server"] == "Nim/1.4.4; Basolato/0.9.0"
+  check header["server"] == fmt"Nim/{NimVersion}; Basolato/{basolatoVersion}"
 
 block:
   let header = newHttpHeaders()
