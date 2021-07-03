@@ -15,6 +15,7 @@
 
 # find tests/ -type f ! -name "*.*" -delete 2>/dev/null
 
+set -eux
 
 # run server
 nimble install -y
@@ -40,4 +41,4 @@ rm tests/server/session.db
 rm tests/server/session.db.bak
 rm -fr tests/server/logs/*
 rm .env .env.local
-find tests/ -type f ! -name "*.*" -delete 2>/dev/null
+find tests/ -type f ! -name "*.*" -delete 2> /dev/null
