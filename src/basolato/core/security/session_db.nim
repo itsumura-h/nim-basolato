@@ -1,6 +1,6 @@
 import asynchttpserver, asyncdispatch, httpcore, json, strutils, times, random, strformat, os
 import redis, flatdb
-import ../baseEnv
+import ../baseEnv, token
 import encrypt
 
 when SESSION_TYPE == "redis":
