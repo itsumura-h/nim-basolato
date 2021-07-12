@@ -24,3 +24,6 @@ putEnv("ENABLE_ANONYMOUS_COOKIE", $true)
 putEnv("COOKIE_DOMAINS", "")
 
 putEnv("port", "5000")
+
+# switch("threads", "on")
+# switch("threadAnalysis", "off")

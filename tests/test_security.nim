@@ -150,6 +150,7 @@ block:
 
 block:
   let token = waitFor sdb.getToken()
+  echo token
   let session = waitFor newSession(token)
   check waitFor(session.some("key_session")) == true
   check waitFor(session.some("false")) == false
@@ -164,12 +165,14 @@ block:
 
 block:
   let token = waitFor sdb.getToken()
+  echo token
   let session = waitFor newSession(token)
   waitFor session.delete("key_session")
   check waitFor(session.get("key_session")) == ""
 
 block:
   let token = waitFor sdb.getToken()
+  echo token
   var session = waitFor newSession(token)
   waitFor session.set("key_session2", "value_session2")
   waitFor session.destroy()

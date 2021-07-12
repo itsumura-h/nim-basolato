@@ -15,9 +15,9 @@ proc build*(ports="5000", threads="off", args:seq[string]) =
         nim c \
         -d:release \
         -d:ssl \
-        --out:{outputFileName}{port} \
         --gc:orc \
         --putenv:PORT={port} \
+        --out:{outputFileName}{port} \
         main.nim
       """)
   else:
@@ -25,11 +25,10 @@ proc build*(ports="5000", threads="off", args:seq[string]) =
       nim c \
       -d:release \
       -d:ssl \
-      --threads:{threads} \
       --gc:orc \
-      --out:{outputFileName} \
       --putenv:PORT={ports} \
+      --out:{outputFileName} \
+      --threads:{threads} \
+      --threadAnalysis:off \
       main.nim
     """)
-
-    # --threadAnalysis:off \
