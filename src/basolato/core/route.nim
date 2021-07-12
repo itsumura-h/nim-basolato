@@ -168,7 +168,7 @@ func checkHttpCode(exception:ref Exception):HttpCode =
   createHttpCodeError
 
 
-proc runMiddleware(req:Request, routes:Routes, headers:HttpHeaders):Future[Response] {.async, gcsafe.} =
+proc runMiddleware(req:Request, routes:Routes, headers:HttpHeaders):Future[Response] {.async.} =
   var
     headers = headers
     status = HttpCode(0)
@@ -188,7 +188,7 @@ proc runMiddleware(req:Request, routes:Routes, headers:HttpHeaders):Future[Respo
   let response = Response(headers:headers, status:status)
   return response
 
-proc runController(req:Request, route:Route, headers: HttpHeaders):Future[Response] {.async, gcsafe.} =
+proc runController(req:Request, route:Route, headers: HttpHeaders):Future[Response] {.async.} =
   let params = req.params(route)
   let response = await route.action(req, params)
   response.headers &= headers
