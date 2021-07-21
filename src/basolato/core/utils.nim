@@ -1,3 +1,4 @@
+import distros
 import strutils
 
 type
@@ -24,14 +25,7 @@ func isExistsLibsass*():bool =
     const res = gorgeEx(query)
     return res.exitCode == 0 and res.output.len > 0
   elif defined(linux) or defined(bsd):
-    const f = staticRead("/etc/os-release")
-    const osName = (func():string =
-        for row in f.split("\n"):
-          let kv = row.split("=")
-          if kv[0] == "ID":
-            return kv[1]
-    )()
-    if osName == "alpine":
+    if detectOS(Alpine):
       const f = staticRead("/lib/apk/db/installed")
       return f.contains("libsass")
     else: # Ubuntu/Debian/CentOS...
