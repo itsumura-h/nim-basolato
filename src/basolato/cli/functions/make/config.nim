@@ -25,6 +25,14 @@ putEnv("SESSION_TYPE", "file") # "file" or "redis"
 
   createConfigCommon ".env":
     &"""
+# DB Connection
+# DB type, sqlite or mysql or postgres, is defined in config.nims
+DB_CONNECTION="{getCurrentDir()}/db.sqlite3" # sqlite file path or host:port
+DB_USER=""
+DB_PASSWORD=""
+DB_DATABASE=""
+DB_MAX_CONNECTION=95 # should be smaller than (DB max connection / running threads num)
+
 # Logging
 LOG_IS_DISPLAY=true # true or false
 LOG_IS_FILE=true # true or false
@@ -42,13 +50,4 @@ HOST="0.0.0.0"
 LOCALE=en
 """
 
-  createConfigCommon ".env.local":
-    &"""
-# DB Connection
-# DB type, sqlite or mysql or postgres, is defined in config.nims
-DB_CONNECTION="{getCurrentDir()}/db.sqlite3" # sqlite file path or host:port
-DB_USER=""
-DB_PASSWORD=""
-DB_DATABASE=""
-DB_MAX_CONNECTION=95 # should be smaller than (DB max connection / running threads num)
-"""
+  copyFile(&"{getCurrentDir()}/.env", &"{getCurrentDir()}/.env.local")
