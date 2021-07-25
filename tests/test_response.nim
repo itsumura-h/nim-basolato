@@ -19,6 +19,7 @@ block:
     "Cookie": &"session_id={SESSION_ID}",
   })
   let response = client.get(&"{HOST}/set-cookie")
+  echo response.headers
   check response.headers["set-cookie", 0]
           .contains("key1=value1; Path=/;")
   check response.headers["set-cookie", 1]
@@ -31,8 +32,8 @@ block:
   })
   discard client.get(&"{HOST}/set-auth")
   let sessionDb = waitFor newSessionDb(SESSION_ID)
-  check "value1" == waitFor get(sessionDb, "key1")
-  check "value2" == waitFor get(sessionDb, "key2")
+  check "value1" == waitFor sessionDb.get("key1")
+  check "value2" == waitFor sessionDb.get("key2")
 
 block:
   let client = newHttpClient(maxRedirects=0)
