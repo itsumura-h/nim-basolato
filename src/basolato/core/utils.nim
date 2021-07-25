@@ -18,7 +18,7 @@ func makeCookie*(key, value, expires: string, domain = "", path = "",
   if sameSite != None:
     result.add("; SameSite=" & $sameSite)
 
-func isExistsLibsass*():bool =
+proc isExistsLibsass*():bool =
   ## used in /view
   when defined(macosx):
     const query = "ldconfig -p | grep libsass"
