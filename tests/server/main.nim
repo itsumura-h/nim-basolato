@@ -19,7 +19,9 @@ routes.get("/renderJson", test_controller.renderJson)
 routes.get("/status500", test_controller.status500)
 routes.get("/status500json", test_controller.status500json)
 routes.get("/redirect", test_controller.redirect)
-routes.get("/error_redirect", test_controller.error_redirect)
+routes.get("/error-redirect", test_controller.errorRedirect)
+routes.get("/redirect-with-header", test_controller.redirectWithHeader)
+routes.get("/error-redirect-with-header", test_controller.errorRedirectWithHeader)
 
 # test helper
 routes.get("/dd", test_controller.dd)

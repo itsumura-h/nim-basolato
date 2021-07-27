@@ -26,8 +26,18 @@ proc status500json*(request:Request, params:Params):Future[Response] {.async.} =
 proc redirect*(request:Request, params:Params):Future[Response] {.async.} =
   return redirect("/new_url")
 
-proc error_redirect*(request:Request, params:Params):Future[Response] {.async.} =
+proc redirectWithHeader*(request:Request, params:Params):Future[Response] {.async.} =
+  let headers = newHttpHeaders()
+  headers["key"] = "value"
+  return redirect("/new_url", headers)
+
+proc errorRedirect*(request:Request, params:Params):Future[Response] {.async.} =
   return errorRedirect("/new_url")
+
+proc errorRedirectWithHeader*(request:Request, params:Params):Future[Response] {.async.} =
+  let headers = newHttpHeaders()
+  headers["key"] = "value"
+  return errorRedirect("/new_url", headers)
 
 # test helper
 proc dd*(request:Request, params:Params):Future[Response] {.async.} =

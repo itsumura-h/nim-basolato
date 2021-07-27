@@ -1,5 +1,5 @@
 const
-  basolatoVersion* = "0.9.9"
+  basolatoVersion* = "0.9.10"
 
 type
   Error505* = object of CatchableError

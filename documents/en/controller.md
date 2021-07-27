@@ -189,6 +189,8 @@ You can use `redirect` proc.
 
 ```nim
 return redirect("https://nim-lang.org")
+return redirect("https://nim-lang.org", header)
 
 return errorRedirect("/login")
+return errorRedirect("/login", header)
 ```
