@@ -45,6 +45,20 @@ block:
 
 block:
   let client = newHttpClient(maxRedirects=0)
-  let response = client.get(&"{HOST}/error_redirect")
+  let response = client.get(&"{HOST}/error-redirect")
   check response.headers["location"] == "/new_url"
+  check response.code() == Http302
+
+block:
+  let client = newHttpClient(maxRedirects=0)
+  let response = client.get(&"{HOST}/redirect-with-header")
+  check response.headers["location"] == "/new_url"
+  check response.headers["key"] == "value"
+  check response.code() == Http303
+
+block:
+  let client = newHttpClient(maxRedirects=0)
+  let response = client.get(&"{HOST}/error-redirect-with-header")
+  check response.headers["location"] == "/new_url"
+  check response.headers["key"] == "value"
   check response.code() == Http302

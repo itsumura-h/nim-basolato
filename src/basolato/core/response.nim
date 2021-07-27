@@ -91,8 +91,24 @@ func redirect*(url:string):Response =
     headers: headers
   )
 
+func redirect*(url:string, headers:HttpHeaders):Response =
+  headers["location"] = url
+  return Response(
+    status:Http303,
+    body: "",
+    headers: headers
+  )
+
 func errorRedirect*(url:string):Response =
   let headers = newHttpHeaders()
+  headers["location"] = url
+  return Response(
+    status:Http302,
+    body: "",
+    headers: headers
+  )
+
+func errorRedirect*(url:string, headers:HttpHeaders):Response =
   headers["location"] = url
   return Response(
     status:Http302,
