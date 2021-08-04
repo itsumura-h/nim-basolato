@@ -22,3 +22,18 @@ block:
 block:
   var data = newJNull()
   check data.get() == ""
+
+block:
+  style "css", style:"""
+.className{
+  color: red
+}
+"""
+  let className = style.get("className")
+  var expanded = fmt("""
+<style type="text/css">
+.[className]{
+  color: red
+}
+</style>""", '[', ']')
+  check $style == expanded
