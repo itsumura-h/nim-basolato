@@ -17,6 +17,13 @@ func makeCookie*(key, value, expires: string, domain = "", path = "",
   if sameSite != None:
     result.add("; SameSite=" & $sameSite)
 
+func getOsName():string =
+  const f = staticRead("/etc/os-release")
+  for row in f.split("\n"):
+    let kv = row.split("=")
+    if kv[0] == "ID":
+      return kv[1]
+
 func isExistsLibsass*():bool =
   ## used in /view
   when defined(macosx):
@@ -24,16 +31,11 @@ func isExistsLibsass*():bool =
     const res = gorgeEx(query)
     return res.exitCode == 0 and res.output.len > 0
   elif defined(linux) or defined(bsd):
-    const f = staticRead("/etc/os-release")
-    const osName = (func():string =
-        for row in f.split("\n"):
-          let kv = row.split("=")
-          if kv[0] == "ID":
-            return kv[1]
-    )()
+    const osName = getOsName()
     if osName == "alpine":
-      const f = staticRead("/lib/apk/db/installed")
-      return f.contains("libsass")
+      const query = "cat /lib/apk/db/installed | grep libsass"
+      const res = gorgeEx(query)
+      return res.exitCode == 0 and res.output.len > 0
     else: # Ubuntu/Debian/CentOS...
       const query = "ldconfig -p | grep libsass"
       const res = gorgeEx(query)
