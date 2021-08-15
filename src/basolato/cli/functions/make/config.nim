@@ -19,19 +19,19 @@ proc makeConfig*():int =
     &"""
 import os
 putEnv("SECRET_KEY", "{randStr(24)}") # 24 chars
-putEnv("DB_DRIVER", "sqlite") # "sqlite" or "mysql" or "postgres"
 putEnv("SESSION_TYPE", "file") # "file" or "redis"
 """
 
   createConfigCommon ".env":
     &"""
 # DB Connection
-# DB type, sqlite or mysql or postgres, is defined in config.nims
-DB_CONNECTION="{getCurrentDir()}/db.sqlite3" # sqlite file path or host:port
+DB_DATABASE="{getCurrentDir()}/db.sqlite3" # sqlite file path or database name
 DB_USER=""
 DB_PASSWORD=""
-DB_DATABASE=""
+DB_HOST=""  # host ip address
+DB_PORT=0 # postgres default...5432, mysql default...3306
 DB_MAX_CONNECTION=95 # should be smaller than (DB max connection / running threads num)
+DB_TIMEOUT=30
 
 # Logging
 LOG_IS_DISPLAY=true # true or false
@@ -50,4 +50,4 @@ HOST="0.0.0.0"
 LOCALE=en
 """
 
-  copyFile(&"{getCurrentDir()}/.env", &"{getCurrentDir()}/.env.local")
+  copyFile(&"{getCurrentDir()}/.env", &"{getCurrentDir()}/.env.example")

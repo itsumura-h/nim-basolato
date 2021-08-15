@@ -11,9 +11,11 @@ proc makeMigration*(target:string, message:var string):int =
   createDir(parentDir(targetPath))
 
   let MIGRATION = &"""
-import json
+import asyncdispatch, json
 import allographer/schema_builder
 import allographer/query_builder
+from ../database import rdb
+
 
 proc migration{now}{target}*() =
   discard

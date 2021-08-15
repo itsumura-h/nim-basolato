@@ -7,10 +7,13 @@ proc makeUsecase*(target:string, message:var string):int =
   let targetName = target.split("/")[^1]
   let targetCaptalized = snakeToCamel(targetName)
   let USECASE = &"""
+import ../../di_container
+
+
 type {targetCaptalized}Usecase* = ref object
 
 proc new{targetCaptalized}Usecase*():{targetCaptalized}Usecase =
-  return {targetCaptalized}Usecase()
+  result = new {targetCaptalized}Usecase
 """
 
   if isFileExists(targetPath): return 1
