@@ -1,3 +1,4 @@
+import asyncdispatch
 import ../models/user/user_value_objects
 import ../models/post/post_value_objects
 import ../models/post/post_entity
@@ -11,24 +12,24 @@ proc newPostUsecase*(repository:IPostRepository):PostUsecase =
   return PostUsecase(repository:repository)
 
 
-proc store*(self:PostUsecase, userId:int, title, content:string) =
+proc store*(self:PostUsecase, userId:int, title, content:string) {.async.} =
   let userId = newUserId(userId)
   let title = newPostTitle(title)
   let content = newPostContent(content)
   let post = newPost(userId, title, content)
-  self.repository.store(post)
+  await self.repository.store(post)
 
-proc changeStatus*(self:PostUsecase, id:int, status:bool) =
+proc changeStatus*(self:PostUsecase, id:int, status:bool) {.async.} =
   let id = newPostId(id)
-  self.repository.changeStatus(id, status)
+  await self.repository.changeStatus(id, status)
 
-proc destroy*(self:PostUsecase, id:int) =
+proc destroy*(self:PostUsecase, id:int) {.async.} =
   let id = newPostId(id)
-  self.repository.destroy(id)
+  await self.repository.destroy(id)
 
-proc update*(self:PostUsecase, id:int, title, content:string, isFinished:bool) =
+proc update*(self:PostUsecase, id:int, title, content:string, isFinished:bool) {.async.} =
   let postId = newPostId(id)
   let title = newPostTitle(title)
   let content = newPostContent(content)
   let post = newPost(postId, title, content, isFinished)
-  self.repository.update(post)
+  await self.repository.update(post)

@@ -1,30 +1,31 @@
-import json
+import json, asyncdispatch
 import ../models/user/user_value_objects
 import ../models/user/user_entity
 import ../models/user/user_repository_interface
 import ../models/user/user_service
+import ../../di_container
 
 
 type SignUsecase* = ref object
   repository:IUserRepository
   service: UserService
 
-proc newSignUsecase*(repository:IUserRepository):SignUsecase =
+proc newSignUsecase*():SignUsecase =
   return SignUsecase(
-    repository: repository,
-    service: newUserService(repository)
+    repository: di.userRepository,
+    service: newUserService(di.userRepository)
   )
 
-proc signUp*(self:SignUsecase, name, email, password:string):JsonNode =
+proc signUp*(self:SignUsecase, name, email, password:string):Future[JsonNode] {.async.} =
   let name = newUserName(name)
   let email = newUserEmail(email)
   let password = newPassword(password).getHashed()
-  let userId = self.repository.storeUser(name, email, password)
+  let userId = await self.repository.storeUser(name, email, password)
   return %*{"id": userId.getInt, "name": name}
 
-proc signIn*(self:SignUsecase, email, password:string):JsonNode =
+proc signIn*(self:SignUsecase, email, password:string):Future[JsonNode] {.async.} =
   let email = newUserEmail(email)
-  let user = self.repository.getUser(email)
+  let user = await self.repository.getUser(email)
   let password = newPassword(password)
   let hashedPassword = user.hashedPassword()
   if self.service.isMatchPassword(password, hashedPassword):

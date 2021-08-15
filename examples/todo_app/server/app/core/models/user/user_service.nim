@@ -1,3 +1,4 @@
+import asyncdispatch
 import ../../../../../../../src/basolato/password
 import user_value_objects
 import user_entity
@@ -13,8 +14,8 @@ proc newUserService*(repository:IUserRepository):UserService =
     repository:repository
   )
 
-proc getUser*(self:UserService, email:UserEmail, password:Password):User =
-  let user =  self.repository.getUser(email)
+proc getUser*(self:UserService, email:UserEmail, password:Password):Future[User] {.async.} =
+  let user = await self.repository.getUser(email)
   if isMatchPassword($password, $(user.hashedPassword())):
     return user
   else:
