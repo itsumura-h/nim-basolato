@@ -296,7 +296,7 @@ proc serveCore(params:(Routes, int)){.thread, async.} =
     req.dealKeepAlive()
   # asyncCheck server.serve(Port(port), cb, HOST_ADDR)
   # runForever()
-  server.listen(Port(port))
+  server.listen(Port(port), HOST_ADDR)
   while true:
     if server.shouldAcceptRequest():
       await server.acceptRequest(cb)
@@ -304,27 +304,32 @@ proc serveCore(params:(Routes, int)){.thread, async.} =
       poll()
 
 
+# proc serve*(routes: var Routes) =
+#   let numThreads =
+#     when compileOption("threads"):
+#       countProcessors()
+#     else:
+#       1
+
+#   if numThreads == 1:
+#     echo("Starting 1 thread")
+#   else:
+#     echo("Starting ", numThreads, " threads")
+
+#   echo("Listening on ", &"{HOST_ADDR}:{PORT_NUM}")
+#   when compileOption("threads"):
+#     var threads = newSeq[Thread[(Routes, int)]](numThreads)
+#     for i in 0 ..< numThreads:
+#       createThread(
+#         threads[i], serveCore, (routes, PORT_NUM)
+#       )
+#     asyncCheck joinThreads(threads)
+#     runForever()
+#   else:
+#     asyncCheck serveCore((routes, PORT_NUM))
+#     runForever()
 proc serve*(routes: var Routes) =
-  let numThreads =
-    when compileOption("threads"):
-      countProcessors()
-    else:
-      1
-
-  if numThreads == 1:
-    echo("Starting 1 thread")
-  else:
-    echo("Starting ", numThreads, " threads")
-
+  echo("Starting 1 thread")
   echo("Listening on ", &"{HOST_ADDR}:{PORT_NUM}")
-  when compileOption("threads"):
-    var threads = newSeq[Thread[(Routes, int)]](numThreads)
-    for i in 0 ..< numThreads:
-      createThread(
-        threads[i], serveCore, (routes, PORT_NUM)
-      )
-    asyncCheck joinThreads(threads)
-    runForever()
-  else:
-    asyncCheck serveCore((routes, PORT_NUM))
-    runForever()
+  asyncCheck serveCore((routes, PORT_NUM))
+  runForever()
