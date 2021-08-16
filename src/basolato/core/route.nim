@@ -210,7 +210,7 @@ proc doesRunAnonymousLogin(req:Request, res:Response):bool =
   #   return false
   return true
 
-proc serveCore(params:(Routes, int)){.thread, async.} =
+proc serveCore(params:(Routes, int)){.async.} =
   let (routes, port) = params
   var server = newAsyncHttpServer(true, true)
 
@@ -291,45 +291,46 @@ proc serveCore(params:(Routes, int)){.thread, async.} =
 
     response.headers.setDefaultHeaders()
 
-    await req.respond(response.status, response.body, response.headers.format())
+    asyncCheck req.respond(response.status, response.body, response.headers.format())
     # keep-alive
     req.dealKeepAlive()
-  # asyncCheck server.serve(Port(port), cb, HOST_ADDR)
-  # runForever()
   server.listen(Port(port), HOST_ADDR)
   while true:
     if server.shouldAcceptRequest():
-      await server.acceptRequest(cb)
+      waitFor server.acceptRequest(cb)
     else:
       poll()
 
-
-# proc serve*(routes: var Routes) =
-#   let numThreads =
-#     when compileOption("threads"):
-#       countProcessors()
-#     else:
-#       1
-
-#   if numThreads == 1:
-#     echo("Starting 1 thread")
-#   else:
-#     echo("Starting ", numThreads, " threads")
-
-#   echo("Listening on ", &"{HOST_ADDR}:{PORT_NUM}")
-#   when compileOption("threads"):
-#     var threads = newSeq[Thread[(Routes, int)]](numThreads)
-#     for i in 0 ..< numThreads:
-#       createThread(
-#         threads[i], serveCore, (routes, PORT_NUM)
-#       )
-#     asyncCheck joinThreads(threads)
-#     runForever()
-#   else:
-#     asyncCheck serveCore((routes, PORT_NUM))
-#     runForever()
 proc serve*(routes: var Routes) =
-  echo("Starting 1 thread")
   echo("Listening on ", &"{HOST_ADDR}:{PORT_NUM}")
   asyncCheck serveCore((routes, PORT_NUM))
   runForever()
+
+#[
+
+proc serve*(routes: var Routes) =
+  let numThreads =
+    when compileOption("threads"):
+      countProcessors()
+    else:
+      1
+
+  if numThreads == 1:
+    echo("Starting 1 thread")
+  else:
+    echo("Starting ", numThreads, " threads")
+
+  echo("Listening on ", &"{HOST_ADDR}:{PORT_NUM}")
+  when compileOption("threads"):
+    var threads = newSeq[Thread[(Routes, int)]](numThreads)
+    for i in 0 ..< numThreads:
+      createThread(
+        threads[i], serveCore, (routes, PORT_NUM)
+      )
+    joinThreads(threads)
+    runForever()
+  else:
+    serveCore((routes, PORT_NUM))
+    runForever()
+
+]#

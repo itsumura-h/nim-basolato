@@ -1,6 +1,7 @@
-import migration20201013133536create_tfb_db
+import migration20210810220018world
 
 proc main() =
-  migration20201013133536create_tfb_db()
+  discard
+  migration20210810220018world()
 
 main()

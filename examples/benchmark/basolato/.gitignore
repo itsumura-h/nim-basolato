@@ -7,7 +7,10 @@
 coverage/*
 lcov.info
 
-# config.nims
+# IDE
+.vscode/*
+
+config.nims
 *.out
 *.log
 *.log.*
