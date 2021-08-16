@@ -1,16 +1,26 @@
-import asyncdispatch
+import asyncdispatch, json, options
 import ../models/user/user_value_objects
 import ../models/post/post_value_objects
 import ../models/post/post_entity
 import ../models/post/post_repository_interface
-
+import ../models/post/post_query_service_interface
+import ../../di_container
 
 type PostUsecase* = ref object
   repository: IPostRepository
+  queryService: IPostQueryService
 
-proc newPostUsecase*(repository:IPostRepository):PostUsecase =
-  return PostUsecase(repository:repository)
+proc newPostUsecase*():PostUsecase =
+  result = new PostUsecase
+  result.repository = di.postRepository
+  result.queryService = di.postQueryService
 
+
+proc getPostsByUserId*(self:PostUsecase, id:int):Future[seq[JsonNode]] {.async.} =
+  return await self.queryService.getPostsByUserId(id)
+
+proc getPostById*(self:PostUsecase, id:int):Future[Option[JsonNode]] {.async.} =
+  return await self.queryService.getPostById(id)
 
 proc store*(self:PostUsecase, userId:int, title, content:string) {.async.} =
   let userId = newUserId(userId)
