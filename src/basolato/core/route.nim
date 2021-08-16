@@ -291,13 +291,13 @@ proc serveCore(params:(Routes, int)){.async.} =
 
     response.headers.setDefaultHeaders()
 
-    asyncCheck req.respond(response.status, response.body, response.headers.format())
+    await req.respond(response.status, response.body, response.headers.format())
     # keep-alive
     req.dealKeepAlive()
   server.listen(Port(port), HOST_ADDR)
   while true:
     if server.shouldAcceptRequest():
-      waitFor server.acceptRequest(cb)
+      await server.acceptRequest(cb)
     else:
       poll()
 
