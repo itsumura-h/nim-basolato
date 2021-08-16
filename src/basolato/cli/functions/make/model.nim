@@ -4,6 +4,7 @@ import utils
 proc makeModel*(target:string, message:var string):int =
   let targetName = target.split("/")[^1]
   let targetCaptalized = snakeToCamel(targetName)
+  let targetProcCaptalized = snakeToCamelProcName(targetName)
   let parent = target.split("/")[0]
   let parentCapitalized = snakeToCamel(parent)
   let relativeToValueObjectsPath = "../".repeat(target.split("/").len-1) & &"{parent}_value_objects"
@@ -16,10 +17,11 @@ import {relativeToValueObjectsPath}
 type {targetCaptalized}* = ref object
 
 proc new{targetCaptalized}*():{targetCaptalized} =
-  return {targetCaptalized}()
+  result = new {targetCaptalized}
 """
 
   let REPOSITORY_INTERFACE = &"""
+import asyncdispatch
 import {parent}_value_objects
 import {targetName}_entity
 
@@ -28,39 +30,66 @@ type I{targetCaptalized}Repository* = tuple
 """
 
   let REPOSITORY = &"""
+import interface_implements
 import allographer/query_builder
-import ../../core/models/{targetName}/value_objects
+from ../../../database import rdb
+import ../../core/models/{targetName}/{targetName}_value_objects
+import ../../core/models/{targetName}/{targetName}_entity
 import ../../core/models/{targetName}/{targetName}_repository_interface
 
 
-type {targetCaptalized}RdbRepository* = ref object
+type {targetCaptalized}Repository* = ref object
 
-proc new{targetCaptalized}Repository*():{targetCaptalized}RdbRepository =
-  return {targetCaptalized}RdbRepository()
+proc new{targetCaptalized}Repository*():{targetCaptalized}Repository =
+  result = new {targetCaptalized}Repository
+
+implements {targetCaptalized}Repository, I{targetCaptalized}Repository:
+  discard
+"""
+
+  let QUERY_SERVICE_INTERFACE = &"""
+import asyncdispatch
 
 
-proc toInterface*(self:{targetCaptalized}RdbRepository):I{targetCaptalized}Repository =
-  return ()
+type I{targetCaptalized}QueryService* = tuple
+"""
+
+  let QUERY_SERVICE = &"""
+import interface_implements
+import allographer/query_builder
+from ../../../database import rdb
+import ../../core/models/{targetName}/{targetName}_query_service_interface
+
+
+type {targetCaptalized}QueryService* = ref object
+
+proc new{targetCaptalized}QueryService*():{targetCaptalized}QueryService =
+  result = new {targetCaptalized}QueryService
+
+implements {targetCaptalized}QueryService, I{targetCaptalized}QueryService:
+  discard
 """
 
   let SERVICE = &"""
 import {relativeToValueObjectsPath}
-import {relativeToRepoInterface}
 import {targetName}_entity
+import {relativeToRepoInterface}
 
 
 type {targetCaptalized}Service* = ref object
   repository: I{targetCaptalized}Repository
 
 proc new{targetCaptalized}Service*(repository:I{parentCapitalized}Repository):{targetCaptalized}Service =
-  return {targetCaptalized}Service(
-    repository: repository
-  )
+  result = new {targetCaptalized}Service
+  result.repository = repository
 """
+
+  # check dir and file is not exists
+  if isDirExists(&"{getCurrentDir()}/app/core/models/{target}"): return 1
+  if isDirExists(&"{getCurrentDir()}/app/repositories/{targetName}"): return 1
 
   # create model dir
   var targetPath = &"{getCurrentDir()}/app/core/models/{target}"
-  if isDirExists(targetPath): return 1
   createDir(targetPath)
 
   # entity
@@ -89,16 +118,28 @@ proc new{targetCaptalized}Service*(repository:I{parentCapitalized}Repository):{t
     f = open(targetPath, fmWrite)
     f.write(REPOSITORY_INTERFACE)
 
+    # query service interface
+    targetPath = &"{getCurrentDir()}/app/core/models/{targetName}/{targetName}_query_service_interface.nim"
+    if isFileExists(targetPath): return 1
+    f = open(targetPath, fmWrite)
+    f.write(QUERY_SERVICE_INTERFACE)
+
     # create repository dir
     targetPath = &"{getCurrentDir()}/app/repositories/{targetName}"
     if isDirExists(targetPath): return 1
     createDir(targetPath)
 
     # repository
-    targetPath = &"{getCurrentDir()}/app/repositories/{targetName}/{targetName}_rdb_repository.nim"
+    targetPath = &"{getCurrentDir()}/app/repositories/{targetName}/{targetName}_repository.nim"
     if isFileExists(targetPath): return 1
     f = open(targetPath, fmWrite)
     f.write(REPOSITORY)
+
+    # query service
+    targetPath = &"{getCurrentDir()}/app/repositories/{targetName}/{targetName}_query_service.nim"
+    if isFileExists(targetPath): return 1
+    f = open(targetPath, fmWrite)
+    f.write(QUERY_SERVICE)
 
     # update di_container.nim
     targetPath = &"{getCurrentDir()}/app/di_container.nim"
@@ -114,8 +155,10 @@ proc new{targetCaptalized}Service*(repository:I{parentCapitalized}Repository):{t
       textArr.insert("", 0)
       importOffset = 1
     # insert import
-    textArr.insert(&"import repositories/{targetName}/{targetName}_rdb_repository", importOffset-1)
+    textArr.insert(&"import repositories/{targetName}/{targetName}_repository", importOffset-1)
     textArr.insert(&"import core/models/{targetName}/{targetName}_repository_interface", importOffset-1)
+    textArr.insert(&"import repositories/{targetName}/{targetName}_query_service", importOffset-1)
+    textArr.insert(&"import core/models/{targetName}/{targetName}_query_service_interface", importOffset-1)
     textArr.insert(&"# {targetName}", importOffset-1)
     # insert di difinition
     var isAfterDiDifinision:bool
@@ -126,9 +169,11 @@ proc new{targetCaptalized}Service*(repository:I{parentCapitalized}Repository):{t
       if isAfterDiDifinision and row == "":
         importDifinisionOffset = i
         break
-    textArr.insert(&"  {targetName}Repository: I{targetCaptalized}Repository", importDifinisionOffset)
+    textArr.insert(&"  {targetProcCaptalized}Repository: I{targetCaptalized}Repository", importDifinisionOffset)
+    textArr.insert(&"  {targetProcCaptalized}QueryService: I{targetCaptalized}QueryService", importDifinisionOffset)
     # insert constructor
-    textArr.insert(&"    {targetName}Repository: new{targetCaptalized}Repository().toInterface(),", textArr.len-4)
+    textArr.insert(&"    {targetProcCaptalized}Repository: new{targetCaptalized}Repository().toInterface(),", textArr.len-4)
+    textArr.insert(&"    {targetProcCaptalized}QueryService: new{targetCaptalized}QueryService().toInterface(),", textArr.len-4)
     # write in file
     f = open(targetPath, fmWrite)
     for i in 0..textArr.len-2:
@@ -138,4 +183,8 @@ proc new{targetCaptalized}Service*(repository:I{parentCapitalized}Repository):{t
 
   message = &"Created domain model in {getCurrentDir()}/app/core/models/{target}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
+
+  message = &"Created repository in {getCurrentDir()}/app/repositories/{target}"
+  styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
+
   return 0

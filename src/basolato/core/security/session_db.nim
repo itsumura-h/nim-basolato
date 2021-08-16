@@ -1,9 +1,9 @@
 import asynchttpserver, asyncdispatch, httpcore, json, strutils, times, random, strformat, os
-import redis, flatdb
 import ../baseEnv, token
 import encrypt
 
 when SESSION_TYPE == "redis":
+  import redis
   # ========== Redis ====================
   type SessionDb* = ref object
     conn: AsyncRedis
@@ -77,6 +77,7 @@ when SESSION_TYPE == "redis":
     discard await self.conn.del(@[self.token])
 
 else:
+  import flatdb
   # ========= Flat DB ==================
   type SessionDb* = ref object
     conn: FlatDb

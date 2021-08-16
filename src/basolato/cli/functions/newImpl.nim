@@ -11,13 +11,14 @@ proc create(dirPath:string, packageDir:string):int =
   cd {dirPath}
   git clone {tmplateGitUrl} tmp
   """)
-    # get from tmp/0.9
-    moveDir(&"{dirpath}/tmp/0.9/app", &"{dirpath}/app")
-    moveDir(&"{dirpath}/tmp/0.9/migrations", &"{dirpath}/migrations")
-    moveDir(&"{dirpath}/tmp/0.9/public", &"{dirpath}/public")
-    moveDir(&"{dirpath}/tmp/0.9/resources", &"{dirpath}/resources")
-    moveFile(&"{dirpath}/tmp/0.9/main.nim", &"{dirpath}/main.nim")
-    moveFile(&"{dirpath}/tmp/0.9/.gitignore", &"{dirpath}/.gitignore")
+    # get from tmp/0.10
+    moveDir(&"{dirpath}/tmp/0.10/app", &"{dirpath}/app")
+    moveDir(&"{dirpath}/tmp/0.10/migrations", &"{dirpath}/migrations")
+    moveDir(&"{dirpath}/tmp/0.10/public", &"{dirpath}/public")
+    moveDir(&"{dirpath}/tmp/0.10/resources", &"{dirpath}/resources")
+    moveFile(&"{dirpath}/tmp/0.10/main.nim", &"{dirpath}/main.nim")
+    moveFile(&"{dirpath}/tmp/0.10/database.nim", &"{dirpath}/database.nim")
+    moveFile(&"{dirpath}/tmp/0.10/.gitignore", &"{dirpath}/.gitignore")
     # move static files
     moveFile(&"{dirpath}/tmp/assets/basolato.svg", &"{dirpath}/public/basolato.svg")
     moveFile(&"{dirpath}/tmp/assets/favicon.ico", &"{dirpath}/public/favicon.ico")
@@ -56,6 +57,10 @@ requires "flatdb >= 0.2.4"
 requires "allographer >= 0.16.0"
 requires "faker >= 0.13.1"
 requires "sass >= 0.1.0"
+
+task test, "run testament":
+  echo staticExec("testament p \"./tests/test_*.nim\"")
+  discard staticExec("find tests/ -type f ! -name \"*.*\" -delete 2> /dev/null")
 """
     block:
       let f = open(&"{dirPath}/{packageDir}.nimble", fmWrite)
@@ -65,9 +70,8 @@ requires "sass >= 0.1.0"
     let test = """
 import unittest
 
-suite "test suite":
-  test "sample":
-    check true
+block sampleTest:
+  check true
 """
     block:
       let f = open(&"{dirPath}/tests/test_sample.nim", fmWrite)

@@ -1,4 +1,4 @@
-import json, options
+import json, options, asyncdispatch
 import interface_implements
 import query_service_interface
 
@@ -9,11 +9,11 @@ proc newMockQueryService*():MockQueryService =
   return MockQueryService()
 
 implements MockQueryService, IQueryService:
-  proc getPostsByUserId(self:MockQueryService, id:int):seq[JsonNode] =
+  proc getPostsByUserId(self:MockQueryService, id:int):Future[seq[JsonNode]] {.async.} =
     return @[
       %*{"id":1, "title": "test1", "content": "test1", "is_finished": true},
       %*{"id":2, "title": "test2", "content": "test2", "is_finished": false},
     ]
 
-  proc getPostById(self:MockQueryService, id:int):Option[JsonNode] =
+  proc getPostById(self:MockQueryService, id:int):Future[Option[JsonNode]] {.async.} =
     return some(%*{"id":1, "title": "test1", "content": "test1", "is_finished": true})

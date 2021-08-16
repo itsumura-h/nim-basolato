@@ -1,9 +1,10 @@
+import asyncdispatch
 import post_value_objects
 import post_entity
 
 
 type IPostRepository* = tuple
-  store: proc(post:Post)
-  changeStatus: proc(id:PostId, status:bool)
-  destroy: proc(id:PostId)
-  update: proc(post:Post)
+  store: proc(post:Post):Future[void]
+  changeStatus: proc(id:PostId, status:bool):Future[void]
+  destroy: proc(id:PostId):Future[void]
+  update: proc(post:Post):Future[void]

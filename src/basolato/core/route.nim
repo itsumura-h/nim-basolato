@@ -210,7 +210,7 @@ proc doesRunAnonymousLogin(req:Request, res:Response):bool =
   #   return false
   return true
 
-proc serveCore(params:(Routes, int)){.thread.} =
+proc serveCore(params:(Routes, int)){.async.} =
   let (routes, port) = params
   var server = newAsyncHttpServer(true, true)
 
@@ -294,9 +294,19 @@ proc serveCore(params:(Routes, int)){.thread.} =
     await req.respond(response.status, response.body, response.headers.format())
     # keep-alive
     req.dealKeepAlive()
-  asyncCheck server.serve(Port(port), cb, HOST_ADDR)
+  server.listen(Port(port), HOST_ADDR)
+  while true:
+    if server.shouldAcceptRequest():
+      await server.acceptRequest(cb)
+    else:
+      poll()
+
+proc serve*(routes: var Routes) =
+  echo("Listening on ", &"{HOST_ADDR}:{PORT_NUM}")
+  asyncCheck serveCore((routes, PORT_NUM))
   runForever()
 
+#[
 
 proc serve*(routes: var Routes) =
   let numThreads =
@@ -318,5 +328,9 @@ proc serve*(routes: var Routes) =
         threads[i], serveCore, (routes, PORT_NUM)
       )
     joinThreads(threads)
+    runForever()
   else:
     serveCore((routes, PORT_NUM))
+    runForever()
+
+]#
