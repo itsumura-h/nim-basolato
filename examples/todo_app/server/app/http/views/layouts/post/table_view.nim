@@ -26,10 +26,10 @@ $(style)
             <form method="POST" action="/change-status/$(post["id"].get)">
               $(csrfToken())
               $if post["is_finished"].getBool {
-                <button type="submit" name="status" value="false" class="button is-success is-light is-outlined">Finished</button>
+                <button type="submit" class="button is-success is-light is-outlined">Finished</button>
               }
               $else{
-                <button type="submit" name="status" value="true" class="button is-danger is-light is-outlined">Not finished</button>
+                <button type="submit" class="button is-danger is-light is-outlined">Not finished</button>
               }
             </form>
           </td>

@@ -3,8 +3,8 @@ import json, strutils, options, strformat
 import ../../../../../../src/basolato/controller
 import ../../../../../../src/basolato/request_validation
 # model
-import ../../di_container
-import ../../repositories/query_services/query_service
+import ../../core/di_container
+import ../../core/repositories/query_services/query_service
 import ../../core/usecases/post_usecase
 # view
 import ../views/pages/post/index_view
@@ -53,9 +53,8 @@ proc store*(request:Request, params:Params):Future[Response] {.async.} =
 
 proc changeStatus*(request:Request, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
-  let status = params.getBool("status")
   let usecase = newPostUsecase()
-  await usecase.changeStatus(id, status)
+  await usecase.changeStatus(id)
   return redirect("/")
 
 proc destroy*(request:Request, params:Params):Future[Response] {.async.} =
@@ -73,13 +72,14 @@ proc update*(request:Request, params:Params):Future[Response] {.async.} =
     await client.storeValidationResult(v)
     return redirect(request.url.path)
 
-  let id = params.getInt("id")
+  let postId = params.getInt("id")
   let title = params.getStr("title")
   let content = params.getStr("content")
   let isFinished = params.getBool("is_finished")
+  let userId = await(client.get("id")).parseInt
   try:
     let usecase = newPostUsecase()
-    await usecase.update(id, title, content, isFinished)
+    await usecase.update(postId, title, content, isFinished, userId)
     return redirect("/")
   except:
     v.errors.add("core", getCurrentExceptionMsg())
@@ -127,9 +127,8 @@ proc storeApi*(request:Request, params:Params):Future[Response] {.async.} =
 
 proc changeStatusApi*(request:Request, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
-  let status = params.getBool("status")
   let usecase = newPostUsecase()
-  await usecase.changeStatus(id, status)
+  await usecase.changeStatus(id)
   return render("")
 
 proc destroyApi*(request:Request, params:Params):Future[Response] {.async.} =
@@ -144,14 +143,15 @@ proc updateApi*(request:Request, params:Params):Future[Response] {.async.} =
   if v.hasErrors:
     return render(Http422, %*{"params":params, "errors":v.errors})
 
-  let id = params.getInt("id")
+  let postId = params.getInt("id")
   let title = params.getStr("title")
   let content = params.getStr("content")
   let isFinished = params.getBool("isFinished")
   let client = await newClient(request)
+  let userId = await(client.get("id")).parseInt
   try:
     let usecase = newPostUsecase()
-    await usecase.update(id, title, content, isFinished)
+    await usecase.update(postId, title, content, isFinished, userId)
     return render("")
   except:
     v.errors.add("core", getCurrentExceptionMsg())

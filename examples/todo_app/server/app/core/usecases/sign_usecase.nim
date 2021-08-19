@@ -3,7 +3,7 @@ import ../models/user/user_value_objects
 import ../models/user/user_entity
 import ../models/user/user_repository_interface
 import ../models/user/user_service
-import ../../di_container
+import ../di_container
 
 
 type SignUsecase* = ref object

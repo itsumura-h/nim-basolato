@@ -4,7 +4,7 @@ import ../models/post/post_value_objects
 import ../models/post/post_entity
 import ../models/post/post_repository_interface
 import ../models/post/post_query_service_interface
-import ../../di_container
+import ../di_container
 
 type PostUsecase* = ref object
   repository: IPostRepository
@@ -26,20 +26,28 @@ proc store*(self:PostUsecase, userId:int, title, content:string) {.async.} =
   let userId = newUserId(userId)
   let title = newPostTitle(title)
   let content = newPostContent(content)
-  let post = newPost(userId, title, content)
-  await self.repository.store(post)
+  let post = newPost(title, content, userId)
+  await self.repository.create(post)
 
-proc changeStatus*(self:PostUsecase, id:int, status:bool) {.async.} =
+proc changeStatus*(self:PostUsecase, id:int) {.async.} =
   let id = newPostId(id)
-  await self.repository.changeStatus(id, status)
+  var post = await self.repository.getPostById(id)
+  if post.isFinished:
+    post.unDone()
+  else:
+    post.done()
+  post.updateTime()
+  await self.repository.update(post)
+
+proc update*(self:PostUsecase, postId:int, title, content:string, isFinished:bool, userId:int) {.async.} =
+  let postId = newPostId(postId)
+  let title = newPostTitle(title)
+  let content = newPostContent(content)
+  let userId = newUserId(userId)
+  var post = newPost(postId, title, content, isFinished, userId)
+  post.updateTime()
+  await self.repository.update(post)
 
 proc destroy*(self:PostUsecase, id:int) {.async.} =
   let id = newPostId(id)
   await self.repository.destroy(id)
-
-proc update*(self:PostUsecase, id:int, title, content:string, isFinished:bool) {.async.} =
-  let postId = newPostId(id)
-  let title = newPostTitle(title)
-  let content = newPostContent(content)
-  let post = newPost(postId, title, content, isFinished)
-  await self.repository.update(post)

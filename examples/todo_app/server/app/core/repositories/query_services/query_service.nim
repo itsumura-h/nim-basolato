@@ -2,7 +2,7 @@ import json, options, asyncdispatch
 import allographer/query_builder
 import interface_implements
 import query_service_interface
-import ../../../database
+import ../../../../database
 
 
 type QueryService* = ref object

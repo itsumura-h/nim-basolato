@@ -8,7 +8,7 @@ import ../views/pages/sign/signin_view
 # usecase
 import ../../core/usecases/sign_usecase
 # repository
-import ../../repositories/user/user_rdb_repository
+import ../../core/repositories/user/user_rdb_repository
 
 
 proc signUpPage*(request:Request, params:Params):Future[Response] {.async.} =

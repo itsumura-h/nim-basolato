@@ -4,7 +4,7 @@ import post_entity
 
 
 type IPostRepository* = tuple
-  store: proc(post:Post):Future[void]
-  changeStatus: proc(id:PostId, status:bool):Future[void]
-  destroy: proc(id:PostId):Future[void]
+  create: proc(post:Post):Future[void]
+  getPostById: proc(postId:PostId):Future[Post]
   update: proc(post:Post):Future[void]
+  destroy: proc(id:PostId):Future[void]

@@ -1,10 +1,10 @@
 # user
-import core/models/user/user_repository_interface
+import models/user/user_repository_interface
 import repositories/user/user_rdb_repository
 # post
-import core/models/post/post_repository_interface
+import models/post/post_repository_interface
 import repositories/post/post_rdb_repository
-import core/models/post/post_query_service_interface
+import models/post/post_query_service_interface
 import repositories/post/post_query_service
 
 type DiContainer* = tuple
