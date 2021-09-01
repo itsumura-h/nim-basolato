@@ -3,9 +3,8 @@ import json, strutils, options, strformat
 import ../../../../../../src/basolato/controller
 import ../../../../../../src/basolato/request_validation
 # model
-import ../../core/di_container
-import ../../core/repositories/query_services/query_service
-import ../../core/usecases/post_usecase
+import ../../di_container
+import ../../usecases/post/post_usecase
 # view
 import ../views/pages/post/index_view
 import ../views/pages/post/show_view

@@ -7,4 +7,4 @@ type IPostRepository* = tuple
   create: proc(post:Post):Future[void]
   getPostById: proc(postId:PostId):Future[Post]
   update: proc(post:Post):Future[void]
-  destroy: proc(id:PostId):Future[void]
+  destroy: proc(post:Post):Future[void]

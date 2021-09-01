@@ -1,5 +1,5 @@
 import asyncdispatch
-import ../../../../../../../src/basolato/password
+import ../../../../../../src/basolato/password
 import user_value_objects
 import user_entity
 import user_repository_interface

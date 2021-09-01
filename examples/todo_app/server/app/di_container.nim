@@ -1,11 +1,11 @@
 # user
 import models/user/user_repository_interface
-import repositories/user/user_rdb_repository
+import data_stores/repositories/user/user_rdb_repository
 # post
 import models/post/post_repository_interface
-import repositories/post/post_rdb_repository
-import models/post/post_query_service_interface
-import repositories/post/post_query_service
+import data_stores/repositories/post/post_rdb_repository
+import usecases/post/post_query_service_interface
+import data_stores/query_services/post/post_query_service
 
 type DiContainer* = tuple
   userRepository: IUserRepository

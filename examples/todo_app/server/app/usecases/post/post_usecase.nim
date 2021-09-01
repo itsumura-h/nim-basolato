@@ -1,10 +1,10 @@
 import asyncdispatch, json, options
-import ../models/user/user_value_objects
-import ../models/post/post_value_objects
-import ../models/post/post_entity
-import ../models/post/post_repository_interface
-import ../models/post/post_query_service_interface
-import ../di_container
+import ../../models/user/user_value_objects
+import ../../models/post/post_value_objects
+import ../../models/post/post_entity
+import ../../models/post/post_repository_interface
+import post_query_service_interface
+import ../../di_container
 
 type PostUsecase* = ref object
   repository: IPostRepository
@@ -13,7 +13,7 @@ type PostUsecase* = ref object
 proc newPostUsecase*():PostUsecase =
   result = new PostUsecase
   result.repository = di.postRepository
-  result.queryService = di.postQueryService
+  result.queryService = di.post_queryService
 
 
 proc getPostsByUserId*(self:PostUsecase, id:int):Future[seq[JsonNode]] {.async.} =
@@ -50,4 +50,5 @@ proc update*(self:PostUsecase, postId:int, title, content:string, isFinished:boo
 
 proc destroy*(self:PostUsecase, id:int) {.async.} =
   let id = newPostId(id)
-  await self.repository.destroy(id)
+  let post = await self.repository.getPostById(id)
+  await self.repository.destroy(post)

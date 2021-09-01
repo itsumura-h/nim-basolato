@@ -2,9 +2,9 @@ import json, options, asyncdispatch
 import interface_implements
 import allographer/query_builder
 import ../../../../database
-import ../../models/user/user_repository_interface
-import ../../models/user/user_entity
-import ../../models/user/user_value_objects
+import ../../../models/user/user_repository_interface
+import ../../../models/user/user_entity
+import ../../../models/user/user_value_objects
 
 
 type UserRdbRepository* = ref object

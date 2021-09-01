@@ -1,8 +1,8 @@
-import asyncdispatch, json, options
-import interface_implements
+import json, options, asyncdispatch
 import allographer/query_builder
+import interface_implements
+import ../../../usecases/post/post_query_service_interface
 import ../../../../database
-import ../../models/post/post_query_service_interface
 
 type PostQueryService* = ref object
 

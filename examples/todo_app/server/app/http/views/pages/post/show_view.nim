@@ -22,14 +22,7 @@ $(style)
     <form method="POST" action="/$(post["id"].get)" class="field $(style.get("form"))">
       $(csrfToken())
       <div class="field">
-        <div class="controll">
-          $if params.len > 0{
-            <input type="text" name="title" placeholder="title" class="input" value="$(params["title"].get)">
-          }
-          $else{
-            <input type="text" name="title" placeholder="title" class="input" value="$(post["title"].get)">
-          }
-        </div>
+        <input type="text" name="title" placeholder="title" class="input" value="$(old(params, "title", post["title"].get))">
         $if errors.hasKey("title"){
           <div class="controll">
             <ul class="$(style.get("error"))">
@@ -40,15 +33,10 @@ $(style)
           </div>
         }
       </div>
-  
+
       <div class="field">
         <div class="controll">
-          $if params.len > 0{
-            <textarea name="content" placeholder="content" class="textarea">$(params["content"].get)</textarea>
-          }
-          $else{
-            <textarea name="content" placeholder="content" class="textarea">$(post["content"].get)</textarea>
-          }
+          <textarea name="content" placeholder="content" class="textarea">$(old(params, "content", post["content"].get))</textarea>
         </div>
         $if errors.hasKey("content"){
           <div class="controll">
@@ -60,18 +48,26 @@ $(style)
           </div>
         }
       </div>
-  
+
       <div class="field">
         <div class="select">
           <select name="is_finished">
-            $if params.len > 0{
-              <option value="true" $if params["is_finished"].getBool{selected}>Finished</option>
-              <option value="false" $if not params["is_finished"].getBool{selected}>Not finished</option>
-            }
-            $else{
-              <option value="true" $if post["is_finished"].getBool{selected}>Finished</option>
-              <option value="false" $if not post["is_finished"].getBool{selected}>Not finished</option>
-            }
+            <option
+              value="true"
+              $if old(params, "is_finished", post["is_finished"].get) == "true"{
+                selected
+              }
+            >
+              Finished
+            </option>
+            <option
+              value="false"
+              $if old(params, "is_finished", post["is_finished"].get) != "true"{
+                selected
+              }
+            >
+              Not finished
+            </option>
           </select>
         </div>
       </div>
@@ -82,7 +78,7 @@ $(style)
         </div>
       </div>
     </form>
-  
+
     <form method="POST" action="/delete/$(post["id"].get)">
       $(csrfToken())
       <div class="field">
@@ -91,7 +87,7 @@ $(style)
         </div>
       </div>
     </form>
-  
+
   </div>
 </section>
 """

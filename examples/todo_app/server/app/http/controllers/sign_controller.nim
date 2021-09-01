@@ -6,9 +6,9 @@ import ../../../../../../src/basolato/request_validation
 import ../views/pages/sign/signup_view
 import ../views/pages/sign/signin_view
 # usecase
-import ../../core/usecases/sign_usecase
+import ../../usecases/sign_usecase
 # repository
-import ../../core/repositories/user/user_rdb_repository
+import ../../data_stores/repositories/user/user_rdb_repository
 
 
 proc signUpPage*(request:Request, params:Params):Future[Response] {.async.} =

@@ -1,10 +1,10 @@
 import json, times, asyncdispatch, options
 import allographer/query_builder
 import interface_implements
-import ../../models/post/post_repository_interface
-import ../../models/post/post_entity
-import ../../models/post/post_value_objects
-import ../../models/user/user_value_objects
+import ../../../models/post/post_repository_interface
+import ../../../models/post/post_entity
+import ../../../models/post/post_value_objects
+import ../../../models/user/user_value_objects
 import ../../../../database
 
 type PostRdbRepository* = ref object
@@ -45,5 +45,5 @@ implements PostRdbRepository, IPostRepository:
       "updated_at": $post.updatedAt,
     })
 
-  proc destroy(self:PostRdbRepository, id:PostId):Future[void] {.async.} =
-    await rdb.table("posts").delete(id.getInt)
+  proc destroy(self:PostRdbRepository, post:Post):Future[void] {.async.} =
+    await rdb.table("posts").delete(post.postId.getInt)
