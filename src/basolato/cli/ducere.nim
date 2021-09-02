@@ -8,7 +8,7 @@ import
 
 when isMainModule:
   import cligen
-  clCfg.version = basolatoVersion
+  clCfg.version = BasolatoVersion
   dispatchMulti(
     [newImpl.new],[make],[serve],[build],[migrate]
   )

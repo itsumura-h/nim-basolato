@@ -1,5 +1,7 @@
 import ../../../../../../../src/basolato/view
-proc reactHtml*(users:string): string = tmpli html"""
+import ../../layouts/application_view
+
+proc impl(users:string): string = tmpli html"""
 <main></main>
 <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
@@ -62,3 +64,6 @@ proc reactHtml*(users:string): string = tmpli html"""
   ReactDOM.render(<App/>,document.querySelector('main'))
 </script>
 """
+
+proc reactHtml*(users:string): string =
+  return applicationView("", impl(users))

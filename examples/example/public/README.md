@@ -1,6 +1,8 @@
 Public
 ===
-By default Basolato looks for static files in this directory. This can be overriden using the `setStaticDir` function in main.nim. Files will be served like so:
+By default Basolato looks for static files in this directory.
+
+Files will be served like so:
 
 ./public/css/style.css -> http://example.com/css/style.css
 

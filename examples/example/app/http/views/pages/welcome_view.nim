@@ -1,10 +1,11 @@
-import ../../../../../../src/basolato/view
+import basolato/view
 import ../layouts/application_view
 
 style "css", style:"""
 body {
   background-color: black;
 }
+
 article {
   margin: 16px;
 }

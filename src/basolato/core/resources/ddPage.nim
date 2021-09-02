@@ -38,7 +38,7 @@
         <pre><code class="nimrod">${msg.indent(2)}</code></pre>
         <footer>
           <hr>
-          <p style="text-align: center;">👑Nim ${NimVersion} ⬟Basolato ${basolatoVersion}</p>
+          <p style="text-align: center;">👑Nim ${NimVersion} ⬟Basolato ${BasolatoVersion}</p>
         </footer>
       </div>
       <script>hljs.initHighlightingOnLoad();</script>

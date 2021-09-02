@@ -1,7 +1,7 @@
 #? stdtmpl | standard
 #import httpcore
 ## framework
-#from ../base import basolatoVersion
+#from ../base import BasolatoVersion
 #proc originalErrorPage*(status:HttpCode, msg:string): string =
   #when defined(release):
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -19,6 +19,6 @@
     <p><b>Detail: </b></p>
     <code><pre>${msg}</pre></code>
     <hr>
-    <p style="text-align: center;">👑Nim ${NimVersion} ⬟Basolato ${basolatoVersion}</p>
+    <p style="text-align: center;">👑Nim ${NimVersion} ⬟Basolato ${BasolatoVersion}</p>
   </body>
 </html>

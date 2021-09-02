@@ -32,7 +32,7 @@ import base
 #       self.values.add((key.toLowerAscii, @[value]))
 
 # proc setDefaultHeaders*(self:Headers):Headers =
-#   self.add("Server", &"Nim/{NimVersion}; Basolato/{basolatoVersion}")
+#   self.add("Server", &"Nim/{NimVersion}; Basolato/{BasolatoVersion}")
 #   let formatter = initTimeFormat("ddd, dd MMM YYYY HH:mm:ss 'GMT'")
 #   self.add("Date", now().format(formatter))
 #   self.add("Connection", "Keep-Alive")
@@ -64,7 +64,7 @@ func newHttpHeaders*(keyValuePairs:
         result.table[pair.key] = pair.val
 
 proc setDefaultHeaders*(self:HttpHeaders) =
-  self.add("Server", &"Nim/{NimVersion}; Basolato/{basolatoVersion}")
+  self.add("Server", &"Nim/{NimVersion}; Basolato/{BasolatoVersion}")
   let formatter = initTimeFormat("ddd, dd MMM YYYY HH:mm:ss 'GMT'")
   self.add("Date",  now().format(formatter))
   self.add("Connection", "Keep-Alive")

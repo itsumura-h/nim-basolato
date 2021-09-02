@@ -6,5 +6,5 @@ import ../../resources/pages/welcome_view
 
 
 proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let name = "Basolato " & basolatoVersion
+  let name = "Basolato " & BasolatoVersion
   return render(welcomeView(name))

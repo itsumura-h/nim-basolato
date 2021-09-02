@@ -1,5 +1,5 @@
 import os, strformat, terminal, strutils
-from ../../core/base import basolatoVersion
+from ../../core/base import BasolatoVersion
 from make/utils import isDirExists
 
 proc create(dirPath:string, packageDir:string):int =
@@ -47,7 +47,7 @@ bin           = @["main"]
 backend       = "c"
 # Dependencies
 requires "nim >= {NimVersion}"
-requires "https://github.com/itsumura-h/nim-basolato >= {basolatoVersion}"
+requires "https://github.com/itsumura-h/nim-basolato >= {BasolatoVersion}"
 requires "allographer >= 0.19.0"
 requires "bcrypt >= 0.2.1"
 requires "cligen >= 1.5.9"
