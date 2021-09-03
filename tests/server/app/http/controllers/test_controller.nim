@@ -57,8 +57,8 @@ proc setHeader*(request:Request, params:Params):Future[Response] {.async.} =
 
 proc setCookie*(request:Request, params:Params):Future[Response] {.async.} =
   var cookie = newCookies(request)
-  cookie.add("key1", "value1")
-  cookie.add("key2", "value2")
+  cookie.set("key1", "value1")
+  cookie.set("key2", "value2")
   return render("setCookie").setCookie(cookie)
 
 proc setAuth*(request:Request, params:Params):Future[Response] {.async.} =
