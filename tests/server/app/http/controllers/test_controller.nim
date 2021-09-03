@@ -56,7 +56,7 @@ proc setHeader*(request:Request, params:Params):Future[Response] {.async.} =
   return render("setHeader", header)
 
 proc setCookie*(request:Request, params:Params):Future[Response] {.async.} =
-  var cookie = newCookie(request)
+  var cookie = newCookies(request)
   cookie.add("key1", "value1")
   cookie.add("key2", "value2")
   return render("setCookie").setCookie(cookie)

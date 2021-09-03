@@ -16,7 +16,7 @@ proc newClient*(sessionId:string):Future[Client] {.async.} =
 
 proc newClient*(request:Request):Future[Client] {.async.} =
   ## use in constructor
-  let sessionId = newCookie(request).get("session_id")
+  let sessionId = newCookies(request).get("session_id")
   return await newClient(sessionId)
 
 proc getToken*(self:Client):Future[string] {.async.} =
@@ -60,7 +60,7 @@ proc logout*(self:Client) {.async.} =
 
 proc anonumousCreateSession*(self:Client, req:Request):Future[bool] {.async.} =
   ## Recreate session because session id from request is invalid
-  let sessionId = newCookie(req).get("session_id")
+  let sessionId = newCookies(req).get("session_id")
   if not await checkSessionIdValid(sessionId):
     return true
   elif self.session.isNil or not await checkSessionIdValid(await self.getToken):

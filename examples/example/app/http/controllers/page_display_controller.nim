@@ -100,9 +100,9 @@ proc presentDd*(request:Request, params:Params):Future[Response] {.async.} =
     "key4": "value4",
   }
   dd(
-    $a,
+    a,
     "abc",
-    # request.repr,
+    request.repr,
   )
   return render("dd")
 

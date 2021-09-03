@@ -279,9 +279,10 @@ proc serveCore(params:(Routes, int)){.async.} =
           response = await response.setCookie(client)
         else:
           # keep session id from request and update expire
-          var cookie = newCookie(req)
-          cookie.updateExpire(SESSION_TIME, Minutes)
-          response = response.setCookie(cookie)
+          var cookies = newCookies(req)
+          let sessionId = cookies.get("session_id")
+          cookies.set("session_id", sessionId, expire=timeForward(SESSION_TIME, Minutes))
+          response = response.setCookie(cookies)
 
     # if response.isNil:
     if response.status == HttpCode(0):

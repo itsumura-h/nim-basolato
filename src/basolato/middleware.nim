@@ -33,7 +33,7 @@ proc checkSessionId*(request:Request):Future[MiddlewareResult] {.async.} =
   ## Check session id in cookie is valid.
   result = MiddlewareResult()
   if request.httpMethod != HttpOptions:
-    let cookie = newCookie(request)
+    let cookie = newCookies(request)
     try:
       if not cookie.hasKey("session_id"):
         raise newException(Exception, "Missing session id")

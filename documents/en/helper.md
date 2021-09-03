@@ -23,7 +23,7 @@ This proc is only available in develop mode.
 
 ### API
 ```
-proc dd(outputs:varges[string])
+proc dd(outputs:varges[string, `$`])
 ```
 
 ### Example
@@ -34,7 +34,7 @@ var a = %*{
   "key3": "value3",
   "key4": "value4",
 }
-dd($a,　"abc",request.repr)
+dd(a, "abc", request.repr)
 ```
 
 ![dd](../images/helper-dd.jpg)

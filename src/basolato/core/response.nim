@@ -122,40 +122,40 @@ proc setCookie*(response:Response, client:Client):Future[Response] {.async.} =
   if SESSION_TIME > 0 and COOKIE_DOMAINS.len > 0:
     for domain in COOKIE_DOMAINS.split(","):
       let newDomain = domain.strip()
-      let cookie = newCookieData(
+      let cookie = newCookie(
         "session_id",
         sessionId,
-        timeForward(SESSION_TIME, Minutes),
-        domain=newDomain
+        expire=timeForward(SESSION_TIME, Minutes),
+        domain=newDomain,
       ).toCookieStr()
       response.headers.add("Set-cookie", cookie)
   elif SESSION_TIME == 0 and COOKIE_DOMAINS.len > 0:
     for domain in COOKIE_DOMAINS.split(","):
       let newDomain = domain.strip()
-      let cookie = newCookieData(
+      let cookie = newCookie(
         "session_id",
         sessionId,
-        domain=newDomain
+        domain=newDomain,
       ).toCookieStr()
       response.headers.add("Set-cookie", cookie)
   elif SESSION_TIME > 0 and COOKIE_DOMAINS.len == 0:
-    let cookie = newCookieData(
+    let cookie = newCookie(
       "session_id",
       sessionId,
-      timeForward(SESSION_TIME, Minutes)
+      expire=timeForward(SESSION_TIME, Minutes),
     ).toCookieStr()
     response.headers.add("Set-cookie", cookie)
   else:
-    let cookie = newCookieData("session_id", sessionId).toCookieStr()
+    let cookie = newCookie("session_id", sessionId).toCookieStr()
     response.headers.add("Set-cookie", cookie)
 
   return response
 
 
 # ========== Cookie ====================
-proc setCookie*(response:Response, cookie:Cookie):Response =
-  for cookieData in cookie.cookies:
-    let cookieStr = cookieData.toCookieStr()
+proc setCookie*(response:Response, cookie:Cookies):Response =
+  for cookie in cookie.data:
+    let cookieStr = cookie.toCookieStr()
     response.headers.add("Set-cookie", cookieStr)
   return response
 
@@ -163,7 +163,7 @@ proc setCookie*(response:Response, cookie:Cookie):Response =
 proc destroyClient*(response:Response, client:Client):Future[Response] {.async.} =
   if await client.isLogin:
     let sessionId = await client.getToken()
-    let cookie = newCookieData("session_id", sessionId, timeForward(-1, Days))
+    let cookie = newCookie("session_id", sessionId, timeForward(-1, Days))
                   .toCookieStr()
     response.headers.add("Set-cookie", cookie)
     await client.destroy()

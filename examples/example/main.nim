@@ -1,14 +1,13 @@
 import re
 # framework
 import ../../src/basolato
-# controller
-import app/http/controllers/welcome_controller
 # middleware
 import app/http/middlewares/auth_middleware
 import app/http/middlewares/cors_middleware
 import app/http/middlewares/example_middleware
 # controllers
 import app/http/controllers/page_display_controller
+import app/http/controllers/cookie_controller
 
 var routes = newRoutes()
 routes.middleware(re".*", auth_middleware.checkCsrfTokenMiddleware)
@@ -30,6 +29,12 @@ groups "/sample":
   routes.get("/dd", page_display_controller.presentDd)
   routes.get("/error/{id:int}", page_display_controller.errorPage)
   routes.get("/error-redirect/{id:int}", page_display_controller.errorRedirect)
+
+  routes.get("/cookie", cookie_controller.index)
+  routes.post("/cookie", cookie_controller.store)
+  routes.post("/cookie/update", cookie_controller.update)
+  routes.post("/cookie/delete", cookie_controller.delete)
+  routes.post("/cookie/destroy", cookie_controller.destroy)
 
 
 serve(routes)

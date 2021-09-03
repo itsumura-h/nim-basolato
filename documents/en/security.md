@@ -342,10 +342,6 @@ proc set*(self:var Cookie, name, value: string, expire:DateTime,
 proc set*(self:var Cookie, name, value: string, sameSite: SameSite=Lax,
       secure = false, httpOnly = true, domain = "", path = "/") =
 
-proc updateExpire*(self:var Cookie, name:string, num:int, timeUnit:TimeUnit, path="/") =
-
-proc updateExpire*(self:var Cookie, num:int, time:TimeUnit) =
-
 proc delete*(self:Cookie, key:string, path="/"):Cookie =
 
 proc destroy*(self:Cookie, path="/"):Cookie =
@@ -373,8 +369,9 @@ update cookie expire
 ```nim
 proc store*(request:Request, params:Params):Future[Response] {.async.} =
   var cookie = newCookie(request)
-  cookie.updateExpire("name", 5)
+  let name = cookie.get("name")
   # cookie will be deleted after 5 days from now
+  cookie.set("name", name, expire=timeForward(5, Days))
   return render("with cookie").setCookie(cookie)
 ```
 
