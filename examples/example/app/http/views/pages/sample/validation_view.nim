@@ -11,7 +11,8 @@ style "css", style:"""
 
 proc impl(params, errors:JsonNode):string = tmpli html"""
 $(style)
-<div class="$(style.get("className"))">
+<main>
+  <a href="/">go back</a>
   <form method="POST">
     $(csrfToken())
     <p><input type="text" name="email" placeholder="email" value="$(params.old("email"))"></p>
@@ -56,7 +57,7 @@ $(style)
     }
     <p><button type="submit">send</button></p>
   </form>
-</div>
+</main>
 """
 
 proc validationView*(client:Client):Future[string] {.async.} =

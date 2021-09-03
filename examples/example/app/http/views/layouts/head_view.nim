@@ -1,4 +1,4 @@
-import basolato/view
+import ../../../../../../src/basolato/view
 
 proc headView*(title:string):string = tmpli html"""
 <head>

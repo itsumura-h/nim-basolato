@@ -8,6 +8,10 @@ import app/http/middlewares/example_middleware
 # controllers
 import app/http/controllers/page_display_controller
 import app/http/controllers/cookie_controller
+import app/http/controllers/login_controller
+import app/http/controllers/flash_controller
+import app/http/controllers/file_upload_controller
+import app/http/controllers/validation_controller
 
 var routes = newRoutes()
 routes.middleware(re".*", auth_middleware.checkCsrfTokenMiddleware)
@@ -35,6 +39,20 @@ groups "/sample":
   routes.post("/cookie/update", cookie_controller.update)
   routes.post("/cookie/delete", cookie_controller.delete)
   routes.post("/cookie/destroy", cookie_controller.destroy)
+
+  routes.get("/login", login_controller.index)
+  routes.post("/login", login_controller.store)
+  routes.post("/logout", login_controller.destroy)
+
+  routes.get("/flash", flash_controller.index)
+  routes.post("/flash", flash_controller.store)
+
+  routes.get("/file-upload", file_upload_controller.index)
+  routes.post("/file-upload", file_upload_controller.store)
+  routes.post("/file-upload/delete", file_upload_controller.destroy)
+
+  routes.get("/validation", validation_controller.index)
+  routes.post("/validation", validation_controller.store)
 
 
 serve(routes)
