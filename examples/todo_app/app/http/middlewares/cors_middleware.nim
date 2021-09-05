@@ -1,6 +1,6 @@
 from strutils import join
 import asyncdispatch
-import basolato/middleware
+import ../../../../../src/basolato/middleware
 
 proc corsHeader(): HttpHeaders =
   let allowedMethods = [

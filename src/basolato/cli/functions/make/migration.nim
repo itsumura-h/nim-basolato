@@ -2,22 +2,31 @@ import os, strformat, terminal, times, strutils
 import utils
 
 proc makeMigration*(target:string, message:var string):int =
-  let now = now().format("yyyyMMddHHmmss")
-  var targetPath = &"{getCurrentDir()}/migrations/migration{now}{target}.nim"
+  # let now = now().format("yyyyMMddHHmmss")
+  # var targetPath = &"{getCurrentDir()}/database/migrations/migration{now}{target}.nim"
+  var targetPath = &"{getCurrentDir()}/database/migrations/migration_{target}.nim"
 
   if isFileExists(targetPath): return 0
   if isTargetContainSlash(target, "migration file name"): return 0
 
   createDir(parentDir(targetPath))
 
+#   var MIGRATION = &"""
+# import asyncdispatch, json
+# import allographer/schema_builder
+# from ../../config/database import rdb
+
+
+# proc migration{now}{target}*() [.async.] =
+#   discard
+# """
   var MIGRATION = &"""
 import asyncdispatch, json
 import allographer/schema_builder
-import allographer/query_builder
-from ../database import rdb
+from ../../config/database import rdb
 
 
-proc migration{now}{target}*() [.async.] =
+proc {target}*() [.async.] =
   discard
 """
   MIGRATION = MIGRATION.multiReplace(("[", "{"), ("]", "}"))
@@ -30,7 +39,7 @@ proc migration{now}{target}*() [.async.] =
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
 
   # update migrate.nim
-  targetPath = &"{getCurrentDir()}/migrations/migrate.nim"
+  targetPath = &"{getCurrentDir()}/database/migrations/migrate.nim"
   f = open(targetPath, fmRead)
   let text = f.readAll()
   var textArr = text.splitLines()
@@ -40,8 +49,10 @@ proc migration{now}{target}*() [.async.] =
     if row == "":
       offsets.add(i)
   # insert array
-  textArr.insert(&"import migration{now}{target}", offsets[0])
-  textArr.insert(&"  waitFor migration{now}{target}()", offsets[1]+1)
+  # textArr.insert(&"import migration{now}{target}", offsets[0])
+  # textArr.insert(&"  waitFor migration{now}{target}()", offsets[1]+1)
+  textArr.insert(&"import migration_{target}", offsets[0])
+  textArr.insert(&"  waitFor {target}()", offsets[1]+1)
   # write in file
   f = open(targetPath, fmWrite)
   defer: f.close()

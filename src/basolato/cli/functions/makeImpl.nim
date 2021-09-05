@@ -1,7 +1,7 @@
 import os, terminal
 import
-  make/config, make/migration, make/controller,
-  make/usecase, make/model, make/valueobject,
+  make/config, make/migration, make/seeder,
+  make/controller, make/usecase, make/querybuilder, make/model, make/valueobject,
   make/layout, make/page
 
 
@@ -49,12 +49,18 @@ proc make*(args:seq[string]):int =
   of "migration":
     getTarget
     return makeMigration(target, message)
+  of "seeder":
+    getTarget
+    return makeSeeder(target, message)
   of "controller":
     getTarget
     return makeController(target, message)
   of "usecase":
     getTarget
     return makeUsecase(target, message)
+  of "querybuilder":
+    getTarget
+    return makeQueryBuilder(target, message)
   of "model":
     getTarget
     return makeModel(target, message)

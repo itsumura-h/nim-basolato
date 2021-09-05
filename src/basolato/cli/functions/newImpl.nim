@@ -13,11 +13,11 @@ proc create(dirPath:string, packageDir:string):int =
   """)
     # get from tmp/0.10
     moveDir(&"{dirpath}/tmp/0.10/app", &"{dirpath}/app")
-    moveDir(&"{dirpath}/tmp/0.10/migrations", &"{dirpath}/migrations")
+    moveDir(&"{dirpath}/tmp/0.10/config", &"{dirpath}/config")
+    moveDir(&"{dirpath}/tmp/0.10/database", &"{dirpath}/database")
     moveDir(&"{dirpath}/tmp/0.10/public", &"{dirpath}/public")
     moveDir(&"{dirpath}/tmp/0.10/resources", &"{dirpath}/resources")
     moveFile(&"{dirpath}/tmp/0.10/main.nim", &"{dirpath}/main.nim")
-    moveFile(&"{dirpath}/tmp/0.10/database.nim", &"{dirpath}/database.nim")
     moveFile(&"{dirpath}/tmp/0.10/.gitignore", &"{dirpath}/.gitignore")
     # move static files
     moveFile(&"{dirpath}/tmp/assets/basolato.svg", &"{dirpath}/public/basolato.svg")
@@ -88,7 +88,7 @@ block sampleTest:
     return 1
 
 proc new*(args:seq[string]):int =
-  ## create new project
+  ## Create new project
   var
     message:string
     packageDir:string

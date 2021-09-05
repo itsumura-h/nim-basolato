@@ -16,8 +16,8 @@ import {relativeToValueObjectsPath}
 
 type {targetCaptalized}* = ref object
 
-proc new{targetCaptalized}*():{targetCaptalized} =
-  result = new {targetCaptalized}
+func new*(typ:type {targetCaptalized}):{targetCaptalized} =
+  typ()
 """
 
   let REPOSITORY_INTERFACE = &"""
@@ -32,7 +32,7 @@ type I{targetCaptalized}Repository* = tuple
   let REPOSITORY = &"""
 import interface_implements
 import allographer/query_builder
-from ../../../../database import rdb
+from ../../../../config/database import rdb
 import ../../../models/{targetName}/{targetName}_value_objects
 import ../../../models/{targetName}/{targetName}_entity
 import ../../../models/{targetName}/{targetName}_repository_interface
@@ -40,8 +40,8 @@ import ../../../models/{targetName}/{targetName}_repository_interface
 
 type {targetCaptalized}Repository* = ref object
 
-proc new{targetCaptalized}Repository*():{targetCaptalized}Repository =
-  result = new {targetCaptalized}Repository
+func new*(typ:type {targetCaptalized}Repository):{targetCaptalized}Repository =
+  typ()
 
 implements {targetCaptalized}Repository, I{targetCaptalized}Repository:
   discard
@@ -56,9 +56,10 @@ import {relativeToRepoInterface}
 type {targetCaptalized}Service* = ref object
   repository: I{targetCaptalized}Repository
 
-proc new{targetCaptalized}Service*(repository:I{parentCapitalized}Repository):{targetCaptalized}Service =
-  result = new {targetCaptalized}Service
-  result.repository = repository
+func new*(typ:type {targetCaptalized}Service, repository:I{parentCapitalized}Repository):{targetCaptalized}Service =
+  typ(
+    repository: repository
+  )
 """
 
   # check dir and file is not exists
@@ -134,7 +135,7 @@ proc new{targetCaptalized}Service*(repository:I{parentCapitalized}Repository):{t
         break
     textArr.insert(&"  {targetProcCaptalized}Repository: I{targetCaptalized}Repository", importDifinisionOffset)
     # insert constructor
-    textArr.insert(&"    {targetProcCaptalized}Repository: new{targetCaptalized}Repository().toInterface(),", textArr.len-4)
+    textArr.insert(&"    {targetProcCaptalized}Repository: {targetCaptalized}Repository.new().toInterface(),", textArr.len-4)
     # write in file
     f = open(targetPath, fmWrite)
     for i in 0..textArr.len-2:

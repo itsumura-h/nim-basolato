@@ -58,15 +58,19 @@ proc login*(self:Client) {.async.} =
 proc logout*(self:Client) {.async.} =
   await self.set("is_login", $false)
 
-proc anonumousCreateSession*(self:Client, req:Request):Future[bool] {.async.} =
-  ## Recreate session because session id from request is invalid
+# proc anonumousCreateSession*(self:Client, req:Request):Future[bool] {.async.} =
+proc anonumousCreateSession*(req:Request):Future[bool] {.async.} =
+  ## Recreate session because session id from request is invalid.
+  ## 
+  ## return true if new session is created
   let sessionId = newCookies(req).get("session_id")
+  # if self.session.isNil or not await checkSessionIdValid(await self.getToken):
+  #   self.session = await newSession()
+  #   await self.set("is_login", "false")
+  #   await self.set("last_access", $getTime())
+  #   return true
+  # el
   if not await checkSessionIdValid(sessionId):
-    return true
-  elif self.session.isNil or not await checkSessionIdValid(await self.getToken):
-    self.session = await newSession()
-    await self.set("is_login", "false")
-    await self.set("last_access", $getTime())
     return true
   else:
     return false

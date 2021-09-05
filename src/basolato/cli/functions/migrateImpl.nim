@@ -1,6 +1,9 @@
 import os
 
-proc migrate*(args:seq[string]):int =
-  if args.len == 0:
-    discard execShellCmd("nim c -r migrations/migrate")
-    return 0
+proc migrate*(seed=false, args:seq[string]):int =
+  ## Run migration
+  echo seed
+  discard execShellCmd("nim c -r database/migrations/migrate")
+  if seed:
+    discard execShellCmd("nim c -r database/seeders/seed")
+  return 0
