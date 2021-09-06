@@ -13,7 +13,7 @@ include core/validation
 import core/baseEnv
 import core/request
 import core/logger
-import core/security/client
+import core/security/context
 
 let baseMessages = %*{
   "accepted": "The :attribute must be accepted.",
@@ -172,11 +172,11 @@ func hasErrors*(self:RequestValidation):bool =
 func hasError*(self:RequestValidation, key:string):bool =
   return self.errors.hasKey(key)
 
-proc storeValidationResult*(client:Client, validation:RequestValidation) {.async.} =
+proc storeValidationResult*(context:Context, validation:RequestValidation) {.async.} =
   let data = %validation.params
   let errors = %validation.errors
-  await client.setFlash("params", data)
-  await client.setFlash("errors", errors)
+  await context.setFlash("params", data)
+  await context.setFlash("errors", errors)
 
 proc hasMessage(key:string):bool =
   if not messages.hasKey(key):

@@ -14,14 +14,14 @@ export
   re,
   tables
 import
-  core/security/client,
   core/security/csrf_token,
+  core/security/context,
   core/utils,
   core/request
   # request_validation
 export
-  client,
   csrf_token,
+  context,
   request
   # request_validation
 

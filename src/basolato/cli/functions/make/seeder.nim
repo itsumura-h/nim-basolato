@@ -1,9 +1,7 @@
-import os, strformat, terminal, times, strutils
+import os, strformat, terminal, strutils
 import utils
 
 proc makeSeeder*(target:string, message:var string):int =
-  # let now = now().format("yyyyMMddHHmmss")
-  # var targetPath = &"{getCurrentDir()}/database/seeders/seeder{now}{target}.nim"
   var targetPath = &"{getCurrentDir()}/database/seeders/seeder_{target}.nim"
 
   if isFileExists(targetPath): return 0
@@ -11,17 +9,6 @@ proc makeSeeder*(target:string, message:var string):int =
 
   createDir(parentDir(targetPath))
 
-#   var SEEDER = &"""
-# import asyncdispatch, json
-# import allographer/query_builder
-# from ../../config/database import rdb
-
-
-# proc seeder{now}{target}*() [[.async.]] =
-#   if await(rdb.table("{target}").count()) == 0:
-#     var data: seq[JsonNode]
-#     await rdb.table("{target}").insert(data)
-# """
   var SEEDER = &"""
 import asyncdispatch, json
 import allographer/query_builder
@@ -53,8 +40,6 @@ proc {target}*() [[.async.]] =
     if row == "":
       offsets.add(i)
   # insert array
-  # textArr.insert(&"import seeder{now}{target}", offsets[0])
-  # textArr.insert(&"  waitFor seeder{now}{target}()", offsets[1]+1)
   textArr.insert(&"import seeder_{target}", offsets[0])
   textArr.insert(&"  waitFor {target}()", offsets[1]+1)
   # write in file

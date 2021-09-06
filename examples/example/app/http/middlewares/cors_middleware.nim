@@ -36,6 +36,6 @@ proc secureHeader(): HttpHeaders =
     "Pragma": @["no-cache"],
   }.newHttpHeaders()
 
-proc setCorsHeadersMiddleware*(r:Request, p:Params):Future[Response] {.async.} =
+proc setCorsHeadersMiddleware*(c:Context, p:Params):Future[Response] {.async.} =
   let headers = corsHeader() & secureHeader()
   return next(status=Http204, headers=headers)

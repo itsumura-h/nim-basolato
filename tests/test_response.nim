@@ -3,8 +3,8 @@ import ../src/basolato/core/security/session as a
 import ../src/basolato/core/security/session_db as b
 
 const HOST = "http://0.0.0.0:5000"
-let session = waitFor newSession()
-let SESSION_ID = waitFor session.getToken()
+let session = waitFor genNewSession()
+let SESSION_ID = waitFor session.db.getToken()
 
 block:
   let client = newHttpClient(maxRedirects=0)

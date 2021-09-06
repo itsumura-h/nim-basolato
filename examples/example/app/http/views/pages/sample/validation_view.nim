@@ -60,7 +60,6 @@ $(style)
 </main>
 """
 
-proc validationView*(client:Client):Future[string] {.async.} =
+proc validationView*(params, errors:JsonNode):string =
   let title = "Validation view"
-  let (params, errors) = await client.getValidationResult()
   return applicationView(title, impl(params, errors))

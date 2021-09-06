@@ -6,10 +6,10 @@ import basolato/core/base
 import ../views/pages/welcome_view
 
 
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
   let name = "Basolato " & BasolatoVersion
   return render(welcomeView(name))
 
-proc indexApi*(request:Request, params:Params):Future[Response] {.async.} =
+proc indexApi*(context:Context, params:Params):Future[Response] {.async.} =
   let name = "Basolato " & BasolatoVersion
   return render(%*{"message": "Basolato " & BasolatoVersion})

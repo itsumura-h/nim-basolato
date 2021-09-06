@@ -12,10 +12,10 @@ import ../views/pages/sample/material_ui_view
 import ../views/pages/sample/vuetify_view
 
 
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
   return render(await asyncHtml("pages/sample/index.html"))
 
-proc welcome*(request:Request, params:Params):Future[Response] {.async.} =
+proc welcome*(context:Context, params:Params):Future[Response] {.async.} =
   let name = "Basolato " & BasolatoVersion
   return render(welcomeView(name))
 
@@ -24,7 +24,7 @@ proc fib_logic(n: int): int =
     return n
   return fib_logic(n - 2) + fib_logic(n - 1)
 
-proc fib*(request:Request, params:Params):Future[Response] {.async.} =
+proc fib*(context:Context, params:Params):Future[Response] {.async.} =
   let num = params.getInt("num")
   var results: seq[int]
   let start_time = getTime()
@@ -40,11 +40,11 @@ proc fib*(request:Request, params:Params):Future[Response] {.async.} =
   return render(data)
 
 
-proc withStylePage*(request:Request, params:Params):Future[Response] {.async.} =
+proc withStylePage*(context:Context, params:Params):Future[Response] {.async.} =
   return render(withStyleView())
 
 
-proc react*(request:Request, params:Params):Future[Response] {.async.} =
+proc react*(context:Context, params:Params):Future[Response] {.async.} =
   let users = %*(
     await rdb.table("users")
     .select("users.id", "users.name", "users.email", "auth.auth")
@@ -55,7 +55,7 @@ proc react*(request:Request, params:Params):Future[Response] {.async.} =
   return render(reactHtml($users))
 
 
-proc materialUi*(request:Request, params:Params):Future[Response] {.async.} =
+proc materialUi*(context:Context, params:Params):Future[Response] {.async.} =
   let users = %*(
     await rdb.table("users")
     .select("users.id", "users.name", "users.email", "auth.auth")
@@ -65,7 +65,7 @@ proc materialUi*(request:Request, params:Params):Future[Response] {.async.} =
   return render(materialUiHtml($users))
 
 
-proc vuetify*(request:Request, params:Params):Future[Response] {.async.} =
+proc vuetify*(context:Context, params:Params):Future[Response] {.async.} =
   let users = %*(
     await rdb.table("users")
     .select("users.id", "users.name", "users.email", "auth.auth", "users.created_at", "users.updated_at")
@@ -83,7 +83,7 @@ proc vuetify*(request:Request, params:Params):Future[Response] {.async.} =
   return render(vuetifyHtml($header, $users))
 
 
-proc customHeaders*(request:Request, params:Params):Future[Response] {.async.} =
+proc customHeaders*(context:Context, params:Params):Future[Response] {.async.} =
   var header = newHttpHeaders()
   header.add("Custom-Header-Key1", "Custom-Header-Val1")
   header.add("Custom-Header-Key1", "Custom-Header-Val2")
@@ -92,7 +92,7 @@ proc customHeaders*(request:Request, params:Params):Future[Response] {.async.} =
   return render("with header", header)
 
 
-proc presentDd*(request:Request, params:Params):Future[Response] {.async.} =
+proc presentDd*(context:Context, params:Params):Future[Response] {.async.} =
   var a = %*{
     "key1": "value1",
     "key2": "value2",
@@ -107,14 +107,14 @@ proc presentDd*(request:Request, params:Params):Future[Response] {.async.} =
   return render("dd")
 
 
-proc errorPage*(request:Request, params:Params):Future[Response] {.async.} =
+proc errorPage*(context:Context, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
   if id mod 2 == 1:
     raise newException(Error400, "Displaying error page")
   return render($id)
 
 
-proc errorRedirect*(request:Request, params:Params):Future[Response] {.async.} =
+proc errorRedirect*(context:Context, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
   if id mod 2 == 1:
     raise newException(ErrorRedirect, "/sample/login")

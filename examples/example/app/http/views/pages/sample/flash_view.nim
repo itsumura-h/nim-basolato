@@ -7,7 +7,7 @@ style "css", style:"""
 }
 """
 
-proc impl(client:Client):Future[string]{.async.} = tmpli html"""
+proc impl(context:Context):Future[string]{.async.} = tmpli html"""
 <main>
   <a href="/">go back</a>
   <section>
@@ -17,13 +17,13 @@ proc impl(client:Client):Future[string]{.async.} = tmpli html"""
     </form>
   </section>
   <section>
-    $for key, val in await(client.getFlash()).pairs{
+    $for key, val in await(context.getFlash()).pairs{
       <p>$(val.get())</p>
     }
   </section>
 </main>
 """
 
-proc flashView*(client:Client):Future[string]{.async.} =
+proc flashView*(context:Context):Future[string]{.async.} =
   const title = "Flash message"
-  return applicationView(title, await impl(client))
+  return applicationView(title, await impl(context))

@@ -1,5 +1,5 @@
 import httpcore, json, strutils, times, asyncdispatch
-import baseEnv, header, logger, security/client, security/cookie
+import baseEnv, header, logger, security/cookie, security/session, security/context
 
 type Response* = ref object
   status*:HttpCode
@@ -117,8 +117,8 @@ func errorRedirect*(url:string, headers:HttpHeaders):Response =
   )
 
 # ========== Client ====================
-proc setCookie*(response:Response, client:Client):Future[Response] {.async.} =
-  let sessionId = await client.getToken()
+proc setCookie*(response:Response, context:Context):Future[Response] {.async.} =
+  let sessionId = await context.session.getToken()
   if SESSION_TIME > 0 and COOKIE_DOMAINS.len > 0:
     for domain in COOKIE_DOMAINS.split(","):
       let newDomain = domain.strip()
@@ -160,13 +160,12 @@ proc setCookie*(response:Response, cookie:Cookies):Response =
   return response
 
 
-proc destroyClient*(response:Response, client:Client):Future[Response] {.async.} =
-  if await client.isLogin:
-    let sessionId = await client.getToken()
-    let cookie = newCookie("session_id", sessionId, timeForward(-1, Days))
+proc destroyContext*(response:Response, context:Context):Future[Response] {.async.} =
+  if await context.isLogin:
+    let cookie = newCookie("session_id", "", timeForward(-1, Days))
                   .toCookieStr()
     response.headers.add("Set-cookie", cookie)
-    await client.destroy()
+    await context.session.destroy()
   else:
     echoErrorMsg("Tried to destroy client but not logged in")
   return response

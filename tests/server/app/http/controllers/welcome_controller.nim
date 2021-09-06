@@ -4,6 +4,6 @@ import ../../../../../src/basolato/controller
 import ../views/pages/welcome_view
 
 
-proc index*(self:WelcomeController):Response =
+proc index*(context:Context, params:Params):Response =
   let name = "Basolato " & BasolatoVersion
   return render(welcomeView(name))

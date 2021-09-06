@@ -7,15 +7,15 @@ style "css", style:"""
 }
 """
 
-proc impl(client:Client):Future[string]{.async.} = tmpli html"""
+proc impl(context:Context):Future[string]{.async.} = tmpli html"""
 <main>
   <a href="/">go back</a>
   <section>
-    $if await client.isLogin(){
+    $if await context.isLogin(){
       <form method="POST" action="/sample/logout">
         <header>
           <h2>You are logged in!</h2>
-          <p>Login Name: $(await client.get("name"))</p>
+          <p>Login Name: $(await context.get("name"))</p>
         </header>
         $(csrfToken())
         <button type="submit">Logout</button>
@@ -36,6 +36,6 @@ proc impl(client:Client):Future[string]{.async.} = tmpli html"""
 </main>
 """
 
-proc loginView*(client:Client):Future[string]{.async.} =
+proc loginView*(context:Context):Future[string]{.async.} =
   let title = "Login"
-  return applicationView(title, await impl(client))
+  return applicationView(title, await impl(context))

@@ -1,26 +1,24 @@
 import asyncdispatch
 import ../../../../../src/basolato/middleware
 
-proc checkCsrfTokenMiddleware*(r:Request, p:Params):Future[Response] {.async.} =
-  let res = await checkCsrfToken(r, p)
+proc checkCsrfTokenMiddleware*(c:Context, p:Params):Future[Response] {.async.} =
+  let res = await checkCsrfToken(c.request, p)
   if res.hasError:
     raise newException(Error403, res.message)
   return next()
 
-proc checkSessionIdMiddleware*(r:Request, p:Params):Future[Response] {.async.} =
-  let res = await checkSessionId(r)
+proc checkSessionIdMiddleware*(c:Context, p:Params):Future[Response] {.async.} =
+  let res = await checkSessionId(c.request)
   if res.hasError:
     raise newException(ErrorRedirect, "/signin")
   return next()
 
-proc loginSkip*(r:Request, p:Params):Future[Response] {.async.} =
-  let client = await newClient(r)
-  if await client.isLogin():
+proc loginSkip*(c:Context, p:Params):Future[Response] {.async.} =
+  if await c.isLogin():
     raise newException(ErrorRedirect, "/todo")
   return next()
 
-proc mustBeLoggedIn*(r:Request, p:Params):Future[Response] {.async.} =
-  let client = await newClient(r)
-  if not await client.isLogin():
+proc mustBeLoggedIn*(c:Context, p:Params):Future[Response] {.async.} =
+  if not await c.isLogin():
     raise newException(ErrorRedirect, "/signin")
   return next()

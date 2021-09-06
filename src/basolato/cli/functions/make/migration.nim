@@ -1,4 +1,4 @@
-import os, strformat, terminal, times, strutils
+import os, strformat, terminal, strutils
 import utils
 
 proc makeMigration*(target:string, message:var string):int =
@@ -11,15 +11,6 @@ proc makeMigration*(target:string, message:var string):int =
 
   createDir(parentDir(targetPath))
 
-#   var MIGRATION = &"""
-# import asyncdispatch, json
-# import allographer/schema_builder
-# from ../../config/database import rdb
-
-
-# proc migration{now}{target}*() [.async.] =
-#   discard
-# """
   var MIGRATION = &"""
 import asyncdispatch, json
 import allographer/schema_builder
@@ -49,8 +40,6 @@ proc {target}*() [.async.] =
     if row == "":
       offsets.add(i)
   # insert array
-  # textArr.insert(&"import migration{now}{target}", offsets[0])
-  # textArr.insert(&"  waitFor migration{now}{target}()", offsets[1]+1)
   textArr.insert(&"import migration_{target}", offsets[0])
   textArr.insert(&"  waitFor {target}()", offsets[1]+1)
   # write in file
