@@ -12,8 +12,6 @@ proc index*(context:Context, params:Params):Future[Response] {.async.} =
   return render(signinView(params, errors))
 
 proc store*(context:Context, params:Params):Future[Response] {.async.} =
-  let email = params.getStr("email")
-  let password = params.getStr("password")
   let v = newRequestValidation(params)
   v.required("email")
   v.required("password")
@@ -22,6 +20,8 @@ proc store*(context:Context, params:Params):Future[Response] {.async.} =
     await context.storeValidationResult(v)
     return redirect("/signin")
 
+  let email = params.getStr("email")
+  let password = params.getStr("password")
   try:
     let usecase = SigninUsecase.new()
     let user = await usecase.run(email, password)

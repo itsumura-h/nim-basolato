@@ -1,6 +1,6 @@
 import asyncdispatch, json
 import allographer/query_builder
-import basolato/password
+import ../../../../src/basolato/password
 from ../../config/database import rdb
 
 

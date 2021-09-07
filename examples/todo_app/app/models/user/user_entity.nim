@@ -1,5 +1,26 @@
-import basolato/password
 import user_value_objects
+
+
+type DraftUser* = ref object
+  name:UserName
+  email:Email
+  password:Password
+
+func new*(typ:type DraftUser, name:UserName, email:Email, password:Password):DraftUser =
+  return typ(
+    name:name,
+    email:email,
+    password:password,
+  )
+
+proc name*(self:DraftUser):UserName =
+  return self.name
+
+proc email*(self:DraftUser):Email =
+  return self.email
+
+proc password*(self:DraftUser):Password =
+  return self.password
 
 
 type User* = ref object

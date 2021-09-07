@@ -1,4 +1,4 @@
-import basolato/view
+import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
 style "css", style:"""
@@ -6,13 +6,15 @@ style "css", style:"""
 }
 """
 
-proc impl():string = tmpli html"""
+proc impl(id, name:string):string = tmpli html"""
 $(style)
 <div class="$(style.get("className"))">
-<a href="/signout"><b>sign out</b></a>
+  <p>id:$(id.get)</p>
+  <p>name:$(name.get)</p>
+  <a href="/signout"><b>sign out</b></a>
 </div>
 """
 
-proc indexView*():string =
+proc indexView*(id, name:string):string =
   let title = ""
-  return applicationView(title, impl())
+  return applicationView(title, impl(id, name))

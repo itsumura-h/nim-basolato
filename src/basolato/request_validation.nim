@@ -1071,15 +1071,16 @@ proc requiredWithoutAll*(self:RequestValidation, key:string, others:openArray[st
           .replace(":values", $others)
         self.errors.add(key, message)
 
-proc same*(self:RequestValidation, key, target:string, attribute="") =
+proc same*(self:RequestValidation, key, target:string, attribute="", attributeTarget="") =
   let attribute = setAttribute(key, attribute)
+  let attributeTarget = setAttribute(target, attributeTarget)
   if self.params.hasKey(key) and self.params.hasKey(target) and hasMessage("same"):
     let a = self.params.getStr(key)
     let b = self.params.getStr(target)
     if not same(a, b):
       let message = messages["same"].getStr
         .replace(":attribute", attribute)
-        .replace(":other", target)
+        .replace(":other", attributeTarget)
       self.errors.add(key, message)
 
 proc sizeNum*(self:RequestValidation, key:string, standard:int, attribute="") =

@@ -1,4 +1,4 @@
-import asyncdispatch, json
+import asyncdispatch, json, options
 import ../../di_container
 import ../../models/user/user_value_objects
 import ../../models/user/user_entity
@@ -17,7 +17,10 @@ proc new*(typ:type SigninUsecase):SigninUsecase =
 
 proc run*(self:SigninUsecase, email, password:string):Future[JsonNode] {.async.} =
   let email = Email.new(email)
-  let user = await self.repository.getUserByEmail(email)
+  let userOpt = await self.repository.getUserByEmail(email)
+  if not userOpt.isSome():
+    raise newException(Exception, "user is not found")
+  let user = userOpt.get
   let password = Password.new(password)
   if self.service.isMatchPassword(password, user):
     return %*{

@@ -4,8 +4,13 @@ import ../../../../../src/basolato/controller
 # view
 import ../views/pages/todo/index_view
 
+proc toppage*(context:Context, params:Params):Future[Response] {.async.} =
+  return redirect("/todo")
+
 proc index*(context:Context, params:Params):Future[Response] {.async.} =
-  return render(indexView())
+  let id = await context.get("id")
+  let name = await context.get("name")
+  return render(indexView(id, name))
 
 proc show*(context:Context, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")

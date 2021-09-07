@@ -1,5 +1,5 @@
 import json
-import basolato/view
+import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
 style "css", style:"""
