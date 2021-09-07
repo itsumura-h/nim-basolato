@@ -4,27 +4,27 @@ import ../../../../../src/basolato/controller
 # view
 import ../views/pages/todo/index_view
 
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
   return render(indexView())
 
-proc show*(request:Request, params:Params):Future[Response] {.async.} =
+proc show*(context:Context, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
   return render("show")
 
-proc create*(request:Request, params:Params):Future[Response] {.async.} =
+proc create*(context:Context, params:Params):Future[Response] {.async.} =
   return render("create")
 
-proc store*(request:Request, params:Params):Future[Response] {.async.} =
+proc store*(context:Context, params:Params):Future[Response] {.async.} =
   return render("store")
 
-proc edit*(request:Request, params:Params):Future[Response] {.async.} =
+proc edit*(context:Context, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
   return render("edit")
 
-proc update*(request:Request, params:Params):Future[Response] {.async.} =
+proc update*(context:Context, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
   return render("update")
 
-proc destroy*(request:Request, params:Params):Future[Response] {.async.} =
+proc destroy*(context:Context, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
   return render("destroy")

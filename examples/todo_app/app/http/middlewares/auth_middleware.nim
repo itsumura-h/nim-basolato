@@ -13,6 +13,11 @@ proc checkSessionIdMiddleware*(c:Context, p:Params):Future[Response] {.async.} =
     raise newException(ErrorRedirect, "/signin")
   return next()
 
+proc redirectTodo*(c:Context, p:Params):Future[Response] {.async.} =
+  echo c.request.path
+  raise newException(ErrorRedirect, "/todo")
+  return next()
+
 proc loginSkip*(c:Context, p:Params):Future[Response] {.async.} =
   if await c.isLogin():
     raise newException(ErrorRedirect, "/todo")

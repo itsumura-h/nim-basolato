@@ -10,13 +10,11 @@ export request, header
 type Route* = ref object
   httpMethod*:HttpMethod
   path*:string
-  # action*:proc(r:Request, p:Params):Future[Response]
   action*:proc(c:Context, p:Params):Future[Response]
 
 type MiddlewareRoute* = ref object
   httpMethods*:seq[HttpMethod]
   path*:Regex
-  # action*:proc(r:Request, p:Params):Future[Response]
   action*:proc(c:Context, p:Params):Future[Response]
 
 
@@ -57,7 +55,6 @@ type Routes* = ref object
 func newRoutes*():Routes =
   return Routes()
 
-# func newRoute(httpMethod:HttpMethod, path:string, action:proc(r:Request, p:Params):Future[Response]):Route =
 func newRoute(httpMethod:HttpMethod, path:string, action:proc(c:Context, p:Params):Future[Response]):Route =
   return Route(
     httpMethod:httpMethod,
@@ -65,7 +62,6 @@ func newRoute(httpMethod:HttpMethod, path:string, action:proc(c:Context, p:Param
     action:action
   )
 
-# func add*(self:var Routes, httpMethod:HttpMethod, path:string, action:proc(r:Request, p:Params):Future[Response]) =
 func add*(self:var Routes, httpMethod:HttpMethod, path:string, action:proc(c:Context, p:Params):Future[Response]) =
   let route = newRoute(httpMethod, path, action)
   if path.contains("{"):
@@ -78,7 +74,6 @@ func add*(self:var Routes, httpMethod:HttpMethod, path:string, action:proc(c:Con
 func middleware*(
   self:var Routes,
   path:Regex,
-  # action:proc(r:Request, p:Params):Future[Response]
   action:proc(c:Context, p:Params):Future[Response]
 ) =
   self.middlewares.add(
@@ -93,7 +88,6 @@ func middleware*(
   self:var Routes,
   httpMethods:seq[HttpMethod],
   path:Regex,
-  # action:proc(r:Request, p:Params):Future[Response]
   action:proc(c:Context, p:Params):Future[Response]
 ) =
   self.middlewares.add(
@@ -103,33 +97,6 @@ func middleware*(
       action: action
     )
   )
-
-# func get*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
-#   add(self, HttpGet, path, action)
-
-# func post*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
-#   add(self, HttpPost, path, action)
-
-# func put*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
-#   add(self, HttpPut, path, action)
-
-# func patch*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
-#   add(self, HttpPatch, path, action)
-
-# func delete*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
-#   add(self, HttpDelete, path, action)
-
-# func head*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
-#   add(self, HttpHead, path, action)
-
-# func options*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
-#   add(self, HttpOptions, path, action)
-
-# func trace*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
-#   add(self, HttpTrace, path, action)
-
-# func connect*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
-#   add(self, HttpConnect, path, action)
 
 func get*(self:var Routes, path:string, action:proc(c:Context, p:Params):Future[Response]) =
   add(self, HttpGet, path, action)
@@ -312,7 +279,6 @@ proc serveCore(params:(Routes, int)){.async.} =
         cookies.set("session_id", sessionId, expire=timeForward(SESSION_TIME, Minutes))
         response = response.setCookie(cookies)
 
-    # if response.isNil:
     if response.status == HttpCode(0):
       headers["content-type"] = "text/html; charset=utf-8"
       response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)
