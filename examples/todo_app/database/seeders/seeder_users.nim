@@ -5,7 +5,7 @@ from ../../config/database import rdb
 
 
 proc users*() {.async.} =
-  if await(rdb.table("users").count()) == 0:
+  seeder rdb, "users":
     var data: seq[JsonNode]
     data = @[
       %*{"name": "admin", "email":"admin@mail.com", "password": "adminPassword".genHashedPassword()},

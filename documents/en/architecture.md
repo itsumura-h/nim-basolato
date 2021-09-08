@@ -5,11 +5,16 @@ Architecture
 Table of Contents
 
 <!--ts-->
-   * [Title](#title)
+   * [Architecture](#architecture)
       * [Introduction](#introduction)
-      * [API](#api)
+      * [Usecases](#usecases)
+      * [Domain model (Aggregates)](#domain-model-aggregates)
+      * [Value object](#value-object)
+      * [Entity](#entity)
+      * [Repository](#repository)
+      * [Query service](#query-service)
 
-<!-- Added by: root, at: Mon Apr 19 05:13:13 UTC 2021 -->
+<!-- Added by: root, at: Wed Sep  8 16:12:16 UTC 2021 -->
 
 <!--te-->
 

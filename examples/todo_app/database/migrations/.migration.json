@@ -1,0 +1,7 @@
+{
+  "B2FFE075B9F9952FA6F564A278C0E5B9FCE16CDB": {
+    "status": true,
+    "query": "CREATE TABLE \"users\" ('id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, 'name' VARCHAR NOT NULL CHECK (length('name') <= 255), 'email' VARCHAR NOT NULL CHECK (length('email') <= 255), 'password' VARCHAR NOT NULL CHECK (length('password') <= 255)); ",
+    "run_at": "2021-09-08 15:56:46"
+  }
+}

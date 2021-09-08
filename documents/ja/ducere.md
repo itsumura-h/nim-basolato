@@ -5,26 +5,26 @@ Ducereコマンド
 コンテンツ
 
 <!--ts-->
-* [Ducereコマンド](#ducereコマンド)
-   * [イントロダクション](#イントロダクション)
-   * [使い方](#使い方)
-      * [new](#new)
-      * [serve](#serve)
-      * [build](#build)
-      * [migrate](#migrate)
-      * [make](#make)
-         * [config](#config)
-         * [controller](#controller)
-         * [view](#view)
-         * [migration](#migration)
-         * [model](#model)
-            * [最上位のドメインモデル（＝集約）を作る](#最上位のドメインモデル集約を作る)
-            * [集約の子要素のドメインモデルを作る](#集約の子要素のドメインモデルを作る)
-         * [usecase](#usecase)
-         * [value object](#value-object)
-   * [Bash-completion](#bash-completion)
+   * [Ducereコマンド](#ducereコマンド)
+      * [イントロダクション](#イントロダクション)
+      * [使い方](#使い方)
+         * [new](#new)
+         * [serve](#serve)
+         * [build](#build)
+         * [migrate](#migrate)
+         * [make](#make)
+            * [config](#config)
+            * [controller](#controller)
+            * [view](#view)
+            * [migration](#migration)
+            * [model](#model)
+               * [最上位のドメインモデル（＝集約）を作る](#最上位のドメインモデル集約を作る)
+               * [集約の子要素のドメインモデルを作る](#集約の子要素のドメインモデルを作る)
+            * [usecase](#usecase)
+            * [value object](#value-object)
+      * [Bash-completion](#bash-completion)
 
-<!-- Added by: root, at: Tue May  4 05:46:14 UTC 2021 -->
+<!-- Added by: root, at: Wed Sep  8 16:13:12 UTC 2021 -->
 
 <!--te-->
 
@@ -171,21 +171,16 @@ http {
 
 ### migrate
 ```sh
-ducere migrate
+ducere migrate --reset --seed
 ```
-これは`nim c -r migrations/migrate`のエイリアスです
+これは`nim c -r database/migrations/migrate`のエイリアスです
 
-#### clear
-```sh
-ducere migrate clear
-```
-データベースを削除します。削除するデータベースは`.env.local`を読みます。
+- オプション
+  - `--reset`
+   テーブルを破棄してマイグレーションし直します
+  - `--seed`
+   マイグレーション実行後に`database/seeders/seed`を実行します
 
-#### fresh
-```sh
-ducere migrate fresh
-```
-データベースを削除し、マイグレーションを実行します。対象となるデータベースは`.env.local`を読みます。
 
 ### make
 予め雛形が書かれた新しいファイルを作ります。
