@@ -3,12 +3,10 @@ import allographer/schema_builder
 from ../../config/database import rdb
 
 
-proc users*() {.async.} =
+proc groups*() {.async.} =
   rdb.schema(
-    table("users",[
+    table("groups", [
       Column().uuid("id"),
-      Column().string("name"),
-      Column().string("email"),
-      Column().string("password"),
+      Column().string("name")
     ])
   )

@@ -3,5 +3,60 @@
     "status": true,
     "query": "CREATE TABLE \"users\" ('id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, 'name' VARCHAR NOT NULL CHECK (length('name') <= 255), 'email' VARCHAR NOT NULL CHECK (length('email') <= 255), 'password' VARCHAR NOT NULL CHECK (length('password') <= 255)); ",
     "run_at": "2021-09-08 15:56:46"
+  },
+  "7B14C72A8AECE32E891504898B16A67C19066FAA": {
+    "status": true,
+    "query": "CREATE TABLE \"status\" ('id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, 'name' VARCHAR NOT NULL CHECK (length('name') <= 255)); ",
+    "run_at": "2021-09-09 06:41:24"
+  },
+  "E335C22CB0EA4D5783DF71BD24B78C8A9797F4B9": {
+    "status": true,
+    "query": "CREATE TABLE \"todo\" ('id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, 'title' VARCHAR NOT NULL CHECK (length('title') <= 255), 'content_md' TEXT NOT NULL, 'content_html' TEXT NOT NULL, 'created_by' INTEGER, FOREIGN KEY('created_by') REFERENCES users(id) ON DELETE SET NULL); ",
+    "run_at": "2021-09-08 17:34:42"
+  },
+  "5A7382DBA492462422C7B0E0723BB8DE6E9FF4FD": {
+    "status": true,
+    "query": "CREATE TABLE \"todo\" ('id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, 'title' VARCHAR NOT NULL CHECK (length('title') <= 255), 'content_md' TEXT NOT NULL, 'content_html' TEXT NOT NULL, 'created_by' INTEGER, 'assign_to' INTEGER, 'start_on' DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, 'deadline' DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY('created_by') REFERENCES users(id) ON DELETE SET NULL, FOREIGN KEY('assign_to') REFERENCES users(id) ON DELETE SET NULL); ",
+    "run_at": "2021-09-08 18:30:53"
+  },
+  "0C68F57C333EBE7876D20DDCDF314A89DBD977F1": {
+    "status": true,
+    "query": "CREATE TABLE \"todo\" ('id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, 'title' VARCHAR NOT NULL CHECK (length('title') <= 255), 'content_md' TEXT NOT NULL, 'content_html' TEXT NOT NULL, 'created_by' INTEGER, 'assign_to' INTEGER, 'start_on' DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, 'deadline' DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, 'status_id' INTEGER, FOREIGN KEY('created_by') REFERENCES users(id) ON DELETE SET NULL, FOREIGN KEY('assign_to') REFERENCES users(id) ON DELETE SET NULL, FOREIGN KEY('status_id') REFERENCES status(id) ON DELETE RESTRICT); ",
+    "run_at": "2021-09-08 19:19:06"
+  },
+  "11F2EF0FAB9421C985110C6814919DDEB9226627": {
+    "status": true,
+    "query": "CREATE TABLE \"users\" ('id' VARCHAR UNIQUE NOT NULL CHECK (length('id') <= 255), 'name' VARCHAR NOT NULL CHECK (length('name') <= 255), 'email' VARCHAR NOT NULL CHECK (length('email') <= 255), 'password' VARCHAR NOT NULL CHECK (length('password') <= 255)); CREATE INDEX users_id_index ON users(id)",
+    "run_at": "2021-09-09 06:41:23"
+  },
+  "08B3E715B8DCC64DBB8E2DFAB9E1E456C090908E": {
+    "status": true,
+    "query": "CREATE TABLE \"groups\" ('id' VARCHAR UNIQUE NOT NULL CHECK (length('id') <= 255), 'name' VARCHAR NOT NULL CHECK (length('name') <= 255), 'admin_id' VARCHAR UNIQUE, FOREIGN KEY('admin_id') REFERENCES users(id) ON DELETE SET NULL); CREATE INDEX groups_id_index ON groups(id); CREATE INDEX groups_admin_id_index ON groups(admin_id)",
+    "run_at": "2021-09-09 05:36:17"
+  },
+  "2981B2837521A351CE092C01AF3CAA893FE72CD2": {
+    "status": true,
+    "query": "CREATE TABLE \"todo\" ('id' VARCHAR UNIQUE NOT NULL CHECK (length('id') <= 255), 'title' VARCHAR NOT NULL CHECK (length('title') <= 255), 'content_md' TEXT NOT NULL, 'content_html' TEXT NOT NULL, 'created_by' INTEGER, 'assign_to' INTEGER, 'start_on' DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, 'deadline' DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, 'status_id' VARCHAR UNIQUE, FOREIGN KEY('created_by') REFERENCES users(id) ON DELETE SET NULL, FOREIGN KEY('assign_to') REFERENCES users(id) ON DELETE SET NULL, FOREIGN KEY('status_id') REFERENCES status(id) ON DELETE RESTRICT); CREATE INDEX todo_id_index ON todo(id); CREATE INDEX todo_created_by_index ON todo(created_by); CREATE INDEX todo_assign_to_index ON todo(assign_to); CREATE INDEX todo_status_id_index ON todo(status_id)",
+    "run_at": "2021-09-09 06:32:11"
+  },
+  "7E91A9858DC7314E2898F5445CDDF12B4028CA84": {
+    "status": true,
+    "query": "CREATE TABLE \"groups\" ('id' VARCHAR UNIQUE NOT NULL CHECK (length('id') <= 255), 'name' VARCHAR NOT NULL CHECK (length('name') <= 255)); CREATE INDEX groups_id_index ON groups(id)",
+    "run_at": "2021-09-09 06:41:23"
+  },
+  "AC9A1B4E038427A992B96001456B574E3E156982": {
+    "status": true,
+    "query": "CREATE TABLE \"group_user_map\" ('user_id' VARCHAR UNIQUE, 'group_id' VARCHAR UNIQUE, 'is_admin' TINYINT NOT NULL DEFAULT false, FOREIGN KEY('user_id') REFERENCES users(id) ON DELETE SET NULL, FOREIGN KEY('group_id') REFERENCES users(id) ON DELETE SET NULL); CREATE INDEX group_user_map_user_id_index ON group_user_map(user_id); CREATE INDEX group_user_map_group_id_index ON group_user_map(group_id)",
+    "run_at": "2021-09-09 06:32:11"
+  },
+  "33D155B5B58600AE6B0D76252B806917237893C2": {
+    "status": true,
+    "query": "CREATE TABLE \"group_user_map\" ('user_id' VARCHAR, 'group_id' VARCHAR, 'is_admin' TINYINT NOT NULL DEFAULT false, FOREIGN KEY('user_id') REFERENCES users(id) ON DELETE SET NULL, FOREIGN KEY('group_id') REFERENCES users(id) ON DELETE SET NULL); CREATE INDEX group_user_map_user_id_index ON group_user_map(user_id); CREATE INDEX group_user_map_group_id_index ON group_user_map(group_id)",
+    "run_at": "2021-09-09 06:48:58"
+  },
+  "C5AB3A0D084C1724BB0D9F4371F0991CDEAF718D": {
+    "status": true,
+    "query": "CREATE TABLE \"todo\" ('id' VARCHAR UNIQUE NOT NULL CHECK (length('id') <= 255), 'title' VARCHAR NOT NULL CHECK (length('title') <= 255), 'content_md' TEXT NOT NULL, 'content_html' TEXT NOT NULL, 'created_by' INTEGER, 'assign_to' INTEGER, 'start_on' DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, 'deadline' DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, 'status_id' VARCHAR, FOREIGN KEY('created_by') REFERENCES users(id) ON DELETE SET NULL, FOREIGN KEY('assign_to') REFERENCES users(id) ON DELETE SET NULL, FOREIGN KEY('status_id') REFERENCES status(id) ON DELETE RESTRICT); CREATE INDEX todo_id_index ON todo(id); CREATE INDEX todo_created_by_index ON todo(created_by); CREATE INDEX todo_assign_to_index ON todo(assign_to); CREATE INDEX todo_status_id_index ON todo(status_id)",
+    "run_at": "2021-09-09 06:41:24"
   }
 }

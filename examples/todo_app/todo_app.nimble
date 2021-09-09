@@ -21,6 +21,8 @@ requires "redis >= 0.3.0"
 requires "sass >= 0.1.0"
 requires "templates >= 0.5"
 
+requires "markdown >= 0.8.5"
+
 task test, "run testament":
   echo staticExec("testament p \"./tests/test_*.nim\"")
   discard staticExec("find tests/ -type f ! -name \"*.*\" -delete 2> /dev/null")

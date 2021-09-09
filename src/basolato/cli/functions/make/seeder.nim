@@ -16,7 +16,7 @@ from ../../config/database import rdb
 
 
 proc {target}*() [[.async.]] =
-  if await(rdb.table("{target}").count()) == 0:
+  seeder rdb, "{target}":
     var data: seq[JsonNode]
     await rdb.table("{target}").insert(data)
 """
