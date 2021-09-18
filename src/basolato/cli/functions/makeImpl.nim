@@ -1,21 +1,21 @@
-import os, terminal
+import os, terminal, strutils
 import
   make/config, make/migration, make/seeder,
-  make/controller, make/usecase, make/querybuilder, make/model, make/valueobject,
+  make/controller, make/usecase, make/queryservice, make/model, make/valueobject,
   make/layout, make/page
 
 
-template getTarget() =
+template getArg1() =
   try:
-    target = args[1]
+    arg1 = args[1]
   except:
     let message = "Missing args"
     styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)
     return 0
 
-template getTargetPath() =
+template getArg2() =
   try:
-    targetPath = args[2]
+    arg2 = args[2]
   except:
     let message = "Missing args"
     styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)
@@ -26,8 +26,8 @@ proc make*(args:seq[string]):int =
   var
     message:string
     todo:string
-    target:string
-    targetPath:string
+    arg1:string
+    arg2:string
 
   # check whether you are in dir includes main.nim
   let mainPath = getCurrentDir() & "/main.nim"
@@ -47,33 +47,45 @@ proc make*(args:seq[string]):int =
   of "config":
     return makeConfig()
   of "migration":
-    getTarget
-    return makeMigration(target, message)
+    getArg1
+    return makeMigration(arg1, message)
   of "seeder":
-    getTarget
-    return makeSeeder(target, message)
+    getArg1
+    return makeSeeder(arg1, message)
   of "controller":
-    getTarget
-    return makeController(target, message)
+    getArg1
+    return makeController(arg1, message)
   of "usecase":
-    getTarget
-    return makeUsecase(target, message)
-  of "querybuilder":
-    getTarget
-    return makeQueryBuilder(target, message)
+    getArg1
+    getArg2
+    if arg2.contains("/"):
+      message = "target should not contains '/'"
+      styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)
+      return 0
+    return makeUsecase(arg1, arg2, message)
+  of "queryservice":
+    getArg1
+    return makeQueryService(arg1, message)
   of "model":
-    getTarget
-    return makeModel(target, message)
+    getArg1
+    return makeModel(arg1, message)
   of "valueobject":
-    getTarget
-    getTargetPath
-    return makeValueObject(target, targetPath, message)
+    message = "'valueobject' is deprecated. use 'vo'"
+    styledWriteLine(stdout, fgYellow, bgDefault, message, resetStyle)
+    getArg1
+    getArg2
+    return makeValueObject(arg1, arg2, message)
+  of "vo":
+    getArg1
+    getArg2
+    return makeValueObject(arg1, arg2, message)
   of "layout":
-    getTarget
-    return makelayout(target, message)
+    getArg1
+    return makelayout(arg1, message)
   of "page":
-    getTarget
-    return makePage(target, message)
+    getArg1
+    return makePage(arg1, message)
   else:
     message = "invalid things to make"
-    styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)
+
+  styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)

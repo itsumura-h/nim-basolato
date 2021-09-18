@@ -1,7 +1,8 @@
-import asyncdispatch, json, strutils, strformat, random, times, oids
+import asyncdispatch, json, strutils, strformat, random, times
 import allographer/query_builder
 import faker
 import markdown
+import ../../libs/uid
 from ../../config/database import rdb
 
 let fake = newFaker()
@@ -64,7 +65,7 @@ proc todo*() {.async.} =
       let contentVal = content()
       let todoDateVal = todoDate()
       data.add(%*{
-        "id": $genOid(),
+        "id": genUid(),
         "title": sentence(5),
         "content_md": contentVal[0],
         "content_html": contentVal[1],

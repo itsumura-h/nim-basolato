@@ -22,5 +22,3 @@ proc group_user_map*() {.async.} =
           "is_admin": if user["name"].getStr == "Mick": true else: false
         })
     await rdb.table("group_user_map").insert(data)
-
-waitFor group_user_map()

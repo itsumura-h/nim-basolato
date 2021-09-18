@@ -2,7 +2,7 @@ import os, strformat, terminal, strutils
 import utils
 
 
-proc makeQueryBuilder*(target:string, message:var string):int =
+proc makeQueryService*(target:string, message:var string):int =
   let targetName = target.split("/")[^1]
   let targetCaptalized = snakeToCamel(targetName)
   let targetProcCaptalized = snakeToCamelProcName(targetName)

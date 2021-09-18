@@ -23,7 +23,7 @@
          * [API](#api-2)
          * [サンプル](#サンプル-2)
 
-<!-- Added by: root, at: Wed Sep  8 16:12:59 UTC 2021 -->
+<!-- Added by: root, at: Sat Sep 18 06:56:16 UTC 2021 -->
 
 <!--te-->
 

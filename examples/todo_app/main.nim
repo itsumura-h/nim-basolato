@@ -25,7 +25,4 @@ routes.get("/", todo_controller.toppage)
 routes.middleware(re"/todo", auth_middleware.mustBeLoggedIn)
 routes.get("/todo", todo_controller.index)
 
-# groups "/api":
-#   routes.get("/index", welcome_controller.indexApi)
-
 serve(routes)

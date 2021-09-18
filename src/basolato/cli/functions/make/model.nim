@@ -64,7 +64,9 @@ func new*(typ:type {targetCaptalized}Service, repository:I{parentCapitalized}Rep
 
   # check dir and file is not exists
   if isDirExists(&"{getCurrentDir()}/app/models/{target}"): return 1
-  if isDirExists(&"{getCurrentDir()}/app/data_stores/repositories/{targetName}"): return 1
+  if not target.contains("/") and
+      isDirExists(&"{getCurrentDir()}/app/data_stores/repositories/{targetName}"):
+    return 1
 
   # create model dir
   var targetPath = &"{getCurrentDir()}/app/models/{target}"
@@ -83,13 +85,13 @@ func new*(typ:type {targetCaptalized}Service, repository:I{parentCapitalized}Rep
   f = open(targetPath, fmWrite)
   f.write(SERVICE)
 
-  if not target.contains("/"):
-    # value objects
-    targetPath = &"{getCurrentDir()}/app/models/{target}/{target}_value_objects.nim"
-    if isFileExists(targetPath): return 1
-    f = open(targetPath, fmWrite)
-    f.write("")
+  # value objects
+  targetPath = &"{getCurrentDir()}/app/models/{target}/{targetName}_value_objects.nim"
+  if isFileExists(targetPath): return 1
+  f = open(targetPath, fmWrite)
+  f.write("")
 
+  if not target.contains("/"):
     # repository interface
     targetPath = &"{getCurrentDir()}/app/models/{targetName}/{targetName}_repository_interface.nim"
     if isFileExists(targetPath): return 1

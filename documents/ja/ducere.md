@@ -18,13 +18,11 @@ Ducereコマンド
             * [view](#view)
             * [migration](#migration)
             * [model](#model)
-               * [最上位のドメインモデル（＝集約）を作る](#最上位のドメインモデル集約を作る)
-               * [集約の子要素のドメインモデルを作る](#集約の子要素のドメインモデルを作る)
-            * [usecase](#usecase)
             * [value object](#value-object)
+            * [usecase](#usecase)
       * [Bash-completion](#bash-completion)
 
-<!-- Added by: root, at: Wed Sep  8 16:13:12 UTC 2021 -->
+<!-- Added by: root, at: Sat Sep 18 06:56:30 UTC 2021 -->
 
 <!--te-->
 
@@ -213,12 +211,12 @@ ducere make controller sample/sample2/user
 
 ```sh
 ducere make layout buttons/success_button
->> resources/layouts/buttons/success_button_view.nim
+>> app/http/views/layouts/buttons/success_button_view.nim
 ```
 
 ```sh
 ducere make page login
->> resources/pages/login_view.nim
+>> app/http/views/pages/login_view.nim
 ```
 
 #### migration
@@ -230,14 +228,15 @@ ducere make migration create_user
 ```
 
 #### model
-##### 最上位のドメインモデル（＝集約）を作る
+- 最上位のドメインモデル（＝集約）を作る
+
 ドメインモデルを作ります。
 
 ```sh
 ducere make model circle
 ```
 
-in app/core/models
+in app/models
 ```
 circle
 ├── circle_entity.nim
@@ -252,44 +251,62 @@ circle
 └── circle_rdb_repository.nim
 ```
 
-##### 集約の子要素のドメインモデルを作る
+- 集約の子要素のドメインモデルを作る
+
 ```sh
 ducere make model circle/user
 ```
 
-in app/core/models
+in app/models
 ```
 circle
 ├── circle_entity.nim
 ├── circle_repository_interface.nim
 ├── circle_service.nim
-├── circle_value_object.nim
+├── circle_value_objects.nim
 └── user
     ├── user_entity.nim
-    └── user_service.nim
-```
-
-#### usecase
-ユースケースを作ります。
-
-```sh
-ducere make usecase login
->> app/domain/usecases/login_usecase.nim
+    ├── user_service.nim
+    └── user_value_objects.nim
 ```
 
 #### value object
 値オブジェクトの最小の雛形を追加します。
 
 ```sh
-ducere make valueobject {引数1} {引数2}
+ducere make vo {引数1} {引数2}
 ```
 
-`引数1`はキャメルケースの値オブジェクトの名前です。  
-`引数2`は`app/domain/models`内の集約名です。
+`引数1`は`app/models`内のモデル名です。  
+`引数2`はキャメルケースの値オブジェクトの名前です。
 
 ```sh
-ducere make valueobject UserName user
->> add UserName in app/domain/models/user/user_value_objects.nim
+ducere make vo circle CircleName
+>> add CircleName in app/models/circle/circle_value_objects.nim
+
+ducere make vo circle/user UserName
+>> add UserName in app/models/circle/user/user_value_objects.nim
+```
+
+#### usecase
+ユースケースを作ります。  
+同時にクエリサービスとクエリインターフェースも作られます。
+
+```sh
+ducere make usecase {引数1} {引数2}
+```
+
+`引数1`は`app/usecases`内のパッケージ名です。  
+`引数2`はキャメルケースの値オブジェクトの名前です。
+
+```sh
+ducere make usecase sign signin
+>> app/usecases/sign/signin_usecase.nim
+>> app/usecases/sign/sign_query_interface.nim
+>> app/usecases/data_stores/query_services/sign/sign_query.nim
+
+ducere make usecase sign signup
+>> app/usecases/sign/signup_usecase.nim
 ```
 
 ## Bash-completion

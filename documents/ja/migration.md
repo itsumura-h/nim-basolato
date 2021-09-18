@@ -9,7 +9,7 @@
       * [イントロダクション](#イントロダクション)
       * [サンプル](#サンプル)
 
-<!-- Added by: root, at: Wed Sep  8 16:13:27 UTC 2021 -->
+<!-- Added by: root, at: Sat Sep 18 06:56:44 UTC 2021 -->
 
 <!--te-->
 
