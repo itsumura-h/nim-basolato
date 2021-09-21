@@ -3,6 +3,8 @@ import json
 import ../../../../../src/basolato/controller
 # view
 import ../views/pages/todo/index_view
+# usecase
+import ../../usecases/todo/get_todo_list_usecase
 
 proc toppage*(context:Context, params:Params):Future[Response] {.async.} =
   return redirect("/todo")
@@ -10,7 +12,9 @@ proc toppage*(context:Context, params:Params):Future[Response] {.async.} =
 proc index*(context:Context, params:Params):Future[Response] {.async.} =
   let id = await context.get("id")
   let name = await context.get("name")
-  return render(indexView(id, name))
+  let usecase = GetTodoListUsecase.new()
+  let data = await usecase.run()
+  return render(indexView(id, name, data))
 
 proc show*(context:Context, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")

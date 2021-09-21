@@ -1,3 +1,5 @@
+import cgi, strutils, json
+
 const
   BasolatoVersion* = "0.10.0"
 
@@ -48,10 +50,16 @@ const errorStatusArray* = [505, 504, 503, 502, 501, 500, 451, 431, 429, 428, 426
   422, 421, 418, 417, 416, 415, 414, 413, 412, 411, 410, 409, 408, 407, 406,
   405, 404, 403, 401, 400, 307, 305, 304, 303, 302, 301, 300]
 
-func dd*(outputs: varargs[string, `$`]) =
+
+proc dd*(outputs: varargs[string, `$`]) =
   when not defined(release):
     var output:string
     for i, row in outputs:
-      if i > 0: output &= "\n\n" else: output &= "\n"
-      output.add(row)
+      if i > 0:
+        output &= "\n\n" else: output &= "\n"
+      if row[0] == '[' or row[0] == '{':
+        output.add(row.parseJson().pretty())
+      else:
+        output.add(row)
+    output = output.xmlEncode()
     raise newException(DD, output)

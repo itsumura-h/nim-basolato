@@ -24,7 +24,7 @@ proc run*(self:SigninUsecase, email, password:string):Future[JsonNode] {.async.}
   let password = Password.new(password)
   if self.service.isMatchPassword(password, user):
     return %*{
-      "id": user.id.get,
+      "id": $user.id,
       "name": $user.name
     }
   else:

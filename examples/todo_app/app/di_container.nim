@@ -2,17 +2,17 @@
 import models/user/user_repository_interface
 import data_stores/repositories/user/user_repository
 # todo
-import usecases/todo/todo_query_service_interface
-import data_stores/query_services/todo/todo_query_service
+import usecases/todo/todo_query_interface
+import data_stores/query_services/todo/todo_query
 
 type DiContainer* = tuple
   userRepository: IUserRepository
-  todoQueryService: ITodoQueryService
+  todoQuery: ITodoQuery
 
 proc newDiContainer():DiContainer =
   return (
     userRepository: UserRepository.new().toInterface(),
-    todoQueryService: newTodoQueryService().toInterface(),
+    todoQuery: TodoQuery.new().toInterface(),
   )
 
 let di* = newDiContainer()

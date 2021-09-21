@@ -26,7 +26,7 @@ proc store*(context:Context, params:Params):Future[Response] {.async.} =
     let usecase = SigninUsecase.new()
     let user = await usecase.run(email, password)
     await context.login()
-    await context.session.set("id", $user["id"].getInt)
+    await context.session.set("id", $user["id"].getStr)
     await context.session.set("name", user["name"].getStr)
     return redirect("/todo")
   except:

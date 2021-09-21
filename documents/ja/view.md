@@ -78,10 +78,91 @@ proc impl(title:string, params:JsonNode):Future[string] {.async.} = tmpli html""
   </ul>
 ```
 
-## コンポーネントスタイルデザイン
+## コンポーネント指向
 Basolato viewは、ReactやVueのようなコンポーネント指向のデザインを採用しています。 
-コンポーネントとは、htmlとcssの単一の塊であり、htmlの文字列を返す関数のことです。
+コンポーネントとは、htmlとJavaScriptとCSSの単一の塊であり、htmlの文字列を返す関数のことです。
 
+### JavaScript
+controller
+```nim
+import basolato/controller
+
+proc withSscriptPage*(request:Request, params:Params):Future[Response] {.async.} =
+  return render(withScriptView())
+```
+
+view
+```nim
+import basolato/view
+import ../layouts/application_view
+
+script ["toggle"], script:"""
+<script>
+  window.addEventListener('load', ()=>{
+    let el = document.getElementById('toggle')
+    el.style.display = 'none'
+  })
+
+  const toggleOpen = () =>{
+    let el = document.getElementById('toggle')
+    if(el.style.display == 'none'){
+      el.style.display = ''
+    }else{
+      el.style.display = 'none'
+    }
+  }
+</script>
+"""
+
+proc impl():string = tmpli html"""
+$(script)
+<div>
+  <button onclick="toggleOpen()">toggle</button>
+  <div id="$(script.element("toggle"))">...content</div>
+</div>
+"""
+
+proc withScriptView*():string =
+  let title = "Title"
+  return applicationView(title, impl())
+```
+
+これをhtmlにコンパイルすると以下のようになります。
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Title</title>
+  </head>
+  <body>
+    <script>
+      window.addEventListener('load', ()=>{
+        let el = document.getElementById('toggle_akvcgccoeg')
+        el.style.display = 'none'
+      })
+
+      const toggleOpen = () =>{
+        let el = document.getElementById('toggle_akvcgccoeg')
+        if(el.style.display == 'none'){
+          el.style.display = ''
+        }else{
+          el.style.display = 'none'
+        }
+      }
+    </script>
+    <div>
+      <button onclick="toggleOpen()">toggle</button>
+      <div id="toggle_akvcgccoeg">...content</div>
+    </div>
+  </body>
+</html>
+```
+
+`script`テンプレートの第一引数に渡されたセレクタはコンポーネントごとにランダムなサフィックスを持つので、複数のコンポーネントが同じID名/クラス名を持つことができます。
+
+### CSS
 controller
 ```nim
 import basolato/controller
@@ -93,22 +174,25 @@ proc withStylePage*(request:Request, params:Params):Future[Response] {.async.} =
 view
 ```nim
 import basolato/view
+import ../layouts/application_view
 
 style "css", style:"""
-.background {
-  height: 200px;
-  width: 200px;
-  background-color: blue;
-}
+<style>
+  .background {
+    height: 200px;
+    width: 200px;
+    background-color: blue;
+  }
 
-.background:hover {
-  background-color: green;
-}
+  .background:hover {
+    background-color: green;
+  }
+</style>
 """
 
 proc impl():string = tmpli html"""
 $(style)
-<div class="$(style.get("background"))"></div>
+<div class="$(style.element("background"))"></div>
 """
 
 proc withStyleView*():string =
@@ -169,13 +253,24 @@ style "scss", style:"""
 
 ### API
 `style` テンプレートは `Css` 型のインスタンスを `name` の 引数に格納します。
+`script` テンプレートは `Script` 型のインスタンスを `name` の 引数に格納します。
 
 ```nim
-template style*(typ:string, name, body: untyped):untyped =
+# for JavaScript
+template script*(selectors:openArray[string], name, body:untyped):untyped
 
-func `$`*(self:Css):string =
+template script*(name, body:untyped):untyped
 
-func get*(self:Css, name:string):string =
+func `$`*(self:Script):string
+
+func element*(self:Script, name:string):string
+
+# for CSS
+template style*(typ:string, name, body: untyped):untyped
+
+func `$`*(self:Css):string
+
+func element*(self:Css, name:string):string
 ```
 
 ## ヘルパー関数

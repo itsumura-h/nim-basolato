@@ -2,7 +2,7 @@ import
   asynchttpserver, asyncdispatch, json, strformat, macros, strutils, os,
   asyncfile, mimetypes, re, tables, times
 from osproc import countProcessors
-import baseEnv, request, response, header, logger, error_page, resources/ddPage,
+import baseEnv, request, response, header, logger, error_page, resources/dd_page,
   security/cookie, security/context
 export request, header
 

@@ -10,13 +10,21 @@ proc makeLayout*(target:string, message:var string):int =
 import basolato/view
 
 style "css", style:'''
-.className [[
-]]
+<style>
+  .className [[
+  ]]
+</style>
+'''
+
+script script:'''
+<script>
+</script>
 '''
 
 proc {targetCaptalized}View*():string = tmpli html'''
 $(style)
-<div class="$(style.get("className"))">
+$(script)
+<div class="$(style.element("className"))">
 </div>
 '''
 """

@@ -20,7 +20,7 @@ implements UserRepository, IUserRepository:
       return none(User)
     let user = userOpt.get
     return User.new(
-      UserId.new(user["id"].getInt),
+      UserId.new(user["id"].getStr),
       UserName.new(user["name"].getStr),
       Email.new(user["email"].getStr),
       Password.new(user["password"].getStr)

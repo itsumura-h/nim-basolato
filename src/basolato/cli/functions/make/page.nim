@@ -12,13 +12,21 @@ import basolato/view
 import {relativeToApplicationPath}
 
 style "css", style:'''
-.className [[
-]]
+<style>
+  .className [[
+  ]]
+</style>
+'''
+
+script script:'''
+<script>
+</script>
 '''
 
 proc impl():string = tmpli html'''
 $(style)
-<div class="$(style.get("className"))">
+$(script)
+<div class="$(style.element("className"))">
 </div>
 '''
 

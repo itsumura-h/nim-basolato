@@ -1,12 +1,12 @@
 type UserId* = ref object
-  value:int
+  value:string
 
-func new*(typ:type UserId, value:int):UserId =
+func new*(typ:type UserId, value:string):UserId =
   typ(
     value: value
   )
 
-proc get*(self:UserId):int =
+proc `$`*(self:UserId):string =
   return self.value
 
 

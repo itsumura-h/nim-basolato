@@ -1,20 +1,33 @@
+import json
 import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
+import ../../layouts/todo/app_bar_view
+import ../../layouts/todo/status_view
+
 
 style "css", style:"""
-.className {
-}
+<style>
+  .columns {
+    max-width: 100%;
+    margin: auto;
+  }
+</style>
 """
 
-proc impl(id, name:string):string = tmpli html"""
+proc impl(id, name:string, data:JsonNode):string = tmpli html"""
 $(style)
-<div class="$(style.get("className"))">
-  <p>id:$(id.get)</p>
-  <p>name:$(name.get)</p>
-  <a href="/signout"><b>sign out</b></a>
-</div>
+<header>
+  $(appBarView(name))
+</header>
+<main>
+  <section class="columns $(style.element("columns"))">
+    $for status in data["master"]["status"]{
+      $(statusView(status, data))
+    }
+  </section>
+</main>
 """
 
-proc indexView*(id, name:string):string =
+proc indexView*(id, name:string, data:JsonNode):string =
   let title = ""
-  return applicationView(title, impl(id, name))
+  return applicationView(title, impl(id, name, data))

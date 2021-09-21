@@ -80,8 +80,89 @@ proc impl(title:string, params:JsonNode):Future[string] {.async.} = tmpli html""
 
 ## Component style design
 Basolato view is designed for component oriented design like React and Vue.  
-Component is a single chunk of html and css, and just a procedure that return html string.
+Component is a single chunk of html, JavaScriptand and css, and just a procedure that return html string.
 
+### JavaScript
+controller
+```nim
+import basolato/controller
+
+proc withSscriptPage*(request:Request, params:Params):Future[Response] {.async.} =
+  return render(withScriptView())
+```
+
+view
+```nim
+import basolato/view
+import ../layouts/application_view
+
+script ["toggle"], script:"""
+<script>
+  window.addEventListener('load', ()=>{
+    let el = document.getElementById('toggle')
+    el.style.display = 'none'
+  })
+
+  const toggleOpen = () =>{
+    let el = document.getElementById('toggle')
+    if(el.style.display == 'none'){
+      el.style.display = ''
+    }else{
+      el.style.display = 'none'
+    }
+  }
+</script>
+"""
+
+proc impl():string = tmpli html"""
+$(script)
+<div>
+  <button onclick="toggleOpen()">toggle</button>
+  <div id="$(script.element("toggle"))">...content</div>
+</div>
+"""
+
+proc withScriptView*():string =
+  let title = "Title"
+  return applicationView(title, impl())
+```
+
+This is compiled to html like this.
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Title</title>
+  </head>
+  <body>
+    <script>
+      window.addEventListener('load', ()=>{
+        let el = document.getElementById('toggle_akvcgccoeg')
+        el.style.display = 'none'
+      })
+
+      const toggleOpen = () =>{
+        let el = document.getElementById('toggle_akvcgccoeg')
+        if(el.style.display == 'none'){
+          el.style.display = ''
+        }else{
+          el.style.display = 'none'
+        }
+      }
+    </script>
+    <div>
+      <button onclick="toggleOpen()">toggle</button>
+      <div id="toggle_akvcgccoeg">...content</div>
+    </div>
+  </body>
+</html>
+```
+
+The selector passed as the first argument of the `script` template will have a random suffix for each component, so multiple components can have the same ID name/class name.
+
+### CSS
 controller
 ```nim
 import basolato/controller
@@ -95,15 +176,17 @@ view
 import basolato/view
 
 style "css", style:"""
-.background {
-  height: 200px;
-  width: 200px;
-  background-color: blue;
-}
+<style>
+  .background {
+    height: 200px;
+    width: 200px;
+    background-color: blue;
+  }
 
-.background:hover {
-  background-color: green;
-}
+  .background:hover {
+    background-color: green;
+  }
+</style>
 """
 
 proc impl():string = tmpli html"""

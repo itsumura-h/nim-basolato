@@ -3,48 +3,66 @@ import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
 style "css", style:"""
-.errors {
-  background-color: pink;
-  color: red;
-}
+<style>
+  @media screen{
+    main{
+      display: flex;
+      align-items: center;
+    }
+  }
+  .section{
+    margin: auto;
+    min-width: 60%;
+  }
+  .nav{
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
 """
 
 proc impl(params, errors:JsonNode):string = tmpli html"""
 $(style)
 <main>
-  <section>
-    <form method="POST">
+  <section class="section $(style.element("section"))">
+    <form method="POST" class="box">
       $(csrfToken())
-      <header>
-        <h2>Sign In</h2>
-      </header>
-      <input type="text" name="email" placeholder="email" value="$(old(params, "email"))">
-      $if errors.hasKey("email"){
-        <ul class="$(style.get("errors"))">
-          $for error in errors["email"]{
-            <li>$(error.get)</li>
-          }
-        </ul>
-      }
-      <input type="password" name="password" placeholder="password">
-      $if errors.hasKey("password"){
-        <ul class="$(style.get("errors"))">
-          $for error in errors["password"]{
-            <li>$(error.get)</li>
-          }
-        </ul>
-      }
-      $if errors.hasKey("error"){
-        <ul class="$(style.get("errors"))">
-          $for error in errors["error"]{
-            <li>$(error.get)</li>
-          }
-        </ul>
-      }
-      <button type="submit">Sign In</button>
-      <p>
+      <h2 class="title">Sign In</h2>
+      <article class="field">
+        <div class="controll">
+          <input type="text" class="input" name="email" placeholder="email" value="$(old(params, "email"))">
+        </div>
+        $if errors.hasKey("email"){
+          <aside>
+            $for error in errors["email"]{
+              <p class="help is-danger">$(error.get)</p>
+            }
+          </aside>
+        }
+      </article>
+      <article class="field">
+        <input type="password" class="input" name="password" placeholder="password">
+        $if errors.hasKey("password"){
+          <aside>
+            $for error in errors["password"]{
+              <p class="help is-danger">$(error.get)</p>
+            }
+          </aside>
+        }
+      </article>
+      <article>
+        $if errors.hasKey("error"){
+          <aside>
+            $for error in errors["error"]{
+              <p>$(error.get)</p>
+            }
+          </aside>
+        }
+      </article>
+      <article class="field $(style.element("nav"))">
         <a href="/signup">Sign up here</a>
-      </p>
+        <button type="submit" class="button is-link">Sign In</button>
+      </article>
     </form>
   </section>
 </main>

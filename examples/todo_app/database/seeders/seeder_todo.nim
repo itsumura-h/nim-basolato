@@ -60,6 +60,7 @@ proc content():(string, string) =
 
 proc todo*() {.async.} =
   seeder rdb, "todo":
+    let user = await rdb.table("users").get()
     var data: seq[JsonNode]
     for i in 1..30:
       let contentVal = content()
@@ -69,10 +70,11 @@ proc todo*() {.async.} =
         "title": sentence(5),
         "content_md": contentVal[0],
         "content_html": contentVal[1],
-        "created_by": rand(2..11),
-        "assign_to": rand(2..11),
+        "created_by": user[rand(1..user.len-1)]["id"].getStr,
+        "assign_to": user[rand(1..user.len-1)]["id"].getStr,
         "status_id": todoDateVal[0],
-        "start_on": (todoDateVal[1]).format("yyyy-MM-dd"),
-        "deadline": (todoDateVal[2]).format("yyyy-MM-dd"),
+        "start_on": todoDateVal[1].format("yyyy-MM-dd"),
+        "deadline": todoDateVal[2].format("yyyy-MM-dd"),
+        "sort": i
       })
     await rdb.table("todo").insert(data)

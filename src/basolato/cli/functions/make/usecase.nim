@@ -4,6 +4,7 @@ import utils
 
 proc makeUsecase*(dir, target:string, message:var string):int =
   var targetCaptalized = snakeToCamel(target)
+  var dirCaptalized = snakeToCamel(dir)
   let relativeToDiContainer = "../".repeat(dir.split("/").len-1) & "../../di_container"
 
   let USECASE = &"""
@@ -32,8 +33,8 @@ proc run*(self:{targetCaptalized}Usecase) =
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
 
 
-  targetCaptalized = snakeToCamel(targetCaptalized)
-  let targetProcCaptalized = snakeToCamelProcName(targetCaptalized)
+  targetCaptalized = snakeToCamel(dir)
+  let targetProcCaptalized = snakeToCamelProcName(dir)
   let relativeToDatabasePath = "../".repeat(target.split("/").len) & &"../../../"
   let relativeToInterfacePath = "../".repeat(target.split("/").len-1) & &"../../../"
 
@@ -45,6 +46,7 @@ type I{targetCaptalized}Query* = tuple
 """
 
   let QUERY_SERVICE = &"""
+import asyncdispatch
 import interface_implements
 import allographer/query_builder
 from {relativeToDatabasePath}config/database import rdb
@@ -100,7 +102,7 @@ implements {targetCaptalized}Query, I{targetCaptalized}Query:
   # insert import
   textArr.insert(&"import data_stores/query_services/{dir}/{dir}_query", importOffset-1)
   textArr.insert(&"import usecases/{dir}/{dir}_query_interface", importOffset-1)
-  textArr.insert(&"# {target}", importOffset-1)
+  textArr.insert(&"# {dir}", importOffset-1)
   # insert di difinition
   var isAfterDiDifinision:bool
   var importDifinisionOffset:int
@@ -110,9 +112,9 @@ implements {targetCaptalized}Query, I{targetCaptalized}Query:
     if isAfterDiDifinision and row == "":
       importDifinisionOffset = i
       break
-  textArr.insert(&"  {targetProcCaptalized}Query: I{targetCaptalized}Query", importDifinisionOffset)
+  textArr.insert(&"  {dir}Query: I{dirCaptalized}Query", importDifinisionOffset)
   # insert constructor
-  textArr.insert(&"    {targetProcCaptalized}Query: {targetCaptalized}Query.new().toInterface(),", textArr.len-4)
+  textArr.insert(&"    {dir}Query: {dirCaptalized}Query.new().toInterface(),", textArr.len-4)
   # write in file
   f = open(targetPath, fmWrite)
   for i in 0..textArr.len-2:
