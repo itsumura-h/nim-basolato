@@ -26,8 +26,9 @@ proc store*(context:Context, params:Params):Future[Response] {.async.} =
     let usecase = SigninUsecase.new()
     let user = await usecase.run(email, password)
     await context.login()
-    await context.session.set("id", $user["id"].getStr)
-    await context.session.set("name", user["name"].getStr)
+    await context.set("id", user["id"].getStr)
+    await context.set("name", user["name"].getStr)
+    await context.set("auth", $user["auth"].getInt)
     return redirect("/todo")
   except:
     v.errors.add("error", getCurrentExceptionMsg().splitLines()[0])

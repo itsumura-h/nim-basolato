@@ -10,5 +10,6 @@ proc users*() {.async.} =
       Column().string("name"),
       Column().string("email"),
       Column().string("password"),
+      Column().foreign("auth_id").reference("auth").on("id").onDelete(SET_NULL)
     ])
   )

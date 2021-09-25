@@ -18,45 +18,45 @@ proc sentence(i:int):string =
 proc todoDate():(int, DateTime, DateTime) =
   let status = rand(1..3)
   var start = 0
-  var deadline = 0
+  var dueDate = 0
   case status
   of 1: #todo
     start = rand(0..60)
-    deadline = rand(start..60)
+    dueDate = rand(start..60)
     return (
       status,
       getTime().utc + initTimeInterval(days=start),
-      getTime().utc + initTimeInterval(days=deadline),
+      getTime().utc + initTimeInterval(days=dueDate),
     )
   of 2: #doing
     start = rand(0..30)
-    deadline = rand(0..30)
+    dueDate = rand(0..30)
     return (
       status,
       getTime().utc - initTimeInterval(days=start),
-      getTime().utc + initTimeInterval(days=deadline),
+      getTime().utc + initTimeInterval(days=dueDate),
     )
   of 3: #done
     start = rand(0..60)
-    deadline = rand(0..start)
+    dueDate = rand(0..start)
     return (
       status,
       getTime().utc - initTimeInterval(days=start),
-      getTime().utc - initTimeInterval(days=deadline),
+      getTime().utc - initTimeInterval(days=dueDate),
     )
   else:
     discard
 
 proc content():(string, string) =
-  let contentMd = fmt"""
+  let Content = fmt"""
 ## {sentence(5)}
 {sentence(10)}
 
 - {sentence(3)}
   - {sentence(3)}
   - {sentence(3)}"""
-  let contentHtml = markdown(contentMd)
-  return (contentMd, contentHtml)
+  let contentHtml = markdown(Content)
+  return (Content, contentHtml)
 
 proc todo*() {.async.} =
   seeder rdb, "todo":
@@ -74,7 +74,7 @@ proc todo*() {.async.} =
         "assign_to": user[rand(1..user.len-1)]["id"].getStr,
         "status_id": todoDateVal[0],
         "start_on": todoDateVal[1].format("yyyy-MM-dd"),
-        "deadline": todoDateVal[2].format("yyyy-MM-dd"),
+        "end_on": todoDateVal[2].format("yyyy-MM-dd"),
         "sort": i
       })
     await rdb.table("todo").insert(data)

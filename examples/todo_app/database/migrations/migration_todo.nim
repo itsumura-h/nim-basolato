@@ -13,7 +13,7 @@ proc todo*() {.async.} =
       Column().strForeign("created_by").reference("id").on("users").onDelete(SET_NULL).nullable(),
       Column().strForeign("assign_to").reference("id").on("users").onDelete(SET_NULL).nullable(),
       Column().datetime("start_on").default("0001-01-01"),
-      Column().datetime("deadline").default("0001-01-01"),
+      Column().datetime("end_on").default("0001-01-01"),
       Column().foreign("status_id").reference("id").on("status").onDelete(RESTRICT).nullable(),
       Column().integer("sort").default(0)
     ])

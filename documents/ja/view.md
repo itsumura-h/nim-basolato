@@ -32,20 +32,22 @@ Basolatoでは、デフォルトのテンプレートエンジンとして、`ni
 ```nim
 import basolato/view
 
-proc baseImpl(content:string): string = tmpli html"""
-<html>
-  <heade>
-    <title>Basolato</title>
-  </head>
-  <body>
-    $(content.get)
-  </body>
-</html>
-"""
+proc baseImpl(content:string): string =
+  tmpli html"""
+    <html>
+      <heade>
+        <title>Basolato</title>
+      </head>
+      <body>
+        $(content.get)
+      </body>
+    </html>
+  """
 
-proc indexImpl(message:string): string = tmpli html"""
-<p>$(message.get)</p>
-"""
+proc indexImpl(message:string): string =
+  tmpli html"""
+    <p>$(message.get)</p>
+  """
 
 proc indexView*(message:string): string =
   baseImpl(indexImpl(message))
@@ -69,13 +71,15 @@ params = @["<script>alert("aaa")</script>", "b"].parseJson()
 ```nim
 import basolato/view
 
-proc impl(title:string, params:JsonNode):Future[string] {.async.} = tmpli html"""
-  <h1>$(title.get)</h1>
-  <ul>
-    $for param in params {
-      <li>$(param.get)</li>
-    }
-  </ul>
+proc impl(title:string, params:JsonNode):Future[string] {.async.} =
+  tmpli html"""
+    <h1>$(title.get)</h1>
+    <ul>
+      $for param in params {
+        <li>$(param.get)</li>
+      }
+    </ul>
+  """
 ```
 
 ## コンポーネント指向
@@ -96,31 +100,33 @@ view
 import basolato/view
 import ../layouts/application_view
 
-script ["toggle"], script:"""
-<script>
-  window.addEventListener('load', ()=>{
-    let el = document.getElementById('toggle')
-    el.style.display = 'none'
-  })
 
-  const toggleOpen = () =>{
-    let el = document.getElementById('toggle')
-    if(el.style.display == 'none'){
-      el.style.display = ''
-    }else{
-      el.style.display = 'none'
-    }
-  }
-</script>
-"""
+proc impl():string =
+  script ["toggle"], script:"""
+    <script>
+      window.addEventListener('load', ()=>{
+        let el = document.getElementById('toggle')
+        el.style.display = 'none'
+      })
 
-proc impl():string = tmpli html"""
-$(script)
-<div>
-  <button onclick="toggleOpen()">toggle</button>
-  <div id="$(script.element("toggle"))">...content</div>
-</div>
-"""
+      const toggleOpen = () =>{
+        let el = document.getElementById('toggle')
+        if(el.style.display == 'none'){
+          el.style.display = ''
+        }else{
+          el.style.display = 'none'
+        }
+      }
+    </script>
+  """
+
+  tmpli html"""
+    $(script)
+    <div>
+      <button onclick="toggleOpen()">toggle</button>
+      <div id="$(script.element("toggle"))">...content</div>
+    </div>
+  """
 
 proc withScriptView*():string =
   let title = "Title"
@@ -176,24 +182,26 @@ view
 import basolato/view
 import ../layouts/application_view
 
-style "css", style:"""
-<style>
-  .background {
-    height: 200px;
-    width: 200px;
-    background-color: blue;
-  }
 
-  .background:hover {
-    background-color: green;
-  }
-</style>
-"""
+proc impl():string =
+  style "css", style:"""
+    <style>
+      .background {
+        height: 200px;
+        width: 200px;
+        background-color: blue;
+      }
 
-proc impl():string = tmpli html"""
-$(style)
-<div class="$(style.element("background"))"></div>
-"""
+      .background:hover {
+        background-color: green;
+      }
+    </style>
+  """
+
+  tmpli html"""
+    $(style)
+    <div class="$(style.element("background"))"></div>
+  """
 
 proc withStyleView*():string =
   let title = "Title"
@@ -240,20 +248,23 @@ apk add --no-cache libsass-dev
 そして、次のようにスタイルブロックを書きます。
 ```nim
 style "scss", style:"""
-.background {
-  height: 200px;
-  width: 200px;
-  background-color: blue;
+<style>
+  .background {
+    height: 200px;
+    width: 200px;
+    background-color: blue;
 
-  &:hover {
-    background-color: green;
+    &:hover {
+      background-color: green;
+    }
   }
-}
+</style>
+"""
 ```
 
 ### API
-`style` テンプレートは `Css` 型のインスタンスを `name` の 引数に格納します。
 `script` テンプレートは `Script` 型のインスタンスを `name` の 引数に格納します。
+`style` テンプレートは `Css` 型のインスタンスを `name` の 引数に格納します。
 
 ```nim
 # for JavaScript
@@ -281,12 +292,13 @@ func element*(self:Css, name:string):string
 ```nim
 import basolato/view
 
-proc index*():string = tmpli html"""
-<form>
-  $(csrfToken())
-  <input type="text", name="name">
-</form>
-"""
+proc index*():string =
+  tmpli html"""
+    <form>
+      $(csrfToken())
+      <input type="text", name="name">
+    </form>
+  """
 ```
 
 ### old関数
@@ -317,10 +329,11 @@ proc signin*(request:Request, params:Params):Future[Response] {.async.} =
 
 view
 ```nim
-proc impl(params=newJObject()):string = tmpli html"""
-<input type="text" name="email" value="$(old(params, "email"))">
-<input type="text" name="password">
-"""
+proc impl(params=newJObject()):string =
+  tmpli html"""
+    <input type="text" name="email" value="$(old(params, "email"))">
+    <input type="text" name="password">
+  """
 
 proc signinView*(params=newJObject()):string =
   let title = "SignIn"

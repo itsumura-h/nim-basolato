@@ -24,5 +24,7 @@ routes.get("/", todo_controller.toppage)
 
 routes.middleware(re"/todo", auth_middleware.mustBeLoggedIn)
 routes.get("/todo", todo_controller.index)
+routes.get("/todo/create", todo_controller.create)
+routes.post("/todo/create", todo_controller.store)
 
 serve(routes)

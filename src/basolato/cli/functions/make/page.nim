@@ -11,24 +11,26 @@ proc makePage*(target:string, message:var string):int =
 import basolato/view
 import {relativeToApplicationPath}
 
-style "css", style:'''
-<style>
-  .className [[
-  ]]
-</style>
-'''
 
-script script:'''
-<script>
-</script>
-'''
+proc impl():string =
+  style "css", style:'''
+    <style>
+      .className [[
+      ]]
+    </style>
+  '''
 
-proc impl():string = tmpli html'''
-$(style)
-$(script)
-<div class="$(style.element("className"))">
-</div>
-'''
+  script ["idName"], script:'''
+    <script>
+    </script>
+  '''
+
+  tmpli html'''
+    $(style)
+    $(script)
+    <div class="$(style.element("className"))">
+    </div>
+  '''
 
 proc {targetCaptalized}View*():string =
   let title = ''

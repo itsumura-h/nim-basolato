@@ -9,24 +9,26 @@ proc makeLayout*(target:string, message:var string):int =
   var VIEW = &"""
 import basolato/view
 
-style "css", style:'''
-<style>
-  .className [[
-  ]]
-</style>
-'''
 
-script script:'''
-<script>
-</script>
-'''
+proc {targetCaptalized}View*():string =
+  style "css", style:'''
+    <style>
+      .className [[
+      ]]
+    </style>
+  '''
 
-proc {targetCaptalized}View*():string = tmpli html'''
-$(style)
-$(script)
-<div class="$(style.element("className"))">
-</div>
-'''
+  script ["idName"], script:'''
+    <script>
+    </script>
+  '''
+
+  tmpli html'''
+    $(style)
+    $(script)
+    <div class="$(style.element("className"))">
+    </div>
+  '''
 """
 
   VIEW = VIEW.replace("'", "\"").replace("[[", "{").replace("]]", "}")

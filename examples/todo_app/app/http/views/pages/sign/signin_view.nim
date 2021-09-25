@@ -54,7 +54,7 @@ $(style)
         $if errors.hasKey("error"){
           <aside>
             $for error in errors["error"]{
-              <p>$(error.get)</p>
+              <p class="help is-danger">$(error.get)</p>
             }
           </aside>
         }

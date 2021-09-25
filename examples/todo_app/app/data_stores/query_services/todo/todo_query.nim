@@ -11,10 +11,12 @@ func new*(typ:type TodoQuery):TodoQuery =
   typ()
 
 implements TodoQuery, ITodoQuery:
-  proc indexMasterData(self:TodoQuery):Future[JsonNode]{.async.} =
+  proc getMasterData(self:TodoQuery):Future[JsonNode]{.async.} =
     let status = await rdb.table("status").get()
+    let users = await rdb.table("users").where("auth_id", ">", 1).get()
     return %*{
-      "status": status
+      "status": status,
+      "users": users
     }
 
   proc todoList(self:TodoQuery):Future[seq[JsonNode]] {.async.} =
@@ -27,7 +29,7 @@ implements TodoQuery, ITodoQuery:
         "todo.assign_to as assign_id",
         "assign_user.name as assign_name",
         "todo.start_on",
-        "todo.deadline",
+        "todo.end_on",
         "todo.status_id",
         "status.name as status",
         "todo.sort"

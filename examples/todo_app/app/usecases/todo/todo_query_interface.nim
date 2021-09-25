@@ -2,7 +2,7 @@ import json, asyncdispatch
 
 
 type ITodoQuery* = tuple
-  indexMasterData: proc():Future[JsonNode]
+  getMasterData: proc():Future[JsonNode]
   todoList: proc():Future[seq[JsonNode]]
 
 
@@ -24,5 +24,5 @@ proc new*(typ: type IndexListViewModel, data:seq[JsonNode]):IndexListViewModel =
   return typ(
     todo: todo,
     doing: doing,
-    done: done,
+    done: done
   )

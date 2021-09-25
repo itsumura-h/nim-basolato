@@ -134,7 +134,7 @@ func `$`*(self:Script):string =
 func element*(self:Script, name:string):string =
   return name & self.saffix
 
-template script*(selectors:seq[string], name, body:untyped):untyped =
+template script*(selectors:openArray[string], name, body:untyped):untyped =
   let name = (proc():Script =
     var saffix = "_"
     for _ in 0..9:

@@ -11,7 +11,7 @@ import ../../../models/user/user_repository_interface
 type UserRepository* = ref object
 
 func new*(typ:type UserRepository):UserRepository =
-  typ()
+  UserRepository()
 
 implements UserRepository, IUserRepository:
   proc getUserByEmail(self:UserRepository, email:Email):Future[Option[User]] {.async.} =
@@ -19,11 +19,26 @@ implements UserRepository, IUserRepository:
     if not userOpt.isSome():
       return none(User)
     let user = userOpt.get
+    echo user
     return User.new(
       UserId.new(user["id"].getStr),
       UserName.new(user["name"].getStr),
       Email.new(user["email"].getStr),
-      Password.new(user["password"].getStr)
+      Password.new(user["password"].getStr),
+      Auth.new(user["auth_id"].getInt)
+    ).some
+
+  proc getUserById(self:UserRepository, id:UserId):Future[Option[User]] {.async.} =
+    let userOpt = await rdb.table("users").find($id)
+    if not userOpt.isSome():
+      return none(User)
+    let user = userOpt.get
+    return User.new(
+      UserId.new(user["id"].getStr),
+      UserName.new(user["name"].getStr),
+      Email.new(user["email"].getStr),
+      Password.new(user["password"].getStr),
+      Auth.new(user["auht_id"].getInt)
     ).some
 
   proc save(self:UserRepository, user:DraftUser):Future[int] {.async.} =

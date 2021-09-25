@@ -11,8 +11,8 @@ proc makeValueObject*(aggregate, target, message:var string):int =
 type {target}* = ref object
   value:string
 
-func new*(typ:type {target}, value:string):{target} =
-  typ(
+func new*(_:type {target}, value:string):{target} =
+  {target}(
     value: value
   )
 

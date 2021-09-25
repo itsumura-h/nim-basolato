@@ -18,14 +18,16 @@ proc new*(typ:type SigninUsecase):SigninUsecase =
 proc run*(self:SigninUsecase, email, password:string):Future[JsonNode] {.async.} =
   let email = Email.new(email)
   let userOpt = await self.repository.getUserByEmail(email)
+  let errorMsg = "user is not found"
   if not userOpt.isSome():
-    raise newException(Exception, "user is not found")
+    raise newException(Exception, errorMsg)
   let user = userOpt.get
   let password = Password.new(password)
   if self.service.isMatchPassword(password, user):
     return %*{
       "id": $user.id,
-      "name": $user.name
+      "name": $user.name,
+      "auth": user.auth.get()
     }
   else:
-    raise newException(Exception, "password is not match")
+    raise newException(Exception, errorMsg)

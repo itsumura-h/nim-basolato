@@ -213,46 +213,86 @@ proc accepted*(self:RequestValidation, keys:openArray[string], val="on") =
 proc after*(self:RequestValidation, base, target, format:string, attribute="") =
   let attribute = setAttribute(base, attribute)
   if self.params.hasKey(base) and self.params.hasKey(target) and hasMessage("after"):
-    let a = self.params.getStr(base).parse(format)
-    let b = self.params.getStr(target).parse(format)
-    if not after(a, b):
-      let message = messages["after"].getStr
-        .replace(":attribute", attribute)
-        .replace(":date", self.params.getStr(target))
+    var
+      message:string
+      a, b:DateTime
+    try:
+      a = self.params.getStr(base).parse(format)
+      b = self.params.getStr(target).parse(format)
+    except:
+      message = "Failed to parse datetime."
+
+    if message.len > 0:
       self.errors.add(base, message)
+    else:
+      if not after(a, b):
+        let message = messages["after"].getStr
+          .replace(":attribute", attribute)
+          .replace(":date", self.params.getStr(target))
+        self.errors.add(base, message)
 
 proc after*(self:RequestValidation, base:string, target:DateTime, format:string, attribute="") =
   let attribute = setAttribute(base, attribute)
   if self.params.hasKey(base) and hasMessage("after"):
-    let a = self.params.getStr(base).parse(format)
-    let b = target
-    if not after(a, b):
-      let message = messages["after"].getStr
-        .replace(":attribute", attribute)
-        .replace(":date", $target)
+    var
+      message:string
+      a, b:DateTime
+    try:
+      a = self.params.getStr(base).parse(format)
+      b = target
+    except:
+      message = "Failed to parse datetime."
+
+    if message.len > 0:
       self.errors.add(base, message)
+    else:
+      if not after(a, b):
+        let message = messages["after"].getStr
+          .replace(":attribute", attribute)
+          .replace(":date", $target)
+        self.errors.add(base, message)
 
 proc afterOrEqual*(self:RequestValidation, base, target, format:string, attribute="") =
   let attribute = setAttribute(base, attribute)
   if self.params.hasKey(base) and self.params.hasKey(target) and hasMessage("after_or_equal"):
-    let a = self.params.getStr(base).parse(format)
-    let b = self.params.getStr(target).parse(format)
-    if not afterOrEqual(a, b):
-      let message = messages["after_or_equal"].getStr
-        .replace(":attribute", attribute)
-        .replace(":date", self.params.getStr(target))
+    var
+      message:string
+      a, b:DateTime
+    try:
+      a = self.params.getStr(base).parse(format)
+      b = self.params.getStr(target).parse(format)
+    except:
+      message = "Failed to parse datetime."
+
+    if message.len > 0:
       self.errors.add(base, message)
+    else:
+      if not afterOrEqual(a, b):
+        message = messages["after_or_equal"].getStr
+          .replace(":attribute", attribute)
+          .replace(":date", self.params.getStr(target))
+        self.errors.add(base, message)
 
 proc afterOrEqual*(self:RequestValidation, base:string, target:DateTime, format:string, attribute="") =
   let attribute = setAttribute(base, attribute)
   if self.params.hasKey(base) and hasMessage("after_or_equal"):
-    let a = self.params.getStr(base).parse(format)
-    let b = target
-    if not afterOrEqual(a, b):
-      let message = messages["after_or_equal"].getStr
-        .replace(":attribute", attribute)
-        .replace(":date", $target)
+    var
+      message:string
+      a, b:DateTime
+    try:
+      a = self.params.getStr(base).parse(format)
+      b = target
+    except:
+      message = "Failed to parse datetime."
+
+    if message.len > 0:
       self.errors.add(base, message)
+    else:
+      if not afterOrEqual(a, b):
+        let message = messages["after_or_equal"].getStr
+          .replace(":attribute", attribute)
+          .replace(":date", $target)
+        self.errors.add(base, message)
 
 proc alpha*(self:RequestValidation, key:string, attribute="") =
   let attribute = setAttribute(key, attribute)

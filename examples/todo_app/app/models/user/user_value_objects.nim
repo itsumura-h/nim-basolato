@@ -56,3 +56,15 @@ func new*(typ:type HashedPassword, value:string):HashedPassword =
 
 proc `$`*(self:HashedPassword):string =
   return self.value
+
+
+type Auth* = ref object
+  value:int
+
+func new*(_:type Auth, value:int):Auth =
+  Auth(
+    value: value
+  )
+
+proc get*(self:Auth):int =
+  return self.value

@@ -16,8 +16,8 @@ import {relativeToValueObjectsPath}
 
 type {targetCaptalized}* = ref object
 
-func new*(typ:type {targetCaptalized}):{targetCaptalized} =
-  typ()
+func new*(_:type {targetCaptalized}):{targetCaptalized} =
+  {targetCaptalized}()
 """
 
   let REPOSITORY_INTERFACE = &"""
@@ -40,8 +40,8 @@ import ../../../models/{targetName}/{targetName}_repository_interface
 
 type {targetCaptalized}Repository* = ref object
 
-func new*(typ:type {targetCaptalized}Repository):{targetCaptalized}Repository =
-  typ()
+func new*(_:type {targetCaptalized}Repository):{targetCaptalized}Repository =
+  {targetCaptalized}Repository()
 
 implements {targetCaptalized}Repository, I{targetCaptalized}Repository:
   discard
@@ -56,8 +56,8 @@ import {relativeToRepoInterface}
 type {targetCaptalized}Service* = ref object
   repository: I{targetCaptalized}Repository
 
-func new*(typ:type {targetCaptalized}Service, repository:I{parentCapitalized}Repository):{targetCaptalized}Service =
-  typ(
+func new*(_:type {targetCaptalized}Service, repository:I{parentCapitalized}Repository):{targetCaptalized}Service =
+  {targetCaptalized}Service(
     repository: repository
   )
 """
