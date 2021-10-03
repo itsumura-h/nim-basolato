@@ -25,15 +25,32 @@ block:
 
 block:
   style "css", style:"""
-.className{
-  color: red
-}
-"""
-  let className = style.get("className")
-  var expanded = fmt("""
 <style type="text/css">
-.[className]{
-  color: red
-}
-</style>""", '[', ']')
+  .className{
+    color: red;
+  }
+</style>
+"""
+  let className = style.element("className")
+  let expanded = fmt("""
+<style type="text/css">
+  .[className]{
+    color: red;
+  }
+</style>
+""", '[', ']')
   check $style == expanded
+
+block:
+  script ["idName"], script:"""
+<script>
+  let el = document.getElementById('idName')
+</script>
+"""
+  let idName = script.element("idName")
+  let expanded = fmt("""
+<script>
+  let el = document.getElementById('{idName}')
+</script>
+""")
+  check $script == expanded
