@@ -2,15 +2,23 @@ import json
 import ../../../../../../../src/basolato/view
 
 
-proc taskView*(todo:JsonNode, isDisplayUp, isDisplayDown:bool, upSortNum, downSortNum:int):string =
+proc taskView*(todo:JsonNode, isDisplayUp, isDisplayDown:bool, upId:string,
+      upSortNum:int, downId:string, downSortNum:int):string =
   style "css", style:"""
     <style>
       .columns {
         max-width: 100%;
         margin: auto;
       }
-      .task{
+      .task {
         margin: 12px 0px;
+      }
+      .form {
+        padding: 0;
+      }
+      .button {
+        width: 100%;
+        height: 100%;
       }
     </style>
   """
@@ -25,14 +33,28 @@ proc taskView*(todo:JsonNode, isDisplayUp, isDisplayDown:bool, upSortNum, downSo
     <article class="card $(style.element("task"))">
       <div class="card-header columns $(style.element("columns"))">
         $if isDisplayUp {
-          <button class="column button" onclick="console.log($(upSortNum))">
-            <span class="icon"><i class="fas fa-arrow-up"></i></span>
-          </button>
+          <form method="POST" action="/todo/change-sort" class="column $(style.element("form"))">
+            $(csrfToken())
+            <button class="button $(style.element("button"))">
+              <span class="icon"><i class="fas fa-arrow-up"></i></span>
+            </button>
+            <input type="hidden" name="id" value="$(todo["id"].get)">
+            <input type="hidden" name="current_sort" value="$(todo["sort"].get)">
+            <input type="hidden" name="next_id" value="$(upId)">
+            <input type="hidden" name="next_sort" value="$(upSortNum)">
+          </form>
         }
         $if isDisplayDown {
-          <button class="column button" onclick="console.log($(downSortNum))">
-            <span class="icon"><i class="fas fa-arrow-down"></i></span>
-          </button>
+          <form method="POST" action="/todo/change-sort" class="column $(style.element("form"))">
+            $(csrfToken())
+            <button class="button $(style.element("button"))">
+              <span class="icon"><i class="fas fa-arrow-down"></i></span>
+            </button>
+            <input type="hidden" name="id" value="$(todo["id"].get)">
+            <input type="hidden" name="current_sort" value="$(todo["sort"].get)">
+            <input type="hidden" name="next_id" value="$(downId)">
+            <input type="hidden" name="next_sort" value="$(downSortNum)">
+          </form>
         }
       </div>
       <div class="card-content">

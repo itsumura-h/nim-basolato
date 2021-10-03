@@ -48,7 +48,7 @@ Basolato can check whether csrf token is valid if request metod is `post`, `put`
 
 main.nim
 ```nim
-var routes = newRoutes()
+var routes = Routes.new()
 routes.middleware(".*", auth_middleware.checkCsrfTokenMiddleware)
 ```
 

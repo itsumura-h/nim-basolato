@@ -41,7 +41,7 @@ import re
 import basolato
 import app/middlewares/auth_middleware
 
-var routes = newRoutes()
+var routes = Routes.new()
 routes.middleware(re".*", auth_middleware.checkLoginIdMiddleware)
 serve(routes)
 ```
@@ -92,7 +92,7 @@ In following example, `setCorsMiddleware` run only in `OPTIONS` requests.
 
 main.nim
 ```nim
-var routes = newRoutes()
+var routes = Routes.new()
 routes.middleware(@[HttpOptions], re"/api/.*", cors_middleware.setCorsMiddleware)
 ```
 

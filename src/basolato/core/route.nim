@@ -52,10 +52,10 @@ type Routes* = ref object
   withoutParams: OrderedTable[string, Route]
   middlewares: seq[MiddlewareRoute]
 
-func newRoutes*():Routes =
+func new*(_:type Routes):Routes =
   return Routes()
 
-func newRoute(httpMethod:HttpMethod, path:string, action:proc(c:Context, p:Params):Future[Response]):Route =
+func new(_:type Route, httpMethod:HttpMethod, path:string, action:proc(c:Context, p:Params):Future[Response]):Route =
   return Route(
     httpMethod:httpMethod,
     path:path,
@@ -63,7 +63,7 @@ func newRoute(httpMethod:HttpMethod, path:string, action:proc(c:Context, p:Param
   )
 
 func add*(self:var Routes, httpMethod:HttpMethod, path:string, action:proc(c:Context, p:Params):Future[Response]) =
-  let route = newRoute(httpMethod, path, action)
+  let route = Route.new(httpMethod, path, action)
   if path.contains("{"):
     self.withParams.add(route)
   else:

@@ -271,16 +271,16 @@ template script*(selectors:openArray[string], name, body:untyped):untyped
 
 template script*(name, body:untyped):untyped
 
-func `$`*(self:Script):string
+proc `$`*(self:Script):string
 
-func element*(self:Script, name:string):string
+proc element*(self:Script, name:string):string
 
 # for CSS
 template style*(typ:string, name, body: untyped):untyped
 
-func `$`*(self:Css):string
+proc `$`*(self:Css):string
 
-func element*(self:Css, name:string):string
+proc element*(self:Css, name:string):string
 ```
 
 ## Helper functions

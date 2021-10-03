@@ -94,7 +94,7 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ### Url params
 routing
 ```nim
-var routes = newRoutes()
+var routes = Routes.new()
 routes.get("/{id:int}", some_controller.show)
 ```
 

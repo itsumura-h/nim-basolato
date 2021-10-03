@@ -7,7 +7,7 @@
 import basolato
 import app/controllers/some_controller
 
-var routes = newRoutes()
+var routes = Routes.new()
 
 routes.get("/", some_controller.index)
 routes.post("/", some_controller.create)
@@ -48,7 +48,7 @@ import app/controllers/some_controller
 import app/controllers/dashboard_controller
 
 
-var routes = newRoutes()
+var routes = Routes.new()
 
 routes.get("/", some_controller.index)
 
@@ -65,7 +65,7 @@ BasolatoはURLパラメータを`int`と`str`を使って型指定すること�
 import basolato
 import app/controllers/some_controller
 
-var routes = newRoutes()
+var routes = Routes.new()
 
 routes.get("/{id:int}", some_controller.show)
 routes.get("/{name:str}", some_controller.showByName)

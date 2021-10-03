@@ -9,6 +9,7 @@ import ../views/pages/todo/create_view
 import ../../usecases/todo/display_index_usecase
 import ../../usecases/todo/display_create_usecase
 import ../../usecases/todo/create_todo_usecase
+import ../../usecases/todo/change_sort_usecase
 
 proc toppage*(context:Context, params:Params):Future[Response] {.async.} =
   return redirect("/todo")
@@ -53,6 +54,15 @@ proc store*(context:Context, params:Params):Future[Response] {.async.} =
     endOn = params.getStr("end_on")
     usecase = CreateTodoUsecase.new()
   await usecase.run(title, content, createdBy, assignTo, startOn, endOn)
+  return redirect("/todo")
+
+proc changeSort*(context:Context, params:Params):Future[Response] {.async.} =
+  let id = params.getStr("id")
+  let currentSort = params.getInt("current_sort")
+  let nextId = params.getStr("next_id")
+  let nextSort = params.getInt("next_sort")
+  let usecase = ChangeSortUsecase.new()
+  await usecase.run(id, currentSort, nextId, nextSort)
   return redirect("/todo")
 
 proc edit*(context:Context, params:Params):Future[Response] {.async.} =

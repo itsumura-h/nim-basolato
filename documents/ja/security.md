@@ -48,7 +48,7 @@ Basolatoは、リクエストメソッドが `post`, `put`, `patch`, `delete` �
 
 main.nim
 ```nim
-var routes = newRoutes()
+var routes = Routes.new()
 routes.middleware(".*", auth_middleware.checkCsrfTokenMiddleware)
 ```
 

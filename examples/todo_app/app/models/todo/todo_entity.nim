@@ -5,25 +5,15 @@ import ../../../libs/uid
 
 
 type Todo* = ref object
-  id:TodoId
-  title:Title
-  content:Content
-  createdBy:UserId
-  assignTo:UserId
-  startOn:TodoDate
-  endOn:TodoDate
-  status:Status
-  sort:Sort
-
-proc id*(self:Todo):TodoId = self.id
-proc title*(self:Todo):Title = self.title
-proc content*(self:Todo):Content = self.content
-proc createdBy*(self:Todo):UserId = self.createdBy
-proc assignTo*(self:Todo):UserId = self.assignTo
-proc startOn*(self:Todo):TodoDate = self.startOn
-proc endOn*(self:Todo):TodoDate = self.endOn
-proc status*(self:Todo):Status = self.status
-proc sort*(self:Todo):Sort = self.sort
+  id*:TodoId
+  title*:Title
+  content*:Content
+  createdBy*:UserId
+  assignTo*:UserId
+  startOn*:TodoDate
+  endOn*:TodoDate
+  status*:Status
+  sort*:Sort
 
 proc new*(_:type Todo, title:Title, content:Content, createdBy:UserId,
           assignTo:UserId, startOn:TodoDate, endOn:TodoDate, sort:Sort):Todo =

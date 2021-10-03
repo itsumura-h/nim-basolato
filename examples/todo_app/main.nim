@@ -9,7 +9,7 @@ import app/http/controllers/todo_controller
 import app/http/middlewares/auth_middleware
 import app/http/middlewares/cors_middleware
 
-var routes = newRoutes()
+var routes = Routes.new()
 routes.middleware(re".*", auth_middleware.checkCsrfTokenMiddleware)
 routes.middleware(re"/api/.*", cors_middleware.setCorsHeadersMiddleware)
 
@@ -26,5 +26,6 @@ routes.middleware(re"/todo", auth_middleware.mustBeLoggedIn)
 routes.get("/todo", todo_controller.index)
 routes.get("/todo/create", todo_controller.create)
 routes.post("/todo/create", todo_controller.store)
+routes.post("/todo/change-sort", todo_controller.changeSort)
 
 serve(routes)

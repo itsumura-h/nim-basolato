@@ -16,7 +16,7 @@ import {relativeToValueObjectsPath}
 
 type {targetCaptalized}* = ref object
 
-func new*(_:type {targetCaptalized}):{targetCaptalized} =
+proc new*(_:type {targetCaptalized}):{targetCaptalized} =
   {targetCaptalized}()
 """
 
@@ -40,7 +40,7 @@ import ../../../models/{targetName}/{targetName}_repository_interface
 
 type {targetCaptalized}Repository* = ref object
 
-func new*(_:type {targetCaptalized}Repository):{targetCaptalized}Repository =
+proc new*(_:type {targetCaptalized}Repository):{targetCaptalized}Repository =
   {targetCaptalized}Repository()
 
 implements {targetCaptalized}Repository, I{targetCaptalized}Repository:
@@ -56,7 +56,7 @@ import {relativeToRepoInterface}
 type {targetCaptalized}Service* = ref object
   repository: I{targetCaptalized}Repository
 
-func new*(_:type {targetCaptalized}Service, repository:I{parentCapitalized}Repository):{targetCaptalized}Service =
+proc new*(_:type {targetCaptalized}Service, repository:I{parentCapitalized}Repository):{targetCaptalized}Service =
   {targetCaptalized}Service(
     repository: repository
   )

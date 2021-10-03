@@ -55,7 +55,7 @@ import {relativeToInterfacePath}usecases/{dir}/{dir}_query_interface
 
 type {targetCaptalized}Query* = ref object
 
-func new*(_:type {targetCaptalized}Query):{targetCaptalized}Query =
+proc new*(_:type {targetCaptalized}Query):{targetCaptalized}Query =
   {targetCaptalized}Query()
 
 implements {targetCaptalized}Query, I{targetCaptalized}Query:
