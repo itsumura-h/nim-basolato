@@ -7,7 +7,7 @@ type DraftUser* = ref object
   password*: Password
 
 func new*(typ:type DraftUser, name:UserName, email:Email, password:Password):DraftUser =
-  return typ(
+  return DraftUser(
     name:name,
     email:email,
     password:password,
@@ -23,7 +23,7 @@ type User* = ref object
 
 func new*(typ:type User, id:UserId, name:UserName, email:Email, password:Password,
           auth:Auth):User =
-  return typ(
+  return User(
     id:id,
     name:name,
     email:email,

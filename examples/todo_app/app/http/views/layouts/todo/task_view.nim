@@ -64,7 +64,6 @@ proc taskView*(todo:JsonNode, isDisplayUp, isDisplayDown:bool, upId:string,
           <p>assign: $(todo["assign_name"].get)</p>
           <p>start: $(todo["start_on"].get)</p>
           <p>end_on: $(todo["end_on"].get)</p>
-          <p>sort: $(todo["sort"].get)</p>
         </div>
       </div>
     </article>

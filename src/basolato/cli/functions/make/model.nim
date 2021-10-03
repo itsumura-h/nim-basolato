@@ -17,7 +17,7 @@ import {relativeToValueObjectsPath}
 type {targetCaptalized}* = ref object
 
 proc new*(_:type {targetCaptalized}):{targetCaptalized} =
-  {targetCaptalized}()
+  return {targetCaptalized}()
 """
 
   let REPOSITORY_INTERFACE = &"""
@@ -41,7 +41,7 @@ import ../../../models/{targetName}/{targetName}_repository_interface
 type {targetCaptalized}Repository* = ref object
 
 proc new*(_:type {targetCaptalized}Repository):{targetCaptalized}Repository =
-  {targetCaptalized}Repository()
+  return {targetCaptalized}Repository()
 
 implements {targetCaptalized}Repository, I{targetCaptalized}Repository:
   discard
@@ -57,7 +57,7 @@ type {targetCaptalized}Service* = ref object
   repository: I{targetCaptalized}Repository
 
 proc new*(_:type {targetCaptalized}Service, repository:I{parentCapitalized}Repository):{targetCaptalized}Service =
-  {targetCaptalized}Service(
+  return {targetCaptalized}Service(
     repository: repository
   )
 """
@@ -145,10 +145,10 @@ proc new*(_:type {targetCaptalized}Service, repository:I{parentCapitalized}Repos
     message = &"Updated {targetPath}"
     styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
 
-  message = &"Created domain model in {getCurrentDir()}/app/models/{target}"
-  styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
+    message = &"Created repository in {getCurrentDir()}/app/data_stores/repositories/{target}"
+    styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
 
-  message = &"Created repository in {getCurrentDir()}/app/data_stores/repositories/{target}"
+  message = &"Created domain model in {getCurrentDir()}/app/models/{target}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
 
   return 0

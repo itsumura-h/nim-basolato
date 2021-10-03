@@ -14,7 +14,7 @@ import {relativeToDiContainer}
 type {targetCaptalized}Usecase* = ref object
 
 proc new*(_:type {targetCaptalized}Usecase):{targetCaptalized}Usecase =
-  {targetCaptalized}Usecase()
+  return {targetCaptalized}Usecase()
 
 proc run*(self:{targetCaptalized}Usecase) =
   discard
@@ -56,7 +56,7 @@ import {relativeToInterfacePath}usecases/{dir}/{dir}_query_interface
 type {targetCaptalized}Query* = ref object
 
 proc new*(_:type {targetCaptalized}Query):{targetCaptalized}Query =
-  {targetCaptalized}Query()
+  return {targetCaptalized}Query()
 
 implements {targetCaptalized}Query, I{targetCaptalized}Query:
   discard

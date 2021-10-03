@@ -26,7 +26,7 @@ import {relativeToInterfacePath}usecases/{target}/{targetName}_query_service_int
 type {targetCaptalized}QueryService* = ref object
 
 proc new*(typ:type {targetCaptalized}QueryService):{targetCaptalized}QueryService =
-  typ()
+  return {targetCaptalized}QueryService()
 
 implements {targetCaptalized}QueryService, I{targetCaptalized}QueryService:
   discard

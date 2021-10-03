@@ -18,7 +18,6 @@ type Todo* = ref object
 proc new*(_:type Todo, title:Title, content:Content, createdBy:UserId,
           assignTo:UserId, startOn:TodoDate, endOn:TodoDate, sort:Sort):Todo =
   ## Used to initialize input data
-  ## 
   if not endOn.isLaterThan(startOn):
     raise newException(Exception, "Due date must after than start date")
 

@@ -1,4 +1,4 @@
-import cgi, strutils, json
+import cgi, json
 
 const
   BasolatoVersion* = "0.10.0"

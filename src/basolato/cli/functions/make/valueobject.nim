@@ -12,7 +12,7 @@ type {target}* = ref object
   value:string
 
 proc new*(_:type {target}, value:string):{target} =
-  {target}(
+  return {target}(
     value: value
   )
 

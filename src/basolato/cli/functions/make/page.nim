@@ -37,7 +37,7 @@ proc {targetCaptalized}View*():string =
   return applicationView(title, impl())
 """
 
-  VIEW = VIEW.replace("'", "\"").replace("[[", "{").replace("]]", "}")
+  VIEW = VIEW.replace("'", "\"").multiReplace(("[[", "{"), ("]]", "}"))
 
   if isFileExists(targetPath): return 1
   createDir(parentDir(targetPath))

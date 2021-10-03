@@ -10,7 +10,7 @@ type SigninUsecase* = ref object
   service: UserService
 
 proc new*(typ:type SigninUsecase):SigninUsecase =
-  typ(
+  return SigninUsecase(
     repository: di.userRepository,
     service: UserService.new(di.userRepository)
   )
