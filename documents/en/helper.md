@@ -13,7 +13,7 @@ Table of Contents
          * [API](#api-1)
          * [Example](#example-1)
 
-<!-- Added by: root, at: Mon Apr 19 05:12:13 UTC 2021 -->
+<!-- Added by: root, at: Sat Sep 18 06:54:34 UTC 2021 -->
 
 <!--te-->
 
@@ -23,7 +23,7 @@ This proc is only available in develop mode.
 
 ### API
 ```
-proc dd(outputs:varges[string])
+proc dd(outputs:varges[string, `$`])
 ```
 
 ### Example
@@ -34,7 +34,7 @@ var a = %*{
   "key3": "value3",
   "key4": "value4",
 }
-dd($a,　"abc",request.repr)
+dd(a, "abc", request.repr)
 ```
 
 ![dd](../images/helper-dd.jpg)

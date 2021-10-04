@@ -9,28 +9,28 @@ import json
 # framework
 import basolato/controller
 
-proc index*(request:Request, params:Params):Future[Response] ASYNC =
+proc index*(context:Context, params:Params):Future[Response] ASYNC =
   return render("index")
 
-proc show*(request:Request, params:Params):Future[Response] ASYNC =
+proc show*(context:Context, params:Params):Future[Response] ASYNC =
   let id = params.getInt("id")
   return render("show")
 
-proc create*(request:Request, params:Params):Future[Response] ASYNC =
+proc create*(context:Context, params:Params):Future[Response] ASYNC =
   return render("create")
 
-proc store*(request:Request, params:Params):Future[Response] ASYNC =
+proc store*(context:Context, params:Params):Future[Response] ASYNC =
   return render("store")
 
-proc edit*(request:Request, params:Params):Future[Response] ASYNC =
+proc edit*(context:Context, params:Params):Future[Response] ASYNC =
   let id = params.getInt("id")
   return render("edit")
 
-proc update*(request:Request, params:Params):Future[Response] ASYNC =
+proc update*(context:Context, params:Params):Future[Response] ASYNC =
   let id = params.getInt("id")
   return render("update")
 
-proc destroy*(request:Request, params:Params):Future[Response] ASYNC =
+proc destroy*(context:Context, params:Params):Future[Response] ASYNC =
   let id = params.getInt("id")
   return render("destroy")
 """

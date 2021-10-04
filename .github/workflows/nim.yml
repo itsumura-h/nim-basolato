@@ -35,7 +35,6 @@ jobs:
           # Need sqlite3_64.dll
           # - windows-latest
         nim-version:
-          - 1.2.0
           - 1.4.0
           - stable
     steps:

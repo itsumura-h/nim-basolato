@@ -5,42 +5,42 @@ import ../views/pages/test_view
 
 
 # test controller
-proc renderStr*(request:Request, params:Params):Future[Response] {.async.} =
+proc renderStr*(context:Context, params:Params):Future[Response] {.async.} =
   return render("test")
 
-proc renderHtml*(request:Request, params:Params):Future[Response] {.async.} =
+proc renderHtml*(context:Context, params:Params):Future[Response] {.async.} =
   return render(html("pages/test.html"))
 
-proc renderTemplate*(request:Request, params:Params):Future[Response] {.async.} =
+proc renderTemplate*(context:Context, params:Params):Future[Response] {.async.} =
   return render(testView())
 
-proc renderJson*(request:Request, params:Params):Future[Response] {.async.} =
+proc renderJson*(context:Context, params:Params):Future[Response] {.async.} =
   return render(%*{"key": "test"})
 
-proc status500*(request:Request, params:Params):Future[Response] {.async.} =
+proc status500*(context:Context, params:Params):Future[Response] {.async.} =
   return render(Http500, "")
 
-proc status500json*(request:Request, params:Params):Future[Response] {.async.} =
+proc status500json*(context:Context, params:Params):Future[Response] {.async.} =
   return render(Http500, %*{"key": "test"})
 
-proc redirect*(request:Request, params:Params):Future[Response] {.async.} =
+proc redirect*(context:Context, params:Params):Future[Response] {.async.} =
   return redirect("/new_url")
 
-proc redirectWithHeader*(request:Request, params:Params):Future[Response] {.async.} =
+proc redirectWithHeader*(context:Context, params:Params):Future[Response] {.async.} =
   let headers = newHttpHeaders()
   headers["key"] = "value"
   return redirect("/new_url", headers)
 
-proc errorRedirect*(request:Request, params:Params):Future[Response] {.async.} =
+proc errorRedirect*(context:Context, params:Params):Future[Response] {.async.} =
   return errorRedirect("/new_url")
 
-proc errorRedirectWithHeader*(request:Request, params:Params):Future[Response] {.async.} =
+proc errorRedirectWithHeader*(context:Context, params:Params):Future[Response] {.async.} =
   let headers = newHttpHeaders()
   headers["key"] = "value"
   return errorRedirect("/new_url", headers)
 
 # test helper
-proc dd*(request:Request, params:Params):Future[Response] {.async.} =
+proc dd*(context:Context, params:Params):Future[Response] {.async.} =
   var a = %*{
     "key1": "value1",
     "key2": 2
@@ -49,43 +49,41 @@ proc dd*(request:Request, params:Params):Future[Response] {.async.} =
   return render("dd")
 
 # test response
-proc setHeader*(request:Request, params:Params):Future[Response] {.async.} =
+proc setHeader*(context:Context, params:Params):Future[Response] {.async.} =
   var header = newHttpHeaders()
   header.add("key1", "value1")
   header.add("key2", ["value1", "value2"])
   return render("setHeader", header)
 
-proc setCookie*(request:Request, params:Params):Future[Response] {.async.} =
-  var cookie = newCookie(request)
-  cookie.add("key1", "value1")
-  cookie.add("key2", "value2")
+proc setCookie*(context:Context, params:Params):Future[Response] {.async.} =
+  var cookie = newCookies(context.request)
+  cookie.set("key1", "value1")
+  cookie.set("key2", "value2")
   return render("setCookie").setCookie(cookie)
 
-proc setAuth*(request:Request, params:Params):Future[Response] {.async.} =
-  let client = await newClient(request)
-  await client.set("key1", "value1")
-  await client.set("key2", "value2")
+proc setAuth*(context:Context, params:Params):Future[Response] {.async.} =
+  await context.set("key1", "value1")
+  await context.set("key2", "value2")
   return render("setAuth")
 
-proc destroyAuth*(request:Request, params:Params):Future[Response] {.async.} =
-  let client = await newClient(request)
-  await client.login()
-  await client.destroy()
-  return render("setAuth")
+proc destroyAuth*(context:Context, params:Params):Future[Response] {.async.} =
+  await context.login()
+  let res = await render("setAuth").destroyContext(context)
+  return res
 
 
 # test routing
-proc getAction*(request:Request, params:Params):Future[Response] {.async.} =
+proc getAction*(context:Context, params:Params):Future[Response] {.async.} =
   return render("get")
 
-proc postAction*(request:Request, params:Params):Future[Response] {.async.} =
+proc postAction*(context:Context, params:Params):Future[Response] {.async.} =
   return render("post")
 
-proc patchAction*(request:Request, params:Params):Future[Response] {.async.} =
+proc patchAction*(context:Context, params:Params):Future[Response] {.async.} =
   return render("patch")
 
-proc putAction*(request:Request, params:Params):Future[Response] {.async.} =
+proc putAction*(context:Context, params:Params):Future[Response] {.async.} =
   return render("put")
 
-proc deleteAction*(request:Request, params:Params):Future[Response] {.async.} =
+proc deleteAction*(context:Context, params:Params):Future[Response] {.async.} =
   return render("delete")

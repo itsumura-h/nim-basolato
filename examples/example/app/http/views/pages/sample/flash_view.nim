@@ -2,23 +2,28 @@ import json
 import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
-proc impl(client:Client):Future[string] {.async.} = tmpli html"""
-<a href="/">go back</a>
-<form method="POST">
-  $(csrfToken())
-  <button type="submit">set flash</button>
-</form>
-
-<form method="POST" action="/sample/flash/leave">
-  $(csrfToken())
-  <button type="submit">leave</button>
-</form>
-
-$for key, val in await(client.getFlash()).pairs{
-  <p>$(val.get())</p>
+style "css", style:"""
+.className {
 }
 """
 
-proc indexView*(client:Client):Future[string] {.async.} =
+proc impl(context:Context):Future[string]{.async.} = tmpli html"""
+<main>
+  <a href="/">go back</a>
+  <section>
+    <form method="POST">
+      $(csrfToken())
+      <button type="submit">set flash</button>
+    </form>
+  </section>
+  <section>
+    $for key, val in await(context.getFlash()).pairs{
+      <p>$(val.get())</p>
+    }
+  </section>
+</main>
+"""
+
+proc flashView*(context:Context):Future[string]{.async.} =
   const title = "Flash message"
-  return applicationView(title, await impl(client))
+  return applicationView(title, await impl(context))

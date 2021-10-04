@@ -5,26 +5,26 @@ Ducere command
 Table of Contents
 
 <!--ts-->
-* [Ducere command](#ducere-command)
-   * [Introduction](#introduction)
-   * [Usages](#usages)
-      * [new](#new)
-      * [serve](#serve)
-      * [build](#build)
-      * [migrate](#migrate)
-      * [make](#make)
-         * [config](#config)
-         * [controller](#controller)
-         * [view](#view)
-         * [migration](#migration)
-         * [model](#model)
-            * [Create top level domain model(=aggregate)](#create-top-level-domain-modelaggregate)
-            * [Create child domain model in aggregate](#create-child-domain-model-in-aggregate)
-         * [usecase](#usecase)
-         * [value object](#value-object)
-   * [Bash-completion](#bash-completion)
+   * [Ducere command](#ducere-command)
+      * [Introduction](#introduction)
+      * [Usages](#usages)
+         * [new](#new)
+         * [serve](#serve)
+         * [build](#build)
+         * [migrate](#migrate)
+         * [migrate](#migrate-1)
+         * [make](#make)
+            * [config](#config)
+            * [controller](#controller)
+            * [view](#view)
+            * [migration](#migration)
+            * [model](#model)
+               * [Create child domain model in aggregate](#create-child-domain-model-in-aggregate)
+            * [value object](#value-object)
+            * [usecase](#usecase)
+      * [Bash-completion](#bash-completion)
 
-<!-- Added by: root, at: Tue May  4 05:45:57 UTC 2021 -->
+<!-- Added by: root, at: Sat Sep 18 06:55:08 UTC 2021 -->
 
 <!--te-->
 
@@ -172,17 +172,17 @@ ducere migrate
 ```
 This is a alias for `nim c -r migrations/migrate`
 
-#### clear
+### migrate
 ```sh
-ducere migrate clear
+ducere migrate --reset --seed
 ```
-Dropping all tables from the database. Target database is loaded in `.env.local`.
+This is an alias for `nim c -r database/migrations/migrate`
 
-#### fresh
-```sh
-ducere migrate fresh
-```
-Dropping all tables from the database and then execute the migrate command. Target database is loaded in `.env.local`.
+- options
+  - `--reset`
+   Drop tables and re-migrate.
+  - `--seed`
+   Execute `database/seeders/seed` after migration.
 
 ### make
 Create new file
@@ -229,13 +229,13 @@ ducere make migration create_user
 
 #### model
 
-##### Create top level domain model(=aggregate)
+- Create top level domain model(=aggregate)
 
 ```sh
 ducere make model circle
 ```
 
-in app/core/models
+in app/models
 ```
 circle
 ├── circle_entity.nim
@@ -253,37 +253,49 @@ circle
 ducere make model circle/user
 ```
 
-in app/core/models
+in app/models
 ```
 circle
 ├── circle_entity.nim
 ├── circle_repository_interface.nim
 ├── circle_service.nim
+├── circle_value_objects.nim
 └── user
     ├── user_entity.nim
-    └── user_service.nim
-```
-
-#### usecase
-Create new usecase
-```sh
-ducere make usecase login
->> app/core/usecases/login_usecase.nim
+    ├── user_service.nim
+    └── user_value_objects.nim
 ```
 
 #### value object
 Add new minimum value object boilerplate.  
 
 ```sh
-ducere make valueobject {arg1} {arg2}
+ducere make vo {arg1} {arg2}
 ```
 
-`arg1` is a name of value object which should be Camel Case.  
-`arg2` specifies the name of the aggregate to which the value object will be written. Ex: `app/core/models{aggregate}/{aggregate}_value_object`.
+`arg1` specifies the name of the model to which the value object will be written. Ex: `app/core/models/{model}/{model}_value_object`.  
+`arg2` is a name of value object which should be Camel Case.
 
 ```sh
-ducere make valueobject UserName user
->> add UserName in app/domain/models/user/user_value_objects.nim
+ducere make vo circle CircleName
+>> add CircleName in app/models/circle/circle_value_objects.nim
+
+ducere make vo circle/user UserName
+>> add UserName in app/models/circle/user/user_value_objects.nim
+```
+
+#### usecase
+Create new usecase.  
+At the same time, create `query service` and `query service interface`.
+
+```sh
+ducere make usecase sign signin
+>> app/usecases/sign/signin_usecase.nim
+>> app/usecases/sign/sign_query_interface.nim
+>> app/usecases/data_stores/query_services/sign/sign_query.nim
+
+ducere make usecase sign signup
+>> app/usecases/sign/signup_usecase.nim
 ```
 
 ## Bash-completion

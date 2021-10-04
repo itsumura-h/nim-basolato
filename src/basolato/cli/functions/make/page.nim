@@ -11,23 +11,33 @@ proc makePage*(target:string, message:var string):int =
 import basolato/view
 import {relativeToApplicationPath}
 
-style "css", style:'''
-.className [[
-]]
-'''
 
-proc impl():string = tmpli html'''
-$(style)
-<div class="$(style.get("className"))">
-</div>
-'''
+proc impl():string =
+  style "css", style:'''
+    <style>
+      .className [[
+      ]]
+    </style>
+  '''
+
+  script ["idName"], script:'''
+    <script>
+    </script>
+  '''
+
+  tmpli html'''
+    $(style)
+    $(script)
+    <div class="$(style.element("className"))">
+    </div>
+  '''
 
 proc {targetCaptalized}View*():string =
   let title = ''
   return applicationView(title, impl())
 """
 
-  VIEW = VIEW.replace("'", "\"").replace("[[", "{").replace("]]", "}")
+  VIEW = VIEW.replace("'", "\"").multiReplace(("[[", "{"), ("]]", "}"))
 
   if isFileExists(targetPath): return 1
   createDir(parentDir(targetPath))

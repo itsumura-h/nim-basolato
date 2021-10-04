@@ -21,7 +21,7 @@ Table of Contents
          * [Response with header](#response-with-header)
       * [Redirect](#redirect)
 
-<!-- Added by: root, at: Mon Apr 19 05:13:08 UTC 2021 -->
+<!-- Added by: root, at: Sat Sep 18 06:55:36 UTC 2021 -->
 
 <!--te-->
 
@@ -94,7 +94,7 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ### Url params
 routing
 ```nim
-var routes = newRoutes()
+var routes = Routes.new()
 routes.get("/{id:int}", some_controller.show)
 ```
 

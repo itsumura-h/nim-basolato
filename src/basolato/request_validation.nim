@@ -13,7 +13,7 @@ include core/validation
 import core/baseEnv
 import core/request
 import core/logger
-import core/security/client
+import core/security/context
 
 let baseMessages = %*{
   "accepted": "The :attribute must be accepted.",
@@ -172,11 +172,11 @@ func hasErrors*(self:RequestValidation):bool =
 func hasError*(self:RequestValidation, key:string):bool =
   return self.errors.hasKey(key)
 
-proc storeValidationResult*(client:Client, validation:RequestValidation) {.async.} =
+proc storeValidationResult*(context:Context, validation:RequestValidation) {.async.} =
   let data = %validation.params
   let errors = %validation.errors
-  await client.setFlash("params", data)
-  await client.setFlash("errors", errors)
+  await context.setFlash("params", data)
+  await context.setFlash("errors", errors)
 
 proc hasMessage(key:string):bool =
   if not messages.hasKey(key):
@@ -213,46 +213,86 @@ proc accepted*(self:RequestValidation, keys:openArray[string], val="on") =
 proc after*(self:RequestValidation, base, target, format:string, attribute="") =
   let attribute = setAttribute(base, attribute)
   if self.params.hasKey(base) and self.params.hasKey(target) and hasMessage("after"):
-    let a = self.params.getStr(base).parse(format)
-    let b = self.params.getStr(target).parse(format)
-    if not after(a, b):
-      let message = messages["after"].getStr
-        .replace(":attribute", attribute)
-        .replace(":date", self.params.getStr(target))
+    var
+      message:string
+      a, b:DateTime
+    try:
+      a = self.params.getStr(base).parse(format)
+      b = self.params.getStr(target).parse(format)
+    except:
+      message = "Failed to parse datetime."
+
+    if message.len > 0:
       self.errors.add(base, message)
+    else:
+      if not after(a, b):
+        let message = messages["after"].getStr
+          .replace(":attribute", attribute)
+          .replace(":date", self.params.getStr(target))
+        self.errors.add(base, message)
 
 proc after*(self:RequestValidation, base:string, target:DateTime, format:string, attribute="") =
   let attribute = setAttribute(base, attribute)
   if self.params.hasKey(base) and hasMessage("after"):
-    let a = self.params.getStr(base).parse(format)
-    let b = target
-    if not after(a, b):
-      let message = messages["after"].getStr
-        .replace(":attribute", attribute)
-        .replace(":date", $target)
+    var
+      message:string
+      a, b:DateTime
+    try:
+      a = self.params.getStr(base).parse(format)
+      b = target
+    except:
+      message = "Failed to parse datetime."
+
+    if message.len > 0:
       self.errors.add(base, message)
+    else:
+      if not after(a, b):
+        let message = messages["after"].getStr
+          .replace(":attribute", attribute)
+          .replace(":date", $target)
+        self.errors.add(base, message)
 
 proc afterOrEqual*(self:RequestValidation, base, target, format:string, attribute="") =
   let attribute = setAttribute(base, attribute)
   if self.params.hasKey(base) and self.params.hasKey(target) and hasMessage("after_or_equal"):
-    let a = self.params.getStr(base).parse(format)
-    let b = self.params.getStr(target).parse(format)
-    if not afterOrEqual(a, b):
-      let message = messages["after_or_equal"].getStr
-        .replace(":attribute", attribute)
-        .replace(":date", self.params.getStr(target))
+    var
+      message:string
+      a, b:DateTime
+    try:
+      a = self.params.getStr(base).parse(format)
+      b = self.params.getStr(target).parse(format)
+    except:
+      message = "Failed to parse datetime."
+
+    if message.len > 0:
       self.errors.add(base, message)
+    else:
+      if not afterOrEqual(a, b):
+        message = messages["after_or_equal"].getStr
+          .replace(":attribute", attribute)
+          .replace(":date", self.params.getStr(target))
+        self.errors.add(base, message)
 
 proc afterOrEqual*(self:RequestValidation, base:string, target:DateTime, format:string, attribute="") =
   let attribute = setAttribute(base, attribute)
   if self.params.hasKey(base) and hasMessage("after_or_equal"):
-    let a = self.params.getStr(base).parse(format)
-    let b = target
-    if not afterOrEqual(a, b):
-      let message = messages["after_or_equal"].getStr
-        .replace(":attribute", attribute)
-        .replace(":date", $target)
+    var
+      message:string
+      a, b:DateTime
+    try:
+      a = self.params.getStr(base).parse(format)
+      b = target
+    except:
+      message = "Failed to parse datetime."
+
+    if message.len > 0:
       self.errors.add(base, message)
+    else:
+      if not afterOrEqual(a, b):
+        let message = messages["after_or_equal"].getStr
+          .replace(":attribute", attribute)
+          .replace(":date", $target)
+        self.errors.add(base, message)
 
 proc alpha*(self:RequestValidation, key:string, attribute="") =
   let attribute = setAttribute(key, attribute)
@@ -1071,15 +1111,16 @@ proc requiredWithoutAll*(self:RequestValidation, key:string, others:openArray[st
           .replace(":values", $others)
         self.errors.add(key, message)
 
-proc same*(self:RequestValidation, key, target:string, attribute="") =
+proc same*(self:RequestValidation, key, target:string, attribute="", attributeTarget="") =
   let attribute = setAttribute(key, attribute)
+  let attributeTarget = setAttribute(target, attributeTarget)
   if self.params.hasKey(key) and self.params.hasKey(target) and hasMessage("same"):
     let a = self.params.getStr(key)
     let b = self.params.getStr(target)
     if not same(a, b):
       let message = messages["same"].getStr
         .replace(":attribute", attribute)
-        .replace(":other", target)
+        .replace(":other", attributeTarget)
       self.errors.add(key, message)
 
 proc sizeNum*(self:RequestValidation, key:string, standard:int, attribute="") =

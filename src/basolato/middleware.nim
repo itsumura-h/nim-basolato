@@ -1,8 +1,8 @@
 import asynchttpserver, asyncdispatch, strutils, tables
 export asynchttpserver
 import core/base, core/route, core/header, core/response,
-  core/security/client, core/security/cookie, core/security/session_db, core/security/csrf_token
-export base, route, cookie, header, response, client
+  core/security/cookie, core/security/session_db, core/security/csrf_token, core/security/context
+export base, route, cookie, header, response, context
 
 type MiddlewareResult* = ref object
   hasError: bool
@@ -33,7 +33,7 @@ proc checkSessionId*(request:Request):Future[MiddlewareResult] {.async.} =
   ## Check session id in cookie is valid.
   result = MiddlewareResult()
   if request.httpMethod != HttpOptions:
-    let cookie = newCookie(request)
+    let cookie = newCookies(request)
     try:
       if not cookie.hasKey("session_id"):
         raise newException(Exception, "Missing session id")

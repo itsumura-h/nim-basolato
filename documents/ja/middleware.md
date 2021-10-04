@@ -9,7 +9,7 @@
       * [API](#api)
       * [サンプル](#サンプル)
 
-<!-- Added by: root, at: Mon Apr 19 05:13:53 UTC 2021 -->
+<!-- Added by: root, at: Sat Sep 18 06:56:25 UTC 2021 -->
 
 <!--te-->
 
@@ -41,7 +41,7 @@ import re
 import basolato
 import app/middlewares/auth_middleware
 
-var routes = newRoutes()
+var routes = Routes.new()
 routes.middleware(re".*", auth_middleware.checkLoginIdMiddleware)
 serve(routes)
 ```
@@ -88,7 +88,7 @@ CORSのように、コントローラーではなくミドルウェアで作ら�
 
 main.nim
 ```nim
-var routes = newRoutes()
+var routes = Routes.new()
 routes.middleware(@[HttpOptions], re"/api/.*", cors_middleware.setCorsMiddleware)
 ```
 

@@ -1,7 +1,8 @@
-import migration20210410131239user
+import asyncdispatch
+import migration20210901235644users
 
 proc main() =
   discard
-  migration20210410131239user()
+  waitFor migration20210901235644users()
 
 main()

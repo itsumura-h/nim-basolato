@@ -92,7 +92,7 @@
       * [url](#url)
       * [uuid](#uuid)
 
-<!-- Added by: root, at: Mon Apr 19 05:13:35 UTC 2021 -->
+<!-- Added by: root, at: Sat Sep 18 06:56:05 UTC 2021 -->
 
 <!--te-->
 
@@ -119,15 +119,15 @@ import basolato/request_validation
 ```
 ### API
 ```nim
-func newRequestValidation*(params: Params):RequestValidation =
+proc newRequestValidation*(params: Params):RequestValidation =
 
-func hasErrors*(self:RequestValidation):bool =
+proc hasErrors*(self:RequestValidation):bool =
 
-func hasError*(self:RequestValidation, key:string):bool =
+proc hasError*(self:RequestValidation, key:string):bool =
 
-func errors*(self:RequestValidation):ValidationErrors =
+proc errors*(self:RequestValidation):ValidationErrors =
 
-func add*(self:ValidationErrors, key, value:string) =
+proc add*(self:ValidationErrors, key, value:string) =
 
 proc storeValidationResult*(client:Client, validation:RequestValidation) {.async.} =
 ```

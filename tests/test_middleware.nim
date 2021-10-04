@@ -1,8 +1,8 @@
 import unittest, httpclient, strformat, json, strutils, asyncdispatch
 import ../src/basolato/middleware
-import ../src/basolato/core/security/encrypt as a
-import ../src/basolato/core/security/session as b
-import ../src/basolato/core/security/csrf_token as c
+include ../src/basolato/core/security/encrypt
+include ../src/basolato/core/security/session
+include ../src/basolato/core/security/csrf_token
 
 const HOST = "http://0.0.0.0:5000"
 
@@ -24,11 +24,12 @@ block:
   check response.body.contains("Invalid csrf token")
 
 block:
-  let auth_id = waitFor getToken(waitFor newSession())
-  echo auth_id
+  let session = waitFor genNewSession()
+  let authId = waitFor session.db.getToken()
+  echo authId
   let client = newHttpClient(maxRedirects=0)
   client.headers = newHttpHeaders({
-    "Cookie": &"session_id={auth_id}",
+    "Cookie": &"session_id={authId}",
     "Content-Type": "application/x-www-form-urlencoded"
   })
   let csrf_token = newCsrfToken().getToken()
@@ -38,11 +39,11 @@ block:
   check Http200 == response.code
 
 block:
-  let auth_id = "invalid_auth_id".encryptCtr()
-  echo auth_id
+  let authId = "invalid_auth_id".encryptCtr()
+  echo authId
   let client = newHttpClient(maxRedirects=0)
   client.headers = newHttpHeaders({
-    "Cookie": &"session_id={auth_id}",
+    "Cookie": &"session_id={authId}",
     "Content-Type": "application/x-www-form-urlencoded"
   })
   let csrf_token = newCsrfToken().getToken()

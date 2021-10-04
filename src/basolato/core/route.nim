@@ -2,20 +2,20 @@ import
   asynchttpserver, asyncdispatch, json, strformat, macros, strutils, os,
   asyncfile, mimetypes, re, tables, times
 from osproc import countProcessors
-import baseEnv, request, response, header, logger, error_page, resources/ddPage,
-  security/cookie, security/client
+import baseEnv, request, response, header, logger, error_page, resources/dd_page,
+  security/cookie, security/context
 export request, header
 
 
 type Route* = ref object
   httpMethod*:HttpMethod
   path*:string
-  action*:proc(r:Request, p:Params):Future[Response]
+  action*:proc(c:Context, p:Params):Future[Response]
 
 type MiddlewareRoute* = ref object
   httpMethods*:seq[HttpMethod]
   path*:Regex
-  action*:proc(r:Request, p:Params):Future[Response]
+  action*:proc(c:Context, p:Params):Future[Response]
 
 
 proc params*(request:Request, route:Route):Params =
@@ -52,18 +52,18 @@ type Routes* = ref object
   withoutParams: OrderedTable[string, Route]
   middlewares: seq[MiddlewareRoute]
 
-func newRoutes*():Routes =
+func new*(_:type Routes):Routes =
   return Routes()
 
-func newRoute(httpMethod:HttpMethod, path:string, action:proc(r:Request, p:Params):Future[Response]):Route =
+func new(_:type Route, httpMethod:HttpMethod, path:string, action:proc(c:Context, p:Params):Future[Response]):Route =
   return Route(
     httpMethod:httpMethod,
     path:path,
     action:action
   )
 
-func add*(self:var Routes, httpMethod:HttpMethod, path:string, action:proc(r:Request, p:Params):Future[Response]) =
-  let route = newRoute(httpMethod, path, action)
+func add*(self:var Routes, httpMethod:HttpMethod, path:string, action:proc(c:Context, p:Params):Future[Response]) =
+  let route = Route.new(httpMethod, path, action)
   if path.contains("{"):
     self.withParams.add(route)
   else:
@@ -74,7 +74,7 @@ func add*(self:var Routes, httpMethod:HttpMethod, path:string, action:proc(r:Req
 func middleware*(
   self:var Routes,
   path:Regex,
-  action:proc(r:Request, p:Params):Future[Response]
+  action:proc(c:Context, p:Params):Future[Response]
 ) =
   self.middlewares.add(
     MiddlewareRoute(
@@ -88,7 +88,7 @@ func middleware*(
   self:var Routes,
   httpMethods:seq[HttpMethod],
   path:Regex,
-  action:proc(r:Request, p:Params):Future[Response]
+  action:proc(c:Context, p:Params):Future[Response]
 ) =
   self.middlewares.add(
     MiddlewareRoute(
@@ -98,31 +98,31 @@ func middleware*(
     )
   )
 
-func get*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
+func get*(self:var Routes, path:string, action:proc(c:Context, p:Params):Future[Response]) =
   add(self, HttpGet, path, action)
 
-func post*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
+func post*(self:var Routes, path:string, action:proc(c:Context, p:Params):Future[Response]) =
   add(self, HttpPost, path, action)
 
-func put*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
+func put*(self:var Routes, path:string, action:proc(c:Context, p:Params):Future[Response]) =
   add(self, HttpPut, path, action)
 
-func patch*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
+func patch*(self:var Routes, path:string, action:proc(c:Context, p:Params):Future[Response]) =
   add(self, HttpPatch, path, action)
 
-func delete*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
+func delete*(self:var Routes, path:string, action:proc(c:Context, p:Params):Future[Response]) =
   add(self, HttpDelete, path, action)
 
-func head*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
+func head*(self:var Routes, path:string, action:proc(c:Context, p:Params):Future[Response]) =
   add(self, HttpHead, path, action)
 
-func options*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
+func options*(self:var Routes, path:string, action:proc(c:Context, p:Params):Future[Response]) =
   add(self, HttpOptions, path, action)
 
-func trace*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
+func trace*(self:var Routes, path:string, action:proc(c:Context, p:Params):Future[Response]) =
   add(self, HttpTrace, path, action)
 
-func connect*(self:var Routes, path:string, action:proc(r:Request, p:Params):Future[Response]) =
+func connect*(self:var Routes, path:string, action:proc(c:Context, p:Params):Future[Response]) =
   add(self, HttpConnect, path, action)
 
 macro groups*(head, body:untyped):untyped =
@@ -168,29 +168,28 @@ func checkHttpCode(exception:ref Exception):HttpCode =
   createHttpCodeError
 
 
-proc runMiddleware(req:Request, routes:Routes, headers:HttpHeaders):Future[Response] {.async.} =
+proc runMiddleware(req:Request, routes:Routes, headers:HttpHeaders, context:Context):Future[Response] {.async.} =
   var
     headers = headers
     status = HttpCode(0)
   for route in routes.middlewares:
+    let params = req.params(route)
     if route.httpMethods.len > 0:
       if findAll(req.path, route.path).len > 0 and route.httpMethods.contains(req.httpMethod):
-        let params = req.params(route)
-        let res = await route.action(req, params)
+        let res = await route.action(context, params)
         headers &= res.headers
         if res.status != HttpCode(0): status = res.status
     else:
       if findAll(req.path, route.path).len > 0:
-        let params = req.params(route)
-        let res = await route.action(req, params)
+        let res = await route.action(context, params)
         headers &= res.headers
         if res.status != HttpCode(0): status = res.status
   let response = Response(headers:headers, status:status)
   return response
 
-proc runController(req:Request, route:Route, headers: HttpHeaders):Future[Response] {.async.} =
+proc runController(req:Request, route:Route, headers: HttpHeaders, context:Context):Future[Response] {.async.} =
   let params = req.params(route)
-  let response = await route.action(req, params)
+  let response = await route.action(context, params)
   response.headers &= headers
   echoLog(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
   return response
@@ -229,6 +228,7 @@ proc serveCore(params:(Routes, int)){.async.} =
         response = Response(status:Http200, body:data, headers:headers)
     else:
       # check path match with controller routing → run middleware → run controller
+      let context = await Context.new(req, ENABLE_ANONYMOUS_COOKIE)
       try:
         let httpMethod =
           if req.httpMethod == HttpHead:
@@ -237,17 +237,17 @@ proc serveCore(params:(Routes, int)){.async.} =
             req.httpMethod
         let key = $(httpMethod) & ":" & req.path
         if req.httpMethod == HttpOptions:
-          response = await runMiddleware(req, routes, headers)
+          response = await runMiddleware(req, routes, headers, context)
         elif routes.withoutParams.hasKey(key):
-          response = await runMiddleware(req, routes, headers)
+          response = await runMiddleware(req, routes, headers, context)
           let route = routes.withoutParams[key]
-          response = await runController(req, route, response.headers)
+          response = await runController(req, route, response.headers, context)
         else:
           for route in routes.withParams:
             if route.httpMethod == httpMethod and isMatchUrl(req.path, route.path):
-              response = await runMiddleware(req, routes, response.headers)
+              response = await runMiddleware(req, routes, response.headers, context)
               if httpMethod != HttpOptions:
-                response = await runController(req, route, response.headers)
+                response = await runController(req, route, response.headers, context)
                 break
         if req.httpMethod == HttpHead:
           response.body = ""
@@ -272,18 +272,13 @@ proc serveCore(params:(Routes, int)){.async.} =
           echoErrorMsg(exception.msg)
 
       # anonymous user login should run only for response from controler
-      if doesRunAnonymousLogin(req, response):
-        let client = await newClient(req)
-        if await anonumousCreateSession(client, req):
-          # create new session
-          response = await response.setCookie(client)
-        else:
-          # keep session id from request and update expire
-          var cookie = newCookie(req)
-          cookie.updateExpire(SESSION_TIME, Minutes)
-          response = response.setCookie(cookie)
+      if doesRunAnonymousLogin(req, response) and await context.isValid():
+        # keep session id from request and update expire
+        var cookies = newCookies(req)
+        let sessionId = await context.getToken()
+        cookies.set("session_id", sessionId, expire=timeForward(SESSION_TIME, Minutes))
+        response = response.setCookie(cookies)
 
-    # if response.isNil:
     if response.status == HttpCode(0):
       headers["content-type"] = "text/html; charset=utf-8"
       response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)

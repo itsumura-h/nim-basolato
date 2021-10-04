@@ -7,7 +7,7 @@ import app/http/middlewares/auth_middleware
 # controller
 import app/http/controllers/test_controller
 
-var routes = newRoutes()
+var routes = Routes.new()
 routes.middleware(re"/csrf/*", checkCsrfTokenMiddleware)
 routes.middleware(re"/session/*", checkSessionIdMiddleware)
 

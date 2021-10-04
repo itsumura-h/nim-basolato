@@ -1,6 +1,7 @@
 import
   asyncdispatch, asynchttpserver, asyncnet, json, strutils, cgi, tables, os, strformat,
-  strtabs, parseutils, net, uri
+  strtabs, parseutils, net, uri, options
+import security/session
 
 # import security
 
@@ -307,7 +308,6 @@ proc save*(params:Params, key, dir, newFileName:string) =
     var f = open(&"{dir}/{newFileName}.{param.ext}", fmWrite)
     defer: f.close()
     f.write(param.value)
-
 
 
 when isMainModule:

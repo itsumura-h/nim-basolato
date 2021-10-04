@@ -22,7 +22,7 @@ Table of Contents
             * [SCF](#scf)
             * [Karax](#karax)
 
-<!-- Added by: root, at: Mon Apr 19 05:12:54 UTC 2021 -->
+<!-- Added by: root, at: Sat Sep 18 06:55:18 UTC 2021 -->
 
 <!--te-->
 
@@ -32,20 +32,22 @@ Basolato use `nim-templates` as a default template engin. It can be used by impo
 ```nim
 import basolato/view
 
-proc baseImpl(content:string): string = tmpli html"""
-<html>
-  <heade>
-    <title>Basolato</title>
-  </head>
-  <body>
-    $(content.get)
-  </body>
-</html>
-"""
+proc baseImpl(content:string): string =
+  tmpli html"""
+    <html>
+      <heade>
+        <title>Basolato</title>
+      </head>
+      <body>
+        $(content.get)
+      </body>
+    </html>
+  """
 
-proc indexImpl(message:string): string = tmpli html"""
-<p>$(message.get)</p>
-"""
+proc indexImpl(message:string): string =
+  tmpli html"""
+    <p>$(message.get)</p>
+  """
 
 proc indexView*(message:string): string =
   baseImpl(indexImpl(message))
@@ -69,19 +71,104 @@ params = @["<script>alert("aaa")</script>", "b"].parseJson()
 ```nim
 import basolato/view
 
-proc impl(title:string, params:JsonNode):Future[string] {.async.} = tmpli html"""
-  <h1>$(title.get)</h1>
-  <ul>
-    $for param in params {
-      <li>$(param.get)</li>
-    }
-  </ul>
+proc impl(title:string, params:JsonNode):Future[string] {.async.} =
+  tmpli html"""
+    <h1>$(title.get)</h1>
+    <ul>
+      $for param in params {
+        <li>$(param.get)</li>
+      }
+    </ul>
+  """
 ```
 
 ## Component style design
 Basolato view is designed for component oriented design like React and Vue.  
-Component is a single chunk of html and css, and just a procedure that return html string.
+Component is a single chunk of html, JavaScriptand and css, and just a procedure that return html string.
 
+### JavaScript
+controller
+```nim
+import basolato/controller
+
+proc withSscriptPage*(request:Request, params:Params):Future[Response] {.async.} =
+  return render(withScriptView())
+```
+
+view
+```nim
+import basolato/view
+import ../layouts/application_view
+
+
+proc impl():string =
+  script ["toggle"], script:"""
+    <script>
+      window.addEventListener('load', ()=>{
+        let el = document.getElementById('toggle')
+        el.style.display = 'none'
+      })
+
+      const toggleOpen = () =>{
+        let el = document.getElementById('toggle')
+        if(el.style.display == 'none'){
+          el.style.display = ''
+        }else{
+          el.style.display = 'none'
+        }
+      }
+    </script>
+  """
+
+  tmpli html"""
+    $(script)
+    <div>
+      <button onclick="toggleOpen()">toggle</button>
+      <div id="$(script.element("toggle"))">...content</div>
+    </div>
+  """
+
+proc withScriptView*():string =
+  let title = "Title"
+  return applicationView(title, impl())
+```
+
+This is compiled to html like this.
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Title</title>
+  </head>
+  <body>
+    <script>
+      window.addEventListener('load', ()=>{
+        let el = document.getElementById('toggle_akvcgccoeg')
+        el.style.display = 'none'
+      })
+
+      const toggleOpen = () =>{
+        let el = document.getElementById('toggle_akvcgccoeg')
+        if(el.style.display == 'none'){
+          el.style.display = ''
+        }else{
+          el.style.display = 'none'
+        }
+      }
+    </script>
+    <div>
+      <button onclick="toggleOpen()">toggle</button>
+      <div id="toggle_akvcgccoeg">...content</div>
+    </div>
+  </body>
+</html>
+```
+
+The selector passed as the first argument of the `script` template will have a random suffix for each component, so multiple components can have the same ID name/class name.
+
+### CSS
 controller
 ```nim
 import basolato/controller
@@ -94,22 +181,26 @@ view
 ```nim
 import basolato/view
 
-style "css", style:"""
-.background {
-  height: 200px;
-  width: 200px;
-  background-color: blue;
-}
 
-.background:hover {
-  background-color: green;
-}
-"""
+proc impl():string = 
+  style "css", style:"""
+    <style>
+      .background {
+        height: 200px;
+        width: 200px;
+        background-color: blue;
+      }
 
-proc impl():string = tmpli html"""
-$(style)
-<div class="$(style.get("background"))"></div>
-"""
+      .background:hover {
+        background-color: green;
+      }
+    </style>
+  """
+
+  tmpli html"""
+    $(style)
+    <div class="$(style.get("background"))"></div>
+  """
 
 proc withStyleView*():string =
   let title = "Title"
@@ -156,26 +247,40 @@ apk add --no-cache libsass-dev
 Then you can write style block like this.
 ```nim
 style "scss", style:"""
-.background {
-  height: 200px;
-  width: 200px;
-  background-color: blue;
+  <style>
+    .background {
+      height: 200px;
+      width: 200px;
+      background-color: blue;
 
-  &:hover {
-    background-color: green;
-  }
-}
+      &:hover {
+        background-color: green;
+      }
+    }
+  </style>
+"""
 ```
 
 ### API
+`script` template crate `Script` type instance in `name` arg variable.
 `style` template crate `Css` type instance in `name` arg variable.
 
 ```nim
-template style*(typ:string, name, body: untyped):untyped =
+# for JavaScript
+template script*(selectors:openArray[string], name, body:untyped):untyped
 
-func `$`*(self:Css):string =
+template script*(name, body:untyped):untyped
 
-func get*(self:Css, name:string):string =
+proc `$`*(self:Script):string
+
+proc element*(self:Script, name:string):string
+
+# for CSS
+template style*(typ:string, name, body: untyped):untyped
+
+proc `$`*(self:Css):string
+
+proc element*(self:Css, name:string):string
 ```
 
 ## Helper functions
@@ -186,12 +291,13 @@ To send POST request from `form`, you have to set `csrf token`. You can use help
 ```nim
 import basolato/view
 
-proc index*():string = tmpli html"""
-<form>
-  $(csrfToken())
-  <input type="text", name="name">
-</form>
-"""
+proc index*():string =
+  tmpli html"""
+    <form>
+      $(csrfToken())
+      <input type="text", name="name">
+    </form>
+  """
 ```
 
 ### old helper
@@ -222,10 +328,11 @@ proc signin*(request:Request, params:Params):Future[Response] {.async.} =
 
 view
 ```nim
-proc impl(params=newJObject()):string = tmpli html"""
-<input type="text" name="email" value="$(old(params, "email"))">
-<input type="text" name="password">
-"""
+proc impl(params=newJObject()):string =
+  tmpli html"""
+    <input type="text" name="email" value="$(old(params, "email"))">
+    <input type="text" name="password">
+  """
 
 proc signinView*(params=newJObject()):string =
   let title = "SignIn"

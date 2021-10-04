@@ -21,7 +21,7 @@
          * [ヘッダー付きレスポンス](#ヘッダー付きレスポンス)
       * [リダイレクト](#リダイレクト)
 
-<!-- Added by: root, at: Mon Apr 19 05:14:23 UTC 2021 -->
+<!-- Added by: root, at: Sat Sep 18 06:56:58 UTC 2021 -->
 
 <!--te-->
 
@@ -94,7 +94,7 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ### Urlパラメータ
 routing
 ```nim
-var routes = newRoutes()
+var routes = Routes.new()
 routes.get("/{id:int}", some_controller.show)
 ```
 

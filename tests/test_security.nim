@@ -5,7 +5,7 @@ include ../src/basolato/core/security/token
 include ../src/basolato/core/security/csrf_token
 include ../src/basolato/core/security/session_db
 include ../src/basolato/core/security/session
-include ../src/basolato/core/security/client
+include ../src/basolato/core/security/context
 
 block:
   let input = $(getTime().toUnix().int())
@@ -134,16 +134,16 @@ block:
 
 
 block:
-  let session = waitFor newSession()
-  echo waitFor session.getToken()
-  check waitFor(session.getToken).len > 0
+  let session = waitFor genNewSession()
+  echo waitFor session.some.getToken()
+  check waitFor(session.some.getToken()).len > 0
 
 block:
   let token = waitFor sdb.getToken()
   echo token
   try:
-    let session = waitFor newSession(token)
-    waitFor session.set("key_session", "value_session")
+    let session = waitFor genNewSession(token)
+    waitFor session.some.set("key_session", "value_session")
     check true
   except:
     check false
@@ -151,33 +151,33 @@ block:
 block:
   let token = waitFor sdb.getToken()
   echo token
-  let session = waitFor newSession(token)
-  check waitFor(session.some("key_session")) == true
-  check waitFor(session.some("false")) == false
+  let session = waitFor genNewSession(token)
+  check waitFor(session.some.isSome("key_session")) == true
+  check waitFor(session.some.isSome("false")) == false
 
 block:
   let token = waitFor sdb.getToken()
   echo token
-  let session = waitFor newSession(token)
-  let result = waitFor session.get("key_session")
+  let session = waitFor genNewSession(token)
+  let result = waitFor session.some.get("key_session")
   echo result
   check result == "value_session"
 
 block:
   let token = waitFor sdb.getToken()
   echo token
-  let session = waitFor newSession(token)
-  waitFor session.delete("key_session")
-  check waitFor(session.get("key_session")) == ""
+  let session = waitFor genNewSession(token)
+  waitFor session.some.delete("key_session")
+  check waitFor(session.some.get("key_session")) == ""
 
 block:
   let token = waitFor sdb.getToken()
   echo token
-  var session = waitFor newSession(token)
-  waitFor session.set("key_session2", "value_session2")
-  waitFor session.destroy()
+  var session = waitFor genNewSession(token)
+  waitFor session.some.set("key_session2", "value_session2")
+  waitFor session.some.destroy()
   var result = ""
   try:
-    result = waitFor session.get("key_session2")
+    result = waitFor session.some.get("key_session2")
   except:
     check result == ""

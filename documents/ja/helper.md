@@ -13,17 +13,17 @@
          * [API](#api-1)
          * [サンプル](#サンプル-1)
 
-<!-- Added by: root, at: Mon Apr 19 05:13:26 UTC 2021 -->
+<!-- Added by: root, at: Sat Sep 18 06:55:54 UTC 2021 -->
 
 <!--te-->
 
 ## dd
-`dd`関数はソースコードの中にブレークポイントを発生させ、引数に入れている文字列をブラウザに表示させます。
+`dd`関数はソースコードの中にブレークポイントを発生させ、引数に入れている変数をブラウザに表示させます。
 この機能は開発環境でのみ有効になります。
 
 ### API
 ```
-proc dd(outputs:varges[string])
+proc dd(outputs:varges[string, `$`])
 ```
 
 
@@ -35,7 +35,7 @@ var a = %*{
   "key3": "value3",
   "key4": "value4",
 }
-dd($a,　"abc", request.repr)
+dd(a,　"abc", request.repr)
 ```
 
 ![dd](../images/helper-dd.jpg)

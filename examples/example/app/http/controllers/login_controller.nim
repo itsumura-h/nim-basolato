@@ -1,23 +1,21 @@
+import json
 # framework
 import ../../../../../src/basolato/controller
-# view
+#view
 import ../views/pages/sample/login_view
 
 
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let client = await newClient(request)
-  return render(await loginView(client))
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  return render(await loginView(context))
 
-proc store*(request:Request, params:Params):Future[Response] {.async.} =
+proc store*(context:Context, params:Params):Future[Response] {.async.} =
   let name = params.getStr("name")
   let password = params.getStr("password")
   # client
-  let client = await newClient(request)
-  await client.login()
-  await client.set("name", name)
-  return await redirect("/sample/login").setCookie(client)
+  await context.login()
+  await context.set("name", name)
+  return redirect("/sample/login")
 
-proc destroy*(request:Request, params:Params):Future[Response] {.async.} =
-  let client = await newClient(request)
-  await client.destroy()
-  return await redirect("/sample/login").setCookie(client)
+proc destroy*(context:Context, params:Params):Future[Response] {.async.} =
+  await context.destroy()
+  return await redirect("/sample/login").destroyContext(context)

@@ -1,30 +1,37 @@
-import strutils, times
+import strutils, times, json
 # framework
 import ../../../../../src/basolato/controller
+import ../../../../../src/basolato/core/security/cookie
 # view
 import ../views/pages/sample/cookie_view
 
-proc indexCookie*(request:Request, params:Params):Future[Response] {.async.} =
-  let client = await newClient(request)
-  return render(cookieView(client))
 
-proc storeCookie*(request:Request, params:Params):Future[Response] {.async.} =
-  let client = await newClient(request)
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let cookies = %newCookies(context.request).getAll()
+  return render(cookieView(cookies))
+
+proc store*(context:Context, params:Params):Future[Response] {.async.} =
   let key = params.getStr("key")
   let value = params.getStr("value")
-  var cookie = newCookie(request)
-  cookie.add(key, value, httpOnly=false)
-  return render(cookieView(client)).setCookie(cookie)
-
-proc updateCookie*(request:Request, params:Params):Future[Response] {.async.} =
-  let key = params.getStr("key")
-  let days = params.getInt("days")
-  var cookie = newCookie(request)
-  cookie.updateExpire(key, days, Days)
+  var cookie = newCookies(context.request)
+  cookie.set(key, value)
   return redirect("/sample/cookie").setCookie(cookie)
 
-proc destroyCookie*(request:Request, params:Params):Future[Response] {.async.} =
+proc update*(context:Context, params:Params):Future[Response] {.async.} =
   let key = params.getStr("key")
-  var cookie = newCookie(request)
+  let days = params.getInt("days")
+  var cookies = newCookies(context.request)
+  let val = cookies.get(key)
+  cookies.set(key, val, timeForward(days, Days))
+  return redirect("/sample/cookie").setCookie(cookies)
+
+proc delete*(context:Context, params:Params):Future[Response] {.async.} =
+  let key = params.getStr("key")
+  var cookie = newCookies(context.request)
   cookie.delete(key)
+  return redirect("/sample/cookie").setCookie(cookie)
+
+proc destroy*(context:Context, params:Params):Future[Response] {.async.} =
+  var cookie = newCookies(context.request)
+  cookie.destroy()
   return redirect("/sample/cookie").setCookie(cookie)
