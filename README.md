@@ -90,9 +90,9 @@ The overall file structure is as follows:
 
 ```
 ├── app
-│   ├── core
-│   │   ├── models
-│   │   └── usecases
+│   ├── data_stores
+│   │   ├── query_services
+│   │   └── repositories
 │   ├── di_container.nim
 │   ├── http
 │   │   ├── controllers
@@ -101,30 +101,37 @@ The overall file structure is as follows:
 │   │   │   ├── auth_middleware.nim
 │   │   │   └── cors_middleware.nim
 │   │   └── views
+│   │       ├── errors
 │   │       ├── layouts
 │   │       │   ├── application_view.nim
 │   │       │   └── head_view.nim
 │   │       └── pages
 │   │           └── welcome_view.nim
-│   └── repositories
-│       └── query_services
-│           ├── query_service.nim
-│           └── query_service_interface.nim
-├── .env
-├── .env.local
+│   ├── models
+│   └── usecases
+├── config
+│   └── database.nim
 ├── config.nims
+├── database
+│   ├── migrations
+│   │   └── migrate.nim
+│   └── seeders
+│       └── seed.nim
 ├── main.nim
-├── migrations
-│   └── migrate.nim
 ├── public
 │   ├── basolato.svg
 │   ├── css
 │   ├── favicon.ico
 │   └── js
-├── session.db
-├── {project_name}.nimble
+├── resources
+│   └── lang
+│       ├── en
+│       │   └── validation.json
+│       └── ja
+│           └── validation.json
+├── project.nimble
 └── tests
-    └── test_sample.nim
+    └── test_project.nim
 ```
 
 With your project ready, you can start serving requests using `ducere`:
