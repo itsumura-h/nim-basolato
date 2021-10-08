@@ -19,13 +19,13 @@ $(style)
 <section class="section">
   <div class="container is-max-desktop">
     <a href="/">back</a>
-    <form method="POST" action="/$(post["id"].get)" class="field $(style.get("form"))">
+    <form method="POST" action="/$(post["id"].get)" class="field $(style.element("form"))">
       $(csrfToken())
       <div class="field">
         <input type="text" name="title" placeholder="title" class="input" value="$(old(params, "title", post["title"].get))">
         $if errors.hasKey("title"){
           <div class="controll">
-            <ul class="$(style.get("error"))">
+            <ul class="$(style.element("error"))">
               $for error in errors["title"]{
                 <li>$(error.get)</li>
               }
@@ -40,7 +40,7 @@ $(style)
         </div>
         $if errors.hasKey("content"){
           <div class="controll">
-            <ul class="$(style.get("error"))">
+            <ul class="$(style.element("error"))">
               $for error in errors["content"]{
                 <li>$(error.get)</li>
               }

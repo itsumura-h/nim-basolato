@@ -1,13 +1,11 @@
 dependency
 
-enctypt
-↑
-token
-↑
-session db
-↑
-session / cookie
-↑
-client
-↑
-flash
+enctypt  
+↑  
+token  
+↑  
+session db  
+↑  
+session / cookie  
+↑  
+context  

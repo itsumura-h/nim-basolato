@@ -12,7 +12,7 @@ style "css", style:
 proc errorsView*(errors:JsonNode):string = tmpli html"""
 $(style)
 $if errors.hasKey("core"){
-  <div class="container $(style.get("errors"))">
+  <div class="container $(style.element("errors"))">
     $for v in errors["core"]{
       <p class="content">$(v.get)</p>
     }

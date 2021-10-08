@@ -9,7 +9,7 @@ const HOST = "http://0.0.0.0:5000"
 block:
   let client = newHttpClient(maxRedirects=0)
   client.headers = newHttpHeaders({"Content-Type": "application/x-www-form-urlencoded"})
-  let token = newCsrfToken().getToken()
+  let token = CsrfToken.new().getToken()
   let params = &"csrf_token={token}"
   let response = client.post(&"{HOST}/csrf/test_routing", body = params)
   check response.code == Http200
@@ -32,7 +32,7 @@ block:
     "Cookie": &"session_id={authId}",
     "Content-Type": "application/x-www-form-urlencoded"
   })
-  let csrf_token = newCsrfToken().getToken()
+  let csrf_token = CsrfToken.new().getToken()
   var params = &"csrf_token={csrf_token}"
   let response = client.post(&"{HOST}/session/test_routing", body = params)
   # echo response.body
@@ -46,7 +46,7 @@ block:
     "Cookie": &"session_id={authId}",
     "Content-Type": "application/x-www-form-urlencoded"
   })
-  let csrf_token = newCsrfToken().getToken()
+  let csrf_token = CsrfToken.new().getToken()
   var params = &"csrf_token={csrf_token}"
   let response = client.post(&"{HOST}/session/test_routing", body = params)
   # echo response.body

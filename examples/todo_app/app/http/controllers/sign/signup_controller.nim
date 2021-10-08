@@ -12,7 +12,7 @@ proc index*(context:Context, params:Params):Future[Response] {.async.} =
   return render(signupView(params, errors))
 
 proc store*(context:Context, params:Params):Future[Response] {.async.} =
-  let v = newRequestValidation(params)
+  let v = RequestValidation.new(params)
   v.required("name")
   v.required("email")
   v.email("email")

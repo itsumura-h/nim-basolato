@@ -11,6 +11,8 @@ Table of Contents
          * [API](#api)
          * [Sample](#sample)
       * [Component style design](#component-style-design)
+         * [JavaScript](#javascript)
+         * [CSS](#css)
          * [SCSS](#scss)
          * [API](#api-1)
       * [Helper functions](#helper-functions)
@@ -22,7 +24,7 @@ Table of Contents
             * [SCF](#scf)
             * [Karax](#karax)
 
-<!-- Added by: root, at: Sat Sep 18 06:55:18 UTC 2021 -->
+<!-- Added by: root, at: Fri Oct  8 08:49:53 UTC 2021 -->
 
 <!--te-->
 
@@ -199,7 +201,7 @@ proc impl():string =
 
   tmpli html"""
     $(style)
-    <div class="$(style.get("background"))"></div>
+    <div class="$(style.element("background"))"></div>
   """
 
 proc withStyleView*():string =

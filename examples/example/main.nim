@@ -13,7 +13,7 @@ import app/http/controllers/flash_controller
 import app/http/controllers/file_upload_controller
 import app/http/controllers/validation_controller
 
-var routes = newRoutes()
+var routes = Routes.new()
 routes.middleware(re".*", auth_middleware.checkCsrfTokenMiddleware)
 routes.middleware(re"/api/.*", cors_middleware.setCorsHeadersMiddleware)
 routes.middleware(re"/sample/custom-headers", example_middleware.setMiddleware1)

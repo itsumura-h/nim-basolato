@@ -46,7 +46,7 @@ func toCookieStr*(self:Cookie):string =
               self.secure, self.httpOnly, self.sameSite)
 
 
-proc newCookie*(name, value:string, expire:DateTime, sameSite:SameSite=Lax,
+proc new*(_:type Cookie, name, value:string, expire:DateTime, sameSite:SameSite=Lax,
       secure=false, httpOnly=true, domain="", path="/"):Cookie =
   let f = initTimeFormat("ddd',' dd MMM yyyy HH:mm:ss 'GMT'")
   let expireStr = format(expire.utc, f)
@@ -55,14 +55,15 @@ proc newCookie*(name, value:string, expire:DateTime, sameSite:SameSite=Lax,
   Cookie(name:name, value:value,expire:expireStr, sameSite:sameSite,
     secure:secure, httpOnly:httpOnly, domain:domain, path:path)
 
-func newCookie*(name, value:string, expire="", sameSite: SameSite=Lax,
+func new*(_:type Cookie, name, value:string, expire="", sameSite: SameSite=Lax,
       secure=false, httpOnly=true, domain = "", path = "/"):Cookie =
   when defined(release):
     let secure = true
   Cookie(name:name, value:value,expire:expire, sameSite:sameSite,
     secure:secure, httpOnly:httpOnly, domain:domain, path:path)
 
-func newCookies*(request:Request):Cookies =
+
+func new*(_:type Cookies, request:Request):Cookies =
   return Cookies(request:request, data:newSeq[Cookie](0))
 
 func get*(self:Cookies, name:string):string =
@@ -99,7 +100,7 @@ proc set*(self:var Cookies, name, value: string, expire:DateTime,
   when defined(release):
     let secure = true
   self.data.add(
-    newCookie(name=name, value=value, expire=expireStr, sameSite=sameSite,
+    Cookie.new(name=name, value=value, expire=expireStr, sameSite=sameSite,
       secure=secure, httpOnly=httpOnly, domain=domain, path=path)
   )
 
@@ -111,13 +112,13 @@ proc set*(self:var Cookies, name, value: string, sameSite:SameSite=Lax,
   when defined(release):
     let secure = true
   self.data.add(
-    newCookie(name=name, value=value, expire=expireStr, sameSite=sameSite,
+    Cookie.new(name=name, value=value, expire=expireStr, sameSite=sameSite,
       secure=secure, httpOnly=httpOnly, domain=domain, path=path)
   )
 
 proc delete*(self:var Cookies, key:string, path="/") =
   self.data.add(
-    newCookie(name=key, value="", expire=timeForward(-1, Days), path=path)
+    Cookie.new(name=key, value="", expire=timeForward(-1, Days), path=path)
   )
 
 proc destroy*(self:var Cookies) =
@@ -125,5 +126,5 @@ proc destroy*(self:var Cookies) =
     let cookies = self.getAll()
     for key, val in cookies:
       self.data.add(
-        newCookie(name=key, value="", expire=timeForward(-1, Days))
+        Cookie.new(name=key, value="", expire=timeForward(-1, Days))
       )

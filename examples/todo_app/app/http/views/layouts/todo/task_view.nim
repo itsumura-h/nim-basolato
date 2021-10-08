@@ -39,9 +39,7 @@ proc taskView*(todo:JsonNode, isDisplayUp, isDisplayDown:bool, upId:string,
               <span class="icon"><i class="fas fa-arrow-up"></i></span>
             </button>
             <input type="hidden" name="id" value="$(todo["id"].get)">
-            <input type="hidden" name="current_sort" value="$(todo["sort"].get)">
             <input type="hidden" name="next_id" value="$(upId)">
-            <input type="hidden" name="next_sort" value="$(upSortNum)">
           </form>
         }
         $if isDisplayDown {
@@ -51,9 +49,7 @@ proc taskView*(todo:JsonNode, isDisplayUp, isDisplayDown:bool, upId:string,
               <span class="icon"><i class="fas fa-arrow-down"></i></span>
             </button>
             <input type="hidden" name="id" value="$(todo["id"].get)">
-            <input type="hidden" name="current_sort" value="$(todo["sort"].get)">
             <input type="hidden" name="next_id" value="$(downId)">
-            <input type="hidden" name="next_sort" value="$(downSortNum)">
           </form>
         }
       </div>

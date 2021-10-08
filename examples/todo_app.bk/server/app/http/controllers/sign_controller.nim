@@ -16,7 +16,7 @@ proc signUpPage*(request:Request, params:Params):Future[Response] {.async.} =
   return render(await signupView(client))
 
 proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = newRequestValidation(params)
+  let v = RequestValidation.new(params)
   v.required("name")
   v.required("email"); v.email("email")
   v.required("password"); v.minStr("password", 8);
@@ -53,7 +53,7 @@ proc signInPage*(request:Request, params:Params):Future[Response] {.async.} =
   return await render(await signinView(client)).setCookie(client)
 
 proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = newRequestValidation(params)
+  let v = RequestValidation.new(params)
   v.required("email")
   v.required("password")
   v.email("email")
@@ -85,7 +85,7 @@ proc signOut*(request:Request, params:Params):Future[Response] {.async.} =
 # ==================== API ====================
 
 proc signInApi*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = newRequestValidation(params)
+  let v = RequestValidation.new(params)
   v.required(["email", "password"])
   v.email("email")
   let client = await newClient(request)

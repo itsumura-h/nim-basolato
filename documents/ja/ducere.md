@@ -22,7 +22,7 @@ Ducereコマンド
             * [usecase](#usecase)
       * [Bash-completion](#bash-completion)
 
-<!-- Added by: root, at: Sat Sep 18 06:56:30 UTC 2021 -->
+<!-- Added by: root, at: Fri Oct  8 08:50:59 UTC 2021 -->
 
 <!--te-->
 
@@ -297,7 +297,7 @@ ducere make usecase {引数1} {引数2}
 ```
 
 `引数1`は`app/usecases`内のパッケージ名です。  
-`引数2`はキャメルケースの値オブジェクトの名前です。
+`引数2`はキャメルケースのユースケースの名前です。
 
 ```sh
 ducere make usecase sign signin

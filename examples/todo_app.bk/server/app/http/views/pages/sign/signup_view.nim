@@ -28,7 +28,7 @@ $(style)
               </span>
             </p>
             $if errors.hasKey("name") {
-              <ul class="$(style.get("errors"))">
+              <ul class="$(style.element("errors"))">
                 $for error in errors["name"] {
                   <li>$(error.get())</li>
                 }
@@ -44,7 +44,7 @@ $(style)
               </span>
             </p>
             $if errors.hasKey("email") {
-              <ul class="$(style.get("errors"))">
+              <ul class="$(style.element("errors"))">
                 $for error in errors["email"] {
                   <li>$(error.get())</li>
                 }
@@ -60,7 +60,7 @@ $(style)
               </span>
             </p>
             $if errors.hasKey("password") {
-              <ul class="$(style.get("errors"))">
+              <ul class="$(style.element("errors"))">
                 $for error in errors["password"] {
                   <li>$(error.get())</li>
                 }
@@ -76,7 +76,7 @@ $(style)
               </span>
             </p>
             $if errors.hasKey("password_confirmation") {
-              <ul class="$(style.get("errors"))">
+              <ul class="$(style.element("errors"))">
                 $for error in errors["password_confirmation"] {
                   <li>$(error.get())</li>
                 }
@@ -86,7 +86,7 @@ $(style)
 
           $if errors.hasKey("core"){
             <div class="field">
-              <ul class="$(style.get("errors"))">
+              <ul class="$(style.element("errors"))">
                   $for error in errors["core"] {
                     <li>$(error.get())</li>
                   }

@@ -15,7 +15,7 @@ proc applicationView*(title:string, body:string):string = tmpli html"""
   $(headView(title))
 <body>
   $(style)
-  <div class="$(style.get("body"))">
+  <div class="$(style.element("body"))">
     $body
   </div>
 </body>

@@ -1,15 +1,15 @@
-Security
+Context, Cookie, Session
 ===
 [back](../../README.md)
 
 Table of Contents
 
 <!--ts-->
-   * [Security](#security)
+   * [Context, Cookie, Session](#context-cookie-session)
       * [Check in middleware](#check-in-middleware)
          * [CSRF Token](#csrf-token)
       * [Session DB](#session-db)
-      * [Client](#client)
+      * [Context](#context)
          * [API](#api)
          * [Sample](#sample)
          * [Anonymous user cookie](#anonymous-user-cookie)
@@ -23,7 +23,7 @@ Table of Contents
          * [API](#api-2)
          * [Sample](#sample-2)
 
-<!-- Added by: root, at: Sat Sep 18 06:54:54 UTC 2021 -->
+<!-- Added by: root, at: Fri Oct  8 08:49:45 UTC 2021 -->
 
 <!--te-->
 
@@ -102,155 +102,132 @@ putEnv("SESSION_DB_PATH", "localhost:6379") # Redis IP address
 putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
 ```
 
-## Client
-Basolato has `Client` type. it has functions for Authentication, and Session.
+## Context
+Basolato has `Context` type. it has functions for Authentication, and Session.
 
 ```nim
-type Client* = ref object
+type Context* = ref object
+  request: Request
   session*: Session
 ```
 
 ### API
-Creating client instance.
+Creating context instance.
 ```nim
-proc newClient*(request:Request):Future[Client] {.async.} =
-
-proc newClient*(sessionId:string):Future[Client] {.async.} =
+proc new*(typ:type Context, context:Context, isCreateNew=false):Future[Context]{.async.}
 ```
 ---
 Accessing session db.
 ```nim
-proc set*(self:Client, key, value:string) {.async.} =
+proc set*(self:Context, key, value:string) {.async.} =
 
-proc set*(self:Client, key:string, value:JsonNode) {.async.} =
+proc set*(self:Context, key:string, value:JsonNode) {.async.} =
 
-proc some*(self:Client, key:string):Future[bool] {.async.} =
+proc some*(self:Context, key:string):Future[bool] {.async.} =
 
-proc get*(self:Client, key:string):Future[string] {.async.} =
+proc get*(self:Context, key:string):Future[string] {.async.} =
 
-proc delete*(self:Client, key:string) {.async.} =
+proc delete*(self:Context, key:string) {.async.} =
 
-proc destroy*(self:Client) {.async.} =
+proc destroy*(self:Context) {.async.} =
 ```
 ---
 Using for Authentication.
 ```nim
-proc login*(self:Client) {.async.} =
+proc login*(self:Context) {.async.} =
 
-proc isLogin*(self:Client):Future[bool] {.async.} =
+proc isLogin*(self:Context):Future[bool] {.async.} =
 
-proc logout*(self:Client) {.async.} =
+proc logout*(self:Context) {.async.} =
 ```
 ---
 Getting session id which is provided to cookie.
 ```nim
-proc getToken*(self:Client):Future[string] {.async.} =
+proc getToken*(self:Context):Future[string] {.async.} =
 ```
 ---
 Accessing flash data in session db.
 ```nim
-proc setFlash*(self:Client, key, value:string) {.async.} =
+proc setFlash*(self:Context, key, value:string) {.async.} =
 
-proc setFlash*(self:Client, key:string, value:JsonNode) {.async.} =
+proc setFlash*(self:Context, key:string, value:JsonNode) {.async.} =
 
-proc hasFlash*(self:Client, key:string):Future[bool] {.async.} =
+proc hasFlash*(self:Context, key:string):Future[bool] {.async.} =
 
-proc getFlash*(self:Client):Future[JsonNode] {.async.} =
+proc getFlash*(self:Context):Future[JsonNode] {.async.} =
 
-proc getValidationResult*(self:Client):Future[tuple[params:JsonNode, errors:JsonNode]] {.async.} =
+proc getValidationResult*(self:Context):Future[tuple[params:JsonNode, errors:JsonNode]] {.async.} =
 ```
 
 
 ### Sample
-newClient for MPA(Multi page application)
-```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
-  let client = await newClient(request)
-```
-
-newClient for API
-```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
-  let sessionId = request.headers["x-login-token"]
-  let client = await newClient(sessionId)
-```
-
 login
 ```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
+proc index(context:Context, params:Params):Future[Response] {.async.} =
   let email = params.getStr("email")
   let password = params.getStr("password")
   let userId = newLoginUsecase().login(email, password)
-  let client = await newClient(request)
-  await client.login()
-  await client.set("id", $userId)
+  await context.login()
+  await context.set("id", $userId)
   return redirect("/")
 ```
 
 logout
 ```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
-  let client = await newClient(request)
-  if await client.isLogin():
-    await client.logout()
+proc index(context:Context, params:Params):Future[Response] {.async.} =
+  if await context.isLogin():
+    await context.logout()
   redirect("/")
 ```
 
 get from session
 ```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
-  let client = await newClient(request)
-  let loginName = await client.get("login_name")
+proc index(context:Context, params:Params):Future[Response] {.async.} =
+  let loginName = await context.get("login_name")
 ```
 
 set value in session
 ```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
+proc index(context:Context, params:Params):Future[Response] {.async.} =
   let name = params.getStr("name")
-  let client = await newClient(request)
-  await client.set("login_name", name)
+  await context.set("login_name", name)
   return render("auth")
 ```
 
 check and get value in session
 ```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
+proc index(context:Context, params:Params):Future[Response] {.async.} =
   var loginName:string
-  let client = await newClient(reques)
-  if await client.some("login_name"):
+  if await context.some("login_name"):
     loginName = await client.get("login_name")
 ```
 
 delete one key-value pair of session
 ```nim
-proc destroy(request:Request, params:Params):Future[Response] {.async.} =
-  let client = await newClient(request)
-  await client.delete("login_name")
+proc destroy(context:Context, params:Params):Future[Response] {.async.} =
+  await context.delete("login_name")
   return render("auth")
 ```
 
 destroy all session data
 ```nim
-proc destroy(request:Request, params:Params):Future[Response] {.async.} =
-  let client = await newClient(request)
-  await client.destroy()
+proc destroy(context:Context, params:Params):Future[Response] {.async.} =
+  await context.destroy()
   return render("auth")
 ```
 
 set flash message
 ```nim
-proc store*(request:Request, params:Params):Response =
-  let client = await newClient(request)
-  await client.setFlash("success", "Welcome to the Sample App!")
+proc store*(context:Context, params:Params):Response =
+  await context.setFlash("success", "Welcome to the Sample App!")
   return redirect("/auth")
 ```
 
 get flash message
 ```nim
-proc show*(self:Controller):Response =
-  let client = await newClient(request)
-  let flash = await client.getFlash("success")
-  let user = newUserUsecase().show()
+proc show*(context:Context):Response =
+  let flash = await context.getFlash("success")
+  let user = UserUsecase.new().show()
   return render(showHtml(user, flash))
 ```
 
@@ -267,12 +244,11 @@ ENABLE_ANONYMOUS_COOKIE=true
 
 controller
 ```nim
-proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
+proc signIn*(context:Context, params:Params):Future[Response] {.async.} =
   let email = params.getStr("email")
   let password = params.getStr("password")
   # ..sign in check
-  let client = await newClient(request)
-  await client.login()
+  await context.login()
   return redirect("/")
 ```
 
@@ -285,12 +261,11 @@ putEnv("ENABLE_ANONYMOUS_COOKIE", "false")
 
 controller
 ```nim
-proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
+proc signIn*(context:Context, params:Params):Future[Response] {.async.} =
   let email = params.getStr("email")
   let password = params.getStr("password")
   # ..sign in check
-  let client = await newClient(request)
-  await client.login()
+  await context.login()
   return await redirect("/").setCookie(client)
 ```
 
@@ -331,7 +306,7 @@ type
 
 ### API
 ```nim
-proc newCookie*(request:Request):Cookie =
+proc new*(_:type Cookie, context:Context):Cookie =
 
 proc get*(self:Cookie, name:string):string =
 
@@ -352,23 +327,23 @@ proc setCookie*(response:Response, cookie:Cookie):Response =
 ### Sample
 get cookie
 ```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
-  let val = newCookie(request).get("key")
+proc index(context:Context, params:Params):Future[Response] {.async.} =
+  let val = Cookie.new(context.request).get("key")
 ```
 
 set cookie
 ```nim
-proc store*(request:Request, params:Params):Future[Response] {.async.} =
+proc store*(context:Context, params:Params):Future[Response] {.async.} =
   let name = params.getStr("name")
-  var cookie = newCookie(request)
+  var cookie = Cookie.new(context.request)
   cookie.set("name", name)
   return render("with cookie").setCookie(cookie)
 ```
 
 update cookie expire
 ```nim
-proc store*(request:Request, params:Params):Future[Response] {.async.} =
-  var cookie = newCookie(request)
+proc store*(context:Context, params:Params):Future[Response] {.async.} =
+  var cookie = Cookie.new(context.request)
   let name = cookie.get("name")
   # cookie will be deleted after 5 days from now
   cookie.set("name", name, expire=timeForward(5, Days))
@@ -377,16 +352,16 @@ proc store*(request:Request, params:Params):Future[Response] {.async.} =
 
 delete cookie
 ```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
-  var cookie = newCookie(request)
+proc index(context:Context, params:Params):Future[Response] {.async.} =
+  var cookie = Cookie.new(context.request)
   cookie.delete("key")
   return render("with cookie").setCookie(cookie)
 ```
 
 destroy all cookies
 ```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
-  var cookie = newCookie(request)
+proc index(context:Context, params:Params):Future[Response] {.async.} =
+  var cookie = Cookie.new(context.request)
   cookie.destroy()
   return render("with cookie").setCookie(cookie)
 ```
@@ -426,23 +401,23 @@ proc destroy*(self:Session) {.async.} =
 ### Sample
 get session id
 ```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
+proc index(context:Context, params:Params):Future[Response] {.async.} =
   let sessionId = newSession().getToken()
 ```
 
 set value in session
 ```nim
-proc store(request:Request, params:Params):Future[Response] {.async.} =
-  let key = request.getStr("key")
-  let value = request.getStr("value")
+proc store(context:Context, params:Params):Future[Response] {.async.} =
+  let key = params.getStr("key")
+  let value = params.getStr("value")
   discard newSession().set(key, value)
 ```
 
 check and get value in session
 ```nim
-proc index(self:Controller):Future[Response] {.async.} =
-  let sessionId = newCookie(self.request).get("session_id")
-  let key = request.getStr("key")
+proc index(context:Context, params:Params):Future[Response] {.async.} =
+  let sessionId = Cookie.new(context.request).get("session_id")
+  let key = params.getStr("key")
   let session = newSession(sessionId)
   var value:string
   if session.some(key):
@@ -451,15 +426,15 @@ proc index(self:Controller):Future[Response] {.async.} =
 
 delete one key-value pair of session
 ```nim
-proc destroy(self:Controller):Future[Response] {.async.} =
-  let sessionId = newCookie(self.request).getToken()
-  let key = request.getStr("key"9
+proc destroy(context:Context, params:Params):Future[Response] {.async.} =
+  let sessionId = Cookie.new(context.request).getToken()
+  let key = params.getStr("key")
   discard newSession(sessionId).delete(key)
 ```
 
 destroy session
 ```nim
-proc destroy(self:Controller):Future[Response] {.async.} =
-  let sessionId = newCookie(self.request).getToken()
+proc destroy(context:Context, params:Params):Future[Response] {.async.} =
+  let sessionId = Cookie.new(context.request).getToken()
   newSession(sessionId).destroy()
 ```

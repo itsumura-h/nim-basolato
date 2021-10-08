@@ -1,15 +1,15 @@
-セキュリティ
+コンテキスト、クッキー、セッション
 ===
 [戻る](../../README.md)
 
 コンテンツ
 
 <!--ts-->
-   * [セキュリティ](#セキュリティ)
+   * [コンテキスト、クッキー、セッション](#コンテキストクッキーセッション)
       * [ミドルウェア内でのチェック](#ミドルウェア内でのチェック)
          * [CSRFトークン](#csrfトークン)
       * [セッションDB](#セッションdb)
-      * [Client](#client)
+      * [Context](#context)
          * [API](#api)
          * [サンプル](#サンプル)
          * [匿名ユーザーへのクッキー](#匿名ユーザーへのクッキー)
@@ -23,7 +23,7 @@
          * [API](#api-2)
          * [サンプル](#サンプル-2)
 
-<!-- Added by: root, at: Sat Sep 18 06:56:16 UTC 2021 -->
+<!-- Added by: root, at: Fri Oct  8 08:51:09 UTC 2021 -->
 
 <!--te-->
 
@@ -112,154 +112,131 @@ SESSION_DB_PATH="localhost:6379" # Redis IP address
 SESSION_TIME=20160
 ```
 
-## Client
-Basolatoは認証とセッションを内包した`Client`を持っています。
+## Context
+Basolatoは認証とセッションを内包した`Context`を持っています。
 
 ```nim
-type Client* = ref object
+type Context* = ref object
+  request: Request
   session*: Session
 ```
 
 ### API
 インスタンス作成
 ```nim
-proc newClient*(request:Request):Future[Client] {.async.} =
-
-proc newClient*(sessionId:string):Future[Client] {.async.} =
+proc new*(typ:type Context, context:Context, isCreateNew=false):Future[Context]{.async.}
 ```
 ---
 セッションDBへのアクセス
 ```nim
-proc set*(self:Client, key, value:string) {.async.} =
+proc set*(self:Context, key, value:string) {.async.} =
 
-proc set*(self:Client, key:string, value:JsonNode) {.async.} =
+proc set*(self:Context, key:string, value:JsonNode) {.async.} =
 
-proc some*(self:Client, key:string):Future[bool] {.async.} =
+proc some*(self:Context, key:string):Future[bool] {.async.} =
 
-proc get*(self:Client, key:string):Future[string] {.async.} =
+proc get*(self:Context, key:string):Future[string] {.async.} =
 
-proc delete*(self:Client, key:string) {.async.} =
+proc delete*(self:Context, key:string) {.async.} =
 
-proc destroy*(self:Client) {.async.} =
+proc destroy*(self:Context) {.async.} =
 ```
 ---
 認証
 ```nim
-proc login*(self:Client) {.async.} =
+proc login*(self:Context) {.async.} =
 
-proc isLogin*(self:Client):Future[bool] {.async.} =
+proc isLogin*(self:Context):Future[bool] {.async.} =
 
-proc logout*(self:Client) {.async.} =
+proc logout*(self:Context) {.async.} =
 ```
 ---
 クッキーから送られたセッションIDの取得
 ```nim
-proc getToken*(self:Client):Future[string] {.async.} =
+proc getToken*(self:Context):Future[string] {.async.} =
 ```
 ---
 セッションDBのフラッシュデータへのアクセス
 ```nim
-proc setFlash*(self:Client, key, value:string) {.async.} =
+proc setFlash*(self:Context, key, value:string) {.async.} =
 
-proc setFlash*(self:Client, key:string, value:JsonNode) {.async.} =
+proc setFlash*(self:Context, key:string, value:JsonNode) {.async.} =
 
-proc hasFlash*(self:Client, key:string):Future[bool] {.async.} =
+proc hasFlash*(self:Context, key:string):Future[bool] {.async.} =
 
-proc getFlash*(self:Client):Future[JsonNode] {.async.} =
+proc getFlash*(self:Context):Future[JsonNode] {.async.} =
 
-proc getValidationResult*(self:Client):Future[tuple[params:JsonNode, errors:JsonNode]] {.async.} =
+proc getValidationResult*(self:Context):Future[tuple[params:JsonNode, errors:JsonNode]] {.async.} =
 ```
 
 
 ### サンプル
-MPA(Multi page application)の時のインスタンス作成
-```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
-  let client = await newClient(request)
-```
-
-APIの時のインスタンス作成
-```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
-  let sessionId = request.headers["x-login-token"]
-  let client = await newClient(sessionId)
-```
-
 ログイン
 ```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
+proc index(context:Context, params:Params):Future[Response] {.async.} =
   let email = params.getStr("email")
   let password = params.getStr("password")
   let userId = newLoginUsecase().login(email, password)
-  let client = await newClient(request)
-  await client.login()
-  await client.set("id", $userId)
+  await context.login()
+  await context.set("id", $userId)
   return redirect("/")
 ```
 
 ログアウト
 ```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
-  let client = await newClient(request)
-  if await client.isLogin():
-    await client.logout()
+proc index(context:Context, params:Params):Future[Response] {.async.} =
+  if await context.isLogin():
+    await context.logout()
   redirect("/")
 ```
 
 セッションから値を取得する
 ```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
-  let client = await newClient(request)
-  let loginName = await client.get("login_name")
+proc index(context:Context, params:Params):Future[Response] {.async.} =
+  let loginName = await context.get("login_name")
 ```
 
 セッションに値を保存する
 ```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
+proc index(context:Context, params:Params):Future[Response] {.async.} =
   let name = params.getStr("name")
-  let client = await newClient(request)
-  await client.set("login_name", name)
+  await context.set("login_name", name)
   return render("auth")
 ```
 
 セッションに値が存在するかチェックして取得する
 ```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
+proc index(context:Context, params:Params):Future[Response] {.async.} =
   var loginName:string
-  let client = await newClient(reques)
-  if await client.some("login_name"):
-    loginName = await client.get("login_name")
+  if await context.some("login_name"):
+    loginName = await context.get("login_name")
 ```
 
 セッションの1つの値を削除する
 ```nim
-proc destroy(request:Request, params:Params):Future[Response] {.async.} =
-  let client = await newClient(request)
-  await client.delete("login_name")
+proc destroy(context:Context, params:Params):Future[Response] {.async.} =
+  await context.delete("login_name")
   return render("auth")
 ```
 
 クライアントに紐付いた全てのセッションデータを削除する
 ```nim
-proc destroy(request:Request, params:Params):Future[Response] {.async.} =
-  let client = await newClient(request)
-  await client.destroy()
+proc destroy(context:Context, params:Params):Future[Response] {.async.} =
+  await context.destroy()
   return render("auth")
 ```
 
 フラッシュメッセージを保存する
 ```nim
-proc store*(request:Request, params:Params):Response =
-  let client = await newClient(request)
-  await client.setFlash("success", "Welcome to the Sample App!")
+proc store*(context:Context, params:Params):Response =
+  await context.setFlash("success", "Welcome to the Sample App!")
   return redirect("/auth")
 ```
 
 フラッシュメッセージを取得する
 ```nim
 proc show*(self:Controller):Response =
-  let client = await newClient(request)
-  let flash = await client.getFlash("success")
+  let flash = await context.getFlash("success")
   let user = newUserUsecase().show()
   return render(showHtml(user, flash))
 ```
@@ -277,12 +254,11 @@ ENABLE_ANONYMOUS_COOKIE=true
 
 controller
 ```nim
-proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
+proc signIn*(context:Context, params:Params):Future[Response] {.async.} =
   let email = params.getStr("email")
   let password = params.getStr("password")
   # ..sign in check
-  let client = await newClient(request)
-  await client.login()
+  await context.login()
   return redirect("/")
 ```
 
@@ -295,13 +271,12 @@ ENABLE_ANONYMOUS_COOKIE=false
 
 controller
 ```nim
-proc signIn*(request:Request, params:Params):Future[Response] {.async.} =
+proc signIn*(context:Context, params:Params):Future[Response] {.async.} =
   let email = params.getStr("email")
   let password = params.getStr("password")
   # ..sign in check
-  let client = await newClient(request)
-  await client.login()
-  return await redirect("/").setCookie(client)
+  await context.login()
+  return await redirect("/").setCookie(context)
 ```
 
 ### 複数のドメインにクッキーを作る時
@@ -340,7 +315,7 @@ type
 
 ### API
 ```nim
-proc newCookie*(request:Request):Cookie =
+proc new*(_:type Cookie, context:Context):Cookie =
 
 proc get*(self:Cookie, name:string):string =
 
@@ -361,23 +336,23 @@ proc setCookie*(response:Response, cookie:Cookie):Response =
 ### サンプル
 クッキーの値を取得する
 ```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
-  let val = newCookie(request).get("key")
+proc index(context:Context, params:Params):Future[Response] {.async.} =
+  let val = Cookie.new(context.request).get("key")
 ```
 
 クッキーに値を保存する
 ```nim
-proc store*(request:Request, params:Params):Future[Response] {.async.} =
+proc store*(context:Context, params:Params):Future[Response] {.async.} =
   let name = params.getStr("name")
-  var cookie = newCookie(request)
+  var cookie = Cookie.new(context.request)
   cookie.set("name", name)
   return render("with cookie").setCookie(cookie)
 ```
 
 クッキーの有効期限を更新する
 ```nim
-proc store*(request:Request, params:Params):Future[Response] {.async.} =
-  var cookie = newCookie(request)
+proc store*(context:Context, params:Params):Future[Response] {.async.} =
+  var cookie = Cookie.new(context.request)
   let name = cookie.get("name")
   # クッキーは5日後に削除されます
   cookie.set("name", name, expire=timeForward(5, Days))
@@ -386,16 +361,16 @@ proc store*(request:Request, params:Params):Future[Response] {.async.} =
 
 指定したキーのクッキーを削除する
 ```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
-  var cookie = newCookie(request)
+proc index(context:Context, params:Params):Future[Response] {.async.} =
+  var cookie = Cookie.new(context.request)
   cookie.delete("key")
   return render("with cookie").setCookie(cookie)
 ```
 
 全てのクッキーを削除する
 ```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
-  var cookie = newCookie(request)
+proc index(context:Context, params:Params):Future[Response] {.async.} =
+  var cookie = Cookie.new(context.request)
   cookie.destroy()
   return render("with cookie").setCookie(cookie)
 ```
@@ -435,23 +410,23 @@ proc destroy*(self:Session) {.async.} =
 ### サンプル
 セッションIDを取得する
 ```nim
-proc index(request:Request, params:Params):Future[Response] {.async.} =
+proc index(context:Context, params:Params):Future[Response] {.async.} =
   let sessionId = newSession().getToken()
 ```
 
 セッションに値を保存する
 ```nim
-proc store(request:Request, params:Params):Future[Response] {.async.} =
-  let key = request.getStr("key")
-  let value = request.getStr("value")
+proc store(context:Context, params:Params):Future[Response] {.async.} =
+  let key = params.getStr("key")
+  let value = params.getStr("value")
   discard newSession().set(key, value)
 ```
 
 セッションに値が存在するかチェックして取得する
 ```nim
-proc index(self:Controller):Future[Response] {.async.} =
-  let sessionId = newCookie(self.request).get("session_id")
-  let key = self.request.params["key"]
+proc index(context:Context, params:Params):Future[Response] {.async.} =
+  let sessionId = Cookie.new(context.request).get("session_id")
+  let key = context.request.params["key"]
   let session = newSession(sessionId)
   var value:string
   if session.some(key):
@@ -460,15 +435,15 @@ proc index(self:Controller):Future[Response] {.async.} =
 
 セッションの1つの値を削除する
 ```nim
-proc destroy(self:Controller):Future[Response] {.async.} =
-  let sessionId = newCookie(self.request).getToken()
-  let key = self.request.params["key"]
+proc destroy(context:Context, params:Params):Future[Response] {.async.} =
+  let sessionId = Cookie.new(context.request).getToken()
+  let key = context.request.params["key"]
   discard newSession(sessionId).delete(key)
 ```
 
 クライアントに紐付いた全てのセッションデータを削除する
 ```nim
-proc destroy(self:Controller):Future[Response] {.async.} =
-  let sessionId = newCookie(self.request).getToken()
+proc destroy(context:Context, params:Params):Future[Response] {.async.} =
+  let sessionId = Cookie.new(context.request).getToken()
   newSession(sessionId).destroy()
 ```

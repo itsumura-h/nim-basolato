@@ -30,7 +30,7 @@ proc show*(request:Request, params:Params):Future[Response] {.async.} =
   return render(await showView(client, post.get))
 
 proc store*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = newRequestValidation(params)
+  let v = RequestValidation.new(params)
   let client = await newClient(request)
 
   v.rule()
@@ -63,7 +63,7 @@ proc destroy*(request:Request, params:Params):Future[Response] {.async.} =
   return redirect("/")
 
 proc update*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = newRequestValidation(params)
+  let v = RequestValidation.new(params)
   let client = await newClient(request)
 
   v.rule()
@@ -108,7 +108,7 @@ proc showApi*(request:Request, params:Params):Future[Response] {.async.} =
   })
 
 proc storeApi*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = newRequestValidation(params)
+  let v = RequestValidation.new(params)
   v.rule()
   if v.hasErrors:
     return render(Http422, %*{"params": params, "errors": v.errors})
@@ -137,7 +137,7 @@ proc destroyApi*(request:Request, params:Params):Future[Response] {.async.} =
   return render("")
 
 proc updateApi*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = newRequestValidation(params)
+  let v = RequestValidation.new(params)
   v.rule()
   if v.hasErrors:
     return render(Http422, %*{"params":params, "errors":v.errors})

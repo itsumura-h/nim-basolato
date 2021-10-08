@@ -16,3 +16,9 @@ proc new*(_:type TodoService):TodoService =
 proc getNewTopTodoSort*(self:TodoService, status:Status):Future[Sort]{.async.} =
   let topSortPosition = await self.repository.getCurrentTopSortPosition(status)
   return Sort.new(topSortPosition.get() + 1)
+
+proc swapTodoSort*(self:TodoService, current, next:Todo) {.async.} =
+  let currentSort = current.sort
+  let nextSort = next.sort
+  current.sort = nextSort
+  next.sort = currentSort
