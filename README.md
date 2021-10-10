@@ -129,9 +129,9 @@ The overall file structure is as follows:
 │       │   └── validation.json
 │       └── ja
 │           └── validation.json
-├── project.nimble
+├── {project_name}.nimble
 └── tests
-    └── test_project.nim
+    └── test_{project_name}.nim
 ```
 
 With your project ready, you can start serving requests using `ducere`:

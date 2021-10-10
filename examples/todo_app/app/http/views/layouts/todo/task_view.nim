@@ -2,8 +2,7 @@ import json
 import ../../../../../../../src/basolato/view
 
 
-proc taskView*(todo:JsonNode, isDisplayUp, isDisplayDown:bool, upId:string,
-      upSortNum:int, downId:string, downSortNum:int):string =
+proc taskView*(todo:JsonNode, isDisplayUp, isDisplayDown:bool, upId, downId:string, statusId:int):string =
   style "css", style:"""
     <style>
       .columns {
@@ -62,5 +61,21 @@ proc taskView*(todo:JsonNode, isDisplayUp, isDisplayDown:bool, upId:string,
           <p>end_on: $(todo["end_on"].get)</p>
         </div>
       </div>
+      <footer class="card-footer">
+        $if statusId > 1 {
+          <form class="card-footer-item $(style.element("form"))">
+            <button class="button $(style.element("button"))">
+              <span class="icon"><i class="fas fa-arrow-left"></i></span>
+            </button>
+          </form>
+        }
+        $if statusId < 3 {
+          <form class="card-footer-item $(style.element("form"))">
+            <button class="button $(style.element("button"))">
+              <span class="icon"><i class="fas fa-arrow-right"></i></span>
+            </button>
+          </form>
+        }
+      </footer>
     </article>
   """
