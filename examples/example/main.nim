@@ -54,5 +54,9 @@ groups "/sample":
   routes.get("/validation", validation_controller.index)
   routes.post("/validation", validation_controller.store)
 
+  routes.get("/web-socket-component", page_display_controller.webSocketComponent)
+  routes.get("/web-socket", page_display_controller.webSocketPage)
+  routes.get("/ws", page_display_controller.webSocket)
+
 
 serve(routes)
