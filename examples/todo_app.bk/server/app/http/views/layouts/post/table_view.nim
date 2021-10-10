@@ -15,7 +15,7 @@ proc tableView*(posts=newSeq[JsonNode]()):string = tmpli html"""
 $(style)
 <div class="container">
   $if posts.len > 0 {
-    <table class="table is-striped $(style.get("table"))">
+    <table class="table is-striped $(style.element("table"))">
       <tr>
         <th>title</th><th>status</th><th>delete</th>
       </tr>

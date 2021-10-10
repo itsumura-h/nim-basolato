@@ -137,7 +137,7 @@ else:
 
 type ValidationErrors* = TableRef[string, seq[string]]
 
-proc newValidationErrors():ValidationErrors =
+proc new(_:type ValidationErrors):ValidationErrors =
   return newTable[string, seq[string]]()
 
 func add*(self:ValidationErrors, key, value:string) =
@@ -154,10 +154,10 @@ type RequestValidation* = ref object
 func errors*(self:RequestValidation):ValidationErrors =
   return self.errors
 
-func newRequestValidation*(params: Params):RequestValidation =
+func new*(_:type RequestValidation, params: Params):RequestValidation =
   return RequestValidation(
     params: params,
-    errors: newValidationErrors()
+    errors: ValidationErrors.new()
   )
 
 func add(self: RequestValidation, key, error:string) =

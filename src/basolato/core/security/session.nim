@@ -6,10 +6,10 @@ type Session* = ref object
   db: SessionDb
 
 proc genNewSession*(token=""):Future[Session] {.async.} =
-  return Session(db:await newSessionDb(token))
+  return Session(db:await SessionDb.new(token))
 
 proc new*(typ:type Session, request:Request):Future[Option[Session]] {.async.} =
-  let sessionId = newCookies(request).get("session_id")
+  let sessionId = Cookies.new(request).get("session_id")
   if await checkSessionIdValid(sessionId):
     return await(genNewSession(sessionId)).some
   else:

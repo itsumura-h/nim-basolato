@@ -6,14 +6,14 @@ type CsrfToken* = ref object
   token:Token
 
 
-proc newCsrfToken*(token=""):CsrfToken =
-  return CsrfToken(token: newToken(token))
+proc new*(_:type CsrfToken, token=""):CsrfToken =
+  return CsrfToken(token: Token.new(token))
 
 func getToken*(self:CsrfToken): string =
   self.token.getToken()
 
 proc csrfToken*(token=""):string =
-  var token = newCsrfToken(token).getToken()
+  var token = CsrfToken.new(token).getToken()
   return &"""<input type="hidden" name="csrf_token" value="{token}">"""
 
 proc checkCsrfTimeout*(self:CsrfToken):bool =

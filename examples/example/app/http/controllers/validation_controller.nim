@@ -11,7 +11,7 @@ proc index*(context:Context, params:Params):Future[Response] {.async.} =
   return render(validationView(params, errors))
 
 proc store*(context:Context, params:Params):Future[Response] {.async.} =
-  let validation = newRequestValidation(params)
+  let validation = RequestValidation.new(params)
   # email
   validation.required("email", attribute="mail address")
   validation.email("email", attribute="mail address")

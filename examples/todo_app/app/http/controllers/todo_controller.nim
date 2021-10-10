@@ -9,7 +9,7 @@ import ../views/pages/todo/create_view
 import ../../usecases/todo/display_index_usecase
 import ../../usecases/todo/display_create_usecase
 import ../../usecases/todo/create_todo_usecase
-import ../../usecases/todo/change_sort_usecase
+import ../../usecases/todo/swap_sort_usecase
 
 proc toppage*(context:Context, params:Params):Future[Response] {.async.} =
   return redirect("/todo")
@@ -35,7 +35,7 @@ proc create*(context:Context, params:Params):Future[Response] {.async.} =
   return render(createView(params, errors, data))
 
 proc store*(context:Context, params:Params):Future[Response] {.async.} =
-  let v = newRequestValidation(params)
+  let v = RequestValidation.new(params)
   v.required("title")
   v.required("content")
   v.required("assign_to", "assign")
@@ -58,11 +58,9 @@ proc store*(context:Context, params:Params):Future[Response] {.async.} =
 
 proc changeSort*(context:Context, params:Params):Future[Response] {.async.} =
   let id = params.getStr("id")
-  let currentSort = params.getInt("current_sort")
   let nextId = params.getStr("next_id")
-  let nextSort = params.getInt("next_sort")
-  let usecase = ChangeSortUsecase.new()
-  await usecase.run(id, currentSort, nextId, nextSort)
+  let usecase = SwapSortUsecase.new()
+  await usecase.run(id, nextId)
   return redirect("/todo")
 
 proc edit*(context:Context, params:Params):Future[Response] {.async.} =

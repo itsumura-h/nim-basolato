@@ -12,10 +12,10 @@ when SESSION_TYPE == "redis":
   let REDIS_IP = SESSION_DB_PATH.split(":")[0]
   let REDIS_PORT = SESSION_DB_PATH.split(":")[1].parseInt
 
-  proc newSessionDb*(sessionId=""):Future[SessionDb] {.async.} =
+  proc new*(_:type SessionDb, sessionId=""):Future[SessionDb] {.async.} =
     let token =
       if sessionId.len == 0:
-        newToken().getToken()
+        Token.new().getToken()
       else:
         sessionId
 
@@ -105,7 +105,7 @@ else:
       createDir(SESSION_DB_PATH.parentDir())
     return newFlatDb(SESSION_DB_PATH, false)
 
-  proc newSessionDb*(sessionId=""):Future[SessionDb] {.async.} =
+  proc new*(_:type SessionDb, sessionId=""):Future[SessionDb] {.async.} =
     let db = await createParentFlatDbDir()
     defer: db.close()
     var sessionDb: SessionDb

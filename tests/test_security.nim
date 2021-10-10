@@ -44,20 +44,20 @@ block:
   check input == output
 
 block:
-  let token = newToken("").token
+  let token = Token.new("").token
   echo token
   check token.len > 0
 
 block:
   let timestamp1 = getTime().toUnix()
-  let timestamp2 = newToken("").toTimestamp()
+  let timestamp2 = Token.new("").toTimestamp()
   echo timestamp1
   echo timestamp2
   check timestamp1 == timestamp2
 
 
 block:
-  let csrf = newCsrfToken("")
+  let csrf = CsrfToken.new("")
   let token = csrf.getToken()
   echo token
   check token.len > 0
@@ -74,24 +74,24 @@ block:
   check csrf.len > 0
 
 block:
-  let csrf = newCsrfToken("")
+  let csrf = CsrfToken.new("")
   let result = csrf.checkCsrfTimeout()
   check result == true
 
 block:
-  let csrf = newCsrfToken("")
+  let csrf = CsrfToken.new("")
   let token = csrf.getToken()
-  let result  = token.newCsrfToken().checkCsrfTimeout()
+  let result  = CsrfToken.new(token).checkCsrfTimeout()
   check result == true
 
 block:
-  let csrf = newCsrfToken("")
+  let csrf = CsrfToken.new("")
   var token = csrf.getToken()
   echo token
   token &= "a"
   echo token
   try:
-    discard token.newCsrfToken().checkCsrfTimeout()
+    discard CsrfToken.new(token).checkCsrfTimeout()
   except:
     let msg = getCurrentExceptionMsg()
     echo msg
@@ -99,7 +99,7 @@ block:
 
 
 
-let sdb = waitFor newSessionDb()
+let sdb = waitFor SessionDb.new()
 
 block:
   echo sdb.token
@@ -123,7 +123,7 @@ block:
   check result == ""
 
 block:
-  let sdb = waitFor newSessionDb()
+  let sdb = waitFor SessionDb.new()
   waitFor sdb.set("key_sessionDb", "value sessionDb")
   waitFor sdb.destroy()
   var result = ""

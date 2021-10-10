@@ -32,23 +32,16 @@ proc statusView*(status, data:JsonNode):string =
                 if i == 0: ""
                 else: statusColumn[i-1]["id"].getStr
 
-              let upSortNum =
-                if i == 0: 0
-                else: statusColumn[i-1]["sort"].getInt
-
               let downId =
                 if i == statusColumn.len-1: ""
                 else: statusColumn[i+1]["id"].getStr
 
-              let downSortNum =
-                if i == statusColumn.len-1: 0
-                else: statusColumn[i+1]["sort"].getInt
-
               taskView(todo,
                 i > 0,
                 i < statusColumn.len-1,
-                upId, upSortNum,
-                downId, downSortNum
+                upId,
+                downId,
+                status["id"].getInt,
               )
             )
           }

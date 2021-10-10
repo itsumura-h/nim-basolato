@@ -31,7 +31,7 @@ block:
     "Cookie": &"session_id={SESSION_ID}",
   })
   discard client.get(&"{HOST}/set-auth")
-  let sessionDb = waitFor newSessionDb(SESSION_ID)
+  let sessionDb = waitFor SessionDb.new(SESSION_ID)
   check "value1" == waitFor sessionDb.get("key1")
   check "value2" == waitFor sessionDb.get("key2")
 

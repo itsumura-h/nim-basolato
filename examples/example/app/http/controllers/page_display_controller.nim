@@ -1,6 +1,7 @@
 import json, times, json, strformat
 # framework
 import ../../../../../src/basolato/controller
+import ws
 # db
 from ../../../database import rdb
 import allographer/query_builder
@@ -10,6 +11,7 @@ import ../views/pages/sample/with_style_view
 import ../views/pages/sample/react_view
 import ../views/pages/sample/material_ui_view
 import ../views/pages/sample/vuetify_view
+import ../views/pages/sample/web_socket_view
 
 
 proc index*(context:Context, params:Params):Future[Response] {.async.} =
@@ -113,9 +115,38 @@ proc errorPage*(context:Context, params:Params):Future[Response] {.async.} =
     raise newException(Error400, "Displaying error page")
   return render($id)
 
-
 proc errorRedirect*(context:Context, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
   if id mod 2 == 1:
     raise newException(ErrorRedirect, "/sample/login")
   return render($id)
+
+
+proc webSocketComponent*(context:Context, params:Params):Future[Response] {.async.} =
+  return render(webSocketComponent())
+
+proc webSocketPage*(context:Context, params:Params):Future[Response] {.async.} =
+  return render(webSocketView())
+
+var connections = newSeq[WebSocket]()
+
+proc webSocket*(context:Context, params:Params):Future[Response] {.async.} =
+  try:
+    var ws = await newWebSocket(context.request)
+    connections.add(ws)
+    await ws.send("Welcome to simple chat server")
+    while ws.readyState == Open:
+      let packet = await ws.receiveStrPacket()
+      echo "Received packet: " & packet
+      for other in connections:
+        if other.readyState == Open:
+          asyncCheck other.send(packet)
+  except WebSocketClosedError:
+    echo "Socket closed. "
+    for connection in connections:
+      echo connection.readyState
+  except WebSocketProtocolMismatchError:
+    echo "Socket tried to use an unknown protocol: ", getCurrentExceptionMsg()
+  except WebSocketError:
+    echo "Unexpected socket error: ", getCurrentExceptionMsg()
+  return render("")

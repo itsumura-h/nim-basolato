@@ -10,7 +10,9 @@
       * [XSS](#xss)
          * [API](#api)
          * [サンプル](#サンプル)
-      * [コンポーネントスタイルデザイン](#コンポーネントスタイルデザイン)
+      * [コンポーネント指向](#コンポーネント指向)
+         * [JavaScript](#javascript)
+         * [CSS](#css)
          * [SCSS](#scss)
          * [API](#api-1)
       * [ヘルパー関数](#ヘルパー関数)
@@ -22,7 +24,7 @@
             * [SCF](#scf)
             * [Karax](#karax)
 
-<!-- Added by: root, at: Sat Sep 18 06:56:40 UTC 2021 -->
+<!-- Added by: root, at: Fri Oct  8 08:51:15 UTC 2021 -->
 
 <!--te-->
 

@@ -5,7 +5,7 @@ type Token* = ref object
   token:string
 
 
-proc newToken*(token=""):Token =
+proc new*(_:type Token, token=""):Token =
   if token.len > 0:
     return Token(token:token)
   var token = $(getTime().toUnix().int())

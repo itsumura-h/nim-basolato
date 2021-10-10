@@ -122,7 +122,7 @@ proc setCookie*(response:Response, context:Context):Future[Response] {.async.} =
   if SESSION_TIME > 0 and COOKIE_DOMAINS.len > 0:
     for domain in COOKIE_DOMAINS.split(","):
       let newDomain = domain.strip()
-      let cookie = newCookie(
+      let cookie = Cookie.new(
         "session_id",
         sessionId,
         expire=timeForward(SESSION_TIME, Minutes),
@@ -132,21 +132,21 @@ proc setCookie*(response:Response, context:Context):Future[Response] {.async.} =
   elif SESSION_TIME == 0 and COOKIE_DOMAINS.len > 0:
     for domain in COOKIE_DOMAINS.split(","):
       let newDomain = domain.strip()
-      let cookie = newCookie(
+      let cookie = Cookie.new(
         "session_id",
         sessionId,
         domain=newDomain,
       ).toCookieStr()
       response.headers.add("Set-cookie", cookie)
   elif SESSION_TIME > 0 and COOKIE_DOMAINS.len == 0:
-    let cookie = newCookie(
+    let cookie = Cookie.new(
       "session_id",
       sessionId,
       expire=timeForward(SESSION_TIME, Minutes),
     ).toCookieStr()
     response.headers.add("Set-cookie", cookie)
   else:
-    let cookie = newCookie("session_id", sessionId).toCookieStr()
+    let cookie = Cookie.new("session_id", sessionId).toCookieStr()
     response.headers.add("Set-cookie", cookie)
 
   return response
@@ -162,7 +162,7 @@ proc setCookie*(response:Response, cookie:Cookies):Response =
 
 proc destroyContext*(response:Response, context:Context):Future[Response] {.async.} =
   if await context.isLogin:
-    let cookie = newCookie("session_id", "", timeForward(-1, Days))
+    let cookie = Cookie.new("session_id", "", timeForward(-1, Days))
                   .toCookieStr()
     response.headers.add("Set-cookie", cookie)
     await context.session.destroy()

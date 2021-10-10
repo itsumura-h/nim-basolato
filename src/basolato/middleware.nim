@@ -24,7 +24,7 @@ proc checkCsrfToken*(request:Request, params:Params):Future[MiddlewareResult] {.
       if not params.hasKey("csrf_token"):
         raise newException(Exception, "csrf token is missing")
       let token = params.getStr("csrf_token")
-      discard newCsrfToken(token).checkCsrfTimeout()
+      discard CsrfToken.new(token).checkCsrfTimeout()
     except:
       result.hasError = true
       result.message = getCurrentExceptionMsg()
@@ -33,7 +33,7 @@ proc checkSessionId*(request:Request):Future[MiddlewareResult] {.async.} =
   ## Check session id in cookie is valid.
   result = MiddlewareResult()
   if request.httpMethod != HttpOptions:
-    let cookie = newCookies(request)
+    let cookie = Cookies.new(request)
     try:
       if not cookie.hasKey("session_id"):
         raise newException(Exception, "Missing session id")

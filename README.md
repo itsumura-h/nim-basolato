@@ -29,7 +29,7 @@ An asynchronous full-stack web framework for Nim, based on [asynchttpserver](htt
       * [Development](#development)
          * [Generate TOC of documents](#generate-toc-of-documents)
 
-<!-- Added by: root, at: Sat Sep 18 06:54:25 UTC 2021 -->
+<!-- Added by: root, at: Fri Oct  8 08:48:47 UTC 2021 -->
 
 <!--te-->
 
@@ -129,9 +129,9 @@ The overall file structure is as follows:
 │       │   └── validation.json
 │       └── ja
 │           └── validation.json
-├── project.nimble
+├── {project_name}.nimble
 └── tests
-    └── test_project.nim
+    └── test_{project_name}.nim
 ```
 
 With your project ready, you can start serving requests using `ducere`:

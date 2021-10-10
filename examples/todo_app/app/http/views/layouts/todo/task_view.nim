@@ -2,8 +2,7 @@ import json
 import ../../../../../../../src/basolato/view
 
 
-proc taskView*(todo:JsonNode, isDisplayUp, isDisplayDown:bool, upId:string,
-      upSortNum:int, downId:string, downSortNum:int):string =
+proc taskView*(todo:JsonNode, isDisplayUp, isDisplayDown:bool, upId, downId:string, statusId:int):string =
   style "css", style:"""
     <style>
       .columns {
@@ -39,9 +38,7 @@ proc taskView*(todo:JsonNode, isDisplayUp, isDisplayDown:bool, upId:string,
               <span class="icon"><i class="fas fa-arrow-up"></i></span>
             </button>
             <input type="hidden" name="id" value="$(todo["id"].get)">
-            <input type="hidden" name="current_sort" value="$(todo["sort"].get)">
             <input type="hidden" name="next_id" value="$(upId)">
-            <input type="hidden" name="next_sort" value="$(upSortNum)">
           </form>
         }
         $if isDisplayDown {
@@ -51,9 +48,7 @@ proc taskView*(todo:JsonNode, isDisplayUp, isDisplayDown:bool, upId:string,
               <span class="icon"><i class="fas fa-arrow-down"></i></span>
             </button>
             <input type="hidden" name="id" value="$(todo["id"].get)">
-            <input type="hidden" name="current_sort" value="$(todo["sort"].get)">
             <input type="hidden" name="next_id" value="$(downId)">
-            <input type="hidden" name="next_sort" value="$(downSortNum)">
           </form>
         }
       </div>
@@ -66,5 +61,21 @@ proc taskView*(todo:JsonNode, isDisplayUp, isDisplayDown:bool, upId:string,
           <p>end_on: $(todo["end_on"].get)</p>
         </div>
       </div>
+      <footer class="card-footer">
+        $if statusId > 1 {
+          <form class="card-footer-item $(style.element("form"))">
+            <button class="button $(style.element("button"))">
+              <span class="icon"><i class="fas fa-arrow-left"></i></span>
+            </button>
+          </form>
+        }
+        $if statusId < 3 {
+          <form class="card-footer-item $(style.element("form"))">
+            <button class="button $(style.element("button"))">
+              <span class="icon"><i class="fas fa-arrow-right"></i></span>
+            </button>
+          </form>
+        }
+      </footer>
     </article>
   """

@@ -14,12 +14,10 @@ proc impl(context:Context):Future[string]{.async.} = tmpli html"""
     <form method="POST">
       $(csrfToken())
       <button type="submit">set flash</button>
+      $for key, val in await(context.getFlash()).pairs{
+        <p>$(val.get())</p>
+      }
     </form>
-  </section>
-  <section>
-    $for key, val in await(context.getFlash()).pairs{
-      <p>$(val.get())</p>
-    }
   </section>
 </main>
 """

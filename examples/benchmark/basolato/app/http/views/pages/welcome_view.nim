@@ -88,8 +88,8 @@ proc impl(title, name:string):string = tmpli html"""
 <body>
   <article>
     <section>
-      <h1 class="$(style.get("title"))">Nim $name is successfully running!!!</h1>
-      <div class="$(style.get("topImage"))">
+      <h1 class="$(style.element("title"))">Nim $name is successfully running!!!</h1>
+      <div class="$(style.element("topImage"))">
         <img
           src="/basolato.svg"
           alt="nim-logo"
@@ -100,13 +100,13 @@ proc impl(title, name:string):string = tmpli html"""
   </article>
   <article>
     <section>
-      <h2 class="$(style.get("goldFont"))">
+      <h2 class="$(style.element("goldFont"))">
         Full-stack Web Framewrok for Nim
       </h2>
-      <p class="$(style.get("whiteFont"))">
+      <p class="$(style.element("whiteFont"))">
         <i>—utilitas, firmitas et venustas (utility, strength and beauty)— by De architectura / Marcus Vitruvius Pollio</i>
       </p>
-      <div class="$(style.get("whiteFont"))">
+      <div class="$(style.element("whiteFont"))">
         <ul>
           <li>Easy syntax as Python thanks to Nim</li>
           <li>Develop as easy as Ruby on Rails</li>

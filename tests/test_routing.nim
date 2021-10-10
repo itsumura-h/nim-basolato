@@ -11,7 +11,7 @@ block:
 
 block:
   client.headers = newHttpHeaders({"Content-Type": "application/x-www-form-urlencoded"})
-  let csrfToken = newCsrfToken().getToken()
+  let csrfToken = CsrfToken.new().getToken()
   var params = &"csrf_token={csrf_token}"
   var response = client.post(&"{HOST}/test_routing", body = $params)
   echo response.body
