@@ -17,6 +17,9 @@
 
 set -eux
 
+nim -v
+nimble -v
+
 # run server
 nimble install -y
 cd /root/project/tests/server

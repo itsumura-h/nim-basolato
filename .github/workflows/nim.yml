@@ -64,8 +64,16 @@ jobs:
   test-on-docker:
     runs-on: ubuntu-latest
     needs: before
+    strategy:
+      matrix:
+        image-tag:
+          - 1.4.4-alpine
+          - 1.4.8-alpine
+          - 1.6.0-alpine
     steps:
     - uses: actions/checkout@v2
+    - name: Build docker image
+      run: docker-compose build --build-arg IMAGE_TAG=${{ matrix.image-tag }} app
     - name: Test
       run: docker-compose run app sh /root/project/runTest.sh
     - name: Test multi-thread
