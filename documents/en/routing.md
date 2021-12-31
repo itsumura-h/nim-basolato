@@ -7,10 +7,13 @@ Routing is written in `main.nim`. it is the entrypoint file of Basolato.
 import basolato
 import app/controllers/some_controller
 
-var routes = Routes.new()
 
-routes.get("/", some_controller.index)
-routes.post("/", some_controller.create)
+let ROUTES = @[
+  Route.get("/", some_controller.index),
+  Route.post("/", some_controller.create)
+]
+
+serve(ROUTES)
 ```
 
 Table of Contents
@@ -48,13 +51,13 @@ import app/controllers/some_controller
 import app/controllers/dashboard_controller
 
 
-var routes = Routes.new()
-
-routes.get("/", some_controller.index)
-
-groups "/dashboard":
-  routes.get("/url1", dashboard_controller.url1)
-  routes.get("/url2", dashboard_controller.url2)
+let ROUTES = @[
+  Route.get("/", some_controller.index),
+  Route.group("/dashboard", @[
+    Route.get("/url1", dashboard_controller.url1),
+    Route.get("/url2", dashboard_controller.url2)
+  ])
+]
 ```
 `/dashboard/url1` and `/dashboard/url2` are available.
 
@@ -65,10 +68,11 @@ Basolato can specify url params with type of `int` and `str`
 import basolato
 import app/controllers/some_controller
 
-var routes = Routes.new()
 
-routes.get("/{id:int}", some_controller.show)
-routes.get("/{name:str}", some_controller.showByName)
+let ROUTES = @[
+  Route.get("/{id:int}", some_controller.show),
+  Route.get("/{name:str}", some_controller.showByName)
+]
 ```
 
 |request URL|Called controller|

@@ -302,11 +302,6 @@ ducere make usecase {引数1} {引数2}
 ```sh
 ducere make usecase sign signin
 >> app/usecases/sign/signin_usecase.nim
->> app/usecases/sign/sign_query_interface.nim
->> app/usecases/data_stores/query_services/sign/sign_query.nim
-
-ducere make usecase sign signup
->> app/usecases/sign/signup_usecase.nim
 ```
 
 ## Bash-completion

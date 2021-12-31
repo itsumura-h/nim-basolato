@@ -2,38 +2,38 @@ import os, strformat, terminal, strutils
 import utils
 
 
-proc makeQueryService*(target:string, message:var string):int =
+proc makeQuery*(target:string, message:var string):int =
   let targetName = target.split("/")[^1]
   let targetCaptalized = snakeToCamel(targetName)
   let targetProcCaptalized = snakeToCamelProcName(targetName)
-  let relativeToDatabasePath = "../".repeat(target.split("/").len) & &"../../../"
-  let relativeToInterfacePath = "../".repeat(target.split("/").len-1) & &"../../../"
+  let relativeToDatabasePath = "../".repeat(target.split("/").len) & &"../../../../"
+  let relativeToInterfacePath = "../".repeat(target.split("/").len) & &"../../"
 
-  let QUERY_SERVICE_INTERFACE = &"""
+  let QUERY_INTERFACE = &"""
 import asyncdispatch
 
 
-type I{targetCaptalized}QueryService* = tuple
+type I{targetCaptalized}Query* = tuple
 """
 
   let QUERY_SERVICE = &"""
 import interface_implements
 import allographer/query_builder
-from {relativeToDatabasePath}database import rdb
-import {relativeToInterfacePath}usecases/{target}/{targetName}_query_service_interface
+from {relativeToDatabasePath}config/database import rdb
+import {relativeToInterfacePath}usecases/{target}/{targetName}_query_interface
 
 
-type {targetCaptalized}QueryService* = ref object
+type {targetCaptalized}Query* = ref object
 
-proc new*(typ:type {targetCaptalized}QueryService):{targetCaptalized}QueryService =
-  return {targetCaptalized}QueryService()
+proc new*(typ:type {targetCaptalized}Query):{targetCaptalized}Query =
+  return {targetCaptalized}Query()
 
-implements {targetCaptalized}QueryService, I{targetCaptalized}QueryService:
+implements {targetCaptalized}Query, I{targetCaptalized}Query:
   discard
 """
 
-  let INTERFACE_PATH = &"{getCurrentDir()}/app/data_stores/query_services/{target}/{targetName}_query_service_interface.nim"
-  let IMPL_PATH = &"{getCurrentDir()}/app/data_stores/query_services/{target}/{targetName}_query_service.nim"
+  let INTERFACE_PATH = &"{getCurrentDir()}/app/data_stores/query_services/{target}/{targetName}_query_interface.nim"
+  let IMPL_PATH = &"{getCurrentDir()}/app/data_stores/query_services/{target}/{targetName}_query.nim"
 
   # check dir and file is not exists
   if isDirExists(INTERFACE_PATH):
@@ -47,17 +47,17 @@ implements {targetCaptalized}QueryService, I{targetCaptalized}QueryService:
   createDir(parentDir(targetPath))
   var f = open(targetPath, fmWrite)
   defer: f.close()
-  f.write(QUERY_SERVICE_INTERFACE)
-  message = &"Created query service interface in {targetPath}"
+  f.write(QUERY_INTERFACE)
+  message = &"Created query interface in {targetPath}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
 
-  # query service
+  # query
   targetPath = IMPL_PATH
   if isFileExists(targetPath): return 1
   createDir(parentDir(targetPath))
   f = open(targetPath, fmWrite)
   f.write(QUERY_SERVICE)
-  message = &"Created query service in {targetPath}"
+  message = &"Created query in {targetPath}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
 
   # update di_container.nim
@@ -74,8 +74,8 @@ implements {targetCaptalized}QueryService, I{targetCaptalized}QueryService:
     textArr.insert("", 0)
     importOffset = 1
   # insert import
-  textArr.insert(&"import data_stores/query_services/{target}/{targetName}_query_service", importOffset-1)
-  textArr.insert(&"import usecases/{target}/{targetName}_query_service_interface", importOffset-1)
+  textArr.insert(&"import data_stores/query_services/{target}/{targetName}_query", importOffset-1)
+  textArr.insert(&"import usecases/{target}/{targetName}_query_interface", importOffset-1)
   textArr.insert(&"# {targetName}", importOffset-1)
   # insert di difinition
   var isAfterDiDifinision:bool
@@ -86,9 +86,9 @@ implements {targetCaptalized}QueryService, I{targetCaptalized}QueryService:
     if isAfterDiDifinision and row == "":
       importDifinisionOffset = i
       break
-  textArr.insert(&"  {targetProcCaptalized}QueryService: I{targetCaptalized}QueryService", importDifinisionOffset)
+  textArr.insert(&"  {targetProcCaptalized}Query: I{targetCaptalized}Query", importDifinisionOffset)
   # insert constructor
-  textArr.insert(&"    {targetProcCaptalized}QueryService: new{targetCaptalized}QueryService().toInterface(),", textArr.len-4)
+  textArr.insert(&"    {targetProcCaptalized}Query: {targetCaptalized}Query.new().toInterface(),", textArr.len-4)
   # write in file
   f = open(targetPath, fmWrite)
   for i in 0..textArr.len-2:

@@ -1,7 +1,7 @@
 import os, terminal, strutils
 import
   make/config, make/migration, make/seeder,
-  make/controller, make/usecase, make/queryservice, make/model, make/valueobject,
+  make/controller, make/usecase, make/query, make/model, make/valueobject,
   make/layout, make/page
 
 
@@ -63,9 +63,9 @@ proc make*(args:seq[string]):int =
       styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)
       return 0
     return makeUsecase(arg1, arg2, message)
-  of "queryservice":
-    getArg1
-    return makeQueryService(arg1, message)
+  # of "query":
+  #   getArg1
+  #   return makeQuery(arg1, message)
   of "model":
     getArg1
     return makeModel(arg1, message)
