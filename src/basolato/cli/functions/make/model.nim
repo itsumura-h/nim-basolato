@@ -1,6 +1,11 @@
 import os, strformat, terminal, strutils
 import utils
 
+# 集約を作ると
+# 集約、リポジトリ、リポジトリインターフェース（集約内）
+# ユースケースのディレクトリ、クエリ、クエリインターフェース（ユースケース内）
+# が作られる
+
 proc makeModel*(target:string, message:var string):int =
   let targetName = target.split("/")[^1]
   let targetCaptalized = snakeToCamel(targetName)
@@ -9,6 +14,8 @@ proc makeModel*(target:string, message:var string):int =
   let parentCapitalized = snakeToCamel(parent)
   let relativeToValueObjectsPath = "../".repeat(target.split("/").len-1) & &"{parent}_value_objects"
   let relativeToRepoInterface = "../".repeat(target.split("/").len-1) & parent & "_repository_interface"
+  let relativeToDatabasePath = "../".repeat(target.split("/").len) & &"../../"
+  let relativeToInterfacePath = "../".repeat(target.split("/").len-1) & &"../../"
 
   let ENTITY = &"""
 import {relativeToValueObjectsPath}
@@ -30,12 +37,13 @@ type I{targetCaptalized}Repository* = tuple
 """
 
   let REPOSITORY = &"""
+import asyncdispatch
 import interface_implements
 import allographer/query_builder
-from ../../../../config/database import rdb
-import ../../../models/{targetName}/{targetName}_value_objects
-import ../../../models/{targetName}/{targetName}_entity
-import ../../../models/{targetName}/{targetName}_repository_interface
+from ../../../config/database import rdb
+import ../../models/{targetName}/{targetName}_value_objects
+import ../../models/{targetName}/{targetName}_entity
+import ../../models/{targetName}/{targetName}_repository_interface
 
 
 type {targetCaptalized}Repository* = ref object
@@ -60,6 +68,29 @@ proc new*(_:type {targetCaptalized}Service, repository:I{parentCapitalized}Repos
   return {targetCaptalized}Service(
     repository: repository
   )
+"""
+
+  let QUERY_INTERFACE = &"""
+import asyncdispatch
+
+
+type I{targetCaptalized}Query* = tuple
+"""
+
+  let QUERY = &"""
+import interface_implements
+import allographer/query_builder
+from {relativeToDatabasePath}config/database import rdb
+import {relativeToInterfacePath}usecases/{target}/{target}_query_interface
+
+
+type {targetCaptalized}Query* = ref object
+
+proc new*(typ:type {targetCaptalized}Query):{targetCaptalized}Query =
+  return {targetCaptalized}Query()
+
+implements {targetCaptalized}Query, I{targetCaptalized}Query:
+  discard
 """
 
   # check dir and file is not exists
@@ -99,15 +130,31 @@ proc new*(_:type {targetCaptalized}Service, repository:I{parentCapitalized}Repos
     f.write(REPOSITORY_INTERFACE)
 
     # create repository dir
-    targetPath = &"{getCurrentDir()}/app/data_stores/repositories/{targetName}"
-    if isDirExists(targetPath): return 1
-    createDir(targetPath)
+    # targetPath = &"{getCurrentDir()}/app/data_stores/repositories/{targetName}"
+    # if isDirExists(targetPath): return 1
+    # createDir(targetPath)
 
     # repository
-    targetPath = &"{getCurrentDir()}/app/data_stores/repositories/{targetName}/{targetName}_repository.nim"
+    targetPath = &"{getCurrentDir()}/app/data_stores/repositories/{targetName}_repository.nim"
     if isFileExists(targetPath): return 1
     f = open(targetPath, fmWrite)
     f.write(REPOSITORY)
+
+    # create usecase dir
+    targetPath = &"{getCurrentDir()}/app/usecases/{targetName}"
+    createDir(targetPath)
+
+    # query
+    targetPath = &"{getCurrentDir()}/app/data_stores/queries/{targetName}_query.nim"
+    if isFileExists(targetPath): return 1
+    f = open(targetPath, fmWrite)
+    f.write(QUERY)
+
+    # query interface
+    targetPath = &"{getCurrentDir()}/app/usecases/{targetName}/{targetName}_query_interface.nim"
+    if isFileExists(targetPath): return 1
+    f = open(targetPath, fmWrite)
+    f.write(QUERY_INTERFACE)
 
     # update di_container.nim
     targetPath = &"{getCurrentDir()}/app/di_container.nim"
@@ -123,7 +170,9 @@ proc new*(_:type {targetCaptalized}Service, repository:I{parentCapitalized}Repos
       textArr.insert("", 0)
       importOffset = 1
     # insert import
-    textArr.insert(&"import data_stores/repositories/{targetName}/{targetName}_repository", importOffset-1)
+    textArr.insert(&"import data_stores/queries/{targetName}_query", importOffset-1)
+    textArr.insert(&"import usecases/{targetName}/{targetName}_query_interface", importOffset-1)
+    textArr.insert(&"import data_stores/repositories/{targetName}_repository", importOffset-1)
     textArr.insert(&"import models/{targetName}/{targetName}_repository_interface", importOffset-1)
     textArr.insert(&"# {targetName}", importOffset-1)
     # insert di difinition
@@ -136,8 +185,10 @@ proc new*(_:type {targetCaptalized}Service, repository:I{parentCapitalized}Repos
         importDifinisionOffset = i
         break
     textArr.insert(&"  {targetProcCaptalized}Repository: I{targetCaptalized}Repository", importDifinisionOffset)
+    textArr.insert(&"  {targetProcCaptalized}Query: I{targetCaptalized}Query", importDifinisionOffset)
     # insert constructor
     textArr.insert(&"    {targetProcCaptalized}Repository: {targetCaptalized}Repository.new().toInterface(),", textArr.len-4)
+    textArr.insert(&"    {targetProcCaptalized}Query: {targetCaptalized}Query.new().toInterface(),", textArr.len-4)
     # write in file
     f = open(targetPath, fmWrite)
     for i in 0..textArr.len-2:
@@ -145,7 +196,13 @@ proc new*(_:type {targetCaptalized}Service, repository:I{parentCapitalized}Repos
     message = &"Updated {targetPath}"
     styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
 
-    message = &"Created repository in {getCurrentDir()}/app/data_stores/repositories/{target}"
+    message = &"Created repository in {getCurrentDir()}/app/data_stores/repositories/{target}_repository.nim"
+    styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
+
+    message = &"Created query in {getCurrentDir()}/app/data_stores/queries/{target}_query.nim"
+    styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
+
+    message = &"Created usecase in {getCurrentDir()}/app/usecases/{target}"
     styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
 
   message = &"Created domain model in {getCurrentDir()}/app/models/{target}"
