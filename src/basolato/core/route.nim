@@ -232,6 +232,7 @@ proc doesRunAnonymousLogin(req:Request, res:Response):bool =
     return false
   if res.headers.hasKey("set-cookie"):
     return false
+  return true
 
 proc serveCore(params:(Routes, int)){.async.} =
   let (routes, port) = params
