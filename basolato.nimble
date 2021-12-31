@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.10.1"
+version       = "0.11.0"
 author        = "Hidenobu Itsumura @dumblepytech1 as 'medy'"
 description   = "A full-stack web framework library for Nim"
 license       = "MIT"
@@ -27,15 +27,14 @@ requires "redis >= 0.3.0"
 requires "sass >= 0.1.0"
 requires "templates >= 0.5"
 
-import strformat
-# from os import `/`
+import strformat, os
 
 # task docs, "Generate API documents":
 #   let
 #     deployDir = "deploy" / "docs"
 #     pkgDir = srcDir / "basolato"
 #     srcFiles = @[
-#       "base","controller","logger","middleware","routing","view"
+#       "controller", "middleware", "password", "request_validation", "view",
 #     ]
 
 #   if existsDir(deployDir):

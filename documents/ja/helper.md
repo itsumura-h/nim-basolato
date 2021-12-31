@@ -13,7 +13,7 @@
          * [API](#api-1)
          * [サンプル](#サンプル-1)
 
-<!-- Added by: root, at: Fri Oct  8 08:50:30 UTC 2021 -->
+<!-- Added by: root, at: Fri Dec 31 11:50:43 UTC 2021 -->
 
 <!--te-->
 
