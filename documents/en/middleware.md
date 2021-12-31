@@ -37,12 +37,15 @@ In following example, `checkCsrfTokenMiddleware()` and `checkSessionIdMiddleware
 
 main.nim
 ```nim
-import re
 import basolato
 import app/middlewares/auth_middleware
 
-var routes = Routes.new()
-routes.middleware(re".*", auth_middleware.checkLoginIdMiddleware)
+
+let ROUTES = @[
+  Route.get("/", welcome_rontroller.index)
+    .middleware(auth_middleware.checkLoginIdMiddleware)
+]
+
 serve(routes)
 ```
 
@@ -92,13 +95,16 @@ In following example, `setCorsMiddleware` run only in `OPTIONS` requests.
 
 main.nim
 ```nim
-var routes = Routes.new()
-routes.middleware(@[HttpOptions], re"/api/.*", cors_middleware.setCorsMiddleware)
+let ROUTES = @[
+  Route.put("/api/user/{id:int}", user_controller.update)
+    .middleware(cors_middleware.setCorsMiddleware),
+]
 ```
 
 app/middleware/cors_middlware.nim
 ```nim
 proc setCorsMiddleware*(r:Request, p:Params):Future[Response] {.async.} =
-  let headers = corsHeader() & secureHeader()
-  return next(status=Http204, headers=headers)
+  if r.httpMethod == HttpOption:
+    let headers = corsHeader() & secureHeader()
+    return next(status=Http204, headers=headers)
 ```

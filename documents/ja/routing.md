@@ -7,10 +7,12 @@
 import basolato
 import app/controllers/some_controller
 
-var routes = Routes.new()
+let ROUTES = @[
+  Route.get("/", some_controller.index),
+  Route.post("/", some_controller.create)
+]
 
-routes.get("/", some_controller.index)
-routes.post("/", some_controller.create)
+serve(ROUTES)
 ```
 
 コンテンツ
@@ -48,13 +50,13 @@ import app/controllers/some_controller
 import app/controllers/dashboard_controller
 
 
-var routes = Routes.new()
-
-routes.get("/", some_controller.index)
-
-groups "/dashboard":
-  routes.get("/url1", dashboard_controller.url1)
-  routes.get("/url2", dashboard_controller.url2)
+let ROUTES = @[
+  Route.get("/", some_controller.index),
+  Route.group("/dashboard", @[
+    Route.get("/url1", dashboard_controller.url1),
+    Route.get("/url2", dashboard_controller.url2)
+  ])
+]
 ```
 `/dashboard/url1`と`/dashboard/url2`が有効なURLになります。
 
@@ -65,10 +67,11 @@ BasolatoはURLパラメータを`int`と`str`を使って型指定すること�
 import basolato
 import app/controllers/some_controller
 
-var routes = Routes.new()
 
-routes.get("/{id:int}", some_controller.show)
-routes.get("/{name:str}", some_controller.showByName)
+let ROUTES = @[
+  Route.get("/{id:int}", some_controller.show),
+  Route.get("/{name:str}", some_controller.showByName)
+]
 ```
 
 |リクエストURL|呼ばれるコントローラー|
