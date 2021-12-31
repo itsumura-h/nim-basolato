@@ -158,7 +158,7 @@ proc `%`*(self:Params):JsonNode =
       data[key] = %param.value
   return data
 
-type MultiData* = OrderedTable[string, tuple[fields: StringTableRef, body: string]]
+type MultiData = OrderedTable[string, tuple[fields: StringTableRef, body: string]]
 
 # template parseContentDisposition() =
 #   var hCount = 0
@@ -176,7 +176,7 @@ type MultiData* = OrderedTable[string, tuple[fields: StringTableRef, body: strin
 #       inc(hCount)
 #       hCount += hValue.skipWhitespace(hCount)
 
-func parseMultiPart*(body: string, boundary: string): MultiData =
+func parseMultiPart(body: string, boundary: string): MultiData =
   result = initOrderedTable[string, tuple[fields: StringTableRef, body: string]]()
   var mboundary = "--" & boundary
 
@@ -239,7 +239,7 @@ func parseMultiPart*(body: string, boundary: string): MultiData =
 
     result[name] = newPart
 
-func parseMPFD*(contentType: string, body: string): MultiData =
+func parseMPFD(contentType: string, body: string): MultiData =
   var boundaryEqIndex = contentType.find("boundary=")+9
   var boundary = contentType.substr(boundaryEqIndex, contentType.len()-1)
   return parseMultiPart(body, boundary)
