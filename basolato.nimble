@@ -29,19 +29,19 @@ requires "templates >= 0.5"
 
 import strformat, os
 
-task docs, "Generate API documents":
-  let
-    deployDir = "deploy" / "docs"
-    pkgDir = srcDir / "basolato"
-    srcFiles = @[
-      "controller", "middleware", "password", "request_validation", "view",
-    ]
+# task docs, "Generate API documents":
+#   let
+#     deployDir = "deploy" / "docs"
+#     pkgDir = srcDir / "basolato"
+#     srcFiles = @[
+#       "controller", "middleware", "password", "request_validation", "view",
+#     ]
 
-  if existsDir(deployDir):
-    rmDir deployDir
-  for f in srcFiles:
-    let srcFile = pkgDir / f & ".nim"
-    exec &"nim doc --hints:off --project --out:{deployDir} --index:on {srcFile}"
+#   if existsDir(deployDir):
+#     rmDir deployDir
+#   for f in srcFiles:
+#     let srcFile = pkgDir / f & ".nim"
+#     exec &"nim doc --hints:off --project --out:{deployDir} --index:on {srcFile}"
 
 task install, "install":
   discard
