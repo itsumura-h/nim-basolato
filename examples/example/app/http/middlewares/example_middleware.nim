@@ -10,3 +10,8 @@ proc setMiddleware2*(c:Context, p:Params):Future[Response] {.async.} =
   let headers = newHttpHeaders()
   headers.add("middleware2", "b")
   return next(headers=headers)
+
+proc setMiddleware3*(c:Context, p:Params):Future[Response] {.async.} =
+  let headers = newHttpHeaders()
+  headers.add("middleware3", "c")
+  return next(headers=headers)
