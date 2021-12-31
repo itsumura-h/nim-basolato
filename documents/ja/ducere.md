@@ -22,7 +22,7 @@ Ducereコマンド
             * [usecase](#usecase)
       * [Bash-completion](#bash-completion)
 
-<!-- Added by: root, at: Fri Oct  8 08:50:59 UTC 2021 -->
+<!-- Added by: root, at: Fri Dec 31 11:51:14 UTC 2021 -->
 
 <!--te-->
 

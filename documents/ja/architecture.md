@@ -18,7 +18,7 @@
          * [リポジトリ](#リポジトリ)
          * [クエリサービス](#クエリサービス)
 
-<!-- Added by: root, at: Fri Oct  8 08:51:38 UTC 2021 -->
+<!-- Added by: root, at: Fri Dec 31 11:51:44 UTC 2021 -->
 
 <!--te-->
 
