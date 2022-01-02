@@ -14,8 +14,6 @@ proc makeModel*(target:string, message:var string):int =
   let parentCapitalized = snakeToCamel(parent)
   let relativeToValueObjectsPath = "../".repeat(target.split("/").len-1) & &"{parent}_value_objects"
   let relativeToRepoInterface = "../".repeat(target.split("/").len-1) & parent & "_repository_interface"
-  let relativeToDatabasePath = "../".repeat(target.split("/").len) & &"../../"
-  let relativeToInterfacePath = "../".repeat(target.split("/").len-1) & &"../../"
 
   let ENTITY = &"""
 import {relativeToValueObjectsPath}
@@ -40,10 +38,10 @@ type I{targetCaptalized}Repository* = tuple
 import asyncdispatch
 import interface_implements
 import allographer/query_builder
-from ../../../config/database import rdb
-import ../../models/{targetName}/{targetName}_value_objects
-import ../../models/{targetName}/{targetName}_entity
-import ../../models/{targetName}/{targetName}_repository_interface
+from ../../../../config/database import rdb
+import ../../../models/{targetName}/{targetName}_value_objects
+import ../../../models/{targetName}/{targetName}_entity
+import ../../../models/{targetName}/{targetName}_repository_interface
 
 
 type {targetCaptalized}Repository* = ref object
@@ -57,8 +55,8 @@ implements {targetCaptalized}Repository, I{targetCaptalized}Repository:
 
   let SERVICE = &"""
 import {relativeToValueObjectsPath}
-import {targetName}_entity
 import {relativeToRepoInterface}
+import {targetName}_entity
 
 
 type {targetCaptalized}Service* = ref object
@@ -80,8 +78,8 @@ type I{targetCaptalized}Query* = tuple
   let QUERY = &"""
 import interface_implements
 import allographer/query_builder
-from {relativeToDatabasePath}config/database import rdb
-import {relativeToInterfacePath}usecases/{target}/{target}_query_interface
+from ../../../../config/database import rdb
+import ../../../usecases/{target}/{target}_query_interface
 
 
 type {targetCaptalized}Query* = ref object
@@ -124,18 +122,18 @@ implements {targetCaptalized}Query, I{targetCaptalized}Query:
 
   if not target.contains("/"):
     # repository interface
-    targetPath = &"{getCurrentDir()}/app/models/{targetName}/{targetName}_repository_interface.nim"
+    targetPath = &"{getCurrentDir()}/app/models/{target}/{targetName}_repository_interface.nim"
     if isFileExists(targetPath): return 1
     f = open(targetPath, fmWrite)
     f.write(REPOSITORY_INTERFACE)
 
     # create repository dir
-    # targetPath = &"{getCurrentDir()}/app/data_stores/repositories/{targetName}"
-    # if isDirExists(targetPath): return 1
-    # createDir(targetPath)
+    targetPath = &"{getCurrentDir()}/app/data_stores/repositories/{target}"
+    if isDirExists(targetPath): return 1
+    createDir(targetPath)
 
     # repository
-    targetPath = &"{getCurrentDir()}/app/data_stores/repositories/{targetName}_repository.nim"
+    targetPath = &"{getCurrentDir()}/app/data_stores/repositories/{target}/{targetName}_repository.nim"
     if isFileExists(targetPath): return 1
     f = open(targetPath, fmWrite)
     f.write(REPOSITORY)
@@ -144,8 +142,13 @@ implements {targetCaptalized}Query, I{targetCaptalized}Query:
     targetPath = &"{getCurrentDir()}/app/usecases/{targetName}"
     createDir(targetPath)
 
+    # create query dir
+    targetPath = &"{getCurrentDir()}/app/data_stores/queries/{target}"
+    if isDirExists(targetPath): return 1
+    createDir(targetPath)
+
     # query
-    targetPath = &"{getCurrentDir()}/app/data_stores/queries/{targetName}_query.nim"
+    targetPath = &"{getCurrentDir()}/app/data_stores/queries/{target}/{targetName}_query.nim"
     if isFileExists(targetPath): return 1
     f = open(targetPath, fmWrite)
     f.write(QUERY)
@@ -170,9 +173,9 @@ implements {targetCaptalized}Query, I{targetCaptalized}Query:
       textArr.insert("", 0)
       importOffset = 1
     # insert import
-    textArr.insert(&"import data_stores/queries/{targetName}_query", importOffset-1)
+    textArr.insert(&"import data_stores/queries/{target}/{targetName}_query", importOffset-1)
     textArr.insert(&"import usecases/{targetName}/{targetName}_query_interface", importOffset-1)
-    textArr.insert(&"import data_stores/repositories/{targetName}_repository", importOffset-1)
+    textArr.insert(&"import data_stores/repositories/{target}/{targetName}_repository", importOffset-1)
     textArr.insert(&"import models/{targetName}/{targetName}_repository_interface", importOffset-1)
     textArr.insert(&"# {targetName}", importOffset-1)
     # insert di difinition
@@ -196,10 +199,10 @@ implements {targetCaptalized}Query, I{targetCaptalized}Query:
     message = &"Updated {targetPath}"
     styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
 
-    message = &"Created repository in {getCurrentDir()}/app/data_stores/repositories/{target}_repository.nim"
+    message = &"Created repository in {getCurrentDir()}/app/data_stores/repositories/{target}/{targetName}_repository.nim"
     styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
 
-    message = &"Created query in {getCurrentDir()}/app/data_stores/queries/{target}_query.nim"
+    message = &"Created query in {getCurrentDir()}/app/data_stores/queries/{target}/{targetName}_query.nim"
     styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
 
     message = &"Created usecase in {getCurrentDir()}/app/usecases/{target}"
