@@ -1,10 +1,10 @@
 import os, strformat, terminal, strutils
 import utils
 
-# 集約を作ると
-# 集約、リポジトリ、リポジトリインターフェース（集約内）
-# ユースケースのディレクトリ、クエリ、クエリインターフェース（ユースケース内）
-# が作られる
+# When aggregate is created,
+# aggregate, repository, repository interface(in aggregate),
+# usecase directory, query, query interface(in usecase)
+# are created at the same time
 
 proc makeModel*(target:string, message:var string):int =
   let targetName = target.split("/")[^1]
@@ -187,8 +187,9 @@ implements {targetCaptalized}Query, I{targetCaptalized}Query:
       if isAfterDiDifinision and row == "":
         importDifinisionOffset = i
         break
+    # field defintion
     textArr.insert(&"  {targetProcCaptalized}Repository: I{targetCaptalized}Repository", importDifinisionOffset)
-    textArr.insert(&"  {targetProcCaptalized}Query: I{targetCaptalized}Query", importDifinisionOffset)
+    textArr.insert(&"  {targetProcCaptalized}Query: I{targetCaptalized}Query", importDifinisionOffset + 1)
     # insert constructor
     textArr.insert(&"    {targetProcCaptalized}Repository: {targetCaptalized}Repository.new().toInterface(),", textArr.len-4)
     textArr.insert(&"    {targetProcCaptalized}Query: {targetCaptalized}Query.new().toInterface(),", textArr.len-4)
