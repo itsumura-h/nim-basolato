@@ -8,8 +8,9 @@ const
 
 for f in walkDir(getCurrentDir()):
   if f.path.split("/")[^1] == ".env":
-    let env = initDotEnv(getCurrentDir(), ".env")
-    env.load()
+    # let env = initDotEnv(getCurrentDir(), ".env")
+    # env.load()
+    load(getCurrentDir(), ".env")
     echo("Basolato uses config file '", f.path, "'")
     break
 
