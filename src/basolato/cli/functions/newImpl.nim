@@ -48,7 +48,7 @@ backend       = "c"
 # Dependencies
 requires "nim >= {NimVersion}"
 requires "https://github.com/itsumura-h/nim-basolato >= {BasolatoVersion}"
-requires "allographer >= 0.19.2"
+requires "allographer >= 0.21.0"
 requires "interface_implements >= 0.2.2"
 requires "bcrypt >= 0.2.1"
 requires "cligen >= 1.5.9"

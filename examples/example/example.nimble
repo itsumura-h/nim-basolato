@@ -9,7 +9,7 @@ backend       = "c"
 # Dependencies
 requires "nim >= 1.4.4"
 requires "https://github.com/itsumura-h/nim-basolato >= 0.10.0"
-requires "allographer >= 0.19.0"
+requires "allographer >= 0.21.0"
 requires "interface_implements >= 0.2.1"
 requires "templates >= 0.5"
 requires "bcrypt >= 0.2.1"
