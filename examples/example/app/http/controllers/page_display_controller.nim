@@ -90,7 +90,7 @@ proc customHeaders*(context:Context, params:Params):Future[Response] {.async.} =
   header.add("Custom-Header-Key1", "Custom-Header-Val1")
   header.add("Custom-Header-Key1", "Custom-Header-Val2")
   header.add("Custom-Header-Key2", ["val1", "val2", "val3"])
-  header.add("setHeaderTest", "aaaa")
+  header.add("set-header-test", "aaaa")
   return render("with header", header)
 
 

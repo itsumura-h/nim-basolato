@@ -2,7 +2,8 @@ from strutils import join
 import asyncdispatch
 import ../../../../../src/basolato/middleware
 
-proc corsHeader(): HttpHeaders =
+
+proc setCorsHeadersMiddleware*(c:Context, p:Params):Future[Response] {.async.} =
   let allowedMethods = [
     "OPTIONS",
     "GET",
@@ -15,7 +16,7 @@ proc corsHeader(): HttpHeaders =
     "content-type",
   ]
 
-  return {
+  let headers = {
     "Cache-Control": @["no-cache"],
     "Access-Control-Allow-Credentials": @[$true],
     "Access-Control-Allow-Origin": @["http://localhost:3000"],
@@ -23,10 +24,10 @@ proc corsHeader(): HttpHeaders =
     "Access-Control-Allow-Headers": @allowedHeaders,
     "Access-Control-Expose-Headers": @allowedHeaders,
   }.newHttpHeaders()
+  return next(status=Http204, headers=headers)
 
-
-proc secureHeader(): HttpHeaders =
-  return {
+proc setSecureHeadersMiddlware*(c:Context, p:Params):Future[Response] {.async.} =
+  let headers = {
     "Strict-Transport-Security": @["max-age=63072000", "includeSubdomains"],
     "X-Frame-Options": @["SAMEORIGIN"],
     "X-XSS-Protection": @["1", "mode=block"],
@@ -35,7 +36,4 @@ proc secureHeader(): HttpHeaders =
     "Cache-Control": @["no-cache", "no-store", "must-revalidate"],
     "Pragma": @["no-cache"],
   }.newHttpHeaders()
-
-proc setCorsHeadersMiddleware*(c:Context, p:Params):Future[Response] {.async.} =
-  let headers = corsHeader() & secureHeader()
   return next(status=Http204, headers=headers)

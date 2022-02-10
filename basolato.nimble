@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.11.2"
+version       = "0.12.0"
 author        = "Hidenobu Itsumura @dumblepytech1 as 'medy'"
 description   = "A full-stack web framework library for Nim"
 license       = "MIT"
@@ -19,7 +19,7 @@ requires "allographer >= 0.19.2"
 requires "interface_implements >= 0.2.2"
 requires "bcrypt >= 0.2.1"
 requires "cligen >= 1.5.9"
-requires "dotenv >= 1.1.1"
+requires "dotenv >= 2.0.1"
 requires "faker >= 0.14.0"
 requires "flatdb >= 0.2.5"
 requires "nimAES >= 0.1.2"

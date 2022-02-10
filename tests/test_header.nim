@@ -49,7 +49,7 @@ block:
   header.add("set-cookie", "cookie1")
   header.add("set-cookie", "cookie2")
   header = header.format()
-  check header["a"] == "a, b"
-  check header.table["date"].len == 1
-  check header.table["set-cookie"][0] == "cookie1"
-  check header.table["set-cookie"][1] == "cookie2"
+  check header["A"] == "a, b"
+  check header.table["Date"].len == 1
+  check header.table["Set-Cookie"][0] == "cookie1"
+  check header.table["Set-Cookie"][1] == "cookie2"
