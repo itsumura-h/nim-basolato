@@ -11,14 +11,14 @@ proc create(dirPath:string, packageDir:string):int =
   cd {dirPath}
   git clone {tmplateGitUrl} tmp
   """)
-    # get from tmp/0.11
-    moveDir(&"{dirpath}/tmp/0.11/app", &"{dirpath}/app")
-    moveDir(&"{dirpath}/tmp/0.11/config", &"{dirpath}/config")
-    moveDir(&"{dirpath}/tmp/0.11/database", &"{dirpath}/database")
-    moveDir(&"{dirpath}/tmp/0.11/public", &"{dirpath}/public")
-    moveDir(&"{dirpath}/tmp/0.11/resources", &"{dirpath}/resources")
-    moveFile(&"{dirpath}/tmp/0.11/main.nim", &"{dirpath}/main.nim")
-    moveFile(&"{dirpath}/tmp/0.11/.gitignore", &"{dirpath}/.gitignore")
+    # get from tmp/0.12
+    moveDir(&"{dirpath}/tmp/0.12/app", &"{dirpath}/app")
+    moveDir(&"{dirpath}/tmp/0.12/config", &"{dirpath}/config")
+    moveDir(&"{dirpath}/tmp/0.12/database", &"{dirpath}/database")
+    moveDir(&"{dirpath}/tmp/0.12/public", &"{dirpath}/public")
+    moveDir(&"{dirpath}/tmp/0.12/resources", &"{dirpath}/resources")
+    moveFile(&"{dirpath}/tmp/0.12/main.nim", &"{dirpath}/main.nim")
+    moveFile(&"{dirpath}/tmp/0.12/.gitignore", &"{dirpath}/.gitignore")
     # move static files
     moveFile(&"{dirpath}/tmp/assets/basolato.svg", &"{dirpath}/public/basolato.svg")
     moveFile(&"{dirpath}/tmp/assets/favicon.ico", &"{dirpath}/public/favicon.ico")
