@@ -57,7 +57,6 @@ export PATH=$PATH:~/.nimble/bin
 ### Dependencies
 
 The framework depends on several libraries (installed automatically by Nimble):
-- [dotenv](https://github.com/euantorano/dotenv.nim), Loads environment variables from `.env`.
 - [nim-templates](https://github.com/onionhammer/nim-templates), a simple string templating library.
 - [allographer](https://github.com/itsumura-h/nim-allographer), a library for building queries.
 - [flatdb](https://github.com/enthus1ast/flatdb), a small Flatfile database, used for sessions.
