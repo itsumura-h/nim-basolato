@@ -1,5 +1,4 @@
-import os, strutils
-import dotenv
+import os, strutils, streams, parsecfg
 
 const
   SECRET_KEY* = getEnv("SECRET_KEY").string
@@ -8,8 +7,17 @@ const
 
 for f in walkDir(getCurrentDir()):
   if f.path.split("/")[^1] == ".env":
-    load(getCurrentDir(), ".env")
-    echo("Basolato uses config file '", f.path, "'")
+    let path = getCurrentDir() / ".env"
+    var f = newFileStream(path, fmRead)
+    echo("Basolato uses config file '", path, "'")
+    var p: CfgParser
+    open(p, f, path)
+    while true:
+      var e = next(p)
+      case e.kind
+      of cfgEof: break
+      of cfgKeyValuePair: putEnv(e.key, e.value)
+      else: discard
     break
 
 let
