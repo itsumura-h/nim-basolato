@@ -2,7 +2,7 @@
 import ../../src/basolato
 # middleware
 import app/http/middlewares/auth_middleware
-import app/http/middlewares/cors_middleware
+import app/http/middlewares/set_headers_middleware
 import app/http/middlewares/example_middleware
 # controllers
 import app/http/controllers/page_display_controller
@@ -58,8 +58,9 @@ let ROUTES = @[
     ])
     .middleware(example_middleware.setMiddleware3),
     Route.group("/api", @[])
-    .middleware(cors_middleware.setCorsHeadersMiddleware)
+    .middleware(set_headers_middleware.setCorsHeadersMiddleware)
   ])
+  .middleware(set_headers_middleware.setSecureHeadersMiddlware)
   .middleware(auth_middleware.checkCsrfTokenMiddleware)
 ]
 

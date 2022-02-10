@@ -94,5 +94,4 @@ proc format*(self:HttpHeaders):HttpHeaders =
         tmp.add((key, value))
     else:
       tmp.add((key, values.join(", ")))
-  return tmp.newHttpHeaders()
-
+  return tmp.newHttpHeaders(true)
