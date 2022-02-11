@@ -1,4 +1,4 @@
-FROM nimlang/nim:1.4.4-alpine
+FROM nimlang/nim:1.6.2-alpine-regular
 
 RUN echo http://dl-cdn.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories
 RUN apk update && \
@@ -9,8 +9,10 @@ RUN apk update && \
         pcre \
         bsd-compat-headers \
         lcov \
-        sqlite mariadb-dev libpq && \
+        sqlite \
+        mariadb-dev \
+        libpq \
+        libsass-dev && \
     rm /usr/lib/mysqld* -fr && rm /usr/bin/mysql* -fr
-WORKDIR /root/project/
-ADD ./basolato.nimble /root/project/
 ENV PATH $PATH:/root/.nimble/bin
+WORKDIR /root/project/

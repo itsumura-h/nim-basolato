@@ -3,28 +3,40 @@ services:
   redis:
     image: redis:alpine
     tty: true
-    depends_on:
-      - app
 
-  app:
-    build:
-      context: .
-      dockerfile: ./docker/nim/Dockerfile
+  # app-alpine:
+  #   build: ./docker/nim/alpine
+  #   tty: true
+  #   ports:
+  #     - 9000:5000
+  #   volumes:
+  #     - .:/root/project
+
+  # app-ubuntu:
+  #   build: ./docker/nim/ubuntu
+  #   tty: true
+  #   ports:
+  #     - 9001:5000
+  #   volumes:
+  #     - .:/root/project
+
+  app-debian:
+    build: ./docker/nim/debian
     tty: true
     ports:
-      - 9000:5000
+      - 9002:5000
     volumes:
       - .:/root/project
 
-  frontend:
-    build:
-      context: .
-      dockerfile: ./docker/frontend/Dockerfile
-    tty: true
-    ports:
-      - 3000:3000
-    volumes:
-      - ./examples/todo_app.bk/frontend:/root/project
+  # frontend:
+  #   build:
+  #     context: .
+  #     dockerfile: ./docker/frontend/Dockerfile
+  #   tty: true
+  #   ports:
+  #     - 3000:3000
+  #   volumes:
+  #     - ./examples/todo_app.bk/frontend:/root/project
 
   tfb-database-my:
     image: mariadb

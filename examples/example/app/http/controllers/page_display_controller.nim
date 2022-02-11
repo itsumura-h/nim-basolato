@@ -104,7 +104,7 @@ proc presentDd*(context:Context, params:Params):Future[Response] {.async.} =
   dd(
     a,
     "abc",
-    request.repr,
+    context.request.repr,
   )
   return render("dd")
 
