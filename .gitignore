@@ -30,3 +30,4 @@ karax
 *.log.*
 *.db
 *.db.*
+*.exe
