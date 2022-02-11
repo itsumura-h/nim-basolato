@@ -10,7 +10,6 @@ RUN apt update; apt install -y libgnutls30 && \
         libpq-dev \
         libmysqlclient-dev \
         libsass-dev
-RUN rm -rf /var/lib/apt/lists/*
 ENV PATH $PATH:/root/.nimble/bin
 WORKDIR /root/project
 

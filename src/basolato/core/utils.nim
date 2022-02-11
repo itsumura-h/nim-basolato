@@ -24,7 +24,7 @@ func getOsName():string =
     if kv[0] == "ID":
       return kv[1]
 
-func isExistsLibsass*():bool =
+proc isExistsLibsass*():bool =
   ## used in /view
   when defined(macosx):
     const query = "ldconfig -p | grep libsass"
@@ -36,10 +36,12 @@ func isExistsLibsass*():bool =
       const query = "cat /lib/apk/db/installed | grep libsass"
       const res = gorgeEx(query)
       return res.exitCode == 0 and res.output.len > 0
-    else: # Ubuntu/Debian/CentOS...
+    elif ["ubuntu", "debian"].contains(osName):
       const query = "ldconfig -p | grep libsass"
       const res = gorgeEx(query)
       return res.exitCode == 0 and res.output.len > 0
+    else:
+      raise newException(Exception, "The only supported OS of Linux are Alpine, Debian, and Ubuntu.")
   else: # Windows
     const libDir = "/usr/lib /usr/local/lib"
     const libsass = "libsass.dll"
