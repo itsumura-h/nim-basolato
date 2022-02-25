@@ -18,12 +18,19 @@ proc makeConfig*():int =
   createConfigCommon "config.nims":
     &"""
 import os
-putEnv("SECRET_KEY", "{randStr(24)}") # 24 chars
+putEnv("DB_SQLITE", $true) # "true" or "false"
+# putEnv("DB_POSTGRES", $true) # "true" or "false"
+# putEnv("DB_MYSQL", $true) # "true" or "false"
+# putEnv("DB_MARIADB", $true) # "true" or "false"
 putEnv("SESSION_TYPE", "file") # "file" or "redis"
+putEnv("LIBSASS", $false) # "true" or "false"
 """
 
   createConfigCommon ".env":
     &"""
+# Secret
+SECRET_KEY="{randStr(24)}" # 24 chars
+
 # DB Connection
 DB_DATABASE="{getCurrentDir()}/db.sqlite3" # sqlite file path or database name
 DB_USER=""
@@ -47,6 +54,7 @@ ENABLE_ANONYMOUS_COOKIE=true # true or false
 COOKIE_DOMAINS="" # to specify multiple domains, "sample.com, sample.org"
 
 HOST="0.0.0.0"
+PORT=5000
 LOCALE=en
 """
 

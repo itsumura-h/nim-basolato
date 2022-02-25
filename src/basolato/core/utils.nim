@@ -29,28 +29,23 @@ func getOsName*():string =
   else:
     return ""
 
-proc isExistsLibsass*():bool =
-  ## used in /view
-  when defined(macosx):
-    const query = "ldconfig -p | grep libsass"
-    const res = gorgeEx(query)
-    return res.exitCode == 0 and res.output.len > 0
-  elif defined(linux) or defined(bsd):
-    const osName = getOsName()
-    if osName == "alpine":
-      const query = "cat /lib/apk/db/installed | grep libsass"
-      const res = gorgeEx(query)
-      return res.exitCode == 0 and res.output.len > 0
-    elif ["ubuntu", "debian"].contains(osName):
-      const query = "ldconfig -p | grep libsass"
-      const res = gorgeEx(query)
-      return res.exitCode == 0 and res.output.len > 0
-    else:
-      raise newException(Exception, "The only supported OS of Linux are Alpine, Debian, and Ubuntu.")
-  elif defined(windows):
-    # const libDir = "/usr/lib /usr/local/lib"
-    # const libsass = "libsass.dll"
-    # const query = "find " & libDir & " -name \"" & libsass & "\""
-    # const res = gorgeEx(query)
-    # return res.exitCode == 0 and res.output.len > 0
-    return true
+# proc isExistsLibsass*():bool =
+#   ## used in /view
+#   when defined(macosx):
+#     const query = "ldconfig -p | grep libsass"
+#     const res = gorgeEx(query)
+#     return res.exitCode == 0 and res.output.len > 0
+#   elif defined(linux) or defined(bsd):
+#     const osName = getOsName()
+#     if osName == "alpine":
+#       const query = "cat /lib/apk/db/installed | grep libsass"
+#       const res = gorgeEx(query)
+#       return res.exitCode == 0 and res.output.len > 0
+#     elif ["ubuntu", "debian"].contains(osName):
+#       const query = "ldconfig -p | grep libsass"
+#       const res = gorgeEx(query)
+#       return res.exitCode == 0 and res.output.len > 0
+#     else:
+#       raise newException(Exception, "The only supported OS of Linux are Alpine, Debian, and Ubuntu.")
+#   elif defined(windows):
+#     return false

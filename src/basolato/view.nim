@@ -17,7 +17,8 @@ import
   core/security/csrf_token,
   core/security/context,
   core/utils,
-  core/request
+  core/request,
+  core/baseEnv
   # request_validation
 export
   csrf_token,
@@ -77,7 +78,7 @@ func `$`*(self:Css):string =
 func element*(self:Css, name:string):string =
   return name & self.saffix
 
-when isExistsLibsass():
+when DOES_USE_LIBSASS:
   import sass
   template style*(typ:string, name, body: untyped):untyped =
     if not ["css", "scss"].contains(typ):

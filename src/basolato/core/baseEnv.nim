@@ -1,9 +1,8 @@
 import os, strutils, streams, parsecfg
 
 const
-  SECRET_KEY* = getEnv("SECRET_KEY")
   SESSION_TYPE* = getEnv("SESSION_TYPE")
-  PORT_NUM* = getEnv("PORT", "5000").parseInt
+  DOES_USE_LIBSASS* = when existsEnv("LIBSASS"): getEnv("LIBSASS").parseBool else: false
 
 for f in walkDir(getCurrentDir()):
   if f.path.split("/")[^1] == ".env":
@@ -21,6 +20,8 @@ for f in walkDir(getCurrentDir()):
     break
 
 let
+  SECRET_KEY* = getEnv("SECRET_KEY")
+  PORT_NUM* = getEnv("PORT", "5000").parseInt
   # Logging
   IS_DISPLAY* = getEnv("LOG_IS_DISPLAY").parseBool
   IS_FILE* = getEnv("LOG_IS_FILE").parseBool
