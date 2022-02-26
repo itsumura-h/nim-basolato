@@ -21,14 +21,13 @@ proc commonCtr(input:string):string =
   return ctx.cryptCTR(offset, nonce, input)
 
 proc encryptCtr*(input:string):string =
-  var input = randStr(16) & input
-  input = input.commonCtr().toHex()
+  let input = input.commonCtr().toHex()
   return input
 
 proc decryptCtr*(input:string):string =
   if input.len == 0: return ""
   try:
     let input = input.parseHexStr().commonCtr()
-    return input[16..high(input)]
+    return input
   except:
     return ""
