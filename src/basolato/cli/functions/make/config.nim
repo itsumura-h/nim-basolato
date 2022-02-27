@@ -29,7 +29,7 @@ putEnv("LIBSASS", $false) # "true" or "false"
   createConfigCommon ".env":
     &"""
 # Secret
-SECRET_KEY="{randStr(100)}" # 100 chars
+SECRET_KEY="{randStr(100)}"
 
 # DB Connection
 DB_DATABASE="{getCurrentDir()}/db.sqlite3" # sqlite file path or database name
@@ -61,7 +61,7 @@ LOCALE=en
   createConfigCommon ".env.example":
     &"""
 # Secret
-SECRET_KEY="" # 24 chars
+SECRET_KEY=""
 
 # DB Connection
 DB_DATABASE="{getCurrentDir()}/db.sqlite3" # sqlite file path or database name
