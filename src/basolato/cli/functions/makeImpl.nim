@@ -1,6 +1,6 @@
 import os, terminal, strutils
 import
-  make/config, make/migration, make/seeder,
+  make/config, make/key, make/migration, make/seeder,
   make/controller, make/usecase, make/query, make/model, make/valueobject,
   make/layout, make/page
 
@@ -46,6 +46,8 @@ proc make*(args:seq[string]):int =
   case todo:
   of "config":
     return makeConfig()
+  of "key":
+    return makeKey()
   of "migration":
     getArg1
     return makeMigration(arg1, message)

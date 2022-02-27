@@ -186,8 +186,14 @@ ducere migrate --reset --seed
 #### config
 
 DBコネクション、ログ、セッションタイムなどを定義するための`config.nims`、`.env`のファイルを作ります。
-```
+```sh
 ducere make config
+```
+
+#### key
+新しい`SECRET_KEY`を`.env`の中に作ります
+```sh
+ducere make key
 ```
 
 #### controller
