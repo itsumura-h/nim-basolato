@@ -111,8 +111,8 @@ block:
 let sdb = waitFor SessionDb.new()
 
 block:
-  echo sdb.token
-  check sdb.token.len > 0
+  echo sdb.id
+  check sdb.id.len > 0
 
 block:
   waitFor sdb.set("key1", "value1")

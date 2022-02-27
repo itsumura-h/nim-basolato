@@ -4,12 +4,6 @@ import ../baseEnv
 
 randomize()
 
-proc randStr(n:varargs[int]):string =
-  randomize()
-  var n = n.sample()
-  for _ in 1..n:
-    add(result, char(rand(int('0')..int('z'))))
-
 proc commonCtr(input:string):string =
   var ctx: AESContext
   zeroMem(addr(ctx), sizeof(ctx))
