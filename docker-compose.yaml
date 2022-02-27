@@ -37,15 +37,15 @@ services:
     volumes:
       - .:/root/project
 
-  # frontend:
-  #   build:
-  #     context: .
-  #     dockerfile: ./docker/frontend/Dockerfile
-  #   tty: true
-  #   ports:
-  #     - 3000:3000
-  #   volumes:
-  #     - ./examples/todo_app.bk/frontend:/root/project
+  frontend:
+    build:
+      context: .
+      dockerfile: ./docker/frontend/Dockerfile
+    tty: true
+    ports:
+      - 3000:3000
+    volumes:
+      - ./examples/todo_app.bk/frontend:/root/project
 
   tfb-database-my:
     image: mariadb
