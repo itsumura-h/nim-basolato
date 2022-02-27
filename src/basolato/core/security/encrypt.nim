@@ -4,12 +4,6 @@ import ../baseEnv
 
 randomize()
 
-proc randStr(n:varargs[int]):string =
-  randomize()
-  var n = n.sample()
-  for _ in 1..n:
-    add(result, char(rand(int('0')..int('z'))))
-
 proc commonCtr(input:string):string =
   var ctx: AESContext
   zeroMem(addr(ctx), sizeof(ctx))
@@ -21,14 +15,13 @@ proc commonCtr(input:string):string =
   return ctx.cryptCTR(offset, nonce, input)
 
 proc encryptCtr*(input:string):string =
-  var input = randStr(16) & input
-  input = input.commonCtr().toHex()
+  let input = input.commonCtr().toHex()
   return input
 
 proc decryptCtr*(input:string):string =
   if input.len == 0: return ""
   try:
     let input = input.parseHexStr().commonCtr()
-    return input[16..high(input)]
+    return input
   except:
     return ""

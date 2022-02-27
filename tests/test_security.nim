@@ -1,3 +1,7 @@
+discard """
+  cmd: "nim c -r $file"
+"""
+
 import unittest, times, asyncdispatch
 
 include ../src/basolato/core/security/encrypt
@@ -7,6 +11,9 @@ include ../src/basolato/core/security/session_db
 include ../src/basolato/core/security/session
 include ../src/basolato/core/security/context
 
+# =============================================================================
+#  encrypt 
+# =============================================================================
 block:
   let input = $(getTime().toUnix().int())
   echo input
@@ -43,6 +50,9 @@ block:
   echo output
   check input == output
 
+# =============================================================================
+#  token
+# =============================================================================
 block:
   let token = Token.new("").token
   echo token
@@ -55,7 +65,9 @@ block:
   echo timestamp2
   check timestamp1 == timestamp2
 
-
+# =============================================================================
+#  csrf token
+# =============================================================================
 block:
   let csrf = CsrfToken.new("")
   let token = csrf.getToken()
@@ -97,13 +109,14 @@ block:
     echo msg
     check msg == "Invalid csrf token"
 
-
-
+# =============================================================================
+#  session 
+# =============================================================================
 let sdb = waitFor SessionDb.new()
 
 block:
-  echo sdb.token
-  check sdb.token.len > 0
+  echo sdb.id
+  check sdb.id.len > 0
 
 block:
   waitFor sdb.set("key1", "value1")
@@ -131,7 +144,6 @@ block:
     result = waitFor sdb.get("key_sessionDb")
   except:
     check result == ""
-
 
 block:
   let session = waitFor genNewSession()

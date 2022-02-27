@@ -1,3 +1,7 @@
+discard """
+  cmd: "nim c -r $file"
+"""
+
 import unittest, json
 include ../src/basolato/view
 

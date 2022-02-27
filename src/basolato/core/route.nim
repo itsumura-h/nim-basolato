@@ -312,12 +312,16 @@ proc serveCore(params:(Routes, int)){.async.} =
     await req.respond(response.status, response.body, response.headers.format())
     # keep-alive
     req.dealKeepAlive()
+
+
   server.listen(Port(port), HOST_ADDR)
   while true:
     if server.shouldAcceptRequest():
       await server.acceptRequest(cb)
     else:
-      poll()
+      # too many concurrent connections, `maxFDs` exceeded
+      # wait 500ms for FDs to be closed
+      await sleepAsync(500)
 
 proc serve*(seqRoutes: seq[Routes]) =
   var routes =  Routes.new()

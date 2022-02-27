@@ -1,3 +1,7 @@
+discard """
+  cmd: "nim c -r $file"
+"""
+
 import unittest, strformat, httpclient
 import ../src/basolato/core/security/csrf_token
 

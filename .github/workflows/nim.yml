@@ -69,13 +69,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Test
-      run: docker-compose run app sh /root/project/runTest.sh
+      run: docker-compose run app-alpine sh /root/project/runTest.sh
     - name: Test multi-thread
       run: |
         echo '' >> tests/config.nims
         echo 'switch("threads", "on")' >> tests/config.nims
         echo 'switch("threadAnalysis", "off")' >> tests/config.nims
-        docker-compose run app sh /root/project/runTest.sh
+        docker-compose run app-alpine sh /root/project/runTest.sh
 
   create-tag-draft:
     runs-on: ubuntu-latest

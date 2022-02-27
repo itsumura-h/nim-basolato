@@ -1,3 +1,7 @@
+discard """
+  cmd: "nim c -r $file"
+"""
+
 import unittest, strformat, httpclient, strutils, asyncdispatch
 import ../src/basolato/core/security/session as a
 import ../src/basolato/core/security/session_db as b

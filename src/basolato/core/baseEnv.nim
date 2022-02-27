@@ -1,9 +1,8 @@
 import os, strutils, streams, parsecfg
 
 const
-  SECRET_KEY* = getEnv("SECRET_KEY").string
-  SESSION_TYPE* = getEnv("SESSION_TYPE").string
-  PORT_NUM* = getEnv("PORT", "5000").string.parseInt
+  SESSION_TYPE* = getEnv("SESSION_TYPE")
+  DOES_USE_LIBSASS* = when existsEnv("LIBSASS"): getEnv("LIBSASS").parseBool else: false
 
 for f in walkDir(getCurrentDir()):
   if f.path.split("/")[^1] == ".env":
@@ -21,17 +20,19 @@ for f in walkDir(getCurrentDir()):
     break
 
 let
+  SECRET_KEY* = getEnv("SECRET_KEY")
+  PORT_NUM* = getEnv("PORT", "5000").parseInt
   # Logging
-  IS_DISPLAY* = getEnv("LOG_IS_DISPLAY").string.parseBool
-  IS_FILE* = getEnv("LOG_IS_FILE").string.parseBool
-  IS_ERROR_FILE* = getEnv("LOG_IS_ERROR_FILE").string.parseBool
-  LOG_DIR* = getEnv("LOG_DIR").string
+  IS_DISPLAY* = getEnv("LOG_IS_DISPLAY").parseBool
+  IS_FILE* = getEnv("LOG_IS_FILE").parseBool
+  IS_ERROR_FILE* = getEnv("LOG_IS_ERROR_FILE").parseBool
+  LOG_DIR* = getEnv("LOG_DIR")
   # Session db
-  SESSION_DB_PATH* = getEnv("SESSION_DB_PATH").string
-  SESSION_TIME* = getEnv("SESSION_TIME").string.parseInt
-  COOKIE_DOMAINS* = getEnv("COOKIE_DOMAINS").string
-  ENABLE_ANONYMOUS_COOKIE* = getEnv("ENABLE_ANONYMOUS_COOKIE").string.parseBool
+  SESSION_DB_PATH* = getEnv("SESSION_DB_PATH")
+  SESSION_TIME* = getEnv("SESSION_TIME").parseInt
+  COOKIE_DOMAINS* = getEnv("COOKIE_DOMAINS")
+  ENABLE_ANONYMOUS_COOKIE* = getEnv("ENABLE_ANONYMOUS_COOKIE").parseBool
 
   # others
-  HOST_ADDR* = getEnv("HOST", "0.0.0.0").string
-  LOCALE* = getEnv("LOCALE").string
+  HOST_ADDR* = getEnv("HOST", "0.0.0.0")
+  LOCALE* = getEnv("LOCALE")

@@ -16,14 +16,12 @@ export
 import
   core/security/csrf_token,
   core/security/context,
-  core/utils,
-  core/request
-  # request_validation
+  core/request,
+  core/baseEnv
 export
   csrf_token,
   context,
   request
-  # request_validation
 
 randomize()
 
@@ -77,17 +75,21 @@ func `$`*(self:Css):string =
 func element*(self:Css, name:string):string =
   return name & self.saffix
 
-when isExistsLibsass():
+when DOES_USE_LIBSASS:
   import sass
   template style*(typ:string, name, body: untyped):untyped =
     if not ["css", "scss"].contains(typ):
       raise newException(Exception, "style type css/scss is only avaiable")
+    var css =
+      if typ == "scss":
+        var bodyTmp = body
+        bodyTmp = bodyTmp.replace(re"\s+<style>")
+        bodyTmp = bodyTmp.replace(re"<\/style>\s+")
+        bodyTmp = compile(bodyTmp)
+        "<style>" & bodyTmp & "</style>"
+      else:
+        body
     let name = (proc():Css =
-      var css =
-        if typ == "scss":
-          compile(body)
-        else:
-          body
       var matches = newSeq[string]()
       for row in css.findAll(re"\.[\d\w]+"):
         if not matches.contains(row):

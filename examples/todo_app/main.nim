@@ -9,23 +9,31 @@ import app/http/controllers/todo_controller
 import app/http/middlewares/auth_middleware
 import app/http/middlewares/cors_middleware
 
-var routes = Routes.new()
-routes.middleware(re".*", auth_middleware.checkCsrfTokenMiddleware)
-routes.middleware(re"/api/.*", cors_middleware.setCorsHeadersMiddleware)
+let ROUTES = @[
+  Route.group("", @[
+    Route.get("/", todo_controller.toppage),
 
-routes.middleware(re"/(signin|signup)", auth_middleware.loginSkip)
-routes.get("/signin", signin_controller.index)
-routes.post("/signin", signin_controller.store)
-routes.get("/signout", signin_controller.delete)
-routes.get("/signup", signup_controller.index)
-routes.post("/signup", signup_controller.store)
+    Route.group("", @[
+      Route.get("/signin", signin_controller.index),
+      Route.post("/signin", signin_controller.store),
+      Route.get("/signout", signin_controller.delete),
+      Route.get("/signup", signup_controller.index),
+      Route.post("/signup", signup_controller.store),
+    ])
+    .middleware(auth_middleware.loginSkip),
 
-routes.get("/", todo_controller.toppage)
+    Route.group("/todo", @[
+      Route.get("", todo_controller.index),
+      Route.get("/create", todo_controller.create),
+      Route.post("/create", todo_controller.store),
+      Route.post("/change-sort", todo_controller.changeSort),
+    ])
+    .middleware(auth_middleware.mustBeLoggedIn),
 
-routes.middleware(re"/todo", auth_middleware.mustBeLoggedIn)
-routes.get("/todo", todo_controller.index)
-routes.get("/todo/create", todo_controller.create)
-routes.post("/todo/create", todo_controller.store)
-routes.post("/todo/change-sort", todo_controller.changeSort)
+    Route.group("/api", @[])
+    .middleware(cors_middleware.setCorsHeadersMiddleware),
+  ])
+  .middleware(auth_middleware.checkCsrfTokenMiddleware),
+]
 
-serve(routes)
+serve(ROUTES)

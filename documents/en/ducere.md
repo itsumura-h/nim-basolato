@@ -189,8 +189,14 @@ Create new file
 
 #### config
 Create `config.nims` for database connection, logging, session-timeout configuation.
-```
+```sh
 ducere make config
+```
+
+#### key
+Generate new `SECRET_KEY` in `.env`
+```sh
+ducere make key
 ```
 
 #### controller

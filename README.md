@@ -13,6 +13,11 @@ An asynchronous full-stack web framework for Nim, based on [asynchttpserver](htt
 
 :warning: This project is under heavy development. It's not yet production-ready. :warning:
 
+The only supported OS are Alpine, Debian, and Ubuntu.  
+It is recommended to use Docker regular flavor for development.  
+`nimlang/nim:1.6.2-alpine-regular` or `nimlang/nim:1.6.2-ubuntu-regular`  
+https://hub.docker.com/r/nimlang/nim
+
 ## Table of Contents
 
 <!--ts-->

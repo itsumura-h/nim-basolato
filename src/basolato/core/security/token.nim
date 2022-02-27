@@ -1,9 +1,9 @@
 import times, strutils
 import encrypt
 
+
 type Token* = ref object
   token:string
-
 
 proc new*(_:type Token, token=""):Token =
   if token.len > 0:
