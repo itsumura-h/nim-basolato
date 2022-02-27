@@ -1,8 +1,11 @@
 import httpcore, asynchttpserver, times, strutils, tables
-import ../utils, ../baseEnv
+import ../baseEnv
 
 
 type
+  SameSite = enum
+    None, Lax, Strict
+
   Cookie* = ref object
     name:string
     value:string
@@ -40,6 +43,19 @@ proc timeForward*(num:int, timeUnit:TimeUnit):DateTime =
     return getTime().utc + initTimeInterval(microseconds = num)
   of Nanoseconds:
     return getTime().utc + initTimeInterval(nanoseconds = num)
+
+func makeCookie(key, value, expires: string, domain = "", path = "",
+                 secure = false, httpOnly = false,
+                 sameSite = Lax): string =
+  result = ""
+  result.add key & "=" & value
+  if domain != "": result.add("; Domain=" & domain)
+  if path != "": result.add("; Path=" & path)
+  if expires != "": result.add("; Expires=" & expires)
+  if secure: result.add("; Secure")
+  if httpOnly: result.add("; HttpOnly")
+  if sameSite != None:
+    result.add("; SameSite=" & $sameSite)
 
 func toCookieStr*(self:Cookie):string =
   makeCookie(self.name, self.value, self.expire, self.domain, self.path,
