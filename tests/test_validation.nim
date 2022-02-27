@@ -1,3 +1,7 @@
+discard """
+  cmd: "nim c -r $file"
+"""
+
 import unittest, times
 include ../src/basolato/core/request
 include ../src/basolato/request_validation

@@ -1,3 +1,7 @@
+discard """
+  cmd: "nim c -r $file"
+"""
+
 import unittest, times, asyncdispatch
 
 include ../src/basolato/core/security/encrypt

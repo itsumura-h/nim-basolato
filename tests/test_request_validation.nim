@@ -1,4 +1,5 @@
 discard """
+  cmd: "nim c -r $file"
 """
 
 import unittest, times

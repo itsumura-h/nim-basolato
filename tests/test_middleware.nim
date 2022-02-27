@@ -1,3 +1,7 @@
+discard """
+  cmd: "nim c -r $file"
+"""
+
 import unittest, httpclient, strformat, json, strutils, asyncdispatch
 import ../src/basolato/middleware
 include ../src/basolato/core/security/encrypt
