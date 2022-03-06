@@ -19,12 +19,14 @@ func next*(status:HttpCode=HttpCode(200), body="", headers:HttpHeaders=newHttpHe
 
 proc checkCsrfToken*(request:Request, params:Params):Future[MiddlewareResult] {.async.} =
   result = MiddlewareResult()
-  if request.reqMethod == HttpPost and not request.path.contains("api/"):
+  if request.reqMethod == HttpPost:
     try:
       if not params.hasKey("csrf_token"):
         raise newException(Exception, "csrf token is missing")
       let token = params.getStr("csrf_token")
-      discard CsrfToken.new(token).checkCsrfTimeout()
+      let csrfToken = CsrfToken.new(token)
+      if not csrfToken.checkCsrfValid():
+        raise newException(Exception, "Invalid csrf token")
     except:
       result.hasError = true
       result.message = getCurrentExceptionMsg()

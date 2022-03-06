@@ -17,5 +17,6 @@ proc store*(context:Context, params:Params):Future[Response] {.async.} =
   return redirect("/sample/login")
 
 proc destroy*(context:Context, params:Params):Future[Response] {.async.} =
-  await context.destroy()
-  return await redirect("/sample/login").destroyContext(context)
+  await context.logout()
+  await context.delete("name")
+  return redirect("/sample/login")

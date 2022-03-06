@@ -24,6 +24,10 @@ proc getToken*(self:Option[Session]):Future[string] {.async.} =
   else:
     return ""
 
+proc updateNonce*(self:Option[Session]) {.async.} =
+  if self.isSome:
+    await self.get.db.updateNonce()
+
 proc set*(self:Option[Session], key, value:string) {.async.} =
   if self.isSome:
     await self.get.db.set(key, value)

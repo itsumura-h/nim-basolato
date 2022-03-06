@@ -186,6 +186,8 @@ proc createResponse(req:Request, route:Route, httpMethod:HttpMethod, headers:Htt
     response = Response(status:HttpCode(0), headers:newHttpHeaders())
 
   response = await runMiddleware(req, route, headers, context)
+  if ENABLE_ANONYMOUS_COOKIE:
+    await context.updateNonce()
   if httpMethod != HttpOptions:
     response = await runController(req, route, response.headers, context)
   return response

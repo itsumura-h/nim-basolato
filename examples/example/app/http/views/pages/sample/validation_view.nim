@@ -1,9 +1,9 @@
-import tables, json
+import json, asyncdispatch
 import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
 
-proc impl(params, errors:JsonNode):string =
+proc impl(params, errors:JsonNode):Future[string] {.async.} =
   style "css", style:"""
     <style>
       .error {
@@ -64,6 +64,6 @@ proc impl(params, errors:JsonNode):string =
     </main>
   """
 
-proc validationView*(params, errors:JsonNode):string =
+proc validationView*(params, errors:JsonNode):Future[string] {.async.} =
   let title = "Validation view"
-  return applicationView(title, impl(params, errors))
+  return applicationView(title, await impl(params, errors))

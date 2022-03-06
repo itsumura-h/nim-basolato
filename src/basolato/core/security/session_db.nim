@@ -1,19 +1,19 @@
-import asynchttpserver, asyncdispatch, httpcore, json, strutils, times, random, os #strformat, os, random
+import
+  asynchttpserver,
+  asyncdispatch,
+  httpcore,
+  json,
+  strutils,
+  times,
+  random,
+  os
+import ./utils
 import ../baseEnv
 
-proc randStr(n:varargs[int]):string =
-  randomize()
-  let options = {'0','1','2','3','4','5','6','7','8','9',
-    'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r',
-    's','t','u','v','w','x','y','z',
-    'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R',
-    'S','T','U','V','W','X','Y','Z',
-  }
-  var n = n.sample()
-  for _ in 1..n:
-    add(result, options.sample())
+var globalNonce*:string
 
 when SESSION_TYPE == "redis":
+  import strformat
   import redis
   # ========== Redis ====================
   type SessionDb* = ref object
@@ -87,6 +87,11 @@ when SESSION_TYPE == "redis":
   proc destroy*(self:SessionDb) {.async.} =
     discard await self.conn.del(@[self.id])
 
+  proc updateNonce*(self:SessionDb) {.async.} =
+    let nonce = randStr(100)
+    globalNonce = nonce
+    await self.set("nonce", nonce)
+
 else:
   import flatdb
   # ========= Flat DB ==================
@@ -133,6 +138,7 @@ else:
       sessionId = randStr(256)
       id = db.append(%*{"session_id": sessionId})
     sessionDb = SessionDb(conn: db, id:id, sessionId:sessionId)
+    await sessionDb.set("last_access", $getTime())
     return sessionDb
 
   proc checkSessionIdValid*(sessionId=""):Future[bool] {.async.} =
@@ -186,3 +192,8 @@ else:
   proc destroy*(self:SessionDb) {.async.} =
     self.conn.delete(self.id)
     defer: self.conn.close()
+
+  proc updateNonce*(self:SessionDb) {.async.} =
+    let nonce = randStr(100)
+    globalNonce = nonce
+    await self.set("nonce", nonce)
