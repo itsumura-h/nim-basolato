@@ -4,110 +4,11 @@ discard """
 
 import unittest, times, asyncdispatch
 
-include ../src/basolato/core/security/encrypt
-include ../src/basolato/core/security/token
 include ../src/basolato/core/security/csrf_token
 include ../src/basolato/core/security/session_db
 include ../src/basolato/core/security/session
 include ../src/basolato/core/security/context
 
-# =============================================================================
-#  encrypt 
-# =============================================================================
-block:
-  let input = $(getTime().toUnix().int())
-  echo input
-  let hashed = encryptCtr(input)
-  echo hashed
-  let output = decryptCtr(hashed)
-  echo output
-  check input == output
-
-block:
-  let input = randStr(16)
-  echo input
-  let hashed = encryptCtr(input)
-  echo hashed
-  let output = decryptCtr(hashed)
-  echo output
-  check input == output
-
-block:
-  let input = randStr(24)
-  echo input
-  let hashed = encryptCtr(input)
-  echo hashed
-  let output = decryptCtr(hashed)
-  echo output
-  check input == output
-
-block:
-  let input = randStr(32)
-  echo input
-  let hashed = encryptCtr(input)
-  echo hashed
-  let output = decryptCtr(hashed)
-  echo output
-  check input == output
-
-# =============================================================================
-#  token
-# =============================================================================
-block:
-  let token = Token.new("").token
-  echo token
-  check token.len > 0
-
-block:
-  let timestamp1 = getTime().toUnix()
-  let timestamp2 = Token.new("").toTimestamp()
-  echo timestamp1
-  echo timestamp2
-  check timestamp1 == timestamp2
-
-# =============================================================================
-#  csrf token
-# =============================================================================
-block:
-  let csrf = CsrfToken.new("")
-  let token = csrf.getToken()
-  echo token
-  check token.len > 0
-
-block:
-  let csrf = csrfToken()
-  echo csrf
-  check csrf.len > 0
-
-block:
-  let token = "aaaa"
-  let csrf = csrfToken(token)
-  echo csrf
-  check csrf.len > 0
-
-block:
-  let csrf = CsrfToken.new("")
-  let result = csrf.checkCsrfTimeout()
-  check result == true
-
-block:
-  let csrf = CsrfToken.new("")
-  let token = csrf.getToken()
-  let result  = CsrfToken.new(token).checkCsrfTimeout()
-  check result == true
-
-block:
-  let csrf = CsrfToken.new("")
-  var token = csrf.getToken()
-  echo token
-  token &= "a"
-  echo token
-  try:
-    discard CsrfToken.new(token).checkCsrfTimeout()
-  except:
-    let msg = getCurrentExceptionMsg()
-    echo msg
-    check msg == "Invalid csrf token"
 
 # =============================================================================
 #  session 
@@ -193,3 +94,20 @@ block:
     result = waitFor session.some.get("key_session2")
   except:
     check result == ""
+
+
+# =============================================================================
+#  csrf token
+# =============================================================================
+let csrfTokenStr = waitFor sdb.getToken()
+
+block:
+  let csrf = CsrfToken.new(csrfTokenStr)
+  let token = csrf.getToken()
+  echo token
+  check token.len > 0
+
+block:
+  let csrf = csrfToken()
+  echo csrf
+  check csrf.len > 0

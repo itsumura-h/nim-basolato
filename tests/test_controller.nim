@@ -19,7 +19,7 @@ block:
 block:
   let client = newHttpClient()
   let response = client.getContent(&"{HOST}/renderTemplate")
-  check response.strip == "<h1>test template</h1>"
+  check response.splitLines()[0] == "<h1>test template</h1>"
 
 block:
   let client = newHttpClient()

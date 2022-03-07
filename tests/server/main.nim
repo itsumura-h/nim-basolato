@@ -35,6 +35,7 @@ let ROUTES = @[
   Route.put("/test_routing", test_controller.putAction),
   Route.delete("/test_routing", test_controller.deleteAction),
 
+  Route.get("/csrf/test_routing", test_controller.getCsrf),
   Route.post("/csrf/test_routing", test_controller.postAction)
     .middleware(checkCsrfTokenMiddleware),
   Route.post("/session/test_routing", test_controller.postAction)
