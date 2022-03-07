@@ -7,7 +7,7 @@ import
   times,
   random,
   os
-import ./utils
+import ./random_string
 import ../baseEnv
 
 var globalNonce*:string
@@ -26,7 +26,7 @@ when SESSION_TYPE == "redis":
   proc new*(_:type SessionDb, sessionId=""):Future[SessionDb] {.async.} =
     let id =
       if sessionId.len == 0:
-        randStr(256)
+        secureRandStr(256)
       else:
         sessionId
 
@@ -135,7 +135,7 @@ else:
     if await db.isTokenValid(sessionId):
       id = db.queryOne(equal("session_id", sessionId))["_id"].getStr
     else:
-      sessionId = randStr(256)
+      sessionId = secureRandStr(256)
       id = db.append(%*{"session_id": sessionId})
     sessionDb = SessionDb(conn: db, id:id, sessionId:sessionId)
     await sessionDb.set("last_access", $getTime())

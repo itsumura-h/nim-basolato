@@ -86,8 +86,7 @@ proc getFlash*(self:Context):Future[JsonNode] {.async.} =
     let rows = await self.session.get.db.getRows()
     for key, val in rows.pairs:
       if key.contains("flash_"):
-        var newKey = key
-        newKey.delete(0, 5)
+        var newKey = key[6..^1]
         result[newKey] = val
         await self.session.delete(key)
 
