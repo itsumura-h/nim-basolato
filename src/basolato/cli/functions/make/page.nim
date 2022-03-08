@@ -8,11 +8,12 @@ proc makePage*(target:string, message:var string):int =
   let relativeToApplicationPath = "../".repeat(target.split("/").len) & "layouts/application_view"
 
   var VIEW = &"""
+import asyncdispatch
 import basolato/view
 import {relativeToApplicationPath}
 
 
-proc impl():string =
+proc impl():Future[string] [[.async.]] =
   style "css", style:'''
     <style>
       .className [[
@@ -32,9 +33,9 @@ proc impl():string =
     </div>
   '''
 
-proc {targetCaptalized}View*():string =
+proc {targetCaptalized}View*():Future[string] [[.async.]] =
   let title = ''
-  return applicationView(title, impl())
+  return applicationView(title, await impl())
 """
 
   VIEW = VIEW.replace("'", "\"").multiReplace(("[[", "{"), ("]]", "}"))

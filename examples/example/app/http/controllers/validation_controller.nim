@@ -8,7 +8,7 @@ import ../views/pages/sample/validation_view
 proc index*(context:Context, params:Params):Future[Response] {.async.} =
   let (params, errors) = await context.getValidationResult()
   echo params, errors
-  return render(validationView(params, errors))
+  return render(await validationView(params, errors))
 
 proc store*(context:Context, params:Params):Future[Response] {.async.} =
   let validation = RequestValidation.new(params)

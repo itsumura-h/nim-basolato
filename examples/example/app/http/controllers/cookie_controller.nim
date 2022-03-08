@@ -8,7 +8,7 @@ import ../views/pages/sample/cookie_view
 
 proc index*(context:Context, params:Params):Future[Response] {.async.} =
   let cookies = %Cookies.new(context.request).getAll()
-  return render(cookieView(cookies))
+  return render(await cookieView(cookies))
 
 proc store*(context:Context, params:Params):Future[Response] {.async.} =
   let key = params.getStr("key")

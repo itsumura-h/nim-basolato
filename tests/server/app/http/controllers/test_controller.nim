@@ -87,3 +87,7 @@ proc putAction*(context:Context, params:Params):Future[Response] {.async.} =
 
 proc deleteAction*(context:Context, params:Params):Future[Response] {.async.} =
   return render("delete")
+
+# csrf token
+proc getCsrf*(context:Context, params:Params):Future[Response] {.async.} =
+  return render(testView())

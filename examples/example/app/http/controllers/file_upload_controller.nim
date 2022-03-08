@@ -5,7 +5,7 @@ import ../../../../../src/basolato/controller
 import ../views/pages/sample/file_upload_view
 
 proc index*(context:Context, params:Params):Future[Response] {.async.} =
-  return render(fileUploadView())
+  return render(await fileUploadView())
 
 proc store*(context:Context, params:Params):Future[Response] {.async.} =
   if params.hasKey("img"):

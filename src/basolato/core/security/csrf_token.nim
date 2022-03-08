@@ -1,28 +1,19 @@
-import times, strformat
-import ./token
-import ../baseEnv
+import strformat
+from ./session_db import globalNonce
+
 
 type CsrfToken* = ref object
-  token:Token
-
+  token:string
 
 proc new*(_:type CsrfToken, token=""):CsrfToken =
-  return CsrfToken(token: Token.new(token))
+  return CsrfToken(token:token)
 
-func getToken*(self:CsrfToken): string =
-  self.token.getToken()
 
-proc csrfToken*(token=""):string =
-  var token = CsrfToken.new(token).getToken()
-  return &"""<input type="hidden" name="csrf_token" value="{token}">"""
+func getToken*(self:CsrfToken):string =
+  self.token
 
-proc checkCsrfTimeout*(self:CsrfToken):bool =
-  var timestamp:int
-  try:
-    timestamp = self.token.toTimestamp()
-  except:
-    raise newException(Exception, "Invalid csrf token")
+proc csrfToken*():string =
+  return &"""<input type="hidden" name="csrf_token" value="{globalNonce}">"""
 
-  if getTime().toUnix > timestamp + SESSION_TIME * 60:
-    raise newException(Exception, "Timeout")
-  return true
+proc checkCsrfValid*(self:CsrfToken):bool =
+  return self.token == globalNonce
