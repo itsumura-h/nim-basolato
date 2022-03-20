@@ -1,4 +1,4 @@
-import json
+import json, asyncdispatch
 import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
 import ../../layouts/todo/app_bar_view
@@ -6,7 +6,7 @@ import ../../layouts/todo/status_view
 import ../../layouts/todo/create_task_modal_view
 
 
-proc impl(loginUser, data:JsonNode):string =
+proc impl(loginUser, data:JsonNode):Future[string] {.async.} =
   style "css", style:"""
     <style>
       .columns {
@@ -25,7 +25,9 @@ proc impl(loginUser, data:JsonNode):string =
     $(style)
     <main>
       <header>
-        $(appBarView(loginUser["name"].getStr))
+        $(
+          appBarView(loginUser["name"].getStr).await
+        )
       </header>
       <section class="section">
         $if loginUser["auth"].getInt > 1{
@@ -36,18 +38,23 @@ proc impl(loginUser, data:JsonNode):string =
         }
         <article class="columns $(style.element("columns"))">
           $for status in data["master"]["status"]{
-            $(statusView(status, data))
+            $(
+              statusView(status, data).await
+            )
           }
         </article>
       </section>
-      $(createTaskModalView(
-        script.element("createNewModal"),
-        "toggleCreateTaskModal()",
-        data["master"]["users"]
-      ))
+      $(
+        createTaskModalView(
+          script.element("createNewModal"),
+          "toggleCreateTaskModal()",
+          data["master"]["users"]
+        )
+        .await
+      )
     </main>
   """
 
-proc indexView*(loginUser, data:JsonNode):string =
+proc indexView*(loginUser, data:JsonNode):Future[string] {.async.} =
   let title = ""
-  return applicationView(title, impl(loginUser, data))
+  return applicationView(title, impl(loginUser, data).await)

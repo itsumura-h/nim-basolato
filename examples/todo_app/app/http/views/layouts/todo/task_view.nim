@@ -1,8 +1,13 @@
-import json
+import json, asyncdispatch
 import ../../../../../../../src/basolato/view
 
 
-proc taskView*(todo:JsonNode, isDisplayUp, isDisplayDown:bool, upId, downId:string, statusId:int):string =
+proc taskView*(
+  todo:JsonNode,
+  isDisplayUp, isDisplayDown:bool,
+  upId, downId:string,
+  statusId:int
+):Future[string] {.async.} =
   style "css", style:"""
     <style>
       .columns {

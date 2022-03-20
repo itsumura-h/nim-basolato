@@ -2,14 +2,13 @@ import json, strutils
 # framework
 import ../../../../../../src/basolato/controller
 import ../../../../../../src/basolato/request_validation
-# usecase
 import ../../../usecases/sign/signup_usecase
-# view
 import ../../views/pages/sign/signup_view
+
 
 proc index*(context:Context, params:Params):Future[Response] {.async.} =
   let (params, errors) = await context.getValidationResult()
-  return render(signupView(params, errors))
+  return render(signupView(params, errors).await)
 
 proc store*(context:Context, params:Params):Future[Response] {.async.} =
   let v = RequestValidation.new(params)

@@ -2,7 +2,7 @@ import os, strutils
 import allographer/connection
 
 let rdb* = dbopen(
-  Sqlite3,
+  Sqlite3, # SQLite3 or MySQL or MariaDB or PostgreSQL
   getEnv("DB_DATABASE"),
   getEnv("DB_USER"),
   getEnv("DB_PASSWORD"),

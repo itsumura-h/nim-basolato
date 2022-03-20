@@ -1,15 +1,14 @@
 import json
 # framework
-import basolato/controller
-import basolato/core/base
+import ../../../../../src/basolato/controller
+import ../../../../../src/basolato/core/base
 # view
 import ../views/pages/welcome_view
 
 
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
   let name = "Basolato " & BasolatoVersion
   return render(welcomeView(name))
 
-proc indexApi*(request:Request, params:Params):Future[Response] {.async.} =
-  let name = "Basolato " & BasolatoVersion
+proc indexApi*(context:Context, params:Params):Future[Response] {.async.} =
   return render(%*{"message": "Basolato " & BasolatoVersion})

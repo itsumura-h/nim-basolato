@@ -9,6 +9,7 @@ import json
 # framework
 import basolato/controller
 
+
 proc index*(context:Context, params:Params):Future[Response] ASYNC =
   return render("index")
 

@@ -1,9 +1,9 @@
-import json, std/enumerate
+import json, asyncdispatch, std/enumerate
 import ../../../../../../../src/basolato/view
 import task_view
 
 
-proc statusView*(status, data:JsonNode):string =
+proc statusView*(status, data:JsonNode):Future[string] {.async.} =
   style "css", style:"""
     <style>
       .className {
@@ -31,7 +31,6 @@ proc statusView*(status, data:JsonNode):string =
               let upId =
                 if i == 0: ""
                 else: statusColumn[i-1]["id"].getStr
-
               let downId =
                 if i == statusColumn.len-1: ""
                 else: statusColumn[i+1]["id"].getStr
@@ -43,6 +42,7 @@ proc statusView*(status, data:JsonNode):string =
                 downId,
                 status["id"].getInt,
               )
+              .await
             )
           }
         </div>

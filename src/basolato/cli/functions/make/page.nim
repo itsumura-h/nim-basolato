@@ -8,7 +8,7 @@ proc makePage*(target:string, message:var string):int =
   let relativeToApplicationPath = "../".repeat(target.split("/").len) & "layouts/application_view"
 
   var VIEW = &"""
-import asyncdispatch
+import json, asyncdispatch
 import basolato/view
 import {relativeToApplicationPath}
 
@@ -35,10 +35,14 @@ proc impl():Future[string] [[.async.]] =
 
 proc {targetCaptalized}View*():Future[string] [[.async.]] =
   let title = ''
-  return applicationView(title, await impl())
+  return applicationView(title, impl().await)
 """
 
-  VIEW = VIEW.replace("'", "\"").multiReplace(("[[", "{"), ("]]", "}"))
+  VIEW = VIEW.multiReplace(
+    ("'", "\""),
+    ("[[", "{"),
+    ("]]", "}")
+  )
 
   if isFileExists(targetPath): return 1
   createDir(parentDir(targetPath))

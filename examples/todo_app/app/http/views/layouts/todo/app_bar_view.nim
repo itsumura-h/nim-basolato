@@ -1,7 +1,8 @@
+import json, asyncdispatch
 import ../../../../../../../src/basolato/view
 
 
-proc appBarView*(name:string):string =
+proc appBarView*(name:string):Future[string] {.async.} =
   style "css", style:"""
     <style>
     </style>

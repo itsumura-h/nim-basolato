@@ -2,14 +2,13 @@ import json, strutils
 # framework
 import ../../../../../../src/basolato/controller
 import ../../../../../../src/basolato/request_validation
-# usecase
 import ../../../usecases/sign/signin_usecase
-# view
 import ../../views/pages/sign/signin_view
 
+
 proc index*(context:Context, params:Params):Future[Response] {.async.} =
-  let (params, errors) = await context.getValidationResult()
-  return render(signinView(params, errors))
+  let (params, errors) = context.getValidationResult().await
+  return render(signinView(params, errors).await)
 
 proc store*(context:Context, params:Params):Future[Response] {.async.} =
   let v = RequestValidation.new(params)
@@ -17,24 +16,24 @@ proc store*(context:Context, params:Params):Future[Response] {.async.} =
   v.required("password")
   v.email("email")
   if v.hasErrors():
-    await context.storeValidationResult(v)
+    context.storeValidationResult(v).await
     return redirect("/signin")
 
   let email = params.getStr("email")
   let password = params.getStr("password")
   try:
     let usecase = SigninUsecase.new()
-    let user = await usecase.run(email, password)
-    await context.login()
-    await context.set("id", user["id"].getStr)
-    await context.set("name", user["name"].getStr)
-    await context.set("auth", $user["auth"].getInt)
+    let user = usecase.run(email, password).await
+    context.login().await
+    context.set("id", user["id"].getStr).await
+    context.set("name", user["name"].getStr).await
+    context.set("auth", $user["auth"].getInt).await
     return redirect("/todo")
   except:
     v.errors.add("error", getCurrentExceptionMsg().splitLines()[0])
-    await context.storeValidationResult(v)
+    context.storeValidationResult(v).await
     return redirect("/signin")
 
 proc delete*(context:Context, params:Params):Future[Response] {.async.} =
-  await context.logout()
+  context.logout().await
   return redirect("/signin")

@@ -1,4 +1,5 @@
 import times, markdown
+import ../../../libs/uid
 
 type TodoId* = ref object
   value:string
@@ -6,6 +7,11 @@ type TodoId* = ref object
 func new*(_:type TodoId, value:string):TodoId =
   TodoId(
     value: value
+  )
+
+proc new*(_:type TodoId):TodoId =
+  TodoId(
+    value: genUid()
   )
 
 proc `$`*(self:TodoId):string =
