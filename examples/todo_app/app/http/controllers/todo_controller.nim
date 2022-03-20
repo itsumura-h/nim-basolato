@@ -11,18 +11,21 @@ import ../../usecases/todo/display_create_usecase
 import ../../usecases/todo/create_todo_usecase
 import ../../usecases/todo/swap_sort_usecase
 
-proc toppage*(context:Context, params:Params):Future[Response] {.async.} =
+
+proc redirectTodo*(context:Context, params:Params):Future[Response] {.async.} =
   return redirect("/todo")
 
 proc index*(context:Context, params:Params):Future[Response] {.async.} =
   let loginUser = %*{
-    "id": await context.get("id"),
-    "name": await context.get("name"),
-    "auth": await(context.get("auth")).parseInt,
+    "id": context.get("id").await,
+    "name": context.get("name").await,
+    "auth": context.get("auth").await.parseInt,
   }
   let usecase = DisplayIndexUsecase.new()
-  let data = await usecase.run()
-  return render(indexView(loginUser, data))
+  let data = usecase.run().await
+  return render(
+    indexView(loginUser, data).await
+  )
 
 proc show*(context:Context, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")

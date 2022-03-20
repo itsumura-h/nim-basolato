@@ -7,10 +7,11 @@ proc makeLayout*(target:string, message:var string):int =
   let targetCaptalized = snakeToCamelProcName(targetName)
 
   var VIEW = &"""
+import json, asyncdispatch
 import basolato/view
 
 
-proc {targetCaptalized}View*():string =
+proc {targetCaptalized}View*():Future[string] [[.async.]] =
   style "css", style:'''
     <style>
       .className [[
@@ -31,7 +32,11 @@ proc {targetCaptalized}View*():string =
   '''
 """
 
-  VIEW = VIEW.replace("'", "\"").replace("[[", "{").replace("]]", "}")
+  VIEW = VIEW.multiReplace(
+    ("'", "\""),
+    ("[[", "{"),
+    ("]]", "}")
+  )
 
   if isFileExists(targetPath): return 1
   createDir(parentDir(targetPath))

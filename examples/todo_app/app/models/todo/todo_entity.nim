@@ -21,7 +21,7 @@ proc new*(_:type Todo, title:Title, content:Content, createdBy:UserId,
   if not endOn.isLaterThan(startOn):
     raise newException(Exception, "Due date must after than start date")
 
-  let id = TodoId.new(genUid())
+  let id = TodoId.new()
   let status = Status.new() # Todo
   return Todo(
     id: id,

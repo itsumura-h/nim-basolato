@@ -1,17 +1,18 @@
-import re
 # framework
 import ../../src/basolato
 # controller
+import app/http/controllers/welcome_controller
+import app/http/controllers/todo_controller
 import app/http/controllers/sign/signin_controller
 import app/http/controllers/sign/signup_controller
-import app/http/controllers/todo_controller
 # middleware
 import app/http/middlewares/auth_middleware
-import app/http/middlewares/cors_middleware
+import app/http/middlewares/set_headers_middleware
+
 
 let ROUTES = @[
   Route.group("", @[
-    Route.get("/", todo_controller.toppage),
+    Route.get("/", todo_controller.redirectTodo), # redirect to /todo
 
     Route.group("", @[
       Route.get("/signin", signin_controller.index),
@@ -30,9 +31,12 @@ let ROUTES = @[
     ])
     .middleware(auth_middleware.mustBeLoggedIn),
 
-    Route.group("/api", @[])
-    .middleware(cors_middleware.setCorsHeadersMiddleware),
+    Route.group("/api", @[
+      Route.get("/index", welcome_controller.indexApi),
+    ])
+    .middleware(set_headers_middleware.setCorsHeadersMiddleware),
   ])
+  .middleware(set_headers_middleware.setSecureHeadersMiddlware)
   .middleware(auth_middleware.checkCsrfTokenMiddleware),
 ]
 
