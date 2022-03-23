@@ -6,12 +6,12 @@ type Session* = ref object
   db: SessionDb
 
 proc genNewSession*(token=""):Future[Session] {.async.} =
-  return Session(db:await SessionDb.new(token))
+  return Session(db:SessionDb.new(token).await)
 
 proc new*(typ:type Session, request:Request):Future[Option[Session]] {.async.} =
   let sessionId = Cookies.new(request).get("session_id")
-  if await checkSessionIdValid(sessionId):
-    return await(genNewSession(sessionId)).some
+  if SessionDb.checkSessionIdValid(sessionId).await:
+    return genNewSession(sessionId).await.some
   else:
     return none(typ)
 
@@ -30,11 +30,11 @@ proc updateNonce*(self:Option[Session]) {.async.} =
 
 proc set*(self:Option[Session], key, value:string) {.async.} =
   if self.isSome:
-    await self.get.db.set(key, value)
+    await self.get.db.setStr(key, value)
 
 proc set*(self:Option[Session], key:string, value:JsonNode) {.async.} =
   if self.isSome:
-    await self.get.db.set(key, value)
+    await self.get.db.setJson(key, value)
 
 proc isSome*(self:Option[Session], key:string):Future[bool] {.async.} =
   return self.isSome and await self.get.db.some(key)

@@ -31,7 +31,7 @@ proc login*(self:Context){.async.} =
   await self.session.set("is_login", $true)
 
 proc logout*(self:Context){.async.} =
-  await self.session.set("is_login", $false)
+  await self.session.delete("is_login")
 
 proc isLogin*(self:Context):Future[bool]{.async.} =
   if await self.session.isSome("is_login"):
@@ -44,7 +44,7 @@ proc isValid*(context:Context):Future[bool] {.async.} =
   ##
   ## return true if new session is created
   let sessionId = await context.session.getToken()
-  return await checkSessionIdValid(sessionId)
+  return SessionDb.checkSessionIdValid(sessionId).await
 
 proc set*(self:Context, key, value:string) {.async.} =
   await self.session.set(key, value)

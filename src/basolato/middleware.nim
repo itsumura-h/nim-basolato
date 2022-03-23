@@ -42,7 +42,7 @@ proc checkSessionId*(request:Request):Future[MiddlewareResult] {.async.} =
       let sessionId = cookie.get("session_id")
       if sessionId.len == 0:
         raise newException(Exception, "Session id is empty")
-      if not await checkSessionIdValid(sessionId):
+      if not SessionDb.checkSessionIdValid(sessionId).await:
         raise newException(Exception, "Invalid session id")
     except:
       result.hasError = true
