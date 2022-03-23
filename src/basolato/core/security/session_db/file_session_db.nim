@@ -1,13 +1,3 @@
-# import
-#   asynchttpserver,
-#   asyncdispatch,
-#   httpcore,
-#   json,
-#   strutils,
-#   times,
-#   random,
-#   os,
-#   strformat
 import
   asynchttpserver,
   asyncdispatch,
@@ -91,7 +81,7 @@ implements FileSessionDb, ISessionDb:
     return db[self.id]{key}.getStr("")
 
   proc getRows(self:FileSessionDb):Future[JsonNode] {.async.} =
-    return %*(self.conn[self.sessionId])
+    return %*(self.conn[self.id])
 
   proc delete(self:FileSessionDb, key:string):Future[void] {.async.} =
     let db = self.conn
