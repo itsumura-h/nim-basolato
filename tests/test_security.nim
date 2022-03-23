@@ -5,6 +5,7 @@ discard """
 import unittest, times, asyncdispatch
 
 include ../src/basolato/core/security/csrf_token
+include ../src/basolato/core/security/session_db/file_session_db
 include ../src/basolato/core/security/session_db
 include ../src/basolato/core/security/session
 include ../src/basolato/core/security/context
@@ -16,29 +17,25 @@ include ../src/basolato/core/security/context
 let sdb = waitFor SessionDb.new()
 
 block:
-  echo sdb.id
-  check sdb.id.len > 0
-
-block:
-  waitFor sdb.set("key1", "value1")
+  waitFor sdb.setStr("key1", "value1")
   let result = waitFor sdb.get("key1")
   echo result
   check result == "value1"
 
 block:
-  waitFor sdb.set("key1", "value1")
+  waitFor sdb.setStr("key1", "value1")
   check true == waitFor sdb.some("key1")
   check false == waitFor sdb.some("key2")
 
 block:
-  waitFor sdb.set("key2", "value2")
+  waitFor sdb.setStr("key2", "value2")
   waitFor sdb.delete("key2")
   let result = waitFor sdb.get("key2")
   check result == ""
 
 block:
   let sdb = waitFor SessionDb.new()
-  waitFor sdb.set("key_sessionDb", "value sessionDb")
+  waitFor sdb.setStr("key_sessionDb", "value sessionDb")
   waitFor sdb.destroy()
   var result = ""
   try:
@@ -108,6 +105,8 @@ block:
   check token.len > 0
 
 block:
+  let sdb = SessionDb.new().waitFor
+  sdb.updateNonce().waitFor
   let csrf = csrfToken()
   echo csrf
   check csrf.len > 0

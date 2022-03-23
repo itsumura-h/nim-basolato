@@ -12,40 +12,40 @@ services:
     volumes:
       - .:/root/project
 
-  app-ubuntu:
-    build: ./docker/nim/ubuntu
-    tty: true
-    ports:
-      - 9001:5000
-    volumes:
-      - .:/root/project
+  # app-ubuntu:
+  #   build: ./docker/nim/ubuntu
+  #   tty: true
+  #   ports:
+  #     - 9001:5000
+  #   volumes:
+  #     - .:/root/project
 
-  app-debian:
-    build: ./docker/nim/debian
-    tty: true
-    ports:
-      - 9002:5000
-    volumes:
-      - .:/root/project
+  # app-debian:
+  #   build: ./docker/nim/debian
+  #   tty: true
+  #   ports:
+  #     - 9002:5000
+  #   volumes:
+  #     - .:/root/project
 
-  app-centos:
-    build: ./docker/nim/centos
-    tty: true
-    privileged: true
-    ports:
-      - 9003:5000
-    volumes:
-      - .:/root/project
+  # app-centos:
+  #   build: ./docker/nim/centos
+  #   tty: true
+  #   privileged: true
+  #   ports:
+  #     - 9003:5000
+  #   volumes:
+  #     - .:/root/project
 
-  frontend:
-    build:
-      context: .
-      dockerfile: ./docker/frontend/Dockerfile
-    tty: true
-    ports:
-      - 3000:3000
-    volumes:
-      - ./examples/todo_app.bk/frontend:/root/project
+  # frontend:
+  #   build:
+  #     context: .
+  #     dockerfile: ./docker/frontend/Dockerfile
+  #   tty: true
+  #   ports:
+  #     - 3000:3000
+  #   volumes:
+  #     - ./examples/todo_app.bk/frontend:/root/project
 
   tfb-database-my:
     image: mariadb

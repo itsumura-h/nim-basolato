@@ -57,7 +57,7 @@ proc dd*(outputs: varargs[string, `$`]) =
     for i, row in outputs:
       if i > 0:
         output &= "\n\n" else: output &= "\n"
-      if row[0] == '[' or row[0] == '{':
+      if row[0] == '{':
         output.add(row.parseJson().pretty())
       else:
         output.add(row)
