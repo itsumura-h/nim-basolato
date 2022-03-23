@@ -93,20 +93,20 @@ proc getFlash*(self:Context):Future[JsonNode] {.async.} =
 proc getErrors(self:Context):Future[JsonNode] {.async.} =
   result = newJObject()
   if self.session.isSome:
-    let rows = await self.session.get.db.getRows()
+    let rows = self.session.get.db.getRows().await 
     for key, val in rows.pairs:
       if key == "flash_errors":
-        await self.session.delete(key)
+        self.session.delete(key).await
         return val
 
 proc getParams(self:Context):Future[JsonNode] {.async.} =
   result = newJObject()
   if self.session.isSome:
-    let rows = await self.session.get.db.getRows()
+    let rows = self.session.get.db.getRows().await
     for key, val in rows.pairs:
       if key == "flash_params":
         await self.session.delete(key)
         return val
 
 proc getValidationResult*(self:Context):Future[tuple[params:JsonNode, errors:JsonNode]] {.async.} =
-  return (await self.getParams(), await self.getErrors())
+  return (self.getParams().await, self.getErrors().await)
