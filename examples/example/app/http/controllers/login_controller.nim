@@ -12,8 +12,8 @@ proc store*(context:Context, params:Params):Future[Response] {.async.} =
   let name = params.getStr("name")
   let password = params.getStr("password")
   # client
-  await context.login()
   await context.set("name", name)
+  await context.login()
   return redirect("/sample/login")
 
 proc destroy*(context:Context, params:Params):Future[Response] {.async.} =
