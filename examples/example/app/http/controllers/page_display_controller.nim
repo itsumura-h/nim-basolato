@@ -1,4 +1,4 @@
-import json, times, json, strformat
+import json, times, strformat
 # framework
 import ../../../../../src/basolato/controller
 import ws
@@ -95,14 +95,16 @@ proc customHeaders*(context:Context, params:Params):Future[Response] {.async.} =
 
 
 proc presentDd*(context:Context, params:Params):Future[Response] {.async.} =
-  var a = %*{
+  let a = %*{
     "key1": "value1",
     "key2": "value2",
     "key3": "value3",
-    "key4": "value4",
+    "key4": "value4"
   }
+  let b = @[1,2,3]
   dd(
     a,
+    b,
     "abc",
     context.request.repr,
   )
