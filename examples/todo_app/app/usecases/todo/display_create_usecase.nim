@@ -12,7 +12,9 @@ proc new*(_:type DisplayCreateUsecase):DisplayCreateUsecase =
   )
 
 proc run*(self:DisplayCreateUsecase):Future[JsonNode]{.async.} =
-  let master = await self.query.getMasterData()
+  let statuses = self.query.getStatuses().await
+  let users = self.query.getUsers().await
   return %*{
-    "master": master
+    "statuses": statuses,
+    "users": users,
   }

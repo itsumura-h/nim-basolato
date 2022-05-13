@@ -7,7 +7,7 @@ proc impl():Future[string] {.async.} =
     <main>
       <a href="/">go back</a>
       <form method="POST" enctype="multipart/form-data">
-        $(csrfToken())
+        $<csrfToken()>
         <p>
           <span>image file named [test.jpg]</span>
           <input type="file" name="img">
@@ -15,7 +15,7 @@ proc impl():Future[string] {.async.} =
         <button type="submit">upload</button>
       </form>
       <form method="POST" action="/sample/file-upload/delete">
-        $(csrfToken())
+        $<csrfToken()>
         <button type="submit">delete</button>
       </form>
       <div>

@@ -1,8 +1,9 @@
 import json, asyncdispatch
-import ../../../../../../../src/basolato/view
+import ../../../../../../../../src/basolato/view
+import ./app_bar_view_model
 
 
-proc appBarView*(name:string):Future[string] {.async.} =
+proc appBarView*(viewMode:AppBarViewModel):Future[string] {.async.} =
   style "css", style:"""
     <style>
     </style>
@@ -26,9 +27,9 @@ proc appBarView*(name:string):Future[string] {.async.} =
 
   tmpli html"""
     $(script)
-    <nav class="navbar">
-      <div class="navbar-brand">
-        <h1 class="title is-1">Todo App</h1>
+    <nav class="bulma-navbar">
+      <div class="bulma-navbar-brand">
+        <h1 class="bulma-title is-1">Todo App</h1>
         <a class="navbar-burger" onclick="toggleNavbarBurger()">
           <span aria-hidden="true"></span>
           <span aria-hidden="true"></span>
@@ -37,7 +38,7 @@ proc appBarView*(name:string):Future[string] {.async.} =
       </div>
       <div class="navbar-menu" id="$(script.element("navbarMenu"))">
         <div class="navbar-end">
-          <p class="navbar-item">Login user: $(name.get)</p>
+          <p class="navbar-item">Login user: $(viewMode.name)</p>
           <p class="navbar-item">
             <a class="button is-light" href="/signout">
               Sign out

@@ -7,8 +7,10 @@ proc makeLayout*(target:string, message:var string):int =
   let targetCaptalized = snakeToCamelProcName(targetName)
 
   var VIEW = &"""
-import json, asyncdispatch
-import basolato/view
+import
+  std/asyncdispatch,
+  std/json,
+  basolato/view,
 
 
 proc {targetCaptalized}View*():Future[string] [[.async.]] =

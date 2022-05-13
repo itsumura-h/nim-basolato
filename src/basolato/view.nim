@@ -1,63 +1,59 @@
 import
-  templates,
-  json,
-  random,
-  tables,
-  strformat,
-  strutils,
+  std/asyncdispatch,
+  std/cgi,
+  std/json,
+  std/strformat,
+  std/strutils,
+  std/tables,
+  std/random,
+  std/re,
+  ./core/baseEnv,
+  ./core/security/context,
+  ./core/security/csrf_token,
+  ./core/templates,
+  ./core/request
+
+export
   asyncdispatch,
   cgi,
-  re
-export
-  templates,
-  asyncdispatch,
   re,
-  tables
-import
-  core/security/csrf_token,
-  core/security/context,
-  core/request,
-  core/baseEnv
-export
+  tables,
+  strutils,
   csrf_token,
   context,
-  request
+  request,
+  templates
 
 randomize()
 
-func get*(val:JsonNode):string =
-  case val.kind
-  of JString:
-    return val.getStr.xmlEncode
-  of JInt:
-    return $(val.getInt)
-  of JFloat:
-    return $(val.getFloat)
-  of JBool:
-    return $(val.getBool)
-  of JNull:
-    return ""
-  else:
-    raise newException(JsonKindError, "val is array")
 
-func get*(val:string|TaintedString):string =
-  return val.string.xmlEncode
-
-func old*(params:JsonNode, key:string, default=""):string =
+proc old*(params:JsonNode, key:string, default=""):string =
   if params.hasKey(key):
-    return params[key].get().xmlEncode
+    case params[key].kind
+    of JString:
+      return params[key].getStr
+    of JInt:
+      return $params[key].getInt
+    of JFloat:
+      return $params[key].getFloat
+    of JBool:
+      return $params[key].getBool
+    else:
+      return $params[key]
   else:
     return default
+
 
 func old*(params:TableRef, key:string, default=""):string =
   if params.hasKey(key):
-    return params[key].xmlEncode
+    return params[key]
   else:
     return default
 
+
 func old*(params:Params, key:string, default=""):string =
   if params.hasKey(key):
-    return params.getStr(key).xmlEncode
+    return params.getStr(key)
   else:
     return default
 

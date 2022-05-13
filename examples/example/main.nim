@@ -22,6 +22,7 @@ let ROUTES = @[
         .middleware(example_middleware.setMiddleware2),
       Route.get("/fib/{num:int}", page_display_controller.fib),
       Route.get("/with-style", page_display_controller.withStylePage),
+      Route.get("/babylon-js", page_display_controller.babylonJsPage),
 
       Route.get("/react", page_display_controller.react),
       Route.get("/material-ui", page_display_controller.materialUi),

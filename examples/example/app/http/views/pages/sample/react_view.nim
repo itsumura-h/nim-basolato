@@ -23,7 +23,7 @@ proc impl(users:string): string = tmpli html"""
   }
   function Index(){
     let [count, setCount] = useState(0)
-    let users = JSON.parse('$users')
+    let users = JSON.parse('$<users>')
     console.log(users)
     
     return <div>

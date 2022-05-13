@@ -39,8 +39,8 @@ proc webSocketComponentImpl():string =
   """
 
   tmpli html"""
-    $(style)
-    $(script)
+    $<style>
+    $<script>
     <form class="$(style.element("form"))">
       <input type="text" id="$(script.element("input"))">
       <button type="button" onclick="sendHandler()">Send</button>
@@ -63,7 +63,7 @@ proc impl():string =
   """
 
   tmpli html"""
-    $(style)
+    $<style>
     <section>
       <aside>
         <iframe src="/sample/web-socket-component" class="$(style.element("iframe"))"></iframe>

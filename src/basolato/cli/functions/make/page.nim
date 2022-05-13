@@ -8,9 +8,11 @@ proc makePage*(target:string, message:var string):int =
   let relativeToApplicationPath = "../".repeat(target.split("/").len) & "layouts/application_view"
 
   var VIEW = &"""
-import json, asyncdispatch
-import basolato/view
-import {relativeToApplicationPath}
+import
+  std/asyncdispatch,
+  std/json,
+  basolato/view,
+  {relativeToApplicationPath}
 
 
 proc impl():Future[string] [[.async.]] =

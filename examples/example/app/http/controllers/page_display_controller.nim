@@ -8,6 +8,7 @@ import allographer/query_builder
 # views
 import ../views/pages/welcome_view
 import ../views/pages/sample/with_style_view
+import ../views/pages/sample/babylon_js/babylon_js_view
 import ../views/pages/sample/react_view
 import ../views/pages/sample/material_ui_view
 import ../views/pages/sample/vuetify_view
@@ -44,6 +45,10 @@ proc fib*(context:Context, params:Params):Future[Response] {.async.} =
 
 proc withStylePage*(context:Context, params:Params):Future[Response] {.async.} =
   return render(withStyleView())
+
+
+proc babylonJsPage*(context:Context, params:Params):Future[Response] {.async.} =
+  return render(babylonJsView().await)
 
 
 proc react*(context:Context, params:Params):Future[Response] {.async.} =

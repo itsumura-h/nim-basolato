@@ -2,7 +2,7 @@ import json, asyncdispatch
 import ../../../../../../../src/basolato/view
 
 
-proc createTaskModalView*(idName, toggleFuncName:string, users:JsonNode):Future[string] {.async.} =
+proc createTaskModalView*(idName, toggleFuncName:string, users:seq[JsonNode]):Future[string] {.async.} =
   style "css", style:"""
     <style>
       .className {Future[string] {.async.}

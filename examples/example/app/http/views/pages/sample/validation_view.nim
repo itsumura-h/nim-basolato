@@ -14,16 +14,16 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
   """
 
   tmpli html"""
-    $(style)
+    $<style>
     <main>
       <a href="/">go back</a>
       <form method="POST">
-        $(csrfToken())
+        $< csrfToken() >
         <p><input type="text" name="email" placeholder="email" value="$(params.old("email"))"></p>
         $if errors.haskey("email"){
           <ul class="$(style.element("error"))">
             $for error in errors["email"] {
-              <li>$(error.get)</li>
+              <li>$(error)</li>
             }
           </ul>
         }
@@ -31,7 +31,7 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
         $if errors.haskey("password"){
           <ul class="$(style.element("error"))">
             $for error in errors["password"] {
-              <li>$(error.get)</li>
+              <li>$(error)</li>
             }
           </ul>
         }
@@ -39,7 +39,7 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
         $if errors.haskey("password_confirmation"){
           <ul class="$(style.element("error"))">
             $for error in errors["password_confirmation"] {
-              <li>$(error.get)</li>
+              <li>$(error)</li>
             }
           </ul>
         }
@@ -47,7 +47,7 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
         $if errors.haskey("number"){
           <ul class="$(style.element("error"))">
             $for error in errors["number"] {
-              <li>$(error.get)</li>
+              <li>$(error)</li>
             }
           </ul>
         }
@@ -55,7 +55,7 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
         $if errors.haskey("float"){
           <ul class="$(style.element("error"))">
             $for error in errors["float"] {
-              <li>$(error.get)</li>
+              <li>$(error)</li>
             }
           </ul>
         }
@@ -63,7 +63,8 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
       </form>
     </main>
   """
+  echo result
 
 proc validationView*(params, errors:JsonNode):Future[string] {.async.} =
   let title = "Validation view"
-  return applicationView(title, await impl(params, errors))
+  return applicationView(title, impl(params, errors).await)
