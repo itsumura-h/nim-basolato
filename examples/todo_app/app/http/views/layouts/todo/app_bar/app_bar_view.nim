@@ -14,13 +14,13 @@ proc appBarView*(viewMode:AppBarViewModel):Future[string] {.async.} =
       window.addEventListener('load', ()=>{
         if(window.matchMedia('screen and (max-width: 780px)').matches){
           let el = document.getElementsByClassName('navbar')[0]
-          el.classList.add('is-fixed-top')
+          el.classList.add('bulma-is-fixed-top')
         }
       })
 
       const toggleNavbarBurger=()=>{
         let el = document.getElementById('navbarMenu')
-        el.classList.toggle('is-active')
+        el.classList.toggle('bulma-is-active')
       }
     </script>
   """

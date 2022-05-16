@@ -35,5 +35,5 @@ implements TodoQuery, ITodoQuery:
       .join("users as created_user", "created_user.id", "=", "created_id")
       .join("users as assign_user", "assign_user.id", "=", "assign_id")
       .join("status", "status.id", "=", "todo.status_id")
-      .orderBy("todo.sort", Desc)
+      .orderBy("todo.sort", Asc)
       .get()

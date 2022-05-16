@@ -17,11 +17,12 @@ let ROUTES = @[
     Route.group("", @[
       Route.get("/signin", signin_controller.index),
       Route.post("/signin", signin_controller.store),
-      Route.get("/signout", signin_controller.delete),
       Route.get("/signup", signup_controller.index),
       Route.post("/signup", signup_controller.store),
     ])
     .middleware(auth_middleware.loginSkip),
+    Route.get("/signout", signin_controller.delete)
+      .middleware(auth_middleware.mustBeLoggedIn),
 
     Route.group("/todo", @[
       Route.get("", todo_controller.index),

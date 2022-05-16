@@ -48,7 +48,7 @@ proc store*(context:Context, params:Params):Future[Response] {.async.} =
   let
     title = params.getStr("title")
     content = params.getStr("content")
-    createdBy = await context.get("id")
+    createdBy = context.get("id").await
     assignTo = params.getStr("assign_to")
     startOn = params.getStr("start_on")
     endOn = params.getStr("end_on")
