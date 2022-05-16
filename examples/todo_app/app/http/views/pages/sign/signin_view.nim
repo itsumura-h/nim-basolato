@@ -31,11 +31,11 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
   """
 
   tmpli html"""
-    $(style)
+    $<style>
     <main>
       <section class="bulma-section $(style.element("section"))">
         <form method="POST" class="bulma-box">
-          $(csrfToken())
+          $<csrfToken()>
           <h2 class="bulma-title">Sign In</h2>
           <article class="bulma-field">
             <div class="bulma-controll">
@@ -44,7 +44,7 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
             $if errors.hasKey("email"){
               <aside>
                 $for error in errors["email"]{
-                  <p class="bulma-help bulma-is-danger">$(error.get)</p>
+                  <p class="bulma-help bulma-is-danger">$(error)</p>
                 }
               </aside>
             }
@@ -54,7 +54,7 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
             $if errors.hasKey("password"){
               <aside>
                 $for error in errors["password"]{
-                  <p class="bulma-help bulma-is-danger">$(error.get)</p>
+                  <p class="bulma-help bulma-is-danger">$(error)</p>
                 }
               </aside>
             }
@@ -63,7 +63,7 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
             $if errors.hasKey("error"){
               <aside>
                 $for error in errors["error"]{
-                  <p class="bulma-help bulma-is-danger">$(error.get)</p>
+                  <p class="bulma-help bulma-is-danger">$(error)</p>
                 }
               </aside>
             }

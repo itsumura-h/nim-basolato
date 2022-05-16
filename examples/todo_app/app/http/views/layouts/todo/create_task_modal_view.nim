@@ -5,7 +5,7 @@ import ../../../../../../../src/basolato/view
 proc createTaskModalView*(idName, toggleFuncName:string, users:seq[JsonNode]):Future[string] {.async.} =
   style "css", style:"""
     <style>
-      .className {Future[string] {.async.}
+      .className
       }
     </style>
   """
@@ -16,13 +16,13 @@ proc createTaskModalView*(idName, toggleFuncName:string, users:seq[JsonNode]):Fu
   """
 
   tmpli html"""
-    $(style)
-    $(script)
+    $<style>
+    $<script>
     <div class="modal" id="$(idName)">
       <div onclick="$(toggleFuncName)" class="modal-background"></div>
       <div class="modal-content">
         <form method="POST" class="box">
-          $(csrfToken())
+          $<csrfToken()>
           <h3 class="title is-3">Create new task</h3>
           <div class="field">
             <div class="control">
@@ -39,7 +39,7 @@ proc createTaskModalView*(idName, toggleFuncName:string, users:seq[JsonNode]):Fu
               <select name="assign_to">
                 <option disabled selected style='display:none;'>assign to...</option>
                 $for user in users{
-                  <option value="$(user["id"].get)">$(user["name"].get)</option>
+                  <option value="$(user["id"])">$(user["name"])</option>
                 }
               </select>
             </div>

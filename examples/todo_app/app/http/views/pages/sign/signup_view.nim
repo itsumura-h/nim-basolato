@@ -27,12 +27,12 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
   """
 
   tmpli html"""
-    $(style)
-    $(script)
+    $<style>
+    $<script>
     <main>
       <section class="section $(style.element("section"))">
         <form method="POST" class="box">
-          $(csrfToken())
+          $<csrfToken()>
           <h2 class="title">Sign Up</h2>
           <article class="field">
             <div class="controll">
@@ -41,7 +41,7 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
             $if errors.hasKey("name"){
               <aside>
                 $for error in errors["name"]{
-                  <p class="help is-danger">$(error.get)</p>
+                  <p class="help is-danger">$(error)</p>
                 }
               </aside>
             }
@@ -53,7 +53,7 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
             $if errors.hasKey("email"){
               <aside>
                 $for error in errors["email"]{
-                  <p class="help is-danger">$(error.get)</p>
+                  <p class="help is-danger">$(error)</p>
                 }
               </aside>
             }
@@ -63,7 +63,7 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
             $if errors.hasKey("password"){
               <aside>
                 $for error in errors["password"]{
-                  <p class="help is-danger">$(error.get)</p>
+                  <p class="help is-danger">$(error)</p>
                 }
               </aside>
             }
@@ -73,7 +73,7 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
             $if errors.hasKey("password_confirm"){
               <aside>
                 $for error in errors["password_confirm"]{
-                  <p class="help is-danger">$(error.get)</p>
+                  <p class="help is-danger">$(error)</p>
                 }
               </aside>
             }
@@ -81,7 +81,7 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
           $if errors.hasKey("error"){
             <article class="field">
               $for error in errors["error"]{
-                <p>$(error.get)</p>
+                <p>$(error)</p>
               }
             </article>
           }

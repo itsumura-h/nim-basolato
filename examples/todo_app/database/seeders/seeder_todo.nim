@@ -60,7 +60,7 @@ proc content():(string, string) =
 
 proc todo*() {.async.} =
   seeder rdb, "todo":
-    let user = await rdb.table("users").get()
+    let user = rdb.table("users").get().await
     var data: seq[JsonNode]
     for i in 1..30:
       let contentVal = content()
@@ -77,4 +77,4 @@ proc todo*() {.async.} =
         "end_on": todoDateVal[2].format("yyyy-MM-dd"),
         "sort": i
       })
-    await rdb.table("todo").insert(data)
+    rdb.table("todo").insert(data).await

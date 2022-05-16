@@ -26,21 +26,21 @@ proc appBarView*(viewMode:AppBarViewModel):Future[string] {.async.} =
   """
 
   tmpli html"""
-    $(script)
+    $<script>
     <nav class="bulma-navbar">
       <div class="bulma-navbar-brand">
-        <h1 class="bulma-title is-1">Todo App</h1>
-        <a class="navbar-burger" onclick="toggleNavbarBurger()">
+        <h1 class="bulma-title bulma-is-1">Todo App</h1>
+        <a class="bulma-navbar-burger" onclick="toggleNavbarBurger()">
           <span aria-hidden="true"></span>
           <span aria-hidden="true"></span>
           <span aria-hidden="true"></span>
         </a>
       </div>
-      <div class="navbar-menu" id="$(script.element("navbarMenu"))">
-        <div class="navbar-end">
-          <p class="navbar-item">Login user: $(viewMode.name)</p>
-          <p class="navbar-item">
-            <a class="button is-light" href="/signout">
+      <div class="bulma-navbar-menu" id="$(script.element("navbarMenu"))">
+        <div class="bulma-navbar-end">
+          <p class="bulma-navbar-item">Login user: $(viewMode.name)</p>
+          <p class="bulma-navbar-item">
+            <a class="bulma-button bulma-is-light" href="/signout">
               Sign out
             </a>
           </p>

@@ -4,9 +4,9 @@ from ../../config/database import rdb
 
 
 proc status*() {.async.} =
-  rdb.schema(
+  rdb.create(
     table("status", [
-      Column().increments("id"),
-      Column().string("name")
+      Column.increments("id"),
+      Column.string("name")
     ])
   )

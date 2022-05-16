@@ -18,11 +18,11 @@ proc impl(viewModel:CreateViewModel):string =
   """
 
   tmpli html"""
-    $(style)
-    $(script)
+    $<style>
+    $<script>
     <section class="section">
       <form method="POST">
-        $(csrfToken())
+        $<csrfToken()>
         <h3 class="title is-3">Create new task</h3>
         <div class="field">
           <div class="control">
@@ -31,7 +31,7 @@ proc impl(viewModel:CreateViewModel):string =
           $if viewModel.errors.hasKey("title"){
             <aside>
               $for error in viewModel.errors["title"]{
-                <p class="help is-danger">$(error.get)</p>
+                <p class="help is-danger">$(error)</p>
               }
             </aside>
           }
@@ -43,7 +43,7 @@ proc impl(viewModel:CreateViewModel):string =
           $if viewModel.errors.hasKey("title"){
             <aside>
               $for error in viewModel.errors["title"]{
-                <p class="help is-danger">$(error.get)</p>
+                <p class="help is-danger">$(error)</p>
               }
             </aside>
           }
@@ -60,12 +60,12 @@ proc impl(viewModel:CreateViewModel):string =
               </option>
               $for user in viewModel.users{
                 <option
-                  value="$(user["id"].get)"
-                  $if old(viewModel.params, "assign_to") == user["id"].get{
+                  value="$(user["id"])"
+                  $if old(viewModel.params, "assign_to") == user["id"].getStr{
                     selected
                   }
                 >
-                  $(user["name"].get)
+                  $(user["name"])
                 </option>
               }
             </select>
@@ -73,7 +73,7 @@ proc impl(viewModel:CreateViewModel):string =
           $if viewModel.errors.hasKey("assign_to"){
             <aside>
               $for error in viewModel.errors["assign_to"]{
-                <p class="help is-danger">$(error.get)</p>
+                <p class="help is-danger">$(error)</p>
               }
             </aside>
           }
@@ -86,7 +86,7 @@ proc impl(viewModel:CreateViewModel):string =
           $if viewModel.errors.hasKey("start_on"){
             <aside>
               $for error in viewModel.errors["start_on"]{
-                <p class="help is-danger">$(error.get)</p>
+                <p class="help is-danger">$(error)</p>
               }
             </aside>
           }
@@ -99,7 +99,7 @@ proc impl(viewModel:CreateViewModel):string =
           $if viewModel.errors.hasKey("end_on"){
             <aside>
               $for error in viewModel.errors["end_on"]{
-                <p class="help is-danger">$(error.get)</p>
+                <p class="help is-danger">$(error)</p>
               }
             </aside>
           }

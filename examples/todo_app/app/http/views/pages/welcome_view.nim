@@ -86,7 +86,7 @@ proc impl(title, name:string):string =
       <title>$title</title>
       <link rel="stylesheet" href="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/styles/dracula.min.css">
       <script src="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/highlight.min.js"></script>
-      $(style)
+      $<style>
     </head>
     <body>
       <article>

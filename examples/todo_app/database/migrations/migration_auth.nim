@@ -4,9 +4,9 @@ from ../../config/database import rdb
 
 
 proc auth*() {.async.} =
-  rdb.schema(
+  rdb.create(
     table("auth", [
-      Column().increments("id"),
-      Column().string("name")
+      Column.increments("id"),
+      Column.string("name")
     ])
   )

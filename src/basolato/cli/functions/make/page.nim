@@ -29,8 +29,8 @@ proc impl():Future[string] [[.async.]] =
   '''
 
   tmpli html'''
-    $(style)
-    $(script)
+    $<style>
+    $<script>
     <div class="$(style.element("className"))">
     </div>
   '''

@@ -4,9 +4,9 @@ import ./index_view_model
 import ../../../../../usecases/todo/display_index_usecase
 import ../../../layouts/application_view
 import ../../../layouts/todo/app_bar/app_bar_view
-import ../../../layouts/todo/status/status_view
-import ../../../layouts/todo/status/status_view_model
-import ../../../layouts/todo/create_task_modal_view
+import ../../../layouts/todo/statuses/statuses_view
+# import ../../../layouts/todo/status/status_view_model
+# import ../../../layouts/todo/create_task_modal_view
 
 
 proc impl(viewModel:IndexViewModel):Future[string] {.async.} =
@@ -25,41 +25,20 @@ proc impl(viewModel:IndexViewModel):Future[string] {.async.} =
   """
 
   tmpli html"""
-    $(style)
+    $<style>
     <main>
       <header>
-        $(
-          appBarView(viewModel.appBarViewModel).await
-        )
+        $<appBarView(viewModel.appBarViewModel).await>
       </header>
-      <section class="section">
+      <section class="bulma-section">
         $if viewModel.isAdmin{
-          <p><a href="/todo/create" class="button">
+          <p><a href="/todo/create" class="bulma-button">
             <i class="fas fa-plus"></i>
             Create new task
           </a></p>
         }
-        <article class="columns $(style.element("columns"))">
-          $for status in viewModel.statuses{
-            $if status.name == "todo"{
-              $(statusView(status, viewModel.todo).await)
-            }
-            $elif status.name == "doing"{
-              $(statusView(status, viewModel.doing).await)
-            }
-            $elif status.name == "done"{
-              $(statusView(status, viewModel.done).await)
-            }
-          }
-        </article>
       </section>
-      $(
-        createTaskModalView(
-          script.element("createNewModal"),
-          "toggleCreateTaskModal()",
-          viewModel.users
-        ).await
-      )
+      $<statusesView(viewModel.statuses)>
     </main>
   """
 
@@ -67,3 +46,4 @@ proc indexView*(loginUser:JsonNode):Future[string] {.async.} =
   let title = ""
   let viewModel = IndexViewModel.new(loginUser).await
   return applicationView(title, impl(viewModel).await)
+  # return applicationView(title, "")

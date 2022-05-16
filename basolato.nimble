@@ -2,7 +2,7 @@
 
 version       = "0.12.0"
 author        = "Hidenobu Itsumura @dumblepytech1 as 'medy'"
-description   = "A full-stack web framework library for Nim"
+description   = "A full-stack web framework for Nim"
 license       = "MIT"
 srcDir        = "src"
 backend       = "c"
