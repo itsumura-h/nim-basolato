@@ -12,7 +12,7 @@ proc webSocketComponentImpl():string =
     </style>
   """
 
-  script ["input", "messages"], script:"""
+  tmpli html"""
     <script>
       let socket = new WebSocket("ws://localhost:9000/sample/ws");
 
@@ -36,17 +36,13 @@ proc webSocketComponentImpl():string =
         document.getElementById('messages').prepend(messageElem);
       }
     </script>
-  """
-
-  tmpli html"""
-    $<style>
-    $<script>
     <form class="$(style.element("form"))">
-      <input type="text" id="$(script.element("input"))">
+      <input type="text" id="input">
       <button type="button" onclick="sendHandler()">Send</button>
       <button type="button" onclick="clearHandler()">Delete</button>
     </form>
-    <div id="$(script.element("messages"))"></div>
+    <div id="messages"></div>
+    $[style]
   """
 
 proc webSocketComponent*():string =
@@ -63,7 +59,7 @@ proc impl():string =
   """
 
   tmpli html"""
-    $<style>
+    $[style]
     <section>
       <aside>
         <iframe src="/sample/web-socket-component" class="$(style.element("iframe"))"></iframe>

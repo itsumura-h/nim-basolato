@@ -12,14 +12,8 @@ proc impl(viewModel:CreateViewModel):string =
     </style>
   """
 
-  script ["idName"], script:"""
-    <script>
-    </script>
-  """
-
   tmpli html"""
     $<style>
-    $<script>
     <section class="bulma-section">
       <p>
         <a href="/todo">back</a>

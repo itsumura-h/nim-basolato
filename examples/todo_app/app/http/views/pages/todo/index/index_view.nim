@@ -1,12 +1,12 @@
-import json, asyncdispatch
-import ../../../../../../../../src/basolato/view
-import ./index_view_model
-import ../../../../../usecases/todo/display_index_usecase
-import ../../../layouts/application_view
-import ../../../layouts/todo/app_bar/app_bar_view
-import ../../../layouts/todo/statuses/statuses_view
-# import ../../../layouts/todo/status/status_view_model
-# import ../../../layouts/todo/create_task_modal_view
+import
+  std/json,
+  std/asyncdispatch,
+  ../../../../../../../../src/basolato/view,
+  ../../../../../usecases/todo/display_index_usecase,
+  ../../../layouts/application_view,
+  ../../../layouts/todo/app_bar/app_bar_view,
+  ../../../layouts/todo/statuses/statuses_view,
+  ./index_view_model
 
 
 proc impl(viewModel:IndexViewModel):Future[string] {.async.} =
@@ -17,11 +17,6 @@ proc impl(viewModel:IndexViewModel):Future[string] {.async.} =
         margin: auto;
       }
     </style>
-  """
-
-  script ["idName"], script:"""
-    <script>
-    </script>
   """
 
   tmpli html"""
@@ -46,4 +41,3 @@ proc indexView*(loginUser:JsonNode):Future[string] {.async.} =
   let title = ""
   let viewModel = IndexViewModel.new(loginUser).await
   return applicationView(title, impl(viewModel).await)
-  # return applicationView(title, "")

@@ -21,8 +21,8 @@ export
   strutils,
   csrf_token,
   context,
-  request,
-  templates
+  templates,
+  request
 
 randomize()
 
@@ -65,7 +65,7 @@ type Css* = ref object
 func new*(typ:type Css, body, saffix:string):Css =
   return Css(body:body, saffix:saffix)
 
-func `$`*(self:Css):string =
+proc `$`*(self:Css):string =
   return self.body
 
 func element*(self:Css, name:string):string =
@@ -117,39 +117,3 @@ else:
         css = css.replace(match, match & saffix)
       return Css.new(css, saffix)
     )()
-
-
-type Script* = ref object
-  body:string
-  saffix:string
-
-func new*(typ:type Script, body, saffix:string):Script =
-  return Script(body:body, saffix:saffix)
-
-func `$`*(self:Script):string =
-  return self.body
-
-func element*(self:Script, name:string):string =
-  return name & self.saffix
-
-template script*(selectors:openArray[string], name, body:untyped):untyped =
-  let name = (proc():Script =
-    var saffix = "_"
-    for _ in 0..9:
-      saffix.add(char(rand(int('a')..int('z'))))
-    var script = body
-    for selector in selectors:
-      script = script.multiReplace(
-        ("'" & selector & "'", "'" & selector & saffix & "'"),
-        ("\"" & selector & "\"", "\"" & selector & saffix & "\""),
-      )
-    return Script.new(script, saffix)
-  )()
-
-template script*(name, body:untyped):untyped =
-  let name = (proc():Script =
-    var saffix = "_"
-    for _ in 0..9:
-      saffix.add(char(rand(int('a')..int('z'))))
-    return Script.new(body, saffix)
-  )()

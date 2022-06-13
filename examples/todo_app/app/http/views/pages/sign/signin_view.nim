@@ -25,11 +25,6 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
     </style>
   """
 
-  script ["idName"], script:"""
-    <script>
-    </script>
-  """
-
   tmpli html"""
     $<style>
     <main>

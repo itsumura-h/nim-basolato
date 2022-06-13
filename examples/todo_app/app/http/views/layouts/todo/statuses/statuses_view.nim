@@ -17,14 +17,8 @@ proc statusesView*(viewModel:StatusesViewModel):string =
     </style>
   """
 
-  script ["idName"], script:"""
-    <script>
-    </script>
-  """
-
   tmpli html"""
     $<style>
-    $<script>  
     <section class="bulma-section">
       <article class="bulma-columns $(style.element("columns"))">
         $for key, status in viewModel.statuses.pairs{

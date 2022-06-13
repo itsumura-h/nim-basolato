@@ -23,16 +23,10 @@ proc impl():Future[string] [[.async.]] =
     </style>
   '''
 
-  script ["idName"], script:'''
-    <script>
-    </script>
-  '''
-
   tmpli html'''
-    $<style>
-    $<script>
     <div class="$(style.element("className"))">
     </div>
+    $<style>
   '''
 
 proc {targetCaptalized}View*():Future[string] [[.async.]] =

@@ -17,7 +17,7 @@ proc component1():string =
   """
 
   tmpli html"""
-    $<style1>
+    $[style1]
     <div class="$(style1.element("className"))"></div>
   """
 
@@ -37,7 +37,7 @@ proc component2():string =
   """
 
   tmpli html"""
-    $<style2>
+    $[style2]
     <div class="$(style2.element("className"))"></div>
   """
 
@@ -57,14 +57,14 @@ proc component3():string =
   """
 
   tmpli html"""
-    $<style3>
+    $[style3]
     <div class="$(style3.element("className"))"></div>
   """
 
 proc impl():string = tmpli html"""
-$<component1()>
-$<component2()>
-$<component3()>
+$[component1()]
+$[component2()]
+$[component3()]
 """
 
 proc withStyleView*():string =

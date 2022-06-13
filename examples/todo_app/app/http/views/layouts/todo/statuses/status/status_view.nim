@@ -12,11 +12,6 @@ proc statusView*(status:StatusViewModel):string =
     </style>
   """
 
-  script ["idName"], script:"""
-    <script>
-    </script>
-  """
-
   tmpli html"""
     <div class="bulma-column">
       <div class="bulma-card">

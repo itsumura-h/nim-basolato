@@ -9,9 +9,7 @@ import allographer/query_builder
 import ../views/pages/welcome_view
 import ../views/pages/sample/with_style_view
 import ../views/pages/sample/babylon_js/babylon_js_view
-import ../views/pages/sample/react_view
-import ../views/pages/sample/material_ui_view
-import ../views/pages/sample/vuetify_view
+import ../views/pages/sample/with_script_view
 import ../views/pages/sample/web_socket_view
 
 
@@ -50,44 +48,8 @@ proc withStylePage*(context:Context, params:Params):Future[Response] {.async.} =
 proc babylonJsPage*(context:Context, params:Params):Future[Response] {.async.} =
   return render(babylonJsView().await)
 
-
-proc react*(context:Context, params:Params):Future[Response] {.async.} =
-  let users = %*(
-    await rdb.table("users")
-    .select("users.id", "users.name", "users.email", "auth.auth")
-    .join("auth", "auth.id", "=", "users.auth_id")
-    .get()
-  )
-  echo users
-  return render(reactHtml($users))
-
-
-proc materialUi*(context:Context, params:Params):Future[Response] {.async.} =
-  let users = %*(
-    await rdb.table("users")
-    .select("users.id", "users.name", "users.email", "auth.auth")
-    .join("auth", "auth.id", "=", "users.auth_id")
-    .get()
-  )
-  return render(materialUiHtml($users))
-
-
-proc vuetify*(context:Context, params:Params):Future[Response] {.async.} =
-  let users = %*(
-    await rdb.table("users")
-    .select("users.id", "users.name", "users.email", "auth.auth", "users.created_at", "users.updated_at")
-    .join("auth", "auth.id", "=", "users.auth_id")
-    .get()
-  )
-  let header = %*[
-    {"text": "id", "value": "id"},
-    {"text": "name", "value": "name"},
-    {"text": "email", "value": "email"},
-    {"text": "auth", "value": "auth"},
-    {"text": "created_at", "value": "created_at"},
-    {"text": "updated_at", "value": "updated_at"}
-  ]
-  return render(vuetifyHtml($header, $users))
+proc withScriptPage*(context:Context, params:Params):Future[Response] {.async.} =
+  return render(withScriptView().await)
 
 
 proc customHeaders*(context:Context, params:Params):Future[Response] {.async.} =

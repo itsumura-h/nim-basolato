@@ -6,6 +6,7 @@ proc makeLayout*(target:string, message:var string):int =
   let targetName = target.split("/")[^1]
   let targetViewPath = &"{getCurrentDir()}/app/http/views/layouts/{target}/{targetName}_view.nim"
   let targetViewModelPath = &"{getCurrentDir()}/app/http/views/layouts/{target}/{targetName}_view_model.nim"
+  let targetScriptPath = &"{getCurrentDir()}/app/http/views/layouts/{target}/{targetName}_script.nim"
   let targetCaptalizedType = snakeToCamel(targetName)
   let targetCaptalizedProc = snakeToCamelProcName(targetName)
 
@@ -27,6 +28,7 @@ import
   basolato/view,
   ./{targetName}_view_model
 
+const script = staticRead("./{targetName}_script.js")
 
 proc {targetCaptalizedProc}View*():Future[string] [[.async.]] =
   style "css", style:'''
@@ -36,17 +38,20 @@ proc {targetCaptalizedProc}View*():Future[string] [[.async.]] =
     </style>
   '''
 
-  script ["idName"], script:'''
-    <script>
-    </script>
-  '''
-
   tmpli html'''
-    $<style>
-    $<script>
     <div class="$(style.element("className"))">
     </div>
+    $<style>
+    <script>
+      $<script>
+    </script>
   '''
+"""
+  var SCRIPT = """
+import std/[jsffi, jsfetch, jscore, asyncjs]
+
+proc add(a, b:int):int {.exportc.} =
+  return a + b
 """
 
   VIEW = VIEW.multiReplace(
@@ -62,10 +67,14 @@ proc {targetCaptalizedProc}View*():Future[string] [[.async.]] =
   f.write(VIEW)
   f = open(targetViewModelPath, fmWrite)
   f.write(VIEW_MODEL)
+  f = open(targetScriptPath, fmWrite)
+  f.write(SCRIPT)
   defer: f.close()
 
   message = &"Created layout view in {targetViewPath}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
   message = &"Created layout view model in {targetViewModelPath}"
+  styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
+  message = &"Created layout script in {targetScriptPath}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
   return 0

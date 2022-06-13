@@ -13,7 +13,6 @@ import
   tables
 
 
-
 # Generate tags
 macro make(names: varargs[untyped]): void =
   result = newStmtList()
@@ -315,7 +314,7 @@ proc parse_simple_statement(value: string, index: var int): NimNode {.compiletim
   inc(index, value.parse_thru_eol(index))
 
 
-proc xmlEncode*(val:JsonNode):string =
+proc toString*(val:JsonNode):string =
   case val.kind
   of JString:
     return val.getStr.xmlEncode
@@ -330,7 +329,10 @@ proc xmlEncode*(val:JsonNode):string =
   else:
     raise newException(JsonKindError, "val is array")
 
-proc xmlEncode*(val:int|float|bool):string =
+proc toString*(val:string):string =
+  return val.xmlEncode
+
+proc toString*(val:int|float|bool):string =
   return $val
 
 
@@ -351,10 +353,19 @@ proc parse_until_symbol(node: NimNode, value: string, index: var int): bool {.co
       node.add newCall("add", ident("result"), newStrLitNode("$"))
       inc(index)
 
-    of '<':
+    # of '(':
+    #   # Check for open `(`, which means parse as simple single-line expression.
+    #   trim_eol(splitValue)
+    #   read = value.parse_to_close(index, open='(', close=')', opened=0) + 1
+    #   node.add newCall("add", ident("result"),
+    #     newCall(bindSym"strip", parseExpr("$" & value.substring(index, read)[1..^2]))
+    #   )
+    #   inc(index, read)
+
+    of '[':
       # Check for open `(`, which means parse as simple single-line expression.
       trim_eol(splitValue)
-      read = value.parse_to_close(index, open='<', close='>', opened=0) + 1
+      read = value.parse_to_close(index, open='[', close=']', opened=0) + 1
       node.add newCall("add", ident("result"),
         newCall(bindSym"strip", parseExpr("$" & value.substring(index, read)[1..^2]))
       )
@@ -369,7 +380,7 @@ proc parse_until_symbol(node: NimNode, value: string, index: var int): bool {.co
           "add",
           ident("result"),
           newCall(
-            "xmlEncode",
+            "toString",
             parseExpr(value.substring(index, read))
           )
         )

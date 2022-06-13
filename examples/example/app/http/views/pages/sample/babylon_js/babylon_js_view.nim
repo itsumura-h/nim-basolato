@@ -19,7 +19,7 @@ proc impl():Future[string] {.async.} =
     <article>
       <a href="/">go back</a>
       <hr>
-      $<style>
+      $[style]
       <canvas id="renderCanvas"></canvas>
       <script src="/js/nim-babylon.js"></script>
       <script src="https://preview.babylonjs.com/babylon.js"></script>

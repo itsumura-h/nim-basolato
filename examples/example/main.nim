@@ -23,10 +23,7 @@ let ROUTES = @[
       Route.get("/fib/{num:int}", page_display_controller.fib),
       Route.get("/with-style", page_display_controller.withStylePage),
       Route.get("/babylon-js", page_display_controller.babylonJsPage),
-
-      Route.get("/react", page_display_controller.react),
-      Route.get("/material-ui", page_display_controller.materialUi),
-      Route.get("/vuetify", page_display_controller.vuetify),
+      Route.get("/with-script", page_display_controller.withScriptPage),
 
       Route.get("/custom-headers", page_display_controller.customHeaders),
       Route.get("/dd", page_display_controller.presentDd),

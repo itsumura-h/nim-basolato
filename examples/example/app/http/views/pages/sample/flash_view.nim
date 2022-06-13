@@ -12,7 +12,7 @@ proc impl(context:Context):Future[string]{.async.} = tmpli html"""
   <a href="/">go back</a>
   <section>
     <form method="POST">
-      $<csrfToken()>
+      $[csrfToken()]
       <button type="submit">set flash</button>
       $for key, val in context.getFlash().await.pairs{
         <p>$(val)</p>

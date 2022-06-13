@@ -23,11 +23,6 @@ proc taskView*(viewModel:TaskViewModel):string =
     </style>
   """
 
-  script ["idName"], script:"""
-    <script>
-    </script>
-  """
-
   tmpli html"""
     $<style>
     <article class="bulma-card $(style.element("task"))">
@@ -55,7 +50,7 @@ proc taskView*(viewModel:TaskViewModel):string =
       </div>
       <div class="bulma-card-content">
         <div class="bulma-content">
-          <p>$(viewModel.title)</p>
+          <p><a href="/todo/$(viewModel.id)">$(viewModel.title)</a></p>
           <p>created: $(viewModel.createdName)</p>
           <p>assign: $(viewModel.assignName)</p>
           <p>start: $(viewModel.startOn)</p>
@@ -64,14 +59,18 @@ proc taskView*(viewModel:TaskViewModel):string =
       </div>
       <footer class="bulma-card-footer">
         $if viewModel.statusId > 1 {
-          <form class="bulma-card-footer-item $(style.element("form"))">
+          <form method="POST" action="/todo/change-status" class="bulma-card-footer-item $(style.element("form"))">
+            $<csrfToken()>
+            <input type="hidden" name="id" value="$(viewModel.id)">
             <button class="bulma-button $(style.element("button"))">
               <span class="bulma-icon"><i class="fas fa-arrow-left"></i></span>
             </button>
           </form>
         }
         $if viewModel.statusId < 3 {
-          <form class="bulma-card-footer-item $(style.element("form"))">
+          <form method="POST" action="/todo/change-status" class="bulma-card-footer-item $(style.element("form"))">
+            $<csrfToken()>
+            <input type="hidden" name="id" value="$(viewModel.id)">
             <button class="bulma-button $(style.element("button"))">
               <span class="bulma-icon"><i class="fas fa-arrow-right"></i></span>
             </button>

@@ -14,11 +14,11 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
   """
 
   tmpli html"""
-    $<style>
+    $[style]
     <main>
       <a href="/">go back</a>
       <form method="POST">
-        $< csrfToken() >
+        $[ csrfToken() ]
         <p><input type="text" name="email" placeholder="email" value="$(params.old("email"))"></p>
         $if errors.haskey("email"){
           <ul class="$(style.element("error"))">

@@ -21,14 +21,8 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
     }
   """
 
-  script ["idName"], script:"""
-    <script>
-    </script>
-  """
-
   tmpli html"""
     $<style>
-    $<script>
     <main>
       <section class="section $(style.element("section"))">
         <form method="POST" class="box">
