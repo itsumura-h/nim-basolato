@@ -1,9 +1,9 @@
 import json, asyncdispatch
-import basolato/view
+import ../../../../../../../../src/basolato/view
 import ../../../layouts/application_view
 
 
-proc impl():Future[string] {.async.} =
+proc impl():Future[Component] {.async.} =
   style "css", style:"""
     <style>
       #renderCanvas {
@@ -19,7 +19,7 @@ proc impl():Future[string] {.async.} =
     <article>
       <a href="/">go back</a>
       <hr>
-      $[style]
+      $(style)
       <canvas id="renderCanvas"></canvas>
       <script src="/js/nim-babylon.js"></script>
       <script src="https://preview.babylonjs.com/babylon.js"></script>
@@ -33,4 +33,4 @@ proc impl():Future[string] {.async.} =
 
 proc babylonJsView*():Future[string] {.async.} =
   let title = ""
-  return applicationView(title, impl().await)
+  return $applicationView(title, impl().await)

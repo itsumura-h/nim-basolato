@@ -28,9 +28,10 @@ import
   basolato/view,
   ./{targetName}_view_model
 
-const script = staticRead("./{targetName}_script.js")
+const s = staticRead("./{targetName}_script.js")
+const script = Component(value:s)
 
-proc {targetCaptalizedProc}View*():Future[string] [[.async.]] =
+proc {targetCaptalizedProc}View*():Future[Component] [[.async.]] =
   style "css", style:'''
     <style>
       .className [[
@@ -39,12 +40,12 @@ proc {targetCaptalizedProc}View*():Future[string] [[.async.]] =
   '''
 
   tmpli html'''
+    $(style)
+    <script>
+      $(script)
+    </script>
     <div class="$(style.element("className"))">
     </div>
-    $<style>
-    <script>
-      $<script>
-    </script>
   '''
 """
   var SCRIPT = """

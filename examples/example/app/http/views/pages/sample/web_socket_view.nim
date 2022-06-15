@@ -2,7 +2,7 @@ import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
 
-proc webSocketComponentImpl():string =
+proc webSocketComponentImpl():Component =
   style "css", style:"""
     <style>
       .form {
@@ -42,14 +42,14 @@ proc webSocketComponentImpl():string =
       <button type="button" onclick="clearHandler()">Delete</button>
     </form>
     <div id="messages"></div>
-    $[style]
+    $(style)
   """
 
 proc webSocketComponent*():string =
-    applicationView("Web Socket", webSocketComponentImpl())
+  return $applicationView("Web Socket", webSocketComponentImpl())
 
 
-proc impl():string =
+proc impl():Component =
   style "css", style:"""
     <style>
       .iframe {
@@ -59,7 +59,7 @@ proc impl():string =
   """
 
   tmpli html"""
-    $[style]
+    $(style)
     <section>
       <aside>
         <iframe src="/sample/web-socket-component" class="$(style.element("iframe"))"></iframe>
@@ -71,4 +71,4 @@ proc impl():string =
   """
 
 proc webSocketView*():string =
-  return applicationView("Web Socket", impl())
+  return $applicationView("Web Socket", impl())

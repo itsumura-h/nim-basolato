@@ -6,7 +6,7 @@ import
   ../../layouts/sample/with_script_layout/with_script_layout_view
 
 
-proc impl():Future[string] {.async.} =
+proc impl():Future[Component] {.async.} =
   style "css", style:"""
     <style>
       .className {
@@ -16,11 +16,11 @@ proc impl():Future[string] {.async.} =
 
   tmpli html"""
     <div class="$(style.element("className"))">
-      $[withScriptLayoutView().await]
+      $(withScriptLayoutView().await)
     </div>
-    $[style]
+    $(style)
   """
 
 proc withScriptView*():Future[string] {.async.} =
   let title = ""
-  return applicationView(title, impl().await)
+  return $applicationView(title, impl().await)

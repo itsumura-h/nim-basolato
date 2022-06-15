@@ -15,7 +15,7 @@ import
   {relativeToApplicationPath}
 
 
-proc impl():Future[string] [[.async.]] =
+proc impl():Future[Component] [[.async.]] =
   style "css", style:'''
     <style>
       .className [[
@@ -24,14 +24,14 @@ proc impl():Future[string] [[.async.]] =
   '''
 
   tmpli html'''
+    $(style)
     <div class="$(style.element("className"))">
     </div>
-    $<style>
   '''
 
 proc {targetCaptalized}View*():Future[string] [[.async.]] =
   let title = ''
-  return applicationView(title, impl().await)
+  return $applicationView(title, impl().await)
 """
 
   VIEW = VIEW.multiReplace(

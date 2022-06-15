@@ -65,8 +65,11 @@ type Css* = ref object
 func new*(typ:type Css, body, saffix:string):Css =
   return Css(body:body, saffix:saffix)
 
-proc `$`*(self:Css):string =
+proc toString*(self:Css):string =
   return self.body
+
+proc `$`*(self:Css):string =
+  return self.toString()
 
 func element*(self:Css, name:string):string =
   return name & self.saffix

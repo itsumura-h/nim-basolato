@@ -4,9 +4,10 @@ import
   ../../../../../../../../src/basolato/view,
   ./with_script_layout_view_model
 
-const script = staticRead("./with_script_layout_script.js")
+const s = staticRead("./with_script_layout_script.js")
+let script = Component(value:s)
 
-proc withScriptLayoutView*():Future[string] {.async.} =
+proc withScriptLayoutView*():Future[Component] {.async.} =
   style "css", style:"""
     <style>
       .className {
@@ -19,9 +20,9 @@ proc withScriptLayoutView*():Future[string] {.async.} =
       <p id="num"></p>
       <button type="button" onclick="addDom('num')">increment</button>
     </div>
-    $[style]
+    $(style)
     <script>
-      $[script]
+      $(script)
       window.addEventListener('load', ()=>{init('num')})
     </script>
   """

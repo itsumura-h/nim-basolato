@@ -7,7 +7,7 @@ style "css", style:"""
 }
 """
 
-proc impl(context:Context):Future[string]{.async.} = tmpli html"""
+proc impl(context:Context):Future[Component]{.async.} = tmpli html"""
 <main>
   <a href="/">go back</a>
   <section>
@@ -17,7 +17,7 @@ proc impl(context:Context):Future[string]{.async.} = tmpli html"""
           <h2>You are logged in!</h2>
           <p>Login Name: $(context.get("name").await)</p>
         </header>
-        $[csrfToken()]
+        $(csrfToken())
         <button type="submit">Logout</button>
       </form>
     }
@@ -26,7 +26,7 @@ proc impl(context:Context):Future[string]{.async.} = tmpli html"""
         <header>
           <h2>Login</h2>
         </header>
-        $[csrfToken()]
+        $(csrfToken())
         <input type="text" name="name" placeholder="name">
         <input type="text" name="password" placeholder="password">
         <button type="submit">Login</button>
@@ -38,4 +38,4 @@ proc impl(context:Context):Future[string]{.async.} = tmpli html"""
 
 proc loginView*(context:Context):Future[string]{.async.} =
   let title = "Login"
-  return applicationView(title, await impl(context))
+  return $applicationView(title, await impl(context))

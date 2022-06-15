@@ -13,6 +13,37 @@ import
   tables
 
 
+type Component* = ref object
+  value*:string
+
+proc toString*(self:Component):string =
+  return self.value
+
+proc `$`*(self:Component):string =
+  return self.toString()
+
+proc toString*(val:JsonNode):string =
+  case val.kind
+  of JString:
+    return val.getStr.xmlEncode
+  of JInt:
+    return $(val.getInt)
+  of JFloat:
+    return $(val.getFloat)
+  of JBool:
+    return $(val.getBool)
+  of JNull:
+    return ""
+  else:
+    raise newException(JsonKindError, "val is array")
+
+proc toString*(val:string):string =
+  return val.xmlEncode
+
+proc toString*(val:bool | int | float):string =
+  return val.xmlEncode
+
+
 # Generate tags
 macro make(names: varargs[untyped]): void =
   result = newStmtList()
@@ -314,28 +345,6 @@ proc parse_simple_statement(value: string, index: var int): NimNode {.compiletim
   inc(index, value.parse_thru_eol(index))
 
 
-proc toString*(val:JsonNode):string =
-  case val.kind
-  of JString:
-    return val.getStr.xmlEncode
-  of JInt:
-    return $(val.getInt)
-  of JFloat:
-    return $(val.getFloat)
-  of JBool:
-    return $(val.getBool)
-  of JNull:
-    return ""
-  else:
-    raise newException(JsonKindError, "val is array")
-
-proc toString*(val:string):string =
-  return val.xmlEncode
-
-proc toString*(val:int|float|bool):string =
-  return $val
-
-
 proc parse_until_symbol(node: NimNode, value: string, index: var int): bool {.compiletime.} =
   ## Parses a string until a $ symbol is encountered, if
   ## two $$'s are encountered in a row, a split will happen
@@ -350,7 +359,8 @@ proc parse_until_symbol(node: NimNode, value: string, index: var int): bool {.co
     case value[index]
     of '$':
       # Check for duplicate `$`, meaning this is an escaped $
-      node.add newCall("add", ident("result"), newStrLitNode("$"))
+      # node.add newCall("add", ident("result"), newStrLitNode("$"))
+      node.add newCall("add", ident("res"), newStrLitNode("$"))
       inc(index)
 
     # of '(':
@@ -362,14 +372,14 @@ proc parse_until_symbol(node: NimNode, value: string, index: var int): bool {.co
     #   )
     #   inc(index, read)
 
-    of '[':
-      # Check for open `(`, which means parse as simple single-line expression.
-      trim_eol(splitValue)
-      read = value.parse_to_close(index, open='[', close=']', opened=0) + 1
-      node.add newCall("add", ident("result"),
-        newCall(bindSym"strip", parseExpr("$" & value.substring(index, read)[1..^2]))
-      )
-      inc(index, read)
+    # of '[':
+    #   # Check for open `(`, which means parse as simple single-line expression.
+    #   trim_eol(splitValue)
+    #   read = value.parse_to_close(index, open='[', close=']', opened=0) + 1
+    #   node.add newCall("add", ident("result"),
+    #     newCall(bindSym"strip", parseExpr("$" & value.substring(index, read)[1..^2]))
+    #   )
+    #   inc(index, read)
 
     of '(':
       # Check for open `(`, which means parse as simple single-line expression.
@@ -378,7 +388,7 @@ proc parse_until_symbol(node: NimNode, value: string, index: var int): bool {.co
       node.add(
         newCall(
           "add",
-          ident("result"),
+          ident("res"),
           newCall(
             "toString",
             parseExpr(value.substring(index, read))
@@ -410,14 +420,16 @@ proc parse_until_symbol(node: NimNode, value: string, index: var int): bool {.co
 
       elif identifier.len > 0:
         ## Treat as simple variable
-        node.add newCall("add", ident("result"), newCall("$", ident(identifier)))
+        # node.add newCall("add", ident("result"), newCall("$", ident(identifier)))
+        node.add newCall("add", ident("res"), newCall("$", ident(identifier)))
         inc(index, read)
 
     result = true
 
   # Insert
   if splitValue.len > 0:
-    node.insert insertionPoint, newCall("add", ident("result"), newStrLitNode(splitValue))
+    # node.insert insertionPoint, newCall("add", ident("result"), newStrLitNode(splitValue))
+    node.insert insertionPoint, newCall("add", ident("res"), newStrLitNode(splitValue))
 
 
 proc parse_template(node: NimNode, value: string) =
@@ -438,12 +450,15 @@ when not defined(js):
 macro tmpli*(body: untyped): void =
   result = newStmtList()
 
-  result.add parseExpr("result = \"\"")
+  # result.add parseExpr("result = \"\"")
+  result.add parseExpr("var res = \"\"")
 
   var value = if body.kind in nnkStrLit..nnkTripleStrLit: body.strVal
               else: body[1].strVal
 
   parse_template(result, reindent(value))
+  result.add parseExpr("result = Component(value: res)")
+  echo result.repr
 
 
 macro tmpl*(body: untyped): void =
