@@ -1,5 +1,15 @@
 Static Files
 ===
+[back](../../README.md)
+
+Table of Contents
+<!--ts-->
+   * [Static Files](#static-files)
+
+<!-- Added by: root, at: Wed Jun 15 11:34:38 UTC 2022 -->
+
+<!--te-->
+
 By default Basolato looks for static files in this directory.
 
 Files will be served like so:

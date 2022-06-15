@@ -7,14 +7,10 @@ Table of Contents
 <!--ts-->
    * [View](#view)
       * [Introduction](#introduction)
-      * [XSS](#xss)
-         * [API](#api)
-         * [Sample](#sample)
       * [Component style design](#component-style-design)
-         * [JavaScript](#javascript)
          * [CSS](#css)
          * [SCSS](#scss)
-         * [API](#api-1)
+         * [API](#api)
       * [Helper functions](#helper-functions)
          * [Csrf Token](#csrf-token)
          * [old helper](#old-helper)
@@ -24,7 +20,7 @@ Table of Contents
             * [SCF](#scf)
             * [Karax](#karax)
 
-<!-- Added by: root, at: Fri Dec 31 11:50:04 UTC 2021 -->
+<!-- Added by: root, at: Wed Jun 15 11:34:34 UTC 2022 -->
 
 <!--te-->
 
@@ -55,120 +51,9 @@ proc indexView*(message:string): string =
   baseImpl(indexImpl(message))
 ```
 
-## XSS
-To prevent XSS, **you have to use `get` proc for valiable.** It applies [xmlEncode](https://nim-lang.org/docs/cgi.html#xmlEncode,string) inside.
-
-### API
-```nim
-proc get*(val:JsonNode):string =
-
-proc get*(val:string):string =
-```
-
-### Sample
-```nim
-title = "This is title<script>alert("aaa")</script>"
-params = @["<script>alert("aaa")</script>", "b"].parseJson()
-```
-```nim
-import basolato/view
-
-proc impl(title:string, params:JsonNode):Future[string] {.async.} =
-  tmpli html"""
-    <h1>$(title.get)</h1>
-    <ul>
-      $for param in params {
-        <li>$(param.get)</li>
-      }
-    </ul>
-  """
-```
-
 ## Component style design
 Basolato view is designed for component oriented design like React and Vue.  
 Component is a single chunk of html, JavaScriptand and css, and just a procedure that return html string.
-
-### JavaScript
-controller
-```nim
-import basolato/controller
-
-proc withSscriptPage*(request:Request, params:Params):Future[Response] {.async.} =
-  return render(withScriptView())
-```
-
-view
-```nim
-import basolato/view
-import ../layouts/application_view
-
-
-proc impl():string =
-  script ["toggle"], script:"""
-    <script>
-      window.addEventListener('load', ()=>{
-        let el = document.getElementById('toggle')
-        el.style.display = 'none'
-      })
-
-      const toggleOpen = () =>{
-        let el = document.getElementById('toggle')
-        if(el.style.display == 'none'){
-          el.style.display = ''
-        }else{
-          el.style.display = 'none'
-        }
-      }
-    </script>
-  """
-
-  tmpli html"""
-    $(script)
-    <div>
-      <button onclick="toggleOpen()">toggle</button>
-      <div id="$(script.element("toggle"))">...content</div>
-    </div>
-  """
-
-proc withScriptView*():string =
-  let title = "Title"
-  return applicationView(title, impl())
-```
-
-This is compiled to html like this.
-```html
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta charset="UTF-8">
-    <title>Title</title>
-  </head>
-  <body>
-    <script>
-      window.addEventListener('load', ()=>{
-        let el = document.getElementById('toggle_akvcgccoeg')
-        el.style.display = 'none'
-      })
-
-      const toggleOpen = () =>{
-        let el = document.getElementById('toggle_akvcgccoeg')
-        if(el.style.display == 'none'){
-          el.style.display = ''
-        }else{
-          el.style.display = 'none'
-        }
-      }
-    </script>
-    <div>
-      <button onclick="toggleOpen()">toggle</button>
-      <div id="toggle_akvcgccoeg">...content</div>
-    </div>
-  </body>
-</html>
-```
-
-The selector passed as the first argument of the `script` template will have a random suffix for each component, so multiple components can have the same ID name/class name.
 
 ### CSS
 controller
@@ -184,7 +69,7 @@ view
 import basolato/view
 
 
-proc impl():string = 
+proc impl():Component = 
   style "css", style:"""
     <style>
       .background {
@@ -206,7 +91,7 @@ proc impl():string =
 
 proc withStyleView*():string =
   let title = "Title"
-  return applicationView(title, impl())
+  return $applicationView(title, impl())
 ```
 
 This is compiled to html like this.
@@ -264,19 +149,9 @@ style "scss", style:"""
 ```
 
 ### API
-`script` template crate `Script` type instance in `name` arg variable.
 `style` template crate `Css` type instance in `name` arg variable.
 
 ```nim
-# for JavaScript
-template script*(selectors:openArray[string], name, body:untyped):untyped
-
-template script*(name, body:untyped):untyped
-
-proc `$`*(self:Script):string
-
-proc element*(self:Script, name:string):string
-
 # for CSS
 template style*(typ:string, name, body: untyped):untyped
 
@@ -330,7 +205,7 @@ proc signin*(request:Request, params:Params):Future[Response] {.async.} =
 
 view
 ```nim
-proc impl(params=newJObject()):string =
+proc impl(params=newJObject()):Component =
   tmpli html"""
     <input type="text" name="email" value="$(old(params, "email"))">
     <input type="text" name="password">
@@ -338,7 +213,7 @@ proc impl(params=newJObject()):string =
 
 proc signinView*(params=newJObject()):string =
   let title = "SignIn"
-  return self.applicationView(title, impl(params))
+  return $applicationView(title, impl(params))
 ```
 It display value if `params` has key `email`, otherwise display empty string.
 

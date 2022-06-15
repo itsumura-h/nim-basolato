@@ -34,7 +34,7 @@ https://hub.docker.com/r/nimlang/nim
       * [Development](#development)
          * [Generate TOC of documents](#generate-toc-of-documents)
 
-<!-- Added by: root, at: Fri Dec 31 11:49:06 UTC 2021 -->
+<!-- Added by: root, at: Wed Jun 15 11:40:11 UTC 2022 -->
 
 <!--te-->
 

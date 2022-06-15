@@ -15,6 +15,7 @@ Table of Contents
          * [migrate](#migrate-1)
          * [make](#make)
             * [config](#config)
+            * [key](#key)
             * [controller](#controller)
             * [view](#view)
             * [migration](#migration)
@@ -24,7 +25,7 @@ Table of Contents
             * [usecase](#usecase)
       * [Bash-completion](#bash-completion)
 
-<!-- Added by: root, at: Fri Dec 31 11:49:48 UTC 2021 -->
+<!-- Added by: root, at: Wed Jun 15 11:34:20 UTC 2022 -->
 
 <!--te-->
 
