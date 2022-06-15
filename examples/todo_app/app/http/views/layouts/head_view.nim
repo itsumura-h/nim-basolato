@@ -1,6 +1,6 @@
 import ../../../../../../src/basolato/view
 
-proc headView*(title:string):string =
+proc headView*(title:string):Component =
   tmpli html"""
     <head>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">

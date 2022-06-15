@@ -4,7 +4,7 @@ import ./status_view_model
 import ./task/task_view
 
 
-proc statusView*(status:StatusViewModel):string =
+proc statusView*(status:StatusViewModel):Component =
   style "css", style:"""
     <style>
       .className {
@@ -20,7 +20,7 @@ proc statusView*(status:StatusViewModel):string =
         </div>
         <div class="bulma-card-content">
           $for i, task in status.tasks{
-            $<taskView(task)>
+            $(taskView(task))
           }
         </div>
       </div>

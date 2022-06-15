@@ -26,7 +26,6 @@ proc index*(context:Context, params:Params):Future[Response] {.async.} =
 
 proc show*(context:Context, params:Params):Future[Response] {.async.} =
   let id = params.getStr("id")
-  echo id
   return render("show")
 
 proc create*(context:Context, params:Params):Future[Response] {.async.} =
@@ -66,8 +65,6 @@ proc changeSort*(context:Context, params:Params):Future[Response] {.async.} =
 
 proc changeStatus*(context:Context, params:Params):Future[Response] {.async.} =
   let id = params.getStr("id")
-  echo "===="
-  echo id
   return redirect("/todo")
 
 

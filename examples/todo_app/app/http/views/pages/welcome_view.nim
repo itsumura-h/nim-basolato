@@ -1,7 +1,7 @@
 import ../../../../../../src/basolato/view
 
 
-proc impl(title, name:string):string =
+proc impl(title, name:string):Component =
   style "css", style:"""
     <style>
       body {
@@ -86,7 +86,7 @@ proc impl(title, name:string):string =
       <title>$title</title>
       <link rel="stylesheet" href="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/styles/dracula.min.css">
       <script src="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/highlight.min.js"></script>
-      $<style>
+      $(style)
     </head>
     <body>
       <article>
@@ -127,4 +127,4 @@ proc impl(title, name:string):string =
 
 proc welcomeView*(name:string):string =
   let title = "Welcome Basolato"
-  return impl(title, name)
+  return $impl(title, name)

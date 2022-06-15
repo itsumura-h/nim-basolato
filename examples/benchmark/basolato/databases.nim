@@ -1,8 +1,6 @@
 import os, strutils
 import allographer/connection
 
-echo "=== DB_MAX_CONNECTION"
-echo getEnv("DB_MAX_CONNECTION")
 
 let rdb* = dbopen(
   PostgreSQL,

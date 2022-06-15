@@ -4,7 +4,7 @@ import ../../../layouts/application_view
 import ./create_view_model
 
 
-proc impl(viewModel:CreateViewModel):string =
+proc impl(viewModel:CreateViewModel):Component =
   style "css", style:"""
     <style>
       .className {
@@ -13,7 +13,7 @@ proc impl(viewModel:CreateViewModel):string =
   """
 
   tmpli html"""
-    $<style>
+    $(style)
     <section class="bulma-section">
       <p>
         <a href="/todo">back</a>
@@ -21,7 +21,7 @@ proc impl(viewModel:CreateViewModel):string =
     </section>
     <section class="bulma-section">
       <form method="POST">
-        $<csrfToken()>
+        $(csrfToken())
         <h3 class="bulma-title is-3">Create new task</h3>
         <div class="bulma-field">
           <div class="bulma-control">
@@ -120,4 +120,4 @@ proc createView*(params, errors, data:JsonNode):string =
     data["statuses"].getElems,
     data["users"].getElems
   )
-  return applicationView(title, impl(viewModel))
+  return $applicationView(title, impl(viewModel))

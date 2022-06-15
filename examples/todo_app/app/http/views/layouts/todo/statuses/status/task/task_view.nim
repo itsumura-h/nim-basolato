@@ -3,7 +3,7 @@ import ../../../../../../../../../../src/basolato/view
 import ./task_view_model
 
 
-proc taskView*(viewModel:TaskViewModel):string =
+proc taskView*(viewModel:TaskViewModel):Component =
   style "css", style:"""
     <style>
       .columns {
@@ -24,12 +24,12 @@ proc taskView*(viewModel:TaskViewModel):string =
   """
 
   tmpli html"""
-    $<style>
+    $(style)
     <article class="bulma-card $(style.element("task"))">
       <div class="bulma-card-header bulma-columns $(style.element("columns"))">
         $if viewModel.isDisplayUp {
           <form method="POST" action="/todo/change-sort" class="bulma-column $(style.element("form"))">
-            $<csrfToken()>
+            $(csrfToken())
             <button class="bulma-button $(style.element("button"))">
               <span class="bulma-icon"><i class="fas fa-arrow-up"></i></span>
             </button>
@@ -39,7 +39,7 @@ proc taskView*(viewModel:TaskViewModel):string =
         }
         $if viewModel.isDisplayDown {
           <form method="POST" action="/todo/change-sort" class="bulma-column $(style.element("form"))">
-            $<csrfToken()>
+            $(csrfToken())
             <button class="bulma-button $(style.element("button"))">
               <span class="bulma-icon"><i class="fas fa-arrow-down"></i></span>
             </button>
@@ -60,7 +60,7 @@ proc taskView*(viewModel:TaskViewModel):string =
       <footer class="bulma-card-footer">
         $if viewModel.statusId > 1 {
           <form method="POST" action="/todo/change-status" class="bulma-card-footer-item $(style.element("form"))">
-            $<csrfToken()>
+            $(csrfToken())
             <input type="hidden" name="id" value="$(viewModel.id)">
             <button class="bulma-button $(style.element("button"))">
               <span class="bulma-icon"><i class="fas fa-arrow-left"></i></span>
@@ -69,7 +69,7 @@ proc taskView*(viewModel:TaskViewModel):string =
         }
         $if viewModel.statusId < 3 {
           <form method="POST" action="/todo/change-status" class="bulma-card-footer-item $(style.element("form"))">
-            $<csrfToken()>
+            $(csrfToken())
             <input type="hidden" name="id" value="$(viewModel.id)">
             <button class="bulma-button $(style.element("button"))">
               <span class="bulma-icon"><i class="fas fa-arrow-right"></i></span>

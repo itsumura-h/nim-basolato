@@ -3,19 +3,13 @@ import ../../../../../../../../src/basolato/view
 import ./app_bar_view_model
 
 
-const jsFile = staticRead("./app_bar_js.js")
-
-proc appBarView*(viewMode:AppBarViewModel):Future[string] {.async.} =
+proc appBarView*(viewMode:AppBarViewModel):Future[Component] {.async.} =
   style "css", style:"""
     <style>
     </style>
   """
 
   tmpli html"""
-    <script>
-      $<jsFile>
-    </script>
-
     <script>
       window.addEventListener('load', ()=>{
         if(window.matchMedia('screen and (max-width: 780px)').matches){

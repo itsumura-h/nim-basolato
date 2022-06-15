@@ -5,7 +5,7 @@ import
   ../../layouts/application_view
 
 
-proc impl(params, errors:JsonNode):Future[string] {.async.} =
+proc impl(params, errors:JsonNode):Future[Component] {.async.} =
   style "css", style:"""
     <style>
       @media screen{
@@ -26,11 +26,11 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
   """
 
   tmpli html"""
-    $<style>
+    $(style)
     <main>
       <section class="bulma-section $(style.element("section"))">
         <form method="POST" class="bulma-box">
-          $<csrfToken()>
+          $(csrfToken())
           <h2 class="bulma-title">Sign In</h2>
           <article class="bulma-field">
             <div class="bulma-controll">
@@ -74,4 +74,4 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
 
 proc signinView*(params, errors:JsonNode):Future[string] {.async.} =
   let title = "Sign In"
-  return applicationView(title, impl(params, errors).await)
+  return $applicationView(title, impl(params, errors).await)

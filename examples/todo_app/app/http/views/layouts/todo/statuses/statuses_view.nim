@@ -7,7 +7,7 @@ import
   ./status/status_view
 
 
-proc statusesView*(viewModel:StatusesViewModel):string =
+proc statusesView*(viewModel:StatusesViewModel):Component =
   style "css", style:"""
     <style>
       .columns {
@@ -18,11 +18,11 @@ proc statusesView*(viewModel:StatusesViewModel):string =
   """
 
   tmpli html"""
-    $<style>
+    $(style)
     <section class="bulma-section">
       <article class="bulma-columns $(style.element("columns"))">
         $for key, status in viewModel.statuses.pairs{
-          $<statusView(status)>        
+          $(statusView(status))        
         }
       </article>
     </section>

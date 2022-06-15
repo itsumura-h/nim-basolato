@@ -458,7 +458,6 @@ macro tmpli*(body: untyped): void =
 
   parse_template(result, reindent(value))
   result.add parseExpr("result = Component(value: res)")
-  echo result.repr
 
 
 macro tmpl*(body: untyped): void =

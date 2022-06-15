@@ -3,7 +3,7 @@ import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
 
-proc impl(params, errors:JsonNode):Future[string] {.async.} =
+proc impl(params, errors:JsonNode):Future[Component] {.async.} =
   style "css", style:"""
     @media screen{
       main{
@@ -22,11 +22,11 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
   """
 
   tmpli html"""
-    $<style>
+    $(style)
     <main>
       <section class="section $(style.element("section"))">
         <form method="POST" class="box">
-          $<csrfToken()>
+          $(csrfToken())
           <h2 class="title">Sign Up</h2>
           <article class="field">
             <div class="controll">
@@ -91,4 +91,4 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
 
 proc signupView*(params, errors:JsonNode):Future[string] {.async.} =
   let title = "Sign Up"
-  return applicationView(title, await impl(params, errors))
+  return $applicationView(title, impl(params, errors).await)

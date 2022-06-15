@@ -82,5 +82,5 @@ proc serve*(port=5000) =
 
     if isModified:
       isModified = false
-      jsBuild()
+      # jsBuild()
       runCommand(port)

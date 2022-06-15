@@ -9,7 +9,7 @@ import
   ./index_view_model
 
 
-proc impl(viewModel:IndexViewModel):Future[string] {.async.} =
+proc impl(viewModel:IndexViewModel):Future[Component] {.async.} =
   style "css", style:"""
     <style>
       .columns {
@@ -20,10 +20,10 @@ proc impl(viewModel:IndexViewModel):Future[string] {.async.} =
   """
 
   tmpli html"""
-    $<style>
+    $(style)
     <main>
       <header>
-        $<appBarView(viewModel.appBarViewModel).await>
+        $(appBarView(viewModel.appBarViewModel).await)
       </header>
       <section class="bulma-section">
         $if viewModel.isAdmin{
@@ -33,11 +33,11 @@ proc impl(viewModel:IndexViewModel):Future[string] {.async.} =
           </a></p>
         }
       </section>
-      $<statusesView(viewModel.statuses)>
+      $(statusesView(viewModel.statuses))
     </main>
   """
 
 proc indexView*(loginUser:JsonNode):Future[string] {.async.} =
   let title = ""
   let viewModel = IndexViewModel.new(loginUser).await
-  return applicationView(title, impl(viewModel).await)
+  return $applicationView(title, impl(viewModel).await)
