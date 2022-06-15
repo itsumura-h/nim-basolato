@@ -29,12 +29,12 @@ proc ctrlC() {.noconv.} =
   quit 0
 setControlCHook(ctrlC)
 
-proc jsBuild() =
-  for f in walkDirRec(currentDir, {pcFile}):
-    if f.contains("_script.nim"):
-      let jsFilePath = f.split(".")[0..^2].join(".")
-      if execShellCmd(&"nim js -d:nimExperimentalAsyncjsThen -d:release -o:{jsFilePath}.js {f}") > 0:
-        echoMsg(bgRed, "[FAILED] Build error")        
+# proc jsBuild() =
+#   for f in walkDirRec(currentDir, {pcFile}):
+#     if f.contains("_script.nim"):
+#       let jsFilePath = f.split(".")[0..^2].join(".")
+#       if execShellCmd(&"nim js -d:nimExperimentalAsyncjsThen -d:release -o:{jsFilePath}.js {f}") > 0:
+#         echoMsg(bgRed, "[FAILED] Build error")
 
 proc runCommand(port:int) =
   try:
@@ -53,7 +53,7 @@ proc runCommand(port:int) =
 
 proc serve*(port=5000) =
   ## Run dev application with hot reload.
-  jsBuild()
+  # jsBuild()
   runCommand(port)
   while true:
     sleep sleepTime * 1000
