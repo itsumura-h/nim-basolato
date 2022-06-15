@@ -1,63 +1,59 @@
 import
-  templates,
-  json,
-  random,
-  tables,
-  strformat,
-  strutils,
+  std/asyncdispatch,
+  std/cgi,
+  std/json,
+  std/strformat,
+  std/strutils,
+  std/tables,
+  std/random,
+  std/re,
+  ./core/baseEnv,
+  ./core/security/context,
+  ./core/security/csrf_token,
+  ./core/templates,
+  ./core/request
+
+export
   asyncdispatch,
   cgi,
-  re
-export
-  templates,
-  asyncdispatch,
   re,
-  tables
-import
-  core/security/csrf_token,
-  core/security/context,
-  core/request,
-  core/baseEnv
-export
+  tables,
+  strutils,
   csrf_token,
   context,
+  templates,
   request
 
 randomize()
 
-func get*(val:JsonNode):string =
-  case val.kind
-  of JString:
-    return val.getStr.xmlEncode
-  of JInt:
-    return $(val.getInt)
-  of JFloat:
-    return $(val.getFloat)
-  of JBool:
-    return $(val.getBool)
-  of JNull:
-    return ""
-  else:
-    raise newException(JsonKindError, "val is array")
 
-func get*(val:string|TaintedString):string =
-  return val.string.xmlEncode
-
-func old*(params:JsonNode, key:string, default=""):string =
+proc old*(params:JsonNode, key:string, default=""):string =
   if params.hasKey(key):
-    return params[key].get().xmlEncode
+    case params[key].kind
+    of JString:
+      return params[key].getStr
+    of JInt:
+      return $params[key].getInt
+    of JFloat:
+      return $params[key].getFloat
+    of JBool:
+      return $params[key].getBool
+    else:
+      return $params[key]
   else:
     return default
+
 
 func old*(params:TableRef, key:string, default=""):string =
   if params.hasKey(key):
-    return params[key].xmlEncode
+    return params[key]
   else:
     return default
 
+
 func old*(params:Params, key:string, default=""):string =
   if params.hasKey(key):
-    return params.getStr(key).xmlEncode
+    return params.getStr(key)
   else:
     return default
 
@@ -69,8 +65,11 @@ type Css* = ref object
 func new*(typ:type Css, body, saffix:string):Css =
   return Css(body:body, saffix:saffix)
 
-func `$`*(self:Css):string =
+proc toString*(self:Css):string =
   return self.body
+
+proc `$`*(self:Css):string =
+  return self.toString()
 
 func element*(self:Css, name:string):string =
   return name & self.saffix
@@ -121,39 +120,3 @@ else:
         css = css.replace(match, match & saffix)
       return Css.new(css, saffix)
     )()
-
-
-type Script* = ref object
-  body:string
-  saffix:string
-
-func new*(typ:type Script, body, saffix:string):Script =
-  return Script(body:body, saffix:saffix)
-
-func `$`*(self:Script):string =
-  return self.body
-
-func element*(self:Script, name:string):string =
-  return name & self.saffix
-
-template script*(selectors:openArray[string], name, body:untyped):untyped =
-  let name = (proc():Script =
-    var saffix = "_"
-    for _ in 0..9:
-      saffix.add(char(rand(int('a')..int('z'))))
-    var script = body
-    for selector in selectors:
-      script = script.multiReplace(
-        ("'" & selector & "'", "'" & selector & saffix & "'"),
-        ("\"" & selector & "\"", "\"" & selector & saffix & "\""),
-      )
-    return Script.new(script, saffix)
-  )()
-
-template script*(name, body:untyped):untyped =
-  let name = (proc():Script =
-    var saffix = "_"
-    for _ in 0..9:
-      saffix.add(char(rand(int('a')..int('z'))))
-    return Script.new(body, saffix)
-  )()

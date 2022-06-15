@@ -1,9 +1,18 @@
 import
-  asyncdispatch, asynchttpserver, asyncnet, json, strutils, cgi, tables, os, strformat,
-  strtabs, parseutils, net, uri, options
-import security/session
+  std/asynchttpserver,
+  std/asyncnet,
+  std/cgi,
+  std/json,
+  std/net,
+  std/options,
+  std/os,
+  std/parseutils,
+  std/strformat,
+  std/strtabs,
+  std/strutils,
+  std/tables,
+  std/uri
 
-# import security
 
 func path*(request:Request):string =
   return request.url.path
@@ -59,6 +68,9 @@ func `$`*(self:Param):string =
 
 func ext*(self:Param):string =
   return self.ext
+
+func len*(self:Param):int =
+  return self.value.len
 
 type Params* = TableRef[string, Param]
 
@@ -129,7 +141,7 @@ func getQueryParams*(request:Request):Params =
   result = newParams()
   let query = request.url.query
   for key, val in cgi.decodeData(query):
-    result[key.string] = Param(value:val)
+    result[key] = Param(value:val)
 
 proc getJsonParams*(request:Request):Params =
   result = newParams()

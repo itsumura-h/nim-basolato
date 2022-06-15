@@ -1,4 +1,13 @@
-import os, tables, times, re, strformat, osproc, terminal
+import
+  std/os,
+  std/osproc,
+  std/re,
+  std/strformat,
+  std/strutils,
+  std/tables,
+  std/terminal,
+  std/times
+
 
 let
   sleepTime = 2
@@ -20,6 +29,13 @@ proc ctrlC() {.noconv.} =
   quit 0
 setControlCHook(ctrlC)
 
+# proc jsBuild() =
+#   for f in walkDirRec(currentDir, {pcFile}):
+#     if f.contains("_script.nim"):
+#       let jsFilePath = f.split(".")[0..^2].join(".")
+#       if execShellCmd(&"nim js -d:nimExperimentalAsyncjsThen -d:release -o:{jsFilePath}.js {f}") > 0:
+#         echoMsg(bgRed, "[FAILED] Build error")
+
 proc runCommand(port:int) =
   try:
     if pid > 0:
@@ -37,6 +53,7 @@ proc runCommand(port:int) =
 
 proc serve*(port=5000) =
   ## Run dev application with hot reload.
+  # jsBuild()
   runCommand(port)
   while true:
     sleep sleepTime * 1000
@@ -65,4 +82,5 @@ proc serve*(port=5000) =
 
     if isModified:
       isModified = false
+      # jsBuild()
       runCommand(port)

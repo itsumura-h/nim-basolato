@@ -4,9 +4,9 @@ from ../../config/database import rdb
 
 
 proc groups*() {.async.} =
-  rdb.schema(
+  rdb.create(
     table("groups", [
-      Column().uuid("id"),
-      Column().string("name")
+      Column.uuid("id"),
+      Column.string("name")
     ])
   )

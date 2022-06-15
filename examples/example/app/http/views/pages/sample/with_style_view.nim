@@ -2,7 +2,7 @@ import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
 
-proc component1():string =
+proc component1():Component =
   style "css", style1:"""
     <style>
       .className{
@@ -22,7 +22,7 @@ proc component1():string =
   """
 
 
-proc component2():string =
+proc component2():Component =
   style "css", style2:"""
     <style>
       .className{
@@ -41,7 +41,7 @@ proc component2():string =
     <div class="$(style2.element("className"))"></div>
   """
 
-proc component3():string =
+proc component3():Component =
   style "scss", style3:"""
     <style>
       .className{
@@ -61,7 +61,7 @@ proc component3():string =
     <div class="$(style3.element("className"))"></div>
   """
 
-proc impl():string = tmpli html"""
+proc impl():Component = tmpli html"""
 $(component1())
 $(component2())
 $(component3())
@@ -69,4 +69,4 @@ $(component3())
 
 proc withStyleView*():string =
   let title = ""
-  return applicationView(title, impl())
+  return $applicationView(title, impl())

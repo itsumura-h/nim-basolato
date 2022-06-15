@@ -15,15 +15,14 @@ let ROUTES = @[
 serve(ROUTES)
 ```
 
-コンテンツ
-
+目次
 <!--ts-->
    * [ルーティング](#ルーティング)
       * [HTTP動詞](#http動詞)
       * [ルーティンググループ](#ルーティンググループ)
       * [URLパラメータ](#urlパラメータ)
 
-<!-- Added by: root, at: Fri Dec 31 11:50:48 UTC 2021 -->
+<!-- Added by: root, at: Wed Jun 15 11:35:18 UTC 2022 -->
 
 <!--te-->
 

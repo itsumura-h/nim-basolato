@@ -12,10 +12,11 @@ proc new*(typ:type DisplayIndexUsecase):DisplayIndexUsecase =
   )
 
 proc run*(self:DisplayIndexUsecase):Future[JsonNode]{.async.} =
-  let master = await self.query.getMasterData()
-  let todoList = await self.query.todoList()
-  let transaction = IndexListViewModel.new(todoList)
+  let statuses = await self.query.getStatuses()
+  let users = await self.query.getUsers()
+  let tasks = await self.query.getTodoList()
   return %*{
-    "master": master,
-    "transaction": transaction
+    "statuses": statuses,
+    "users": users,
+    "tasks": tasks
   }

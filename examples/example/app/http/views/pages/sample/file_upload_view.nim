@@ -2,7 +2,7 @@ import asyncdispatch
 import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
-proc impl():Future[string] {.async.} =
+proc impl():Future[Component] {.async.} =
   tmpli html"""
     <main>
       <a href="/">go back</a>
@@ -27,4 +27,4 @@ proc impl():Future[string] {.async.} =
 
 proc fileUploadView*():Future[string] {.async.} =
   let title = "File upload"
-  return applicationView(title, await impl())
+  return $applicationView(title, await impl())

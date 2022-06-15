@@ -2,7 +2,7 @@
 
 version       = "0.12.0"
 author        = "Hidenobu Itsumura @dumblepytech1 as 'medy'"
-description   = "A full-stack web framework library for Nim"
+description   = "A full-stack web framework for Nim"
 license       = "MIT"
 srcDir        = "src"
 backend       = "c"
@@ -23,7 +23,6 @@ requires "faker >= 0.14.0"
 requires "flatdb >= 0.2.5"
 requires "redis >= 0.3.0"
 requires "sass >= 0.1.0"
-requires "templates >= 0.5"
 
 import strformat, os
 

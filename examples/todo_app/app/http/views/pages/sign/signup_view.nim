@@ -3,7 +3,7 @@ import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
 
-proc impl(params, errors:JsonNode):Future[string] {.async.} =
+proc impl(params, errors:JsonNode):Future[Component] {.async.} =
   style "css", style:"""
     @media screen{
       main{
@@ -21,14 +21,8 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
     }
   """
 
-  script ["idName"], script:"""
-    <script>
-    </script>
-  """
-
   tmpli html"""
     $(style)
-    $(script)
     <main>
       <section class="section $(style.element("section"))">
         <form method="POST" class="box">
@@ -41,7 +35,7 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
             $if errors.hasKey("name"){
               <aside>
                 $for error in errors["name"]{
-                  <p class="help is-danger">$(error.get)</p>
+                  <p class="help is-danger">$(error)</p>
                 }
               </aside>
             }
@@ -53,7 +47,7 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
             $if errors.hasKey("email"){
               <aside>
                 $for error in errors["email"]{
-                  <p class="help is-danger">$(error.get)</p>
+                  <p class="help is-danger">$(error)</p>
                 }
               </aside>
             }
@@ -63,7 +57,7 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
             $if errors.hasKey("password"){
               <aside>
                 $for error in errors["password"]{
-                  <p class="help is-danger">$(error.get)</p>
+                  <p class="help is-danger">$(error)</p>
                 }
               </aside>
             }
@@ -73,7 +67,7 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
             $if errors.hasKey("password_confirm"){
               <aside>
                 $for error in errors["password_confirm"]{
-                  <p class="help is-danger">$(error.get)</p>
+                  <p class="help is-danger">$(error)</p>
                 }
               </aside>
             }
@@ -81,7 +75,7 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
           $if errors.hasKey("error"){
             <article class="field">
               $for error in errors["error"]{
-                <p>$(error.get)</p>
+                <p>$(error)</p>
               }
             </article>
           }
@@ -97,4 +91,4 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
 
 proc signupView*(params, errors:JsonNode):Future[string] {.async.} =
   let title = "Sign Up"
-  return applicationView(title, await impl(params, errors))
+  return $applicationView(title, impl(params, errors).await)

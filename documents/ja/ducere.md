@@ -2,8 +2,7 @@ Ducereコマンド
 ===
 [戻る](../../README.md)
 
-コンテンツ
-
+目次
 <!--ts-->
    * [Ducereコマンド](#ducereコマンド)
       * [イントロダクション](#イントロダクション)
@@ -14,6 +13,7 @@ Ducereコマンド
          * [migrate](#migrate)
          * [make](#make)
             * [config](#config)
+            * [key](#key)
             * [controller](#controller)
             * [view](#view)
             * [migration](#migration)
@@ -22,7 +22,7 @@ Ducereコマンド
             * [usecase](#usecase)
       * [Bash-completion](#bash-completion)
 
-<!-- Added by: root, at: Fri Dec 31 11:51:14 UTC 2021 -->
+<!-- Added by: root, at: Wed Jun 15 11:35:41 UTC 2022 -->
 
 <!--te-->
 
@@ -307,7 +307,9 @@ ducere make usecase {引数1} {引数2}
 
 ```sh
 ducere make usecase sign signin
->> app/usecases/sign/signin_usecase.nim
+>> Updated app/di_container.nim
+>> Created usecase in app/usecases/sign/signin/signin_usecase.nim
+>> Created query in app/data_stores/queries/sign/signin_query.nim
 ```
 
 ## Bash-completion

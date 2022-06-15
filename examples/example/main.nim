@@ -4,7 +4,8 @@ import ../../src/basolato
 import app/http/middlewares/auth_middleware
 import app/http/middlewares/set_headers_middleware
 import app/http/middlewares/example_middleware
-# controllers
+# controller
+import app/http/controllers/welcome_controller
 import app/http/controllers/page_display_controller
 import app/http/controllers/cookie_controller
 import app/http/controllers/login_controller
@@ -22,10 +23,8 @@ let ROUTES = @[
         .middleware(example_middleware.setMiddleware2),
       Route.get("/fib/{num:int}", page_display_controller.fib),
       Route.get("/with-style", page_display_controller.withStylePage),
-
-      Route.get("/react", page_display_controller.react),
-      Route.get("/material-ui", page_display_controller.materialUi),
-      Route.get("/vuetify", page_display_controller.vuetify),
+      Route.get("/babylon-js", page_display_controller.babylonJsPage),
+      Route.get("/with-script", page_display_controller.withScriptPage),
 
       Route.get("/custom-headers", page_display_controller.customHeaders),
       Route.get("/dd", page_display_controller.presentDd),

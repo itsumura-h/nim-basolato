@@ -15,6 +15,7 @@ Table of Contents
          * [migrate](#migrate-1)
          * [make](#make)
             * [config](#config)
+            * [key](#key)
             * [controller](#controller)
             * [view](#view)
             * [migration](#migration)
@@ -24,7 +25,7 @@ Table of Contents
             * [usecase](#usecase)
       * [Bash-completion](#bash-completion)
 
-<!-- Added by: root, at: Fri Dec 31 11:49:48 UTC 2021 -->
+<!-- Added by: root, at: Wed Jun 15 11:34:20 UTC 2022 -->
 
 <!--te-->
 
@@ -246,14 +247,23 @@ in app/models
 circle
 ├── circle_entity.nim
 ├── circle_repository_interface.nim
-└── circle_service.nim
+├── circle_service.nim
+└── circle_value_objects.nim
+```
+
+in app/queries
+```
+circle
+└── circle_query.nim
 ```
 
 in app/repositories
 ```
 circle
-└── circle_rdb_repository.nim
+└── circle_repository.nim
 ```
+
+
 ##### Create child domain model in aggregate
 ```sh
 ducere make model circle/user
@@ -296,7 +306,9 @@ At the same time, create `query service` and `query service interface`.
 
 ```sh
 ducere make usecase sign signin
->> app/usecases/sign/signin_usecase.nim
+>> Updated app/di_container.nim
+>> Created usecase in app/usecases/sign/signin_usecase.nim
+>> Created query in app/data_stores/queries/sign/signin_query.nim
 ```
 
 ## Bash-completion

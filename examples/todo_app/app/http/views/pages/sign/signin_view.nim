@@ -1,9 +1,11 @@
-import asyncdispatch, json
-import ../../../../../../../src/basolato/view
-import ../../layouts/application_view
+import
+  std/asyncdispatch,
+  std/json,
+  ../../../../../../../src/basolato/view,
+  ../../layouts/application_view
 
 
-proc impl(params, errors:JsonNode):Future[string] {.async.} =
+proc impl(params, errors:JsonNode):Future[Component] {.async.} =
   style "css", style:"""
     <style>
       @media screen{
@@ -23,36 +25,31 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
     </style>
   """
 
-  script ["idName"], script:"""
-    <script>
-    </script>
-  """
-
   tmpli html"""
     $(style)
     <main>
-      <section class="section $(style.element("section"))">
-        <form method="POST" class="box">
+      <section class="bulma-section $(style.element("section"))">
+        <form method="POST" class="bulma-box">
           $(csrfToken())
-          <h2 class="title">Sign In</h2>
-          <article class="field">
-            <div class="controll">
-              <input type="text" class="input" name="email" placeholder="email" value="$(old(params, "email"))">
+          <h2 class="bulma-title">Sign In</h2>
+          <article class="bulma-field">
+            <div class="bulma-controll">
+              <input type="text" class="bulma-input" name="email" placeholder="email" value="$(old(params, "email"))">
             </div>
             $if errors.hasKey("email"){
               <aside>
                 $for error in errors["email"]{
-                  <p class="help is-danger">$(error.get)</p>
+                  <p class="bulma-help bulma-is-danger">$(error)</p>
                 }
               </aside>
             }
           </article>
-          <article class="field">
-            <input type="password" class="input" name="password" placeholder="password">
+          <article class="bulma-field">
+            <input type="password" class="bulma-input" name="password" placeholder="password">
             $if errors.hasKey("password"){
               <aside>
                 $for error in errors["password"]{
-                  <p class="help is-danger">$(error.get)</p>
+                  <p class="bulma-help bulma-is-danger">$(error)</p>
                 }
               </aside>
             }
@@ -61,14 +58,14 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
             $if errors.hasKey("error"){
               <aside>
                 $for error in errors["error"]{
-                  <p class="help is-danger">$(error.get)</p>
+                  <p class="bulma-help bulma-is-danger">$(error)</p>
                 }
               </aside>
             }
           </article>
-          <article class="field $(style.element("nav"))">
+          <article class="bulma-field $(style.element("nav"))">
             <a href="/signup">Sign up here</a>
-            <button type="submit" class="button is-link">Sign In</button>
+            <button type="submit" class="bulma-button bulma-is-link">Sign In</button>
           </article>
         </form>
       </section>
@@ -77,4 +74,4 @@ proc impl(params, errors:JsonNode):Future[string] {.async.} =
 
 proc signinView*(params, errors:JsonNode):Future[string] {.async.} =
   let title = "Sign In"
-  return applicationView(title, await impl(params, errors))
+  return $applicationView(title, impl(params, errors).await)

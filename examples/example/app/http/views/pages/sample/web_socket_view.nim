@@ -2,7 +2,7 @@ import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
 
-proc webSocketComponentImpl():string =
+proc webSocketComponentImpl():Component =
   style "css", style:"""
     <style>
       .form {
@@ -12,7 +12,7 @@ proc webSocketComponentImpl():string =
     </style>
   """
 
-  script ["input", "messages"], script:"""
+  tmpli html"""
     <script>
       let socket = new WebSocket("ws://localhost:9000/sample/ws");
 
@@ -36,24 +36,20 @@ proc webSocketComponentImpl():string =
         document.getElementById('messages').prepend(messageElem);
       }
     </script>
-  """
-
-  tmpli html"""
-    $(style)
-    $(script)
     <form class="$(style.element("form"))">
-      <input type="text" id="$(script.element("input"))">
+      <input type="text" id="input">
       <button type="button" onclick="sendHandler()">Send</button>
       <button type="button" onclick="clearHandler()">Delete</button>
     </form>
-    <div id="$(script.element("messages"))"></div>
+    <div id="messages"></div>
+    $(style)
   """
 
 proc webSocketComponent*():string =
-    applicationView("Web Socket", webSocketComponentImpl())
+  return $applicationView("Web Socket", webSocketComponentImpl())
 
 
-proc impl():string =
+proc impl():Component =
   style "css", style:"""
     <style>
       .iframe {
@@ -75,4 +71,4 @@ proc impl():string =
   """
 
 proc webSocketView*():string =
-  return applicationView("Web Socket", impl())
+  return $applicationView("Web Socket", impl())

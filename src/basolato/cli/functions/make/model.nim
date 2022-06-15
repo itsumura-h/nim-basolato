@@ -2,8 +2,7 @@ import os, strformat, terminal, strutils
 import utils
 
 # When aggregate is created,
-# aggregate, repository, repository interface(in aggregate),
-# usecase directory, query, query interface(in usecase)
+# aggregate, repository, repository interface(in aggregate)
 # are created at the same time
 
 proc makeModel*(target:string, message:var string):int =
@@ -68,29 +67,6 @@ proc new*(_:type {targetCaptalized}Service, repository:I{parentCapitalized}Repos
   )
 """
 
-  let QUERY_INTERFACE = &"""
-import asyncdispatch
-
-
-type I{targetCaptalized}Query* = tuple
-"""
-
-  let QUERY = &"""
-import interface_implements
-import allographer/query_builder
-from ../../../../config/database import rdb
-import ../../../usecases/{target}/{target}_query_interface
-
-
-type {targetCaptalized}Query* = ref object
-
-proc new*(typ:type {targetCaptalized}Query):{targetCaptalized}Query =
-  return {targetCaptalized}Query()
-
-implements {targetCaptalized}Query, I{targetCaptalized}Query:
-  discard
-"""
-
   # check dir and file is not exists
   if isDirExists(&"{getCurrentDir()}/app/models/{target}"): return 1
   if not target.contains("/") and
@@ -138,27 +114,6 @@ implements {targetCaptalized}Query, I{targetCaptalized}Query:
     f = open(targetPath, fmWrite)
     f.write(REPOSITORY)
 
-    # create usecase dir
-    targetPath = &"{getCurrentDir()}/app/usecases/{targetName}"
-    createDir(targetPath)
-
-    # create query dir
-    targetPath = &"{getCurrentDir()}/app/data_stores/queries/{target}"
-    if isDirExists(targetPath): return 1
-    createDir(targetPath)
-
-    # query
-    targetPath = &"{getCurrentDir()}/app/data_stores/queries/{target}/{targetName}_query.nim"
-    if isFileExists(targetPath): return 1
-    f = open(targetPath, fmWrite)
-    f.write(QUERY)
-
-    # query interface
-    targetPath = &"{getCurrentDir()}/app/usecases/{targetName}/{targetName}_query_interface.nim"
-    if isFileExists(targetPath): return 1
-    f = open(targetPath, fmWrite)
-    f.write(QUERY_INTERFACE)
-
     # update di_container.nim
     targetPath = &"{getCurrentDir()}/app/di_container.nim"
     f = open(targetPath, fmRead)
@@ -173,8 +128,6 @@ implements {targetCaptalized}Query, I{targetCaptalized}Query:
       textArr.insert("", 0)
       importOffset = 1
     # insert import
-    textArr.insert(&"import data_stores/queries/{target}/{targetName}_query", importOffset-1)
-    textArr.insert(&"import usecases/{targetName}/{targetName}_query_interface", importOffset-1)
     textArr.insert(&"import data_stores/repositories/{target}/{targetName}_repository", importOffset-1)
     textArr.insert(&"import models/{targetName}/{targetName}_repository_interface", importOffset-1)
     textArr.insert(&"# {targetName}", importOffset-1)
@@ -189,10 +142,8 @@ implements {targetCaptalized}Query, I{targetCaptalized}Query:
         break
     # field defintion
     textArr.insert(&"  {targetProcCaptalized}Repository: I{targetCaptalized}Repository", importDifinisionOffset)
-    textArr.insert(&"  {targetProcCaptalized}Query: I{targetCaptalized}Query", importDifinisionOffset + 1)
     # insert constructor
     textArr.insert(&"    {targetProcCaptalized}Repository: {targetCaptalized}Repository.new().toInterface(),", textArr.len-4)
-    textArr.insert(&"    {targetProcCaptalized}Query: {targetCaptalized}Query.new().toInterface(),", textArr.len-4)
     # write in file
     f = open(targetPath, fmWrite)
     for i in 0..textArr.len-2:
@@ -203,11 +154,6 @@ implements {targetCaptalized}Query, I{targetCaptalized}Query:
     message = &"Created repository in {getCurrentDir()}/app/data_stores/repositories/{target}/{targetName}_repository.nim"
     styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
 
-    message = &"Created query in {getCurrentDir()}/app/data_stores/queries/{target}/{targetName}_query.nim"
-    styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
-
-    message = &"Created usecase in {getCurrentDir()}/app/usecases/{target}"
-    styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
 
   message = &"Created domain model in {getCurrentDir()}/app/models/{target}"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)

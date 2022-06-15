@@ -4,11 +4,12 @@ import ../../layouts/application_view
 
 
 
-proc impl(cookies:JsonNode):Future[string] {.async.} =
+proc impl(cookies:JsonNode):Future[Component] {.async.} =
   style "css", style:"""
     .className {
     }
   """
+
   tmpli html"""
     <main>
       <article>
@@ -38,7 +39,7 @@ proc impl(cookies:JsonNode):Future[string] {.async.} =
         <div>
           <ul>
             $for key, val in cookies{
-              <li>$(key)=$(val.get)</li>
+              <li>$(key)=$(val)</li>
             }
           </ul>
         </div>
@@ -48,4 +49,4 @@ proc impl(cookies:JsonNode):Future[string] {.async.} =
 
 proc cookieView*(cookies:JsonNode):Future[string] {.async.} =
   let title = "Cookie"
-  return applicationView(title, await impl(cookies))
+  return $applicationView(title, impl(cookies).await)

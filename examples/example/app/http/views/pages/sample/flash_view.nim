@@ -7,15 +7,15 @@ style "css", style:"""
 }
 """
 
-proc impl(context:Context):Future[string]{.async.} = tmpli html"""
+proc impl(context:Context):Future[Component]{.async.} = tmpli html"""
 <main>
   <a href="/">go back</a>
   <section>
     <form method="POST">
       $(csrfToken())
       <button type="submit">set flash</button>
-      $for key, val in await(context.getFlash()).pairs{
-        <p>$(val.get())</p>
+      $for key, val in context.getFlash().await.pairs{
+        <p>$(val)</p>
       }
     </form>
   </section>
@@ -24,4 +24,4 @@ proc impl(context:Context):Future[string]{.async.} = tmpli html"""
 
 proc flashView*(context:Context):Future[string]{.async.} =
   const title = "Flash message"
-  return applicationView(title, await impl(context))
+  return $applicationView(title, await impl(context))

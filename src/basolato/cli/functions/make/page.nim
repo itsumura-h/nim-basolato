@@ -8,12 +8,14 @@ proc makePage*(target:string, message:var string):int =
   let relativeToApplicationPath = "../".repeat(target.split("/").len) & "layouts/application_view"
 
   var VIEW = &"""
-import json, asyncdispatch
-import basolato/view
-import {relativeToApplicationPath}
+import
+  std/asyncdispatch,
+  std/json,
+  basolato/view,
+  {relativeToApplicationPath}
 
 
-proc impl():Future[string] [[.async.]] =
+proc impl():Future[Component] [[.async.]] =
   style "css", style:'''
     <style>
       .className [[
@@ -21,21 +23,15 @@ proc impl():Future[string] [[.async.]] =
     </style>
   '''
 
-  script ["idName"], script:'''
-    <script>
-    </script>
-  '''
-
   tmpli html'''
     $(style)
-    $(script)
     <div class="$(style.element("className"))">
     </div>
   '''
 
 proc {targetCaptalized}View*():Future[string] [[.async.]] =
   let title = ''
-  return applicationView(title, impl().await)
+  return $applicationView(title, impl().await)
 """
 
   VIEW = VIEW.multiReplace(

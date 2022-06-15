@@ -19,7 +19,6 @@ implements UserRepository, IUserRepository:
     if not userOpt.isSome():
       return none(User)
     let user = userOpt.get
-    echo user
     return User.new(
       UserId.new(user["id"].getStr),
       UserName.new(user["name"].getStr),
@@ -31,7 +30,7 @@ implements UserRepository, IUserRepository:
   proc getUserById(self:UserRepository, id:UserId):Future[Option[User]] {.async.} =
     let userOpt = await rdb.table("users").find($id)
     if not userOpt.isSome():
-      return none(User)
+      return User.none
     let user = userOpt.get
     return User.new(
       UserId.new(user["id"].getStr),
@@ -42,8 +41,8 @@ implements UserRepository, IUserRepository:
     ).some
 
   proc save(self:UserRepository, user:DraftUser):Future[int] {.async.} =
-    return await rdb.table("users").insertId(%*{
+    return rdb.table("users").insertId(%*{
       "name": $user.name,
       "email": $user.email,
       "password": genHashedPassword($user.password)
-    })
+    }).await

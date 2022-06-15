@@ -2,19 +2,14 @@
 ===
 [戻る](../../README.md)
 
-コンテンツ
-
+目次
 <!--ts-->
    * [ビュー](#ビュー)
       * [イントロダクション](#イントロダクション)
-      * [XSS](#xss)
-         * [API](#api)
-         * [サンプル](#サンプル)
       * [コンポーネント指向](#コンポーネント指向)
-         * [JavaScript](#javascript)
          * [CSS](#css)
          * [SCSS](#scss)
-         * [API](#api-1)
+         * [API](#api)
       * [ヘルパー関数](#ヘルパー関数)
          * [Csrfトークン](#csrfトークン)
          * [old関数](#old関数)
@@ -24,7 +19,7 @@
             * [SCF](#scf)
             * [Karax](#karax)
 
-<!-- Added by: root, at: Fri Dec 31 11:51:29 UTC 2021 -->
+<!-- Added by: root, at: Wed Jun 15 11:35:55 UTC 2022 -->
 
 <!--te-->
 
@@ -55,120 +50,9 @@ proc indexView*(message:string): string =
   baseImpl(indexImpl(message))
 ```
 
-## XSS
-XSSを防止するために、 **変数に対して`get`関数を使用してください。** 内部で[xmlEncode](https://nim-lang.org/docs/cgi.html#xmlEncode,string)が適用されます。
-
-### API
-```nim
-proc get*(val:JsonNode):string =
-
-proc get*(val:string):string =
-```
-
-### サンプル
-```nim
-title = "This is title<script>alert("aaa")</script>"
-params = @["<script>alert("aaa")</script>", "b"].parseJson()
-```
-```nim
-import basolato/view
-
-proc impl(title:string, params:JsonNode):Future[string] {.async.} =
-  tmpli html"""
-    <h1>$(title.get)</h1>
-    <ul>
-      $for param in params {
-        <li>$(param.get)</li>
-      }
-    </ul>
-  """
-```
-
 ## コンポーネント指向
 Basolato viewは、ReactやVueのようなコンポーネント指向のデザインを採用しています。 
 コンポーネントとは、htmlとJavaScriptとCSSの単一の塊であり、htmlの文字列を返す関数のことです。
-
-### JavaScript
-controller
-```nim
-import basolato/controller
-
-proc withSscriptPage*(request:Request, params:Params):Future[Response] {.async.} =
-  return render(withScriptView())
-```
-
-view
-```nim
-import basolato/view
-import ../layouts/application_view
-
-
-proc impl():string =
-  script ["toggle"], script:"""
-    <script>
-      window.addEventListener('load', ()=>{
-        let el = document.getElementById('toggle')
-        el.style.display = 'none'
-      })
-
-      const toggleOpen = () =>{
-        let el = document.getElementById('toggle')
-        if(el.style.display == 'none'){
-          el.style.display = ''
-        }else{
-          el.style.display = 'none'
-        }
-      }
-    </script>
-  """
-
-  tmpli html"""
-    $(script)
-    <div>
-      <button onclick="toggleOpen()">toggle</button>
-      <div id="$(script.element("toggle"))">...content</div>
-    </div>
-  """
-
-proc withScriptView*():string =
-  let title = "Title"
-  return applicationView(title, impl())
-```
-
-これをhtmlにコンパイルすると以下のようになります。
-```html
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta charset="UTF-8">
-    <title>Title</title>
-  </head>
-  <body>
-    <script>
-      window.addEventListener('load', ()=>{
-        let el = document.getElementById('toggle_akvcgccoeg')
-        el.style.display = 'none'
-      })
-
-      const toggleOpen = () =>{
-        let el = document.getElementById('toggle_akvcgccoeg')
-        if(el.style.display == 'none'){
-          el.style.display = ''
-        }else{
-          el.style.display = 'none'
-        }
-      }
-    </script>
-    <div>
-      <button onclick="toggleOpen()">toggle</button>
-      <div id="toggle_akvcgccoeg">...content</div>
-    </div>
-  </body>
-</html>
-```
-
-`script`テンプレートの第一引数に渡されたセレクタはコンポーネントごとにランダムなサフィックスを持つので、複数のコンポーネントが同じID名/クラス名を持つことができます。
 
 ### CSS
 controller
@@ -185,7 +69,7 @@ import basolato/view
 import ../layouts/application_view
 
 
-proc impl():string =
+proc impl():Component =
   style "css", style:"""
     <style>
       .background {
@@ -207,7 +91,7 @@ proc impl():string =
 
 proc withStyleView*():string =
   let title = "Title"
-  return applicationView(title, impl())
+  return $applicationView(title, impl())
 ```
 
 これをhtmlにコンパイルすると以下のようになります。
@@ -265,19 +149,9 @@ style "scss", style:"""
 ```
 
 ### API
-`script` テンプレートは `Script` 型のインスタンスを `name` の 引数に格納します。
 `style` テンプレートは `Css` 型のインスタンスを `name` の 引数に格納します。
 
 ```nim
-# for JavaScript
-template script*(selectors:openArray[string], name, body:untyped):untyped
-
-template script*(name, body:untyped):untyped
-
-proc `$`*(self:Script):string
-
-proc element*(self:Script, name:string):string
-
 # for CSS
 template style*(typ:string, name, body: untyped):untyped
 
@@ -331,7 +205,7 @@ proc signin*(request:Request, params:Params):Future[Response] {.async.} =
 
 view
 ```nim
-proc impl(params=newJObject()):string =
+proc impl(params=newJObject()):Component =
   tmpli html"""
     <input type="text" name="email" value="$(old(params, "email"))">
     <input type="text" name="password">
@@ -339,7 +213,7 @@ proc impl(params=newJObject()):string =
 
 proc signinView*(params=newJObject()):string =
   let title = "SignIn"
-  return self.applicationView(title, impl(params))
+  return $applicationView(title, impl(params))
 ```
 `params` にキー `email` があれば値を表示し、なければ空の文字列を表示します。
 

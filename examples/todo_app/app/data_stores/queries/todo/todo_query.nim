@@ -7,19 +7,17 @@ import ../../../usecases/todo/todo_query_interface
 
 type TodoQuery* = ref object
 
-func new*(typ:type TodoQuery):TodoQuery =
-  typ()
+func new*(_:type TodoQuery):TodoQuery =
+  TodoQuery()
 
 implements TodoQuery, ITodoQuery:
-  proc getMasterData(self:TodoQuery):Future[JsonNode]{.async.} =
-    let status = await rdb.table("status").get()
-    let users = await rdb.table("users").where("auth_id", ">", 1).get()
-    return %*{
-      "status": status,
-      "users": users
-    }
+  proc getStatuses(self:TodoQuery):Future[seq[JsonNode]] {.async.} =
+    return rdb.table("status").get().await
 
-  proc todoList(self:TodoQuery):Future[seq[JsonNode]] {.async.} =
+  proc getUsers(self:TodoQuery):Future[seq[JsonNode]]{.async.} =
+    return rdb.table("users").where("auth_id", ">", 1).get().await
+
+  proc getTodoList(self:TodoQuery):Future[seq[JsonNode]] {.async.} =
     return await rdb.table("todo")
       .select(
         "todo.id",
@@ -37,5 +35,5 @@ implements TodoQuery, ITodoQuery:
       .join("users as created_user", "created_user.id", "=", "created_id")
       .join("users as assign_user", "assign_user.id", "=", "assign_id")
       .join("status", "status.id", "=", "todo.status_id")
-      .orderBy("todo.sort", Desc)
+      .orderBy("todo.sort", Asc)
       .get()
