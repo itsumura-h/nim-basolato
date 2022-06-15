@@ -17,7 +17,7 @@ type Component* = ref object
   value*:string
 
 proc toString*(self:Component):string =
-  return self.value
+  return self.value.strip
 
 proc `$`*(self:Component):string =
   return self.toString()
@@ -38,10 +38,10 @@ proc toString*(val:JsonNode):string =
     raise newException(JsonKindError, "val is array")
 
 proc toString*(val:string):string =
-  return val.xmlEncode
+  return val.strip.xmlEncode
 
 proc toString*(val:bool | int | float):string =
-  return val.xmlEncode
+  return val.`$`.xmlEncode
 
 
 # Generate tags
