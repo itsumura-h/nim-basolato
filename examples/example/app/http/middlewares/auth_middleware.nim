@@ -1,6 +1,7 @@
 import asyncdispatch
 import ../../../../../src/basolato/middleware
 
+
 proc checkCsrfTokenMiddleware*(c:Context, p:Params):Future[Response] {.async.} =
   let res = await checkCsrfToken(c.request, p)
   if res.hasError:

@@ -6,21 +6,37 @@ The `Usecase` is the layer that assembles the business logic by calling the `val
 ## Example
 
 ```nim
-import ../models/value_objects
-import ../models/user/user_entity
-import ../models/user/user_service
+import asyncdispatch, json, options
+import ../../di_container
+import ../../models/user/user_value_objects
+import ../../models/user/user_entity
+import ../../models/user/user_repository_interface
+import ../../models/user/user_service
 
-type LoginUsecase* = ref object
+type SigninUsecase* = ref object
+  repository: IUserRepository
+  service: UserService
 
-proc newLoginUsecase*():LoginUsecase =
-  return LoginUsecase()
+proc new*(typ:type SigninUsecase):SigninUsecase =
+  return SigninUsecase(
+    repository: di.userRepository,
+    service: UserService.new(di.userRepository)
+  )
 
-
-proc login*(this:LoginUsecase, email, password:string):int =
-  let email = newEmail(email)
-  let password = newPassword(password)
-  let userService = newUserService()
-  let user = userService.find(email)
-  userService.checkPasswordValid(user, password)
-  return user.id.get()
+proc run*(self:SigninUsecase, email, password:string):Future[JsonNode] {.async.} =
+  let email = Email.new(email)
+  let userOpt = await self.repository.getUserByEmail(email)
+  let errorMsg = "user is not found"
+  if not userOpt.isSome():
+    raise newException(Exception, errorMsg)
+  let user = userOpt.get
+  let password = Password.new(password)
+  if self.service.isMatchPassword(password, user):
+    return %*{
+      "id": $user.id,
+      "name": $user.name,
+      "auth": user.auth.get()
+    }
+  else:
+    raise newException(Exception, errorMsg)
 ```

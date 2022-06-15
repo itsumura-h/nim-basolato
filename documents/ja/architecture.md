@@ -52,3 +52,5 @@ Web固有の責務を扱う場所であり、セッション、クッキーの�
 ### リポジトリ
 
 ### クエリサービス
+https://little-hands.hatenablog.com/entry/2019/12/02/cqrs
+

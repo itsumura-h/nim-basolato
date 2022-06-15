@@ -4,7 +4,8 @@ import ../../src/basolato
 import app/http/middlewares/auth_middleware
 import app/http/middlewares/set_headers_middleware
 import app/http/middlewares/example_middleware
-# controllers
+# controller
+import app/http/controllers/welcome_controller
 import app/http/controllers/page_display_controller
 import app/http/controllers/cookie_controller
 import app/http/controllers/login_controller

@@ -3,7 +3,7 @@ import json, times, strformat
 import ../../../../../src/basolato/controller
 import ws
 # db
-from ../../../database import rdb
+from ../../../config/database import rdb
 import allographer/query_builder
 # views
 import ../views/pages/welcome_view
