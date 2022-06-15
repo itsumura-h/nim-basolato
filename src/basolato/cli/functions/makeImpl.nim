@@ -48,26 +48,9 @@ proc make*(args:seq[string]):int =
     return makeConfig()
   of "key":
     return makeKey()
-  of "migration":
-    getArg1
-    return makeMigration(arg1, message)
-  of "seeder":
-    getArg1
-    return makeSeeder(arg1, message)
   of "controller":
     getArg1
     return makeController(arg1, message)
-  of "usecase":
-    getArg1
-    getArg2
-    if arg2.contains("/"):
-      message = "target should not contains '/'"
-      styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)
-      return 0
-    return makeUsecase(arg1, arg2, message)
-  # of "query":
-  #   getArg1
-  #   return makeQuery(arg1, message)
   of "model":
     getArg1
     return makeModel(arg1, message)
@@ -81,6 +64,23 @@ proc make*(args:seq[string]):int =
     getArg1
     getArg2
     return makeValueObject(arg1, arg2, message)
+  of "usecase":
+    getArg1
+    getArg2
+    if arg2.contains("/"):
+      message = "target should not contains '/'"
+      styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)
+      return 0
+    return makeUsecase(arg1, arg2, message)
+  of "query":
+    getArg1
+    return makeQuery(arg1, message)
+  of "migration":
+    getArg1
+    return makeMigration(arg1, message)
+  of "seeder":
+    getArg1
+    return makeSeeder(arg1, message)
   of "layout":
     getArg1
     return makelayout(arg1, message)
