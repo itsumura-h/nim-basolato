@@ -15,7 +15,7 @@ An asynchronous full-stack web framework for Nim, based on [asynchttpserver](htt
 
 The only supported OS are Alpine, Debian, and Ubuntu.  
 It is recommended to use Docker regular flavor for development.  
-`nimlang/nim:1.6.2-alpine-regular` or `nimlang/nim:1.6.2-ubuntu-regular`  
+`nimlang/nim:1.6.6-alpine-regular` or `nimlang/nim:1.6.6-ubuntu-regular`  
 https://hub.docker.com/r/nimlang/nim
 
 ## Table of Contents
@@ -94,7 +94,7 @@ The overall file structure is as follows:
 ```
 ├── app
 │   ├── data_stores
-│   │   ├── query_services
+│   │   ├── queries
 │   │   └── repositories
 │   ├── di_container.nim
 │   ├── http
@@ -102,7 +102,7 @@ The overall file structure is as follows:
 │   │   │   └── welcome_controller.nim
 │   │   ├── middlewares
 │   │   │   ├── auth_middleware.nim
-│   │   │   └── cors_middleware.nim
+│   │   │   └── set_headers_middleware.nim
 │   │   └── views
 │   │       ├── errors
 │   │       ├── layouts
@@ -134,7 +134,7 @@ The overall file structure is as follows:
 │           └── validation.json
 ├── {project_name}.nimble
 └── tests
-    └── test_{project_name}.nim
+    └── test_sample.nim
 ```
 
 With your project ready, you can start serving requests using `ducere`:
@@ -176,7 +176,7 @@ ducere serve # includes hot reloading
 - [ヘッダー](./documents/ja/header.md)
 - [マイグレーション](./documents/ja/migration.md)
 - [ビュー](./documents/ja/view.md)
-- [静的ファイル](./documents/en/static_files.md)
+- [静的ファイル](./documents/ja/static_files.md)
 - [エラー](./documents/ja/error.md)
 - [バリデーション](./documents/ja/validation.md)
 - [セキュリティ (CsrfToken, クッキー, セッション, Client)](./documents/ja/security.md)
