@@ -50,9 +50,11 @@ import base
 
 
 
-func newHttpHeaders*(keyValuePairs:
-    openArray[tuple[key: string, val: seq[string]]], titleCase=false): HttpHeaders =
-  new result
+func newHttpHeaders*(
+  keyValuePairs: openArray[tuple[key: string, val: seq[string]]],
+  titleCase=true
+): HttpHeaders =
+  result = newHttpHeaders(titleCase)
   result.table = newTable[string, seq[string]]()
 
   for pair in keyValuePairs:
@@ -69,6 +71,9 @@ proc setDefaultHeaders*(self:HttpHeaders) =
   self.add("Date",  now().format(formatter))
   self.add("Connection", "Keep-Alive")
 
+func `==`*(a, b:HttpHeaders):bool =
+  return a.table == b.table
+
 func add*(headers: HttpHeaders, key: string, values: openArray[string]) =
   if headers.table.hasKey(key):
     for value in values:
@@ -76,12 +81,17 @@ func add*(headers: HttpHeaders, key: string, values: openArray[string]) =
   else:
     headers.table[key] = @values
 
-func `&`*(a, b:HttpHeaders = newHttpHeaders()):HttpHeaders =
-  for key, value in b:
-    a.add(key, value)
+proc `&`*(a, b:HttpHeaders = newHttpHeaders()):HttpHeaders =
+  for key, values in b.table.pairs:
+    if not a.table.hasKey(key):
+      a.table[key] = values
+    else:
+      for value in values:
+        if not a.table[key].contains(value):
+          a.table[key].add(value)
   return a
 
-func `&=`*(a, b:HttpHeaders) =
+proc `&=`*(a, b:HttpHeaders) =
   discard a & b
 
 proc format*(self:HttpHeaders):HttpHeaders =

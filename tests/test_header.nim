@@ -53,3 +53,24 @@ block:
   check header.table["Date"].len == 1
   check header.table["Set-Cookie"][0] == "cookie1"
   check header.table["Set-Cookie"][1] == "cookie2"
+
+block:
+  var header1 = {
+    "Cache-Control": @["no-cache"],
+    "Access-Control-Allow-Origin": @["http://localhost:3000", "http://localhost:3001"],
+  }.newHttpHeaders()
+
+  var header2 = {
+    "Access-Control-Allow-Credentials": @["true"],
+    "Access-Control-Allow-Origin": @["http://localhost:3001", "http://localhost:3002"],
+  }.newHttpHeaders()
+
+  var expected = {
+    "Cache-Control": @["no-cache"],
+    "Access-Control-Allow-Credentials": @["true"],
+    "Access-Control-Allow-Origin": @["http://localhost:3000", "http://localhost:3001", "http://localhost:3002"],
+  }.newHttpHeaders()
+
+  header1 &= header2
+
+  check header1 == expected

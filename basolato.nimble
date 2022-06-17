@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.12.0"
+version       = "0.12.1"
 author        = "Hidenobu Itsumura @dumblepytech1 as 'medy'"
 description   = "A full-stack web framework for Nim"
 license       = "MIT"
