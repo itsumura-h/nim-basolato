@@ -48,7 +48,7 @@ func add(
     routes.withParams.add(route)
   else:
     routes.withoutParams[ $httpMethod & ":" & path ] = route
-    if not [HttpGet, HttpHead, HttpPost].contains(httpMethod):
+    if not [HttpGet, HttpHead].contains(httpMethod):
       routes.withoutParams[ $(HttpOptions) & ":" & path ] = route
   return routes
 

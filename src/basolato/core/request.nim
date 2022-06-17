@@ -284,9 +284,6 @@ proc getRequestParams*(request:Request):Params =
             params[row[0]].value.add(", " & row[1])
           else:
             params[row[0]] = Param(value: row[1])
-    # elif contentType.contains("application/json"):
-    #   echo "=== application/json"
-    #   params["json"] = Param(value: request.body)
   return params
 
 proc save*(params:Params, key, dir:string) =
