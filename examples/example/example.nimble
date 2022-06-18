@@ -21,3 +21,6 @@ requires "sass >= 0.1.0"
 task test, "run testament":
   echo staticExec("testament p \"./tests/test_*.nim\"")
   discard staticExec("find tests/ -type f ! -name \"*.*\" -delete 2> /dev/null")
+
+task babylon, "babylon js":
+  echo staticExec("nim js -d:release -o:public/js/nim-babylon.js app/http/views/pages/sample/babylon_js/nim_babylon.nim")

@@ -11,6 +11,7 @@ import ../views/pages/sample/with_style_view
 import ../views/pages/sample/babylon_js/babylon_js_view
 import ../views/pages/sample/with_script_view
 import ../views/pages/sample/web_socket_view
+import ../views/pages/sample/api_view
 
 
 proc index*(context:Context, params:Params):Future[Response] {.async.} =
@@ -119,3 +120,6 @@ proc webSocket*(context:Context, params:Params):Future[Response] {.async.} =
   except WebSocketError:
     echo "Unexpected socket error: ", getCurrentExceptionMsg()
   return render("")
+
+proc displayApiPage*(context:Context, params:Params):Future[Response] {.async.} =
+  return render(apiView().await)
