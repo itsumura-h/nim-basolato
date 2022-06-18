@@ -12,6 +12,7 @@ import app/http/controllers/login_controller
 import app/http/controllers/flash_controller
 import app/http/controllers/file_upload_controller
 import app/http/controllers/validation_controller
+import app/http/controllers/api_controller
 
 
 let ROUTES = @[
@@ -25,6 +26,7 @@ let ROUTES = @[
       Route.get("/with-style", page_display_controller.withStylePage),
       Route.get("/babylon-js", page_display_controller.babylonJsPage),
       Route.get("/with-script", page_display_controller.withScriptPage),
+      Route.get("/api", page_display_controller.displayApiPage),
 
       Route.get("/custom-headers", page_display_controller.customHeaders),
       Route.get("/dd", page_display_controller.presentDd),
@@ -56,7 +58,13 @@ let ROUTES = @[
       Route.get("/ws", page_display_controller.webSocket),
     ])
     .middleware(example_middleware.setMiddleware3),
-    Route.group("/api", @[])
+    Route.group("/api", @[
+      Route.get("/sample", api_controller.get),
+      Route.post("/sample", api_controller.post),
+      Route.patch("/sample", api_controller.patch),
+      Route.put("/sample", api_controller.put),
+      Route.delete("/sample", api_controller.delete),
+    ])
     .middleware(set_headers_middleware.setCorsHeadersMiddleware)
   ])
   .middleware(set_headers_middleware.setSecureHeadersMiddlware)
