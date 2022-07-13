@@ -79,7 +79,7 @@ jobs:
 
   create-tag-draft:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     needs:
       - build
       - test-on-docker
