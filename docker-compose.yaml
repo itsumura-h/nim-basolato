@@ -4,21 +4,21 @@ services:
     image: redis:alpine
     tty: true
 
-  app-alpine:
-    build: ./docker/nim/alpine
+  # app-alpine:
+  #   build: ./docker/nim/alpine
+  #   tty: true
+  #   ports:
+  #     - 9000:5000
+  #   volumes:
+  #     - .:/root/project
+
+  app-ubuntu:
+    build: ./docker/nim/ubuntu
     tty: true
     ports:
       - 9000:5000
     volumes:
       - .:/root/project
-
-  # app-ubuntu:
-  #   build: ./docker/nim/ubuntu
-  #   tty: true
-  #   ports:
-  #     - 9001:5000
-  #   volumes:
-  #     - .:/root/project
 
   # app-debian:
   #   build: ./docker/nim/debian
