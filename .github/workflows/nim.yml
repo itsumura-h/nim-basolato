@@ -69,9 +69,9 @@ jobs:
     strategy:
       matrix:
         image-tag:
-          - 1.4.4-alpine
-          - 1.4.8-alpine
-          - 1.6.0-alpine
+          - 1.4.4-alpine-regular
+          - 1.4.8-alpine-regular
+          - 1.6.0-alpine-regular
     steps:
     - uses: actions/checkout@v2
     - name: Build docker image
