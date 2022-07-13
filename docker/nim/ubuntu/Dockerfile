@@ -1,4 +1,5 @@
-FROM nimlang/nim:1.6.2-ubuntu-regular
+ARG IMAGE_TAG="1.6.6-ubuntu-regular"
+FROM nimlang/nim:${IMAGE_TAG}
 
 RUN apt update; apt install -y libgnutls30 && \
     apt update && \

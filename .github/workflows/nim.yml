@@ -35,8 +35,6 @@ jobs:
           # Need sqlite3_64.dll
           # - windows-latest
         nim-version:
-          - 1.4.0
-          - 1.4.x
           - 1.6.0
           - stable
     steps:
@@ -69,20 +67,21 @@ jobs:
     strategy:
       matrix:
         image-tag:
-          - 1.6.4-alpine-regular
+          - 1.6.0-ubuntu-regular
+          - 1.6.4-ubuntu-regular
           - 1.6.6-ubuntu-regular
     steps:
     - uses: actions/checkout@v2
     - name: Build docker image
-      run: docker-compose build --build-arg IMAGE_TAG=${{ matrix.image-tag }} app-alpine
+      run: docker-compose build --build-arg IMAGE_TAG=${{ matrix.image-tag }} app-ubuntu
     - name: Test
-      run: docker-compose run app-alpine sh /root/project/runTest.sh
+      run: docker-compose run app-ubuntu sh /root/project/runTest.sh
     - name: Test multi-thread
       run: |
         echo '' >> tests/config.nims
         echo 'switch("threads", "on")' >> tests/config.nims
         echo 'switch("threadAnalysis", "off")' >> tests/config.nims
-        docker-compose run app-alpine sh /root/project/runTest.sh
+        docker-compose run app-ubuntu sh /root/project/runTest.sh
 
   create-tag-draft:
     runs-on: ubuntu-latest
