@@ -75,7 +75,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build docker image
-      run: docker-compose build --build-arg IMAGE_TAG=${{ matrix.image-tag }} app
+      run: docker-compose build --build-arg IMAGE_TAG=${{ matrix.image-tag }} app-alpine
     - name: Test
       run: docker-compose run app-alpine sh /root/project/runTest.sh
     - name: Test multi-thread
