@@ -1,4 +1,5 @@
-FROM nimlang/nim:1.6.2-alpine-regular
+ARG IMAGE_TAG="1.6.2-alpine-regular"
+FROM nimlang/nim:${IMAGE_TAG}
 
 RUN echo http://dl-cdn.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories
 RUN apk update && \
