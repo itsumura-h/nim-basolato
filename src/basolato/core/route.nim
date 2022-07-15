@@ -1,9 +1,27 @@
 import
-  asynchttpserver, asyncdispatch, json, strformat, macros, strutils, os,
-  asyncfile, mimetypes, re, tables, times
+  std/asyncdispatch,
+  std/asyncfile,
+  std/asynchttpserver,
+  std/json,
+  std/macros,
+  std/mimetypes,
+  std/os,
+  std/re,
+  std/strformat,
+  std/strutils,
+  std/tables,
+  std/times
 from osproc import countProcessors
-import baseEnv, request, response, header, logger, error_page, resources/dd_page,
-  security/cookie, security/context
+import
+  ./baseEnv,
+  ./error_page,
+  ./header,
+  ./logger,
+  ./request,
+  ./response,
+  ./resources/dd_page,
+  ./security/cookie,
+  ./security/context
 export request, header
 
 
@@ -16,6 +34,30 @@ type Route* = ref object
   controller:proc(c:Context, p:Params):Future[Response]
   middlewares: seq[Middleware]
 
+func new(_:type Route,
+  httpMethod:HttpMethod,
+  path:string,
+  controller:proc(c:Context, p:Params):Future[Response]
+):Route =
+  return Route(
+    httpMethod:httpMethod,
+    path:path,
+    controller:controller
+  )
+
+func new(_:type Route,
+  httpMethod:HttpMethod,
+  path:string,
+  controller:proc(c:Context, p:Params):Future[Response],
+  middlewares:seq[Middleware],
+):Route =
+  return Route(
+    httpMethod:httpMethod,
+    path:path,
+    controller:controller,
+    middlewares:middlewares
+  )
+
 type Routes = ref object
   withParams: seq[Route]
   withoutParams: OrderedTableRef[string, Route]
@@ -26,18 +68,7 @@ func new(_:type Routes):Routes =
     withoutParams: newOrderedTable[string, Route](),
   )
 
-func new(_:type Route,
-  httpMethod:HttpMethod,
-  path:string,
-  controller:proc(c:Context, p:Params):Future[Response],
-):Route =
-  return Route(
-    httpMethod:httpMethod,
-    path:path,
-    controller:controller,
-  )
-
-func add(
+proc add(
   httpMethod: HttpMethod,
   path: string,
   action: proc(c:Context, p:Params):Future[Response],
@@ -123,25 +154,20 @@ func group*(_:type Route, path:string, seqRoutes:seq[Routes]):Routes =
       let key = k.split(":")[1]
       routes.withoutParams[httpMethod & ":" & path & key] = route
     for route in tmpRoutes.withParams:
-      routes.withParams.add(
-        Route.new(
-          route.httpMethod,
-          path & route.path,
-          route.controller
-        )
-      )
+      route.path = path & route.path
+      routes.withParams.add(route)
   return routes
 
 
 func middleware*(self:Routes, middleware:proc(c:Context, p:Params):Future[Response]):Routes =
+  let data = Middleware(action:middleware)
   for route in self.withParams:
-    route.middlewares.add(
-      Middleware(action:middleware)
-    )
+    if not route.middlewares.contains(data):
+      route.middlewares.add(data)
   for path, route in self.withoutParams:
-    route.middlewares.add(
-      Middleware(action:middleware)
-    )
+    if not route.middlewares.contains(data):
+      route.middlewares.add(data)
+
   return self
 
 proc params(request:Request, route:Route):Params =
@@ -329,8 +355,8 @@ proc serve*(seqRoutes: seq[Routes]) =
   var routes =  Routes.new()
   for tmpRoutes in seqRoutes:
     routes.withParams.add(tmpRoutes.withParams)
-    for key, r in tmpRoutes.withoutParams:
-      routes.withoutParams[key] = r
+    for path, route in tmpRoutes.withoutParams:
+      routes.withoutParams[path] = route
 
   echo("Listening on ", &"{HOST_ADDR}:{PORT_NUM}")
   asyncCheck serveCore((routes, PORT_NUM))
