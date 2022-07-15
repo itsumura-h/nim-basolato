@@ -68,7 +68,7 @@ func new(_:type Routes):Routes =
     withoutParams: newOrderedTable[string, Route](),
   )
 
-proc add(
+func add(
   httpMethod: HttpMethod,
   path: string,
   action: proc(c:Context, p:Params):Future[Response],
