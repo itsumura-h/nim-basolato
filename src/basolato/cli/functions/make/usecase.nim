@@ -7,19 +7,19 @@ proc makeUsecase*(dir, target:string, message:var string):int =
   let targetCaptalized = snakeToCamel(target)
   let targetProcCaptalized = snakeToCamelProcName(targetName)
   var dirCaptalized = snakeToCamel(dir)
-  let relativeToDiContainer = "../".repeat(dir.split("/").len-1) & "../../../di_container"
+  let relativeToDiContainer = "../".repeat(dir.split("/").len-1) & "../../di_container"
 
   let USECASE = &"""
 import {relativeToDiContainer}
-import {targetName}_query_interface
+import {dir}_query_interface
 
 
 type {targetCaptalized}Usecase* = ref object
-  query: I{targetCaptalized}Query
+  query: I{dirCaptalized}Query
 
 proc new*(_:type {targetCaptalized}Usecase):{targetCaptalized}Usecase =
   return {targetCaptalized}Usecase(
-    query: di.{targetProcCaptalized}Query
+    query: di.{dir}Query
   )
 
 proc run*(self:{targetCaptalized}Usecase) =
@@ -30,93 +30,98 @@ proc run*(self:{targetCaptalized}Usecase) =
 import asyncdispatch
 
 
-type I{targetCaptalized}Query* = tuple
+type I{dirCaptalized}Query* = tuple
 """
 
   let QUERY = &"""
 import interface_implements
 import allographer/query_builder
-from ../../../../config/database import rdb
-import ../../../usecases/{dir}/{target}/{target}_query_interface
+from ../../../config/database import rdb
+import ../../usecases/{dir}/{dir}_query_interface
 
 
-type {targetCaptalized}Query* = ref object
+type {dirCaptalized}Query* = ref object
 
-proc new*(_:type {targetCaptalized}Query):{targetCaptalized}Query =
-  return {targetCaptalized}Query()
+proc new*(_:type {dirCaptalized}Query):{dirCaptalized}Query =
+  return {dirCaptalized}Query()
 
-implements {targetCaptalized}Query, I{targetCaptalized}Query:
+implements {dirCaptalized}Query, I{dirCaptalized}Query:
   discard
 """
 
   var targetPath:string
+  var isExistsUsecaseDir: bool
   # create usecase dir
-  targetPath = &"{getCurrentDir()}/app/usecases/{dir}/{target}"
-  createDir(targetPath)
-
-  # create query dir
-  targetPath = &"{getCurrentDir()}/app/data_stores/queries/{dir}"
+  targetPath = &"{getCurrentDir()}/app/usecases/{dir}"
+  isExistsUsecaseDir = dirExists(targetPath)
   createDir(targetPath)
 
   # usecase
-  targetPath = &"{getCurrentDir()}/app/usecases/{dir}/{target}/{targetName}_usecase.nim"
+  targetPath = &"{getCurrentDir()}/app/usecases/{dir}/{targetName}_usecase.nim"
   if isFileExists(targetPath): return 1
   var f = open(targetPath, fmWrite)
   f.write(USECASE)
 
-  # query
-  targetPath = &"{getCurrentDir()}/app/data_stores/queries/{dir}/{targetName}_query.nim"
-  if isFileExists(targetPath): return 1
-  f = open(targetPath, fmWrite)
-  f.write(QUERY)
+  if not isExistsUsecaseDir:
+    # query interface
+    targetPath = &"{getCurrentDir()}/app/usecases/{dir}/{dir}_query_interface.nim"
+    if isFileExists(targetPath): return 1
+    f = open(targetPath, fmWrite)
+    f.write(QUERY_INTERFACE)
 
-  # query interface
-  targetPath = &"{getCurrentDir()}/app/usecases/{dir}/{target}/{targetName}_query_interface.nim"
-  if isFileExists(targetPath): return 1
-  f = open(targetPath, fmWrite)
-  f.write(QUERY_INTERFACE)
+    # query
+    targetPath = &"{getCurrentDir()}/app/data_stores/queries/{dir}_query.nim"
+    if isFileExists(targetPath): return 1
+    f = open(targetPath, fmWrite)
+    f.write(QUERY)
 
-  # update di_container.nim
-  targetPath = &"{getCurrentDir()}/app/di_container.nim"
-  f = open(targetPath, fmRead)
-  var textArr = f.readAll().splitLines()
-  # get offset where column is empty string
-  var importOffset:int
-  for i, row in textArr:
-    if row == "type DiContainer* = tuple":
-      importOffset = i
-      break
-  if importOffset < 1:
-    textArr.insert("", 0)
-    importOffset = 1
-  # insert import
-  textArr.insert(&"import data_stores/queries/{dir}/{targetName}_query", importOffset-1)
-  textArr.insert(&"import usecases/{dir}/{target}/{targetName}_query_interface", importOffset-1)
-  textArr.insert(&"# {targetName}", importOffset-1)
-  # insert di difinition
-  var isAfterDiDifinision:bool
-  var importDifinisionOffset:int
-  for i, row in textArr:
-    if row == "type DiContainer* = tuple":
-      isAfterDiDifinision = true
-    if isAfterDiDifinision and row == "":
-      importDifinisionOffset = i
-      break
-  # field defintion
-  textArr.insert(&"  {targetProcCaptalized}Query: I{targetCaptalized}Query", importDifinisionOffset)
-  # insert constructor
-  textArr.insert(&"    {targetProcCaptalized}Query: {targetCaptalized}Query.new().toInterface(),", textArr.len-4)
-  # write in file
-  f = open(targetPath, fmWrite)
-  for i in 0..textArr.len-2:
-    f.writeLine(textArr[i])
-  message = &"Updated {targetPath}"
-  styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
+    # update di_container.nim
+    targetPath = &"{getCurrentDir()}/app/di_container.nim"
+    f = open(targetPath, fmRead)
+    var textArr = f.readAll().splitLines()
+    # get offset where column is empty string
+    var importOffset:int
+    for i, row in textArr:
+      if row == "type DiContainer* = tuple":
+        importOffset = i
+        break
+    if importOffset < 1:
+      textArr.insert("", 0)
+      importOffset = 1
+    # insert import
+    textArr.insert(&"import data_stores/queries/{dir}_query", importOffset-1)
+    textArr.insert(&"import usecases/{dir}/{dir}_query_interface", importOffset-1)
+    textArr.insert(&"# {dir}", importOffset-1)
+    # insert di difinition
+    var isAfterDiDifinision:bool
+    var importDifinisionOffset:int
+    for i, row in textArr:
+      if row == "type DiContainer* = tuple":
+        isAfterDiDifinision = true
+      if isAfterDiDifinision and row == "":
+        importDifinisionOffset = i
+        break
+    # field defintion
+    textArr.insert(&"  {dir}Query: I{dirCaptalized}Query", importDifinisionOffset)
+    # insert constructor
+    textArr.insert(&"    {dir}Query: {dirCaptalized}Query.new().toInterface(),", textArr.len-4)
+    # write in file
+    f = open(targetPath, fmWrite)
+    for i in 0..textArr.len-2:
+      f.writeLine(textArr[i])
 
-  message = &"Created usecase in {getCurrentDir()}/app/usecases/{dir}/{target}/{targetName}_usecase.nim"
+    # update di container
+    message = &"Updated {targetPath}"
+    styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
+
+    # create query
+    message = &"Created query in {getCurrentDir()}/app/data_stores/queries/{dir}_query.nim"
+    styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
+
+  # create usecase
+  message = &"Created usecase in {getCurrentDir()}/app/usecases/{dir}/{targetName}_usecase.nim"
   styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
   
-  message = &"Created query in {getCurrentDir()}/app/data_stores/queries/{dir}/{targetName}_query.nim"
-  styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
+  
 
   return 0
