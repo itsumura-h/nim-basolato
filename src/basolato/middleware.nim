@@ -1,7 +1,19 @@
-import asynchttpserver, asyncdispatch, strutils, tables
+import
+  std/asynchttpserver,
+  std/asyncdispatch,
+  std/strutils,
+  std/tables
 export asynchttpserver
-import core/base, core/route, core/header, core/response,
-  core/security/cookie, core/security/session_db, core/security/csrf_token, core/security/context
+import
+  core/base,
+  core/route,
+  core/header,
+  core/response,
+  core/security/cookie,
+  core/security/session,
+  core/security/session_db,
+  core/security/csrf_token,
+  core/security/context
 export base, route, cookie, header, response, context
 
 type MiddlewareResult* = ref object
@@ -25,7 +37,8 @@ proc checkCsrfToken*(request:Request, params:Params):Future[MiddlewareResult] {.
         raise newException(Exception, "csrf token is missing")
       let token = params.getStr("csrf_token")
       let csrfToken = CsrfToken.new(token)
-      if not csrfToken.checkCsrfValid():
+      let session = Session.new(request).await
+      if not csrfToken.checkCsrfValid(session).await:
         raise newException(Exception, "Invalid csrf token")
     except:
       result.hasError = true

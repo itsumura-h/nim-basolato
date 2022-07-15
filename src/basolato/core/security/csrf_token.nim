@@ -1,5 +1,9 @@
-import strformat
+import
+  std/asyncdispatch,
+  std/options,
+  std/strformat
 from ./session_db import globalNonce
+import ./session
 
 
 type CsrfToken* = ref object
@@ -11,8 +15,11 @@ proc new*(_:type CsrfToken, token=""):CsrfToken =
 func getToken*(self:CsrfToken):string =
   self.token
 
-proc checkCsrfValid*(self:CsrfToken):bool =
-  return self.token == globalNonce
+proc checkCsrfValid*(self:CsrfToken, session:Option[Session]):Future[bool] {.async.} =
+  if not session.isSome:
+    return false
+  let nonce = session.get("nonce").await
+  return self.token == nonce
 
 proc csrfToken*():CsrfToken =
   ## used in view
