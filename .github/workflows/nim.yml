@@ -38,28 +38,28 @@ jobs:
           - 1.6.0
           - stable
     steps:
-    - uses: actions/checkout@v2
-    - name: Cache choosenim
-      id: cache-choosenim
-      uses: actions/cache@v1
-      with:
-        path: ~/.choosenim
-        key: ${{ runner.os }}-choosenim-${{ matrix.nim-version }}
-    - name: Cache nimble
-      id: cache-nimble
-      uses: actions/cache@v1
-      with:
-        path: ~/.nimble
-        key: ${{ runner.os }}-nimble-${{ matrix.nim-version }}
-    - uses: jiro4989/setup-nim-action@v1
-      with:
-        nim-version: ${{ matrix.nim-version }}
-    - name: Package Refresh
-      run: nimble refresh
-    - name: Build
-      run: nimble build -Y
-    - name: Install
-      run: nimble install -Y
+      - uses: actions/checkout@v2
+      - name: Cache choosenim
+        id: cache-choosenim
+        uses: actions/cache@v1
+        with:
+          path: ~/.choosenim
+          key: ${{ runner.os }}-choosenim-${{ matrix.nim-version }}
+      - name: Cache nimble
+        id: cache-nimble
+        uses: actions/cache@v1
+        with:
+          path: ~/.nimble
+          key: ${{ runner.os }}-nimble-${{ matrix.nim-version }}
+      - uses: jiro4989/setup-nim-action@v1
+        with:
+          nim-version: ${{ matrix.nim-version }}
+      - name: Package Refresh
+        run: nimble refresh
+      - name: Build
+        run: nimble build -Y
+      - name: Install
+        run: nimble install -Y
 
   test-on-docker:
     runs-on: ubuntu-latest
@@ -70,17 +70,17 @@ jobs:
           - 1.6.4-ubuntu-regular
           - 1.6.6-ubuntu-regular
     steps:
-    - uses: actions/checkout@v2
-    - name: Build docker image
-      run: docker-compose build --build-arg IMAGE_TAG=${{ matrix.image-tag }} app-ubuntu
-    - name: Test
-      run: docker-compose run app-ubuntu sh /root/project/runTest.sh
-    - name: Test multi-thread
-      run: |
-        echo '' >> tests/config.nims
-        echo 'switch("threads", "on")' >> tests/config.nims
-        echo 'switch("threadAnalysis", "off")' >> tests/config.nims
-        docker-compose run app-ubuntu sh /root/project/runTest.sh
+      - uses: actions/checkout@v2
+      - name: Build docker image
+        run: docker-compose build --build-arg IMAGE_TAG=${{ matrix.image-tag }} app-ubuntu
+      - name: Test
+        run: docker-compose run app-ubuntu sh /root/project/runTest.sh
+      - name: Test multi-thread
+        run: |
+          echo '' >> tests/config.nims
+          echo 'switch("threads", "on")' >> tests/config.nims
+          echo 'switch("threadAnalysis", "off")' >> tests/config.nims
+          docker-compose run app-ubuntu sh /root/project/runTest.sh
 
   create-tag-draft:
     runs-on: ubuntu-latest
@@ -89,6 +89,7 @@ jobs:
       - build
       - test-on-docker
     steps:
-      - uses: release-drafter/release-drafter@v5.3.1
+      - name: Release Drafter
+        uses: release-drafter/release-drafter@v5.19.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
