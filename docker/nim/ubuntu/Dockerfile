@@ -3,6 +3,7 @@ FROM ubuntu:21.10
 
 # prevent timezone dialogue
 ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt update --fix-missing && \
     apt upgrade -y
 RUN apt install -y --fix-missing \

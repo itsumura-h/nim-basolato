@@ -71,9 +71,9 @@ ducere serve
 ducere serve -p:8000
 ```
 
-ホストを設定するには`.env`の環境変数に追記してください。
+ホストを設定するには`cinfig.nims`の環境変数を編集してください。
 ```sh
-HOST="127.0.0.2"
+putEnv("HOST", "127.0.0.2")
 ```
 
 ### build

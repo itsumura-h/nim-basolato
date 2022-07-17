@@ -1,8 +1,9 @@
+ARG IMAGETAG="1.6.6"
 FROM debian:11.2-slim
 
-RUN apt update && \
+RUN apt update --fix-missing && \
     apt upgrade -y
-RUN apt install -y --no-install-recommends \
+RUN apt install -y  --fix-missing \
         gcc \
         xz-utils \
         ca-certificates \
@@ -15,11 +16,10 @@ RUN apt install -y --no-install-recommends \
         libsass-dev
 
 WORKDIR /root
-RUN wget https://nim-lang.org/download/nim-1.6.2-linux_x64.tar.xz && \
-    tar -Jxf nim-1.6.2-linux_x64.tar.xz && \
-    rm -f nim-1.6.2-linux_x64.tar.xz && \
-    mkdir /root/.nimble && \
-    mv nim-1.6.2/* .nimble/
+RUN wget https://nim-lang.org/download/nim-${IMAGETAG}-linux_x64.tar.xz && \
+    tar -Jxf nim-${IMAGETAG}-linux_x64.tar.xz && \
+    rm -f nim-${IMAGETAG}-linux_x64.tar.xz && \
+    mv nim-${IMAGETAG} .nimble
 
 ENV PATH $PATH:/root/.nimble/bin
 WORKDIR /root/project

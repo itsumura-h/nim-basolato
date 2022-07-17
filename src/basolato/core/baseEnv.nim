@@ -3,6 +3,8 @@ import os, strutils, streams, parsecfg
 const
   SESSION_TYPE* = getEnv("SESSION_TYPE", "file")
   DOES_USE_LIBSASS* = when existsEnv("LIBSASS"): getEnv("LIBSASS").parseBool else: false
+  HOST_ADDR* = getEnv("HOST", "0.0.0.0")
+  PORT_NUM* = getEnv("PORT", "5000").parseInt
 
 for f in walkDir(getCurrentDir()):
   if f.path.split("/")[^1] == ".env":
@@ -21,7 +23,6 @@ for f in walkDir(getCurrentDir()):
 
 let
   SECRET_KEY* = getEnv("SECRET_KEY")
-  PORT_NUM* = getEnv("PORT", "5000").parseInt
   # Logging
   IS_DISPLAY* = getEnv("LOG_IS_DISPLAY", $true).parseBool
   IS_FILE* = getEnv("LOG_IS_FILE", $true).parseBool
@@ -34,5 +35,4 @@ let
   ENABLE_ANONYMOUS_COOKIE* = getEnv("ENABLE_ANONYMOUS_COOKIE", $true).parseBool
 
   # others
-  HOST_ADDR* = getEnv("HOST", "0.0.0.0")
   LOCALE* = getEnv("LOCALE", "en")

@@ -33,32 +33,51 @@ Table of Contents
 <!--te-->
 
 ## Introduction
-Basolato settings is defined as environment variables in those of `config.nims`, `.env`, `.env.local`, `~/.bash_rc`, `~/.bash_profile` and so on.  
+Basolato settings is defined as environment variables in those of `config.nims`, `.env`, `~/.bash_rc`, `~/.bash_profile` and so on.  
 Environment variables defined in `.env` can only be called at application runtime.  
-You should set common settings for various environments in `.env`, and environment-specific or sensitive DB connection information in `.env.local`.  
-Note that `config.nims` and `.env.local` are not Git-managed by `.gitignore`.
+You should set build time environments variables in `config.nims`, and environment-specific or sensitive DB connection information in `.env`.  
+Note that `.env` are not Git-managed by `.gitignore`.
 
-## Environment variables called at compile time
+## Environment variables called at compile time (config.nims)
 To apply changes, you have to do re-compile.
 
-### SECRET_KEY :string
-24 characters key which is used for encryption session id.
+### HOST :string = "0.0.0.0"
+Host name of the server to be started.
 
-### DB_DRIVER :string = "sqlite"
-RDB driver which your system uses. Options are `sqlite`, `mysql` or `postgres`.
+### DB_SQLITE :string = "true"
+Whether to connect to `Sqlite` or not.
+
+### DB_POSTGRES :string = "false"
+Whether to connect to `PostgreSQL` or not.
+
+### DB_MYSQL :string = "false"
+Whether to connect to `MySQL` or not.
+
+### DB_MARIADB :string = "false"
+Whether to connect to `MariaDB` or not.
 
 ### SESSION_TYPE :string = "file"
 Session DB type which your system uses. Options are `file` or `redis`.
 
+### LIBSASS :string = "false"
+Whether enable `libsaas` to use SASS/SCSS in view or not.
+
 sample
 ```nim
-putEnv("SECRET_KEY", "abcdefghijklmnopqrstuvwx")
-putEnv("DB_DRIVER", "sqlite") # "sqlite" or "mysql" or "postgres"
+putEnv("HOST", "0.0.0.0")
+putEnv("DB_SQLITE", $true) # "true" or "false"
+# putEnv("DB_POSTGRES", $true) # "true" or "false"
+# putEnv("DB_MYSQL", $true) # "true" or "false"
+# putEnv("DB_MARIADB", $true) # "true" or "false"
 putEnv("SESSION_TYPE", "file") # "file" or "redis"
+putEnv("LIBSASS", $false) # "true" or "false"
 ```
 
-## Environment variables called at runtime
+## Environment variables called at runtime (.env)
 To apply changes, you have to re-run application.
+
+### SECRET_KEY :string
+100 characters key which is used for encryption session id.
 
 ### DB_CONNECTION :string = "sqlite"
 The location of the RDB to connect to, either the absolute path of the file if you are using Sqlite, or `host:port` if you are using MySQL or PostgreSQL.
@@ -105,9 +124,6 @@ Set it to `true` if you want to generate cookies to anonymous users, or `false` 
 ### COOKIE_DOMAINS :string = ""
 Set the target domain for issuing cookies.
 
-### HOST :string = "0.0.0.0"
-Hostname to run server.
-
 ### LOCALE :string = "en"
 Language which you want to display validation message in.
 
@@ -125,24 +141,12 @@ LOG_IS_ERROR_FILE=true # true or false
 LOG_DIR="/root/project/logs"
 
 # Session db
-# Session type is defined in config.nims
+# Session type, file or redis, is defined in config.nims
 SESSION_DB_PATH="/root/project/session.db" # Session file path or redis host:port. ex:"127.0.0.1:6379"
 SESSION_TIME=20160 # minutes of 2 weeks
 ENABLE_ANONYMOUS_COOKIE=true # true or false
 COOKIE_DOMAINS="" # to specify multiple domains, "sample.com, sample.org"
 
 # Other options
-HOST="127.0.0.1"
 LOCALE=en
-```
-
-sample .env.local
-```sh
-# DB Connection
-# DB type is defined in config.nims
-DB_CONNECTION="/root/project/db.sqlite3" # sqlite file path or host:port
-DB_USER=""
-DB_PASSWORD=""
-DB_DATABASE=""
-DB_MAX_CONNECTION=95 # should be smaller than (DB max connection / running threads num)
 ```

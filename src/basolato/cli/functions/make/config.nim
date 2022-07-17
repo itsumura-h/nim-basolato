@@ -18,6 +18,7 @@ proc makeConfig*():int =
   createConfigCommon "config.nims":
     &"""
 import os
+putEnv("HOST", "0.0.0.0")
 putEnv("DB_SQLITE", $true) # "true" or "false"
 # putEnv("DB_POSTGRES", $true) # "true" or "false"
 # putEnv("DB_MYSQL", $true) # "true" or "false"
@@ -53,8 +54,6 @@ SESSION_TIME=20160 # minutes of 2 weeks
 ENABLE_ANONYMOUS_COOKIE=true # true or false
 COOKIE_DOMAINS="" # to specify multiple domains, "sample.com, sample.org"
 
-HOST="0.0.0.0"
-PORT=5000
 LOCALE=en
 """
 
