@@ -12,7 +12,6 @@ RUN apt install -y  --fix-missing \
         git \
         sqlite3 \
         libpq-dev \
-        libmysqlclient-dev \
         libmariadb-dev \
         libsass-dev
 
