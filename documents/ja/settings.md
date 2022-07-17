@@ -32,32 +32,51 @@
 <!--te-->
 
 ## イントロダクション
-Basolatoの設定は、`config.nims`、 `.env`、 `.env.local`、  `~/.bash_rc`、 `~/.bash_profile` などで環境変数として定義されています。  
-`.env`、`.env.local`に定義された環境変数は、アプリケーション実行時にしか呼ぶことはできません。  
-`.env`には様々な環境での共通設定を、`.env.local`には環境固有のものや機密性の高いDBとの接続情報などを設定してください。  
-`config.nims`と`.env.local`は`.gitignore`によってGit管理されないようになっています。
+Basolatoの設定は、`config.nims`、 `.env`、 `~/.bash_rc`、 `~/.bash_profile` などで環境変数として定義されています。  
+`.env`に定義された環境変数は、アプリケーション実行時にしか呼ぶことはできません。  
+`config.nims`にはビルド時の設定を、`.env`では環境固有のものや機密性の高いDBとの接続情報などを設定します。  
+`.env`は`.gitignore`によってGit管理されないようになっています。
 
-## コンパイル時に呼ばれる環境変数
+## コンパイル時に呼ばれる環境変数 (config.nims)
 変更を適用するには再度コンパイルする必要があります。
 
-### SECRET_KEY :string
-セッションIDなどの暗号化に使われる24文字のキーです。
+### HOST :string = "0.0.0.0"
+起動するサーバーのホスト名です。
 
-### DB_DRIVER :string = "sqlite"
-接続先RDBの種類です。`sqlite`、`mysql`、`postgres`のいずれかになります。
+### DB_SQLITE :string = "true"
+`Sqlite`に接続するかどうかです。
+
+### DB_POSTGRES :string = "false"
+`PostgreSQL`に接続するかどうかです。
+
+### DB_MYSQL :string = "false"
+`MySQL`に接続するかどうかです。
+
+### DB_MARIADB :string = "false"
+`MariaDB`に接続するかどうかです。
 
 ### SESSION_TYPE :string = "file"
 セッションDBの種類です。`file`、`redis`のいずれかになります。
 
+### LIBSASS :string = "false"
+`libsaas`を有効にし、ビューの中でSASS/SCSSを使えるようにするかどうかです。
+
 サンプル config.nims
 ```nim
-putEnv("SECRET_KEY", "abcdefghijklmnopqrstuvwx")
-putEnv("DB_DRIVER", "sqlite") # "sqlite" or "mysql" or "postgres"
+putEnv("HOST", "0.0.0.0")
+putEnv("DB_SQLITE", $true) # "true" or "false"
+# putEnv("DB_POSTGRES", $true) # "true" or "false"
+# putEnv("DB_MYSQL", $true) # "true" or "false"
+# putEnv("DB_MARIADB", $true) # "true" or "false"
 putEnv("SESSION_TYPE", "file") # "file" or "redis"
+putEnv("LIBSASS", $false) # "true" or "false"
 ```
 
-## 実行時に呼ばれる環境変数
+## 実行時に呼ばれる環境変数 (.env)
 変更を適用するには再度アプリケーションを起動してください。
+
+### SECRET_KEY :string
+セッションIDなどの暗号化に使われる100文字のキーです。
 
 ### DB_CONNECTION :string = "sqlite"
 接続先RDBの場所です。Sqliteを使う場合にはファイルの絶対パス、MySQL, PostgreSQLを使う場合には`ホスト:ポート`を指定してください。
@@ -104,9 +123,6 @@ RDBに非同期接続する時に作るコネクションプールの数です�
 ### COOKIE_DOMAINS :string = ""
 クッキーを発行する対象ドメインを設定してください。
 
-### HOST :string = "0.0.0.0"
-サーバーを起動するホスト名です。
-
 ### LOCALE :string = "en"
 バリデーションメッセージを表示する言語です。
 
@@ -124,24 +140,12 @@ LOG_IS_ERROR_FILE=true # true or false
 LOG_DIR="/root/project/logs"
 
 # Session db
-# Session type is defined in config.nims
+# Session type, file or redis, is defined in config.nims
 SESSION_DB_PATH="/root/project/session.db" # Session file path or redis host:port. ex:"127.0.0.1:6379"
 SESSION_TIME=20160 # minutes of 2 weeks
 ENABLE_ANONYMOUS_COOKIE=true # true or false
 COOKIE_DOMAINS="" # to specify multiple domains, "sample.com, sample.org"
 
 # Other options
-HOST="127.0.0.1"
 LOCALE=ja
-```
-
-サンプル .env.local
-```sh
-# DB Connection
-# DB type is defined in config.nims
-DB_CONNECTION="/root/project/db.sqlite3" # sqlite file path or host:port
-DB_USER=""
-DB_PASSWORD=""
-DB_DATABASE=""
-DB_MAX_CONNECTION=95 # should be smaller than (DB max connection / running threads num)
 ```

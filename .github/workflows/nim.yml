@@ -62,17 +62,17 @@ jobs:
         run: nimble install -Y
 
   test-on-docker:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: before
     strategy:
       matrix:
         image-tag:
-          - 1.6.4-ubuntu-regular
-          - 1.6.6-ubuntu-regular
+          - 1.6.4
+          - 1.6.6
     steps:
       - uses: actions/checkout@v2
       - name: Build docker image
-        run: docker-compose build --build-arg IMAGE_TAG=${{ matrix.image-tag }} app-ubuntu
+        run: docker-compose build --build-arg VERSION=${{ matrix.image-tag }} app-ubuntu
       - name: Test
         run: docker-compose run app-ubuntu sh /root/project/runTest.sh
       - name: Test multi-thread

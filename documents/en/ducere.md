@@ -75,6 +75,11 @@ The default port is 5000. If you want to change it, specify with option `-p`
 ducere serve -p:8000
 ```
 
+You can change host by editing env of `config.nims`
+```sh
+putEnv("HOST", "127.0.0.2")
+```
+
 ### build
 Compiling for production.  
 By default, it will be compiled to run 5000 port and multithreaded for the number of cores in your PC.

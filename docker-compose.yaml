@@ -13,7 +13,11 @@ services:
   #     - .:/root/project
 
   app-ubuntu:
-    build: ./docker/nim/ubuntu
+    build:
+      context: .
+      dockerfile: ./docker/nim/ubuntu/Dockerfile
+      args:
+        VERSION: 1.6.6
     tty: true
     ports:
       - 9000:5000
@@ -21,7 +25,11 @@ services:
       - .:/root/project
 
   # app-debian:
-  #   build: ./docker/nim/debian
+  #   build:
+  #     context: .
+  #     dockerfile: ./docker/nim/ubuntu/Dockerfile
+  #     args:
+  #       - VERSION=1.6.6
   #   tty: true
   #   ports:
   #     - 9002:5000
