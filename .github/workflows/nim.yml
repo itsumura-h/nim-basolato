@@ -62,7 +62,7 @@ jobs:
         run: nimble install -Y
 
   test-on-docker:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: before
     strategy:
       matrix:
