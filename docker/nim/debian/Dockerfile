@@ -1,4 +1,3 @@
-ARG IMAGETAG="1.6.6"
 FROM debian:11.2-slim
 
 RUN apt update --fix-missing && \
@@ -15,6 +14,7 @@ RUN apt install -y  --fix-missing \
         libmariadb-dev \
         libsass-dev
 
+ARG IMAGETAG="1.6.6"
 WORKDIR /root
 RUN wget https://nim-lang.org/download/nim-${IMAGETAG}-linux_x64.tar.xz && \
     tar -Jxf nim-${IMAGETAG}-linux_x64.tar.xz && \
