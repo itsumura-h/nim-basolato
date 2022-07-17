@@ -82,14 +82,14 @@ jobs:
           echo 'switch("threadAnalysis", "off")' >> tests/config.nims
           docker-compose run app-ubuntu sh /root/project/runTest.sh
 
-  create-tag-draft:
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    needs:
-      - build
-      - test-on-docker
-    steps:
-      - name: Release Drafter
-        uses: release-drafter/release-drafter@v5.19.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # create-tag-draft:
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
+  #   needs:
+  #     - build
+  #     - test-on-docker
+  #   steps:
+  #     - name: Release Drafter
+  #       uses: release-drafter/release-drafter@v5
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
