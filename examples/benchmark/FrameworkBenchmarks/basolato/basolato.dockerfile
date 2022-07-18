@@ -8,7 +8,6 @@ RUN apt update --fix-missing && \
 RUN apt install -y --fix-missing \
         gcc \
         xz-utils \
-        pcre-dev \
         ca-certificates \
         vim \
         wget \
