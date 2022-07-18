@@ -1,7 +1,7 @@
 import logging, os, terminal
 import ./baseEnv
 
-proc echoLog*(output: any, args:varargs[string]) =
+proc echoLog*(output: auto, args:varargs[string]) =
   if IS_DISPLAY:
     when not defined(release):
       let logger = newConsoleLogger()
