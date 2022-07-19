@@ -11,7 +11,7 @@ RUN dnf install -y --enablerepo=powertools \
       libsass-devel
 
 WORKDIR /root
-RUN wget https://nim-lang.org/download/nim-1.6.2-linux_x64.tar.xz && \
+RUN wget --inet4-only https://nim-lang.org/download/nim-1.6.2-linux_x64.tar.xz && \
     tar -Jxf nim-1.6.2-linux_x64.tar.xz && \
     rm -f nim-1.6.2-linux_x64.tar.xz && \
     mkdir /root/.nimble && \

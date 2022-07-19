@@ -16,7 +16,7 @@ RUN apt install -y  --fix-missing \
 
 ARG IMAGETAG="1.6.6"
 WORKDIR /root
-RUN wget https://nim-lang.org/download/nim-${IMAGETAG}-linux_x64.tar.xz && \
+RUN wget --inet4-only https://nim-lang.org/download/nim-${IMAGETAG}-linux_x64.tar.xz && \
     tar -Jxf nim-${IMAGETAG}-linux_x64.tar.xz && \
     rm -f nim-${IMAGETAG}-linux_x64.tar.xz && \
     mv nim-${IMAGETAG} .nimble

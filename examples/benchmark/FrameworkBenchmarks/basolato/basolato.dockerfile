@@ -12,18 +12,23 @@ RUN apt install -y --fix-missing \
         vim \
         wget \
         git \
-        sqlite3 \
-        libpq-dev \
-        libmariadb-dev \
-        libsass-dev
+        libpq-dev
 
 ARG VERSION="1.6.6"
 WORKDIR /root
-RUN wget --inet4-only https://nim-lang.org/download/nim-${VERSION}-linux_x64.tar.xz && \
+RUN wget https://nim-lang.org/download/nim-${VERSION}-linux_x64.tar.xz && \
     tar -Jxf nim-${VERSION}-linux_x64.tar.xz && \
     rm -f nim-${VERSION}-linux_x64.tar.xz && \
     mv nim-${VERSION} .nimble
 
 ENV PATH $PATH:/root/.nimble/bin
-WORKDIR /root/project
 
+ADD ./ /basolato
+WORKDIR /basolato
+
+RUN nimble install -y
+RUN ducere build -p:8080
+
+EXPOSE 8080
+
+CMD ./main
