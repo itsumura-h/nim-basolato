@@ -5,7 +5,7 @@ import
   std/random,
   std/strutils
 # framework
-import basolato/controller
+import basolato2/controller
 import allographer/query_builder
 import ../../../config/database # rdb, cacheDb
 import ../views/pages/fortune_view

@@ -6,16 +6,16 @@ description   = "A full-stack web framework for Nim"
 license       = "MIT"
 srcDir        = "src"
 backend       = "c"
-bin           = @["basolato/cli/ducere"]
+bin           = @["basolato2/cli/ducere"]
 binDir        = "src/bin"
 installExt    = @["nim"]
-skipDirs      = @["basolato/cli"]
+skipDirs      = @["basolato2/cli"]
 
 # Dependencies
 
 requires "nim >= 1.4.0"
 requires "allographer >= 0.21.3"
-# requires "allographer#head"
+# requires "allographer#head"`
 requires "interface_implements >= 0.2.2"
 requires "bcrypt >= 0.2.1"
 requires "cligen >= 1.5.9"
