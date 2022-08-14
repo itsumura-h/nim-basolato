@@ -1,20 +1,18 @@
 import
   std/osproc,
   std/asynchttpserver,
-  std/asyncdispatch
+  std/asyncdispatch,
+  std/strformat
 
 
 proc runHTTPServer() {.thread.} =
   proc listenerHTTP() {.async.} =
     var server = newAsyncHttpServer(true, true)
     proc cb(req: Request) {.async, gcsafe.} =
-      # echo (req.reqMethod, req.url, req.headers)
       let headers = {"Content-type": "text/plain; charset=utf-8"}
       await req.respond(Http200, "Hello World", headers.newHttpHeaders())
 
     server.listen(Port(5000)) # or Port(8080) to hardcode the standard HTTP port.
-    let port = server.getPort
-    echo "test this with: curl localhost:" & $port.uint16 & "/"
     while true:
       if server.shouldAcceptRequest():
         await server.acceptRequest(cb)
@@ -22,7 +20,7 @@ proc runHTTPServer() {.thread.} =
         # too many concurrent connections, `maxFDs` exceeded
         # wait 500ms for FDs to be closed
         await sleepAsync(500)
-  
+
   while true:
     try:
       asyncCheck listenerHTTP()
@@ -30,11 +28,13 @@ proc runHTTPServer() {.thread.} =
     except:
       echo repr(getCurrentException())
 
-proc main() =
+proc serve() =
   when compileOption("threads"):
-    let numThreads =  countProcessors()
+    let numThreads = countProcessors()
   else:
     let numThreads = 1
+
+  echo(&"Starting {numThreads} threads")
 
   if numThreads > 1:
     when compileOption("threads"):
@@ -45,4 +45,4 @@ proc main() =
   else:
     runHTTPServer()
 
-main()
+serve()

@@ -1,4 +1,4 @@
-FROM ubuntu:21.10
+FROM ubuntu:20.04
 
 # prevent timezone dialogue
 ENV DEBIAN_FRONTEND=noninteractive

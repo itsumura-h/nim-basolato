@@ -10,9 +10,8 @@ import
   std/strformat,
   std/strutils,
   std/tables,
-  std/times
-from osproc import countProcessors
-import
+  std/times,
+  std/locks,
   ./baseEnv,
   ./error_page,
   ./header,
@@ -21,7 +20,10 @@ import
   ./response,
   ./resources/dd_page,
   ./security/cookie,
+  ./security/session_db,
+  ./security/session,
   ./security/context
+from osproc import countProcessors
 export request, header
 
 
@@ -262,15 +264,25 @@ proc doesRunAnonymousLogin(req:Request, res:Response):bool =
     return false
   return true
 
-proc serveCore(params:(Routes, int)){.async.} =
-  {.gcsafe.}:
-    let (routes, port) = params
+type Env = object
+  enableAnonymousCookie:bool
+
+type ServeCoreParams = object
+  env: Env
+  port:int
+  routes: Routes
+proc runHTTPServer*(params: ServeCoreParams) {.thread.} =
+  proc listenerHTTP(params:ServeCoreParams){.async.} =
+    ## Sub thread
+    let
+      routes = params.routes
+      port = params.port
     var server = newAsyncHttpServer(true, true)
 
     proc cb(req: Request) {.async, gcsafe.} =
       var
         headers = newHttpHeaders()
-        response = Response(status:HttpCode(0), headers:newHttpHeaders())
+        response = Response.new()
       # static file response
       if req.path.contains("."):
         let filepath = getCurrentDir() & "/public" & req.path
@@ -281,62 +293,65 @@ proc serveCore(params:(Routes, int)){.async.} =
           headers["content-type"] = contentType
           response = Response(status:Http200, body:data, headers:headers)
       else:
+        discard
         # check path match with controller routing → run middleware → run controller
-        let context = await Context.new(req, ENABLE_ANONYMOUS_COOKIE)
-        try:
-          let httpMethod =
-            if req.httpMethod == HttpHead:
-              HttpGet
-            else:
-              req.httpMethod
-          let key = $(httpMethod) & ":" & req.path
+        # let context = await Context.new(req, ENABLE_ANONYMOUS_COOKIE)
+        # echo context.repr
 
-          # withoutParams
-          if routes.withoutParams.hasKey(key):
-            let route = routes.withoutParams[key]
-            response = await createResponse(req, route, httpMethod, headers, context)
-          # withParams
-          else:
-            for route in routes.withParams:
-              if route.httpMethod == httpMethod and isMatchUrl(req.path, route.path):
-                response = await createResponse(req, route, httpMethod, headers, context)
-                break
-          if req.httpMethod == HttpHead:
-            response.body = ""
-        except:
-          headers["content-type"] = "text/html; charset=utf-8"
-          let exception = getCurrentException()
-          if exception.name == "DD".cstring:
-            var msg = exception.msg
-            msg = msg.replace(re"Async traceback:[.\s\S]*")
-            response = Response(status:Http200, body:ddPage(msg), headers:headers)
-          elif exception.name == "ErrorAuthRedirect".cstring:
-            headers["location"] = exception.msg
-            headers["set-cookie"] = "session_id=; expires=31-Dec-1999 23:59:59 GMT" # Delete session id
-            response = Response(status:Http302, body:"", headers:headers)
-          elif exception.name == "ErrorRedirect".cstring:
-            headers["location"] = exception.msg
-            response = Response(status:Http302, body:"", headers:headers)
-          else:
-            let status = checkHttpCode(exception)
-            response = Response(status:status, body:errorPage(status, exception.msg), headers:headers)
-            echoErrorMsg(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
-            echoErrorMsg(exception.msg)
+      #   try:
+      #     let httpMethod =
+      #       if req.httpMethod == HttpHead:
+      #         HttpGet
+      #       else:
+      #         req.httpMethod
+      #     let key = $(httpMethod) & ":" & req.path
 
-        # anonymous user login should run only for response from controler
-        if doesRunAnonymousLogin(req, response) and await context.isValid():
-          # keep session id from request and update expire
-          var cookies = Cookies.new(req)
-          let sessionId = await context.getToken()
-          cookies.set("session_id", sessionId, expire=timeForward(SESSION_TIME, Minutes))
-          response = response.setCookie(cookies)
+      #     # withoutParams
+      #     if routes.withoutParams.hasKey(key):
+      #       let route = routes.withoutParams[key]
+      #       response = await createResponse(req, route, httpMethod, headers, context)
+      #     # withParams
+      #     else:
+      #       for route in routes.withParams:
+      #         if route.httpMethod == httpMethod and isMatchUrl(req.path, route.path):
+      #           response = await createResponse(req, route, httpMethod, headers, context)
+      #           break
+      #     if req.httpMethod == HttpHead:
+      #       response.body = ""
+      #   except:
+      #     headers["content-type"] = "text/html; charset=utf-8"
+      #     let exception = getCurrentException()
+      #     if exception.name == "DD".cstring:
+      #       var msg = exception.msg
+      #       msg = msg.replace(re"Async traceback:[.\s\S]*")
+      #       response = Response(status:Http200, body:ddPage(msg), headers:headers)
+      #     elif exception.name == "ErrorAuthRedirect".cstring:
+      #       headers["location"] = exception.msg
+      #       headers["set-cookie"] = "session_id=; expires=31-Dec-1999 23:59:59 GMT" # Delete session id
+      #       response = Response(status:Http302, body:"", headers:headers)
+      #     elif exception.name == "ErrorRedirect".cstring:
+      #       headers["location"] = exception.msg
+      #       response = Response(status:Http302, body:"", headers:headers)
+      #     else:
+      #       let status = checkHttpCode(exception)
+      #       response = Response(status:status, body:errorPage(status, exception.msg), headers:headers)
+      #       echoErrorMsg(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
+      #       echoErrorMsg(exception.msg)
 
-      if response.status == HttpCode(0):
-        headers["content-type"] = "text/html; charset=utf-8"
-        response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)
-        echoErrorMsg(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
+      #   # anonymous user login should run only for response from controler
+      #   if doesRunAnonymousLogin(req, response) and await context.isValid():
+      #     # keep session id from request and update expire
+      #     var cookies = Cookies.new(req)
+      #     let sessionId = await context.getToken()
+      #     cookies.set("session_id", sessionId, expire=timeForward(SESSION_TIME, Minutes))
+      #     response = response.setCookie(cookies)
 
-      response.headers.setDefaultHeaders()
+      # if response.status == HttpCode(0):
+      #   headers["content-type"] = "text/html; charset=utf-8"
+      #   response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)
+      #   echoErrorMsg(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
+
+      # response.headers.setDefaultHeaders()
 
       await req.respond(response.status, response.body, response.headers.format())
       # keep-alive
@@ -352,17 +367,28 @@ proc serveCore(params:(Routes, int)){.async.} =
         # wait 500ms for FDs to be closed
         await sleepAsync(500)
 
-proc runHTTPServer*(seqRoutes: seq[Routes]) {.thread.} =
+  echo params.port
+  while true:
+    try:
+      # asyncCheck listenerHTTP(params)
+      # runForever()
+      discard
+    except:
+      echo repr(getCurrentException())
+
+proc serve*(seqRoutes: seq[Routes]) =
   var routes =  Routes.new()
   for tmpRoutes in seqRoutes:
     routes.withParams.add(tmpRoutes.withParams)
     for path, route in tmpRoutes.withoutParams:
       routes.withoutParams[path] = route
 
-  asyncCheck serveCore((routes, PORT_NUM))
-  runForever()
+  let params = ServeCoreParams(
+    env: Env(enableAnonymousCookie: ENABLE_ANONYMOUS_COOKIE),
+    port: PORT_NUM,
+    routes: routes
+  )
 
-proc serve*(seqRoutes: seq[Routes]) =
   when compileOption("threads"):
     let numThreads =  countProcessors()
   else:
@@ -372,14 +398,16 @@ proc serve*(seqRoutes: seq[Routes]) =
 
   if numThreads > 1:
     when compileOption("threads"):
-      var thr = newSeq[Thread[seq[Routes]]](numThreads)
+      var thr = newSeq[Thread[ServeCoreParams]](numThreads)
       for i in 1..numThreads:
-        createThread(thr[i-1], runHTTPServer, seqRoutes)
+        createThread(thr[i-1], runHTTPServer, params)
       joinThreads(thr)
   else:
-    runHTTPServer(seqRoutes)
+    runHTTPServer(params)
 
 # reference
 # https://github.com/Oples/tf2-stats/blob/master/src/web_server.nim
 # https://github.com/dom96/httpbeast/blob/master/src/httpbeast.nim
 # https://forum.nim-lang.org/t/7703
+# https://zenn.dev/yohhoy/articles/multithreading-toolbox
+# https://zenn.dev/kawahara/scraps/7fa9b51e094736

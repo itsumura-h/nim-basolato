@@ -1,10 +1,27 @@
-import httpcore, json, strutils, times, asyncdispatch
-import baseEnv, header, logger, security/cookie, security/session, security/context
+import
+  std/asyncdispatch,
+  std/httpcore,
+  std/json,
+  std/strutils,
+  std/times,
+  ./baseEnv, 
+  ./header,
+  ./logger,
+  ./security/cookie,
+  ./security/session,
+  ./security/context
 
 type Response* = ref object
   status*:HttpCode
   body*:string
   headers*:HttpHeaders
+
+proc new*(_:type Response):Response =
+  return Response(
+    status:HttpCode(404),
+    body:"",
+    headers: newHttpHeaders()
+  )
 
 
 func render*(status:HttpCode, body:string):Response =

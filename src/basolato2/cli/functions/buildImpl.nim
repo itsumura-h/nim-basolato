@@ -23,7 +23,7 @@ proc build*(ports="5000", threads=false, args:seq[string]) =
       """)
   else:
     discard execShellCmd(&"""
-      nim c \
+      nim cpp \
       -d:release \
       -d:ssl \
       --gc:orc \
