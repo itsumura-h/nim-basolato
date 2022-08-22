@@ -12,13 +12,11 @@ proc runHTTPServer() {.thread.} =
       let headers = {"Content-type": "text/plain; charset=utf-8"}
       await req.respond(Http200, "Hello World", headers.newHttpHeaders())
 
-    server.listen(Port(5000)) # or Port(8080) to hardcode the standard HTTP port.
+    server.listen(Port(5000))
     while true:
       if server.shouldAcceptRequest():
         await server.acceptRequest(cb)
       else:
-        # too many concurrent connections, `maxFDs` exceeded
-        # wait 500ms for FDs to be closed
         await sleepAsync(500)
 
   while true:
