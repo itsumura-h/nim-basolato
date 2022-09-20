@@ -22,8 +22,7 @@ proc echoErrorMsg*(msg:string) =
       styledWriteLine(stdout, fgRed, bgDefault, msg, resetStyle)
   # file log
   if IS_ERROR_FILE:
-    {.gcsafe.}:
-      let path = LOG_DIR & "/error.log"
+    let path = LOG_DIR & "/error.log"
     createDir(parentDir(path))
     let logger = newRollingFileLogger(path, mode=fmAppend, fmtStr=verboseFmtStr)
     defer: logger.file.close()

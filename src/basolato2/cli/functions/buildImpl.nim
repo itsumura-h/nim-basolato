@@ -1,9 +1,8 @@
 import os, strformat, strutils
 
-proc build*(ports="5000", threads=false, args:seq[string]) =
+proc build*(ports="5000", threads="off", args:seq[string]) =
   ## Build for production.
   var outputFileName = "main"
-  let threadsBool = if threads:"on" else: "off"
   try:
     outputFileName = args[0]
   except:
@@ -23,13 +22,13 @@ proc build*(ports="5000", threads=false, args:seq[string]) =
       """)
   else:
     discard execShellCmd(&"""
-      nim cpp \
+      nim c \
       -d:release \
       -d:ssl \
       --gc:orc \
       --putenv:PORT={ports} \
       --out:{outputFileName} \
-      --threads:{threadsBool} \
+      --threads:{threads} \
       --threadAnalysis:off \
       main.nim
     """)

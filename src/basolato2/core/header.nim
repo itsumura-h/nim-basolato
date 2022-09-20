@@ -81,7 +81,7 @@ func add*(headers: HttpHeaders, key: string, values: openArray[string]) =
   else:
     headers.table[key] = @values
 
-proc `&`*(a, b:HttpHeaders = newHttpHeaders()):HttpHeaders =
+proc `&`*(a, b:HttpHeaders = newHttpHeaders(true)):HttpHeaders =
   for key, values in b.table.pairs:
     if not a.table.hasKey(key):
       a.table[key] = values
@@ -94,14 +94,18 @@ proc `&`*(a, b:HttpHeaders = newHttpHeaders()):HttpHeaders =
 proc `&=`*(a, b:HttpHeaders) =
   discard a & b
 
-proc format*(self:HttpHeaders):HttpHeaders =
-  var tmp: seq[tuple[key, val:string]]
+proc format*(self:HttpHeaders):string =
+  result = ""
   for key, values in self.table:
+    if result.len > 0:
+      result.add("\c\L")
     if key.toLowerAscii == "date":
-      tmp.add((key, values[0]))
+      result.add(key & ": " & values[0])
     elif key.toLowerAscii == "set-cookie":
-      for value in values:
-        tmp.add((key, value))
+      result.add(key & ": ")
+      for i, value in values:
+        if i < values.len-1:
+          result.add("; ")
+        result.add(value)
     else:
-      tmp.add((key, values.join(", ")))
-  return tmp.newHttpHeaders(true)
+      result.add(key & ": " & values.join(", "))

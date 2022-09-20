@@ -55,23 +55,23 @@ services:
   #   volumes:
   #     - ./examples/todo_app.bk/frontend:/root/project
 
-  tfb-database-my:
+  mariaDb:
     image: mariadb
     tty: true
     command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: hello_world
-      MYSQL_USER: benchmarkdbuser
-      MYSQL_PASSWORD: benchmarkdbpass
+      MYSQL_DATABASE: database
+      MYSQL_USER: user
+      MYSQL_PASSWORD: pass
       TZ: Asia/Tokyo
       default_authentication_plugin: mysql_native_password
 
-  tfb-database-pg:
+  postgreDb:
     image: postgres:alpine
     tty: true
     environment:
-      POSTGRES_DB: hello_world
-      POSTGRES_USER: benchmarkdbuser
-      POSTGRES_PASSWORD: benchmarkdbpass
+      POSTGRES_DB: database
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
       TZ: Asia/Tokyo
