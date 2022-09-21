@@ -1,15 +1,17 @@
 import
-  std/asyncdispatch,
-  std/options,
-  std/json,
-  std/sequtils,
   ../../src/basolato2,
-  ./app/controllers
+  ./app/controllers,
+  ./app/middlewares
 
 
 let ROUTES = @[
-  Route.get("/", controllers.index),
-  Route.post("/", controllers.index),
+  Route.get("/", controllers.index)
+    .middleware(middlewares.setSecureHeadersMiddlware)
+    .middleware(middlewares.setCorsHeadersMiddleware),
+  Route.get("/error/{id:int}", controllers.index)
+    .middleware(middlewares.setSecureHeadersMiddlware)
+    .middleware(middlewares.setCorsHeadersMiddleware),
+  Route.post("/error/{id:int}", controllers.index).middleware(middlewares.setSecureHeadersMiddlware),
   Route.get("/query", controllers.query)
 ]
 

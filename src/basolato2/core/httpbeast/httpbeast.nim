@@ -76,8 +76,6 @@ type
 
   HttpBeastDefect* = ref object of Defect
 
-const
-  serverInfo = "HttpBeast"
 
 proc initSettings*(port: Port = Port(8080),
                    bindAddr: string = "",
@@ -104,16 +102,6 @@ proc initData(fdKind: FdKind, ip = ""): Data =
        headersFinishPos: -1, ## By default we assume the fast case: end of data.
        ip: ip
       )
-
-proc parseProtocol(protocol: string): tuple[orig: string, major, minor: int] =
-  var i = protocol.skipIgnoreCase("HTTP/")
-  if i != 5:
-    raise newException(ValueError, "Invalid request protocol. Got: " &
-        protocol)
-  result.orig = protocol
-  i.inc protocol.parseSaturatedNatural(result.major, i)
-  i.inc # Skip .
-  i.inc protocol.parseSaturatedNatural(result.minor, i)
 
 template handleAccept() =
   # A socket returned by accept4(2) will inherit TCP_NODELAY flag from the listening socket.
@@ -205,11 +193,10 @@ proc bodyInTransit(data: ptr Data): bool =
 
   if data.headersFinishPos == -1: return false
 
-  var trueLen = parseContentLength(data.data, start=0)
+  var headerContentLength = parseContentLength(data.data, start=0)
 
   let bodyLen = data.data.len - data.headersFinishPos
-  assert(not (bodyLen > trueLen))
-  return bodyLen != trueLen
+  return bodyLen != headerContentLength
 
 var requestCounter: uint = 0
 proc genRequestID(): uint =
@@ -498,14 +485,6 @@ proc body*(req: Request): Option[string] =
   result = req.selector.getData(req.client).data[
     pos .. ^1
   ].some()
-
-  when not defined(release):
-    let length =
-      if req.headers.get().hasKey("Content-Length"):
-        req.headers.get()["Content-Length"].parseInt()
-      else:
-        0
-    assert result.get().len == length
 
 proc ip*(req: Request): string =
   ## Retrieves the IP address that the request was made from.

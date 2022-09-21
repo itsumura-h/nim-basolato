@@ -32,9 +32,7 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
   
   proc cd(req:Request):Future[void] {.async.}=
     var
-      headers = newHttpHeaders(true)
       response = Response(status:HttpCode(0), headers:newHttpHeaders(true))
-      context = Context.new(req, ENABLE_ANONYMOUS_COOKIE).await
       httpMethodStr = ""
 
     try:
@@ -46,38 +44,36 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
           let file = openAsync(filepath, fmRead)
           let data = file.readAll().await
           let contentType = newMimetypes().getMimetype(req.path.split(".")[^1])
+          var headers = newHttpHeaders(true)
           headers["Content-Type"] = contentType
           response = Response(status:Http200, body:data, headers:headers)
       else:
         # check path match with controller routing → run middleware → run controller
-        let httpMethod =
-          if req.httpMethod == HttpHead:
-            HttpGet
-          else:
-            req.httpMethod
-        let key = $(httpMethod) & ":" & req.path
-
+        let key = $(req.httpMethod) & ":" & req.path
+        let context = Context.new(req, ENABLE_ANONYMOUS_COOKIE).await
         # withoutParams
         if routes.withoutParams.hasKey(key):
           let route = routes.withoutParams[key]
-          response = await createResponse(req, route, httpMethod, headers, context)
-        # withParams
+          response = createResponse(req, route, req.httpMethod, context).await
         else:
+          # withParams
           for route in routes.withParams:
-            if route.httpMethod == httpMethod and isMatchUrl(req.path, route.path):
-              response = await createResponse(req, route, httpMethod, headers, context)
+            if route.httpMethod == req.httpMethod and isMatchUrl(req.path, route.path):
+              response = createResponse(req, route, req.httpMethod, context).await
               break
+
         if req.httpMethod == HttpHead:
           response.body = ""
 
-         # anonymous user login should run only for response from controler
+        # anonymous user login should run only for response from controler
         if doesRunAnonymousLogin(req, response) and context.isValid().await:
           # keep session id from request and update expire
           var cookies = Cookies.new(req)
-          let sessionId = await context.getToken()
+          let sessionId = context.getToken().await
           cookies.set("session_id", sessionId, expire=timeForward(SESSION_TIME, Minutes))
           response = response.setCookie(cookies)
     except:
+      var headers = newHttpHeaders(true)
       headers["Content-Type"] = "text/html; charset=utf-8"
       let exception = getCurrentException()
       if exception.name == "DD".cstring:
@@ -101,6 +97,7 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
 
 
     if response.status == HttpCode(0):
+      var headers = newHttpHeaders(true)
       headers["Content-Type"] = "text/html; charset=utf-8"
       response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)
       echoErrorMsg(&"{$response.status}  {req.hostname()}  {httpMethodStr}  {req.path}")

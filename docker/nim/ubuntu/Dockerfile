@@ -7,6 +7,7 @@ RUN apt update --fix-missing && \
     apt upgrade -y
 RUN apt install -y --fix-missing \
         gcc \
+        g++ \
         xz-utils \
         ca-certificates \
         vim \

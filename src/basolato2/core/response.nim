@@ -1,5 +1,15 @@
-import httpcore, json, strutils, times, asyncdispatch
-import baseEnv, header, logger, security/cookie, security/session, security/context
+import
+  std/asyncdispatch,
+  std/httpcore,
+  std/json,
+  std/strutils,
+  std/times,
+  ./baseEnv,
+  ./logger,
+  ./security/context,
+  ./security/cookie,
+  ./security/session
+
 
 type Response* = ref object
   status*:HttpCode
@@ -19,7 +29,6 @@ func render*(status:HttpCode, body:string):Response =
 proc render*(status:HttpCode, body:string, headers:HttpHeaders):Response =
   if not headers.hasKey("Content-Type"):
     headers["Content-Type"] = "text/html; charset=utf-8"
-  headers.setDefaultHeaders()
   return Response(
     status:status,
     body:body,
@@ -65,7 +74,6 @@ func render*(body:JsonNode):Response =
 proc render*(body:JsonNode, headers:HttpHeaders):Response =
   if not headers.hasKey("Content-Type"):
     headers["Content-Type"] = "application/json; charset=utf-8"
-  headers.setDefaultHeaders()
   return Response(
     status:Http200,
     body: $body,
@@ -75,7 +83,6 @@ proc render*(body:JsonNode, headers:HttpHeaders):Response =
 proc render*(status:HttpCode, body:JsonNode, headers:HttpHeaders):Response =
   if not headers.hasKey("Content-Type"):
     headers["Content-Type"] = "application/json; charset=utf-8"
-  headers.setDefaultHeaders()
   return Response(
     status:status,
     body: $body,

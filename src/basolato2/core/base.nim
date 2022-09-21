@@ -1,7 +1,7 @@
 import cgi, json
 
 const
-  BasolatoVersion* = "0.12.3"
+  BasolatoVersion* = "0.13.0"
 
 type
   Error505* = object of CatchableError

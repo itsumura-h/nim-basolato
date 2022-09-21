@@ -8,7 +8,7 @@ export
   base, request, response, route, header, cookie, session, context
 
 
-type Controller* = proc(c:Context, p:Params):Future[Response] {.async.}
+type Controller* = proc(c:Context, params:Params):Future[Response] {.async.}
 
 
 

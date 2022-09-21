@@ -3,6 +3,7 @@ import
   std/json,
   std/sequtils,
   std/options,
+  std/httpcore,
   ../../../src/basolato2/controller,
   allographer/query_builder,
   ../config/database
@@ -10,6 +11,9 @@ import
 
 proc index*(context:Context, params:Params):Future[Response] {.async.} =
   return render("Hello World")
+
+proc error*(context:Context, params:Params):Future[Response] {.async.} =
+  return render(Http400, "error")
 
 proc query*(context:Context, params:Params):Future[Response] {.async.} =
   let nThreads = 500
