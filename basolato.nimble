@@ -6,10 +6,10 @@ description   = "A full-stack web framework for Nim"
 license       = "MIT"
 srcDir        = "src"
 backend       = "c"
-bin           = @["basolato2/cli/ducere"]
+bin           = @["basolato/cli/ducere"]
 binDir        = "src/bin"
 installExt    = @["nim"]
-skipDirs      = @["basolato2/cli"]
+skipDirs      = @["basolato/cli"]
 
 # Dependencies
 

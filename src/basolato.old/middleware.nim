@@ -1,20 +1,20 @@
 import
+  std/asynchttpserver,
   std/asyncdispatch,
-  std/httpcore,
   std/strutils,
-  std/tables,
-  ./core/base,
-  ./core/request,
-  ./core/route,
-  ./core/header,
-  ./core/response,
-  ./core/security/cookie,
-  ./core/security/session,
-  ./core/security/session_db,
-  ./core/security/csrf_token,
-  ./core/security/context
-
-export base, request, route, cookie, header, response, context
+  std/tables
+export asynchttpserver
+import
+  core/base,
+  core/route,
+  core/header,
+  core/response,
+  core/security/cookie,
+  core/security/session,
+  core/security/session_db,
+  core/security/csrf_token,
+  core/security/context
+export base, route, cookie, header, response, context
 
 type MiddlewareResult* = ref object
   hasError: bool
@@ -31,7 +31,7 @@ func next*(status:HttpCode=HttpCode(200), body="", headers:HttpHeaders=newHttpHe
 
 proc checkCsrfToken*(request:Request, params:Params):Future[MiddlewareResult] {.async.} =
   result = MiddlewareResult()
-  if request.httpMethod == HttpPost and not request.headers["Content-Type"].contains("application/json"):
+  if request.reqMethod == HttpPost and not request.headers["Content-Type"].contains("application/json"):
     try:
       if not params.hasKey("csrf_token"):
         raise newException(Exception, "csrf token is missing")
