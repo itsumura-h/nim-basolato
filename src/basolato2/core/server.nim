@@ -68,8 +68,8 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
         # anonymous user login should run only for response from controler
         if doesRunAnonymousLogin(req, response) and context.isValid().await:
           # keep session id from request and update expire
-          var cookies = Cookies.new(req)
           let sessionId = context.getToken().await
+          var cookies = Cookies.new(req)
           cookies.set("session_id", sessionId, expire=timeForward(SESSION_TIME, Minutes))
           response = response.setCookie(cookies)
     except:
