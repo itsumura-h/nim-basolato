@@ -1,10 +1,11 @@
 name: Build and test Nim
 
 on:
-  push:
-    paths-ignore:
-      - '*.md'
-      - 'documents/*'
+  # push:
+  #   paths-ignore:
+  #     - '*.md'
+  #     - 'documents/*'
+  # テストはPRだけ
   pull_request:
     paths-ignore:
       - '*.md'
