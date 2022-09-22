@@ -1,6 +1,11 @@
-import asyncdispatch, json, asynchttpserver, options
-import session_db
-import cookie
+import
+  std/asyncdispatch,
+  std/json, 
+  std/options,
+  ./session_db,
+  ./cookie,
+  ../request
+
 
 type Session* = ref object
   db: SessionDb

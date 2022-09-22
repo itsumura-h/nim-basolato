@@ -47,8 +47,14 @@ import base
 
 
 
+func toTitleCase(s: string): string =
+  result = newString(len(s))
+  var upper = true
+  for i in 0..len(s) - 1:
+    result[i] = if upper: toUpperAscii(s[i]) else: toLowerAscii(s[i])
+    upper = s[i] == '-'
 
-
+# ==================================================
 
 func newHttpHeaders*(
   keyValuePairs: openArray[tuple[key: string, val: seq[string]]],
@@ -81,7 +87,15 @@ func add*(headers: HttpHeaders, key: string, values: openArray[string]) =
   else:
     headers.table[key] = @values
 
-proc `&`*(a, b:HttpHeaders = newHttpHeaders()):HttpHeaders =
+func values*(headers: HttpHeaders, key: string):seq[string] =
+  if headers.table.hasKey(toTitleCase(key)):
+    return headers.table[toTitleCase(key)]
+  elif headers.table.hasKey(toLowerAscii(key)):
+    return headers.table[toLowerAscii(key)]
+  else:
+    return newSeq[string]()
+
+proc `&`*(a, b:HttpHeaders = newHttpHeaders(true)):HttpHeaders =
   for key, values in b.table.pairs:
     if not a.table.hasKey(key):
       a.table[key] = values
@@ -94,14 +108,17 @@ proc `&`*(a, b:HttpHeaders = newHttpHeaders()):HttpHeaders =
 proc `&=`*(a, b:HttpHeaders) =
   discard a & b
 
-proc format*(self:HttpHeaders):HttpHeaders =
-  var tmp: seq[tuple[key, val:string]]
+proc format*(self:HttpHeaders):string =
+  result = ""
   for key, values in self.table:
-    if key.toLowerAscii == "date":
-      tmp.add((key, values[0]))
-    elif key.toLowerAscii == "set-cookie":
-      for value in values:
-        tmp.add((key, value))
+    if result.len > 0:
+      result.add("\c\L")
+    if key.toLowerAscii == "date": # date should have only one value
+      result.add(key & ": " & values[0])
+    elif key.toLowerAscii == "set-cookie": # each cookie should have own "set-cookie" key
+      for i, value in values:
+        if i > 0:
+          result.add("\c\L")
+        result.add(key & ": " & value)
     else:
-      tmp.add((key, values.join(", ")))
-  return tmp.newHttpHeaders(true)
+      result.add(key & ": " & values.join(", "))

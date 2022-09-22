@@ -1,11 +1,15 @@
-import asyncdispatch, asynchttpserver, os, asyncfile, tables
-export asyncdispatch, asynchttpserver, tables
+import asyncdispatch, os, asyncfile, tables
+export asyncdispatch, tables
 
 import
   core/base, core/request, core/response, core/route, core/header,
   core/security/cookie, core/security/session, core/security/context
 export
   base, request, response, route, header, cookie, session, context
+
+
+type Controller* = proc(c:Context, params:Params):Future[Response] {.async.}
+
 
 
 proc asyncHtml*(path:string):Future[string] {.async.} =

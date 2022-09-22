@@ -1,9 +1,9 @@
 import
-  std/asynchttpserver,
-  std/asyncnet,
   std/cgi,
+  std/httpcore,
   std/json,
   std/net,
+  std/nativesockets,
   std/options,
   std/os,
   std/parseutils,
@@ -11,27 +11,53 @@ import
   std/strtabs,
   std/strutils,
   std/tables,
-  std/uri
+  std/uri,
+  ./base
+from ./httpbeast/httpbeast import Request, body, headers, httpMethod, path, ip, forget
+export Request
 
+func body*(request:Request):string =
+  if not httpbeast.body(request).isSome():
+    raise newException(ErrorHttpParse, "")
+  return httpbeast.body(request).get()
 
-func path*(request:Request):string =
-  return request.url.path
+func headers*(request:Request):HttpHeaders =
+  if not httpbeast.headers(request).isSome():
+    raise newException(ErrorHttpParse, "")
+  return httpbeast.headers(request).get()
 
 func httpMethod*(request:Request):HttpMethod =
-  return request.reqMethod
+  if not httpbeast.httpMethod(request).isSome():
+    raise newException(ErrorHttpParse, "")
+  return httpbeast.httpMethod(request).get()
+
+func path*(request:Request):string =
+  if not httpbeast.path(request).isSome():
+    raise newException(ErrorHttpParse, "")
+  return httpbeast.path(request).get()
+
+func hostname*(request:Request):string =
+  return httpbeast.ip(request)
+
 
 proc dealKeepAlive*(req:Request) =
-  if (
-    req.protocol.major == 1 and
-    req.protocol.minor == 1 and
-    cmpIgnoreCase(req.headers.getOrDefault("Connection"), "close") == 0
-  ) or
+  # if (
+  #   req.protocol.major == 1 and
+  #   req.protocol.minor == 1 and
+  #   cmpIgnoreCase(req.headers.getOrDefault("Connection"), "close") == 0
+  # ) or
+  # (
+  #   req.protocol.major == 1 and
+  #   req.protocol.minor == 0 and
+  #   cmpIgnoreCase(req.headers.get().getOrDefault("Connection"), "keep-alive") != 0
+  # ):
+  #   req.client.close()
+  if req.headers.hasKey("Connection") and
   (
-    req.protocol.major == 1 and
-    req.protocol.minor == 0 and
-    cmpIgnoreCase(req.headers.getOrDefault("Connection"), "keep-alive") != 0
+    req.headers["Connection"].toLowerAscii() == "close" or
+    req.headers["Connection"].toLowerAscii() != "keep-alive"
   ):
-    req.client.close()
+    req.forget()
 
 func isNumeric(str:string):bool =
   result = true
@@ -74,7 +100,7 @@ func len*(self:Param):int =
 
 type Params* = TableRef[string, Param]
 
-proc newParams*():Params =
+proc new*(_:type Params):Params =
   return newTable[string, Param]()
 
 
@@ -127,7 +153,7 @@ proc getAll*(params:Params):JsonNode =
     result[key] = %*{"ext": ext, "fileName": fileName, "value": value}
 
 func getUrlParams*(requestPath, routePath:string):Params =
-  result = newParams()
+  result = Params.new()
   if routePath.contains("{"):
     let requestPath = requestPath.split("/")[1..^1]
     let routePath = routePath.split("/")[1..^1]
@@ -138,14 +164,14 @@ func getUrlParams*(requestPath, routePath:string):Params =
         result[key] = Param(value:requestPath[i].split(":")[0])
 
 func getQueryParams*(request:Request):Params =
-  result = newParams()
-  let query = request.url.query
+  result = Params.new()
+  let query = request.path().parseUri().query
   for key, val in cgi.decodeData(query):
     result[key] = Param(value:val)
 
 proc getJsonParams*(request:Request):Params =
-  result = newParams()
-  let jsonParams = request.body.parseJson()
+  result = Params.new()
+  let jsonParams = request.body().parseJson()
   for k, v in jsonParams.pairs:
     case v.kind
     of JInt:
@@ -257,9 +283,9 @@ func parseMPFD(contentType: string, body: string): MultiData =
   return parseMultiPart(body, boundary)
 
 proc getRequestParams*(request:Request):Params =
-  let params = newParams()
-  if request.headers.hasKey("content-type"):
-    let contentType = request.headers["content-type"].toString
+  let params = Params.new()
+  if request.headers.hasKey("Content-Type"):
+    let contentType = request.headers["Content-Type"].toString
     if contentType.contains("multipart/form-data"):
       let formdata = parseMPFD(contentType, request.body)
       for key, row in formdata:

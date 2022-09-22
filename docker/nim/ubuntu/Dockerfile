@@ -1,4 +1,4 @@
-FROM ubuntu:21.10
+FROM ubuntu:20.04
 
 # prevent timezone dialogue
 ENV DEBIAN_FRONTEND=noninteractive
@@ -7,6 +7,7 @@ RUN apt update --fix-missing && \
     apt upgrade -y
 RUN apt install -y --fix-missing \
         gcc \
+        g++ \
         xz-utils \
         ca-certificates \
         vim \

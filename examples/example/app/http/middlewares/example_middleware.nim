@@ -1,4 +1,4 @@
-import asyncdispatch
+import asyncdispatch, httpcore
 import ../../../../../src/basolato/middleware
 
 proc setMiddleware1*(c:Context, p:Params):Future[Response] {.async.} =

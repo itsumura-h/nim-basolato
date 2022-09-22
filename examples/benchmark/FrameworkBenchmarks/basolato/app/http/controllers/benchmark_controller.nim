@@ -42,11 +42,11 @@ proc query*(context:Context, params:Params):Future[Response] {.async.} =
   for i in 1..countNum:
     let n = rand(1..10000)
     futures[i-1] = rdb.table("World").findPlain(n)
-  let response = newJArray()
   let resp = all(futures).await
-  for data in resp:
-    response.add(%*{"id": data[0].parseInt, "randomNumber": data[1].parseInt})
-  return render(response)
+  var response = newSeq[JsonNode](resp.len)
+  for i, data in resp:
+    response[i-1] = %*{"id": data[0].parseInt, "randomNumber": data[1].parseInt}
+  return render(%response)
 
 
 proc fortunes*(context:Context, params:Params):Future[Response] {.async.} =

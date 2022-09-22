@@ -3,7 +3,6 @@ import
   std/osproc,
   std/re,
   std/strformat,
-  std/strutils,
   std/tables,
   std/terminal,
   std/times
@@ -36,11 +35,12 @@ setControlCHook(ctrlC)
 #       if execShellCmd(&"nim js -d:nimExperimentalAsyncjsThen -d:release -o:{jsFilePath}.js {f}") > 0:
 #         echoMsg(bgRed, "[FAILED] Build error")
 
-proc runCommand(port:int) =
+proc runCommand(port:int, f:bool) =
   try:
     if pid > 0:
       discard execShellCmd(&"kill {pid}")
-    if execShellCmd(&"nim c --putenv:PORT={port} --spellSuggest:3 -d:ssl main") > 0:
+    let fStr = if f: "-f" else: ""
+    if execShellCmd(&"nim c --putenv:PORT={port} --spellSuggest:5 -d:ssl {fStr} main") > 0:
       raise newException(Exception, "")
     echoMsg(bgGreen, "[SUCCESS] Building dev server")
     p = startProcess("./main", currentDir, ["&"],
@@ -51,10 +51,10 @@ proc runCommand(port:int) =
     echo getCurrentExceptionMsg()
     # quit 1
 
-proc serve*(port=5000) =
+proc serve*(port=5000, force=false) =
   ## Run dev application with hot reload.
   # jsBuild()
-  runCommand(port)
+  runCommand(port, force)
   while true:
     sleep sleepTime * 1000
     for f in walkDirRec(currentDir, {pcFile}):
@@ -83,4 +83,4 @@ proc serve*(port=5000) =
     if isModified:
       isModified = false
       # jsBuild()
-      runCommand(port)
+      runCommand(port, false)

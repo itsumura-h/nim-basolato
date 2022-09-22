@@ -5,7 +5,7 @@ discard """
 import unittest
 include ../src/basolato/core/request
 
-let params = newParams()
+let params = Params.new()
 params["a"] = Param(value:"a")
 params["one"] = Param(value:"1")
 params["upload"] = Param(value:"content", ext:"jpg", fileName: "filename")

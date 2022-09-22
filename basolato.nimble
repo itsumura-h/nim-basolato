@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.12.3"
+version       = "0.13.0"
 author        = "Hidenobu Itsumura @dumblepytech1 as 'medy'"
 description   = "A full-stack web framework for Nim"
 license       = "MIT"
@@ -9,13 +9,13 @@ backend       = "c"
 bin           = @["basolato/cli/ducere"]
 binDir        = "src/bin"
 installExt    = @["nim"]
-skipDirs      = @["basolato/cli"]
+skipDirs      = @["basolato/cli", "basolato.old"]
 
 # Dependencies
 
 requires "nim >= 1.4.0"
-# requires "allographer >= 0.21.0"
-requires "allographer#head"
+requires "allographer >= 0.21.3"
+# requires "allographer#head"`
 requires "interface_implements >= 0.2.2"
 requires "bcrypt >= 0.2.1"
 requires "cligen >= 1.5.9"
