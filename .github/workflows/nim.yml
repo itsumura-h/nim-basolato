@@ -75,13 +75,16 @@ jobs:
         run: docker-compose build --build-arg VERSION=${{ matrix.image-tag }} app-ubuntu
       - name: Test
         run: docker-compose run app-ubuntu sh /root/project/runTest.sh
-      - name: Test multi-thread
-        run: |
-          echo '' >> tests/config.nims
-          echo 'switch("threads", "on")' >> tests/config.nims
-          echo 'switch("threadAnalysis", "off")' >> tests/config.nims
-          docker-compose run app-ubuntu sh /root/project/runTest.sh
+      # マルチスレッドは使わない
+      # - name: Test multi-thread
+      #   run: |
+      #     echo '' >> tests/config.nims
+      #     echo 'switch("threads", "on")' >> tests/config.nims
+      #     echo 'switch("threadAnalysis", "off")' >> tests/config.nims
+      #     docker-compose run app-ubuntu sh /root/project/runTest.sh
 
+  # アプリケーションの方を使うことにした
+  # https://github.com/marketplace/actions/release-drafter
   # create-tag-draft:
   #   runs-on: ubuntu-latest
   #   if: github.ref == 'refs/heads/main'
