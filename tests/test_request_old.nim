@@ -6,7 +6,7 @@ import unittest
 include ../src/basolato/core/request
 include ../src/basolato/view
 
-let p = newParams()
+let p = Params.new()
 p["a"] = Param(value:"a")
 p["one"] = Param(value:"1")
 p["script"] = Param(value:"<script>alert('a')</script>")

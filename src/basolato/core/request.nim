@@ -13,7 +13,7 @@ import
   std/tables,
   std/uri,
   ./base
-from ./httpbeast/httpbeast import Request, body, headers, httpMethod, path, ip
+from ./httpbeast/httpbeast import Request, body, headers, httpMethod, path, ip, forget
 export Request
 
 func body*(request:Request):string =
@@ -40,18 +40,24 @@ func hostname*(request:Request):string =
   return httpbeast.ip(request)
 
 
-# proc dealKeepAlive*(req:Request) =
-#   if (
-#     req.protocol.major == 1 and
-#     req.protocol.minor == 1 and
-#     cmpIgnoreCase(req.headers.getOrDefault("Connection"), "close") == 0
-#   ) or
-#   (
-#     req.protocol.major == 1 and
-#     req.protocol.minor == 0 and
-#     cmpIgnoreCase(req.headers.get().getOrDefault("Connection"), "keep-alive") != 0
-#   ):
-#     req.client.close()
+proc dealKeepAlive*(req:Request) =
+  # if (
+  #   req.protocol.major == 1 and
+  #   req.protocol.minor == 1 and
+  #   cmpIgnoreCase(req.headers.getOrDefault("Connection"), "close") == 0
+  # ) or
+  # (
+  #   req.protocol.major == 1 and
+  #   req.protocol.minor == 0 and
+  #   cmpIgnoreCase(req.headers.get().getOrDefault("Connection"), "keep-alive") != 0
+  # ):
+  #   req.client.close()
+  if req.headers.hasKey("Connection") and
+  (
+    req.headers["Connection"].toLowerAscii() == "close" or
+    req.headers["Connection"].toLowerAscii() != "keep-alive"
+  ):
+    req.forget()
 
 func isNumeric(str:string):bool =
   result = true
@@ -94,7 +100,7 @@ func len*(self:Param):int =
 
 type Params* = TableRef[string, Param]
 
-proc new*(_:type Param):Params =
+proc new*(_:type Params):Params =
   return newTable[string, Param]()
 
 
@@ -278,8 +284,8 @@ func parseMPFD(contentType: string, body: string): MultiData =
 
 proc getRequestParams*(request:Request):Params =
   let params = Params.new()
-  if request.headers.hasKey("content-type"):
-    let contentType = request.headers["content-type"].toString
+  if request.headers.hasKey("Content-Type"):
+    let contentType = request.headers["Content-Type"].toString
     if contentType.contains("multipart/form-data"):
       let formdata = parseMPFD(contentType, request.body)
       for key, row in formdata:

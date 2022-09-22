@@ -160,8 +160,8 @@ proc setCookie*(response:Response, context:Context):Future[Response] {.async.} =
 
 
 # ========== Cookie ====================
-proc setCookie*(response:Response, cookie:Cookies):Response =
-  for cookie in cookie.data:
+proc setCookie*(response:Response, cookies:Cookies):Response =
+  for cookie in cookies.data:
     let cookieStr = cookie.toCookieStr()
     response.headers.add("Set-Cookie", cookieStr)
   return response

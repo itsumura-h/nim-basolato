@@ -1,6 +1,7 @@
 import unittest, tables, httpcore, strformat
 from strutils import join
 import ../src/basolato/core/base
+import ../src/basolato/core/security/cookie
 include ../src/basolato/core/header
 
 block:
@@ -41,18 +42,22 @@ block:
   check header1["b"] == "b"
 
 block:
-  var header = newHttpHeaders()
-  header.add("a", "a")
-  header.add("a", "b")
-  header.add("date", "data1")
-  header.add("date", "data2")
-  header.add("set-cookie", "cookie1")
-  header.add("set-cookie", "cookie2")
-  header = header.format()
-  check header["A"] == "a, b"
-  check header.table["Date"].len == 1
-  check header.table["Set-Cookie"][0] == "cookie1"
-  check header.table["Set-Cookie"][1] == "cookie2"
+  var headers = newHttpHeaders()
+  headers.add("a", "a")
+  headers.add("a", "b")
+  headers.add("set-cookie", Cookie.new("key1", "val1").toCookieStr())
+  headers.add("set-cookie", Cookie.new("key2", "val2").toCookieStr())
+  check headers.values("A") == @["a", "b"]
+  check headers.values("Set-Cookie")[0].contains("key1=val1")
+  check headers.values("Set-Cookie")[1].contains("key2=val2")
+  echo headers.format()
+
+block:
+  var headers = newHttpHeaders()
+  headers.add("date", "date1")
+  headers.add("date", "date2")
+  let headerStr = headers.format()
+  check headerStr == "date: date1"
 
 block:
   var header1 = {

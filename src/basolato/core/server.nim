@@ -82,7 +82,7 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
         response = Response(status:Http200, body:ddPage(msg), headers:headers)
       elif exception.name == "ErrorAuthRedirect".cstring:
         headers["Location"] = exception.msg
-        headers["set-cookie"] = "session_id=; expires=31-Dec-1999 23:59:59 GMT" # Delete session id
+        headers["Set-Cookie"] = "session_id=; expires=31-Dec-1999 23:59:59 GMT" # Delete session id
         response = Response(status:Http302, body:"", headers:headers)
       elif exception.name == "ErrorRedirect".cstring:
         headers["Location"] = exception.msg
@@ -105,7 +105,7 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
     response.headers.setDefaultHeaders()
     req.send(response.status, response.body, response.headers.format())
     # keep-alive
-    # req.dealKeepAlive()
+    req.dealKeepAlive()
 
   
   let settings = initSettings(port=Port(port))

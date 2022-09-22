@@ -13,7 +13,6 @@ let SESSION_ID = waitFor session.db.getToken()
 block:
   let client = newHttpClient(maxRedirects=0)
   let response = client.get(&"{HOST}/set-header")
-  echo response.headers
   check response.headers["key1"] == HttpHeaderValues(@["value1"])
   check response.headers["key2"] == HttpHeaderValues(@["value1, value2"])
 
@@ -23,7 +22,6 @@ block:
     "Cookie": &"session_id={SESSION_ID}",
   })
   let response = client.get(&"{HOST}/set-cookie")
-  echo response.headers
   check response.headers["set-cookie", 0]
           .contains("key1=value1; Path=/;")
   check response.headers["set-cookie", 1]
@@ -42,5 +40,4 @@ block:
 block:
   let client = newHttpClient(maxRedirects=0)
   let response = client.get(&"{HOST}/destroy-auth")
-  echo response.headers
   check response.headers.hasKey("set-cookie")

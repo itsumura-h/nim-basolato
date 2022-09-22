@@ -1,4 +1,4 @@
-import json
+import json, httpcore
 import ../../../../../src/basolato/controller
 # template
 import ../views/pages/test_view
@@ -56,10 +56,10 @@ proc setHeader*(context:Context, params:Params):Future[Response] {.async.} =
   return render("setHeader", header)
 
 proc setCookie*(context:Context, params:Params):Future[Response] {.async.} =
-  var cookie = Cookies.new(context.request)
-  cookie.set("key1", "value1")
-  cookie.set("key2", "value2")
-  return render("setCookie").setCookie(cookie)
+  var cookies = Cookies.new(context.request)
+  cookies.set("key1", "value1")
+  cookies.set("key2", "value2")
+  return render("setCookie").setCookie(cookies)
 
 proc setAuth*(context:Context, params:Params):Future[Response] {.async.} =
   await context.set("key1", "value1")

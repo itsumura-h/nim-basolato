@@ -3,7 +3,6 @@ import
   std/osproc,
   std/re,
   std/strformat,
-  std/strutils,
   std/tables,
   std/terminal,
   std/times

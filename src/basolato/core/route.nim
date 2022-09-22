@@ -194,7 +194,7 @@ proc params(request:Request, route:Route):Params =
   for k, v in getQueryParams(request).pairs:
     params[k] = v
 
-  if request.headers.hasKey("content-type") and request.headers["content-type"].split(";")[0] == "application/json":
+  if request.headers.hasKey("Content-Type") and request.headers["Content-Type"].split(";")[0] == "application/json":
     for k, v in getJsonParams(request).pairs:
       params[k] = v
   else:

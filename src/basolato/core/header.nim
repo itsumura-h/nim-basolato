@@ -47,8 +47,14 @@ import base
 
 
 
+func toTitleCase(s: string): string =
+  result = newString(len(s))
+  var upper = true
+  for i in 0..len(s) - 1:
+    result[i] = if upper: toUpperAscii(s[i]) else: toLowerAscii(s[i])
+    upper = s[i] == '-'
 
-
+# ==================================================
 
 func newHttpHeaders*(
   keyValuePairs: openArray[tuple[key: string, val: seq[string]]],
@@ -81,6 +87,14 @@ func add*(headers: HttpHeaders, key: string, values: openArray[string]) =
   else:
     headers.table[key] = @values
 
+func values*(headers: HttpHeaders, key: string):seq[string] =
+  if headers.table.hasKey(toTitleCase(key)):
+    return headers.table[toTitleCase(key)]
+  elif headers.table.hasKey(toLowerAscii(key)):
+    return headers.table[toLowerAscii(key)]
+  else:
+    return newSeq[string]()
+
 proc `&`*(a, b:HttpHeaders = newHttpHeaders(true)):HttpHeaders =
   for key, values in b.table.pairs:
     if not a.table.hasKey(key):
@@ -99,13 +113,12 @@ proc format*(self:HttpHeaders):string =
   for key, values in self.table:
     if result.len > 0:
       result.add("\c\L")
-    if key.toLowerAscii == "date":
+    if key.toLowerAscii == "date": # date should have only one value
       result.add(key & ": " & values[0])
-    elif key.toLowerAscii == "set-cookie":
-      result.add(key & ": ")
+    elif key.toLowerAscii == "set-cookie": # each cookie should have own "set-cookie" key
       for i, value in values:
-        if i < values.len-1:
-          result.add("; ")
-        result.add(value)
+        if i > 0:
+          result.add("\c\L")
+        result.add(key & ": " & value)
     else:
       result.add(key & ": " & values.join(", "))

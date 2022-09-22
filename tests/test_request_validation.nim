@@ -7,7 +7,7 @@ include ../src/basolato/core/request
 include ../src/basolato/request_validation
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["on"] = Param(value:"on")
   p["yes"] = Param(value:"yes")
   p["one"] = Param(value:"1")
@@ -26,7 +26,7 @@ block:
   check v.errors["invalid"][0] == "The invalid must be accepted."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["a"] = Param(value:"2020-01-02")
   p["b"] = Param(value:"2020-01-01")
   p["c"] = Param(value:"2020-01-03")
@@ -41,7 +41,7 @@ block:
   check v.errors["a"][1] == "The a must be a date after 2020-01-03T00:00:00+00:00."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"2020-01-02")
   p["before"] = Param(value:"2020-01-01")
   p["after"] = Param(value:"2020-01-03")
@@ -58,7 +58,7 @@ block:
   check v.errors["base"][1] == "The base must be a date after or equal to 2020-01-03T00:00:00+00:00."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["small"] = Param(value:"abcdefghijklmnopqrstuvwxyz")
   p["large"] = Param(value:"ABCDEFGHIJKLMNOPQRSTUVWXYZ")
   p["number"] = Param(value:"1234567890")
@@ -77,7 +77,7 @@ block:
   check v.errors["ja"][0] == "The ja may only contain letters."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["letter"] = Param(value:"abcABC012")
   p["withDash"] = Param(value:"abcABC012-_")
   p["ja"] = Param(value:"aA0あいうえお")
@@ -92,7 +92,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["letter"] = Param(value:"abcABC012")
   p["withDash"] = Param(value:"abcABC012-_")
   p["ja"] = Param(value:"aA0あいうえお")
@@ -107,7 +107,7 @@ block:
   check v.errors["ja"][0] == "The ja may only contain letters and numbers."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid"] = Param(value:"a, b, c")
   p["dict"] = Param(value:"""{"a": "a", "b": "b"}""")
   p["kv"] = Param(value:"a=a, b=b")
@@ -128,7 +128,7 @@ block:
   check v.errors["str"][0] == "The str must be an array."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["a"] = Param(value:"2020-01-02")
   p["b"] = Param(value:"2020-01-01")
   p["c"] = Param(value:"2020-01-03")
@@ -143,7 +143,7 @@ block:
   check v.errors["a"][1] == "The a must be a date before 2020-01-01T00:00:00+00:00."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"2020-01-02")
   p["before"] = Param(value:"2020-01-01")
   p["after"] = Param(value:"2020-01-03")
@@ -161,7 +161,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["num"] = Param(value:"2")
   p["str"] = Param(value:"aa")
   p["arr"] = Param(value:"a, b")
@@ -184,7 +184,7 @@ block:
   check v.errors["file"][0] == "The file must be between 3 and 4 kilobytes."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["true"] = Param(value:"true")
   p["a"] = Param(value:"a")
   let v = RequestValidation.new(p)
@@ -196,7 +196,7 @@ block:
   check v.errors["a"][0] == "The a field must be true or false."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["password"] = Param(value:"valid")
   p["password_confirmation"] = Param(value:"valid")
   var v = RequestValidation.new(p)
@@ -209,7 +209,7 @@ block:
   check v.errors["password_confirmation"][0] == "The password confirmation does not match."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid"] = Param(value:"2020-01-01")
   p["invalid"] = Param(value:"aaa")
   let v = RequestValidation.new(p)
@@ -220,7 +220,7 @@ block:
   check v.errors["invalid"][0] == "The invalid is not a valid date."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid_date"] = Param(value:"2020-01-01")
   p["invalid_date"] = Param(value:"a")
   p["valid_timestamp"] = Param(value:"1577880000")
@@ -237,7 +237,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"a")
   p["valid"] = Param(value:"b")
   p["invalid"] = Param(value:"a")
@@ -250,7 +250,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid"] = Param(value:"11")
   p["invalid"] = Param(value:"111")
   let v = RequestValidation.new(p)
@@ -262,7 +262,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid"] = Param(value:"11")
   p["invalid"] = Param(value:"111")
   let v = RequestValidation.new(p)
@@ -274,7 +274,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid"] = Param(value:"a, b, c")
   p["invalid"] = Param(value:"a, b, b")
   let v = RequestValidation.new(p)
@@ -286,7 +286,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["a"] = Param(value:"domain.com")
   p["b"] = Param(value:"[2001:0db8:bd05:01d2:288a:1fc0:0001:10ee]")
   p["c"] = Param(value:"[2001:0db8:bd05:01d2:288a::1fc0:0001:10ee]")
@@ -302,7 +302,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid"] = Param(value:"email@domain.com")
   p["invalid"] = Param(value:"Abc.@example.com")
   let v = RequestValidation.new(p)
@@ -315,7 +315,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["item"] = Param(value:"abcdefg")
   let v = RequestValidation.new(p)
   v.endsWith("item", ["fg"])
@@ -326,7 +326,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid"] = Param(value:"a", ext:"jpg")
   p["invalid"] = Param(value:"a")
   let v = RequestValidation.new(p)
@@ -339,7 +339,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid"] = Param(value:"a")
   p["invalid"] = Param(value:"")
   let v = RequestValidation.new(p)
@@ -352,7 +352,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"2")
   p["smaller"] = Param(value:"1")
   p["bigger"] = Param(value:"3")
@@ -364,7 +364,7 @@ block:
   check v.errors["base"][0] == "The base must be greater than bigger."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"ab", ext:"jpg")
   p["smaller"] = Param(value:"a", ext:"jpg")
   p["bigger"] = Param(value:"abc", ext:"jpg")
@@ -376,7 +376,7 @@ block:
   check v.errors["base"][0] == "The base must be greater than 0.0029296875 kilobytes."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"ab")
   p["smaller"] = Param(value:"a")
   p["bigger"] = Param(value:"abc")
@@ -388,7 +388,7 @@ block:
   check v.errors["base"][0] == "The base must be greater than bigger characters."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"a, b")
   p["smaller"] = Param(value:"a")
   p["bigger"] = Param(value:"a, b, c")
@@ -401,7 +401,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"2")
   p["same"] = Param(value:"2")
   p["smaller"] = Param(value:"1")
@@ -415,7 +415,7 @@ block:
   check v.errors["base"][0] == "The base must be greater than or equal bigger."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"a".repeat(2*1024), ext:"jpg")
   p["same"] = Param(value:"a".repeat(2*1024), ext:"jpg")
   p["smaller"] = Param(value:"a".repeat(1*1024), ext:"jpg")
@@ -429,7 +429,7 @@ block:
   check v.errors["base"][0] == "The base must be greater than or equal 3 kilobytes."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"ab")
   p["same"] = Param(value:"ab")
   p["smaller"] = Param(value:"a")
@@ -443,7 +443,7 @@ block:
   check v.errors["base"][0] == "The base must be greater than or equal bigger characters."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"a, b")
   p["same"] = Param(value:"a, b")
   p["smaller"] = Param(value:"a")
@@ -458,7 +458,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid"] = Param(ext:"jpg")
   p["invalid"] = Param(ext:"nim")
   let v = RequestValidation.new(p)
@@ -471,7 +471,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid"] = Param(value:"a")
   p["invalid"] = Param(value:"c")
   let v = RequestValidation.new(p)
@@ -483,7 +483,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"a")
   p["valid"] = Param(value:"a, b, c")
   p["invalid"] = Param(value:"b, c")
@@ -495,7 +495,7 @@ block:
   check v.errors["base"][0] == "The base field does not exist in invalid."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid"] = Param(value:"1")
   p["invalid"] = Param(value:"a")
   let v = RequestValidation.new(p)
@@ -508,7 +508,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid"] = Param(value:"""{"key": "value"}""")
   p["invalid"] = Param(value:"a")
   let v = RequestValidation.new(p)
@@ -521,7 +521,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"2")
   p["smaller"] = Param(value:"1")
   p["bigger"] = Param(value:"3")
@@ -533,7 +533,7 @@ block:
   check v.errors["base"][0] == "The base must be less than smaller."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"a".repeat(2*1024), ext:"jpg")
   p["smaller"] = Param(value:"a".repeat(1*1024), ext:"jpg")
   p["bigger"] = Param(value:"a".repeat(3*1024), ext:"jpg")
@@ -545,7 +545,7 @@ block:
   check v.errors["base"][0] == "The base must be less than 1.0 kilobytes."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"ab")
   p["smaller"] = Param(value:"a")
   p["bigger"] = Param(value:"abc")
@@ -557,7 +557,7 @@ block:
   check v.errors["base"][0] == "The base must be less than smaller characters."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"a, b")
   p["smaller"] = Param(value:"a")
   p["bigger"] = Param(value:"a, b, c")
@@ -570,7 +570,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"2")
   p["same"] = Param(value:"2")
   p["smaller"] = Param(value:"1")
@@ -584,7 +584,7 @@ block:
   check v.errors["base"][0] == "The base must be less than or equal smaller."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"a".repeat(2*1024), ext:"jpg")
   p["same"] = Param(value:"a".repeat(2*1024), ext:"jpg")
   p["smaller"] = Param(value:"a".repeat(1*1024), ext:"jpg")
@@ -598,7 +598,7 @@ block:
   check v.errors["base"][0] == "The base must be less than or equal 1 kilobytes."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"ab")
   p["same"] = Param(value:"ab")
   p["smaller"] = Param(value:"a")
@@ -612,7 +612,7 @@ block:
   check v.errors["base"][0] == "The base must be less than or equal smaller characters."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"a, b")
   p["same"] = Param(value:"a, b")
   p["smaller"] = Param(value:"a")
@@ -627,7 +627,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"2")
   let v = RequestValidation.new(p)
   v.maxNum("base", 3)
@@ -638,7 +638,7 @@ block:
   check v.errors["base"][0] == "The base may not be greater than 1."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"a".repeat(2*1024), ext:"jpg")
   let v = RequestValidation.new(p)
   v.maxFile("base", 3)
@@ -649,7 +649,7 @@ block:
   check v.errors["base"][0] == "The base may not be greater than 1 kilobytes."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"ab")
   let v = RequestValidation.new(p)
   v.maxStr("base", 3)
@@ -660,7 +660,7 @@ block:
   check v.errors["base"][0] == "The base may not be greater than 1 characters."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"a, b")
   let v = RequestValidation.new(p)
   v.maxArr("base", 3)
@@ -672,7 +672,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid"] = Param(value:"a", ext:"jpg")
   p["invalid"] = Param(value:"a", ext:"mp4")
   let v = RequestValidation.new(p)
@@ -684,7 +684,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"2")
   let v = RequestValidation.new(p)
   v.minNum("base", 1)
@@ -695,7 +695,7 @@ block:
   check v.errors["base"][0] == "The base must be at least 3."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"a".repeat(2*1024), ext:"jpg")
   let v = RequestValidation.new(p)
   v.minFile("base", 1)
@@ -706,7 +706,7 @@ block:
   check v.errors["base"][0] == "The base must be at least 3 kilobytes."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"ab")
   let v = RequestValidation.new(p)
   v.minStr("base", 1)
@@ -717,7 +717,7 @@ block:
   check v.errors["base"][0] == "The base must be at least 3 characters."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"a, b")
   let v = RequestValidation.new(p)
   v.minArr("base", 1)
@@ -729,7 +729,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid"] = Param(value:"a")
   p["invalid"] = Param(value:"b")
   let v = RequestValidation.new(p)
@@ -741,7 +741,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"abc")
   let v = RequestValidation.new(p)
   v.notRegex("base", re"\d")
@@ -752,7 +752,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid"] = Param(value:"-1.23")
   p["invalid"] = Param(value:"abc")
   let v = RequestValidation.new(p)
@@ -766,7 +766,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid"] = Param(value:"a")
   let v = RequestValidation.new(p)
   v.present("valid")
@@ -778,7 +778,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"abc")
   let v = RequestValidation.new(p)
   v.regex("base", re"\w")
@@ -788,7 +788,7 @@ block:
   check v.errors["base"][0] == "The base format is invalid."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid"] = Param(value:"abc")
   p["invalid1"] = Param(value:"")
   p["invalid2"] = Param(value:"null")
@@ -802,7 +802,7 @@ block:
   check v.errors["invalid2"][0] == "The invalid2 field is required."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["other"] = Param(value:"123")
   p["valid"] = Param(value:"abc")
   p["invalid1"] = Param(value:"")
@@ -819,7 +819,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["other"] = Param(value:"123")
   p["valid"] = Param(value:"abc")
   p["invalid1"] = Param(value:"")
@@ -836,7 +836,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["other"] = Param(value:"123")
   p["valid"] = Param(value:"abc")
   p["invalid1"] = Param(value:"")
@@ -853,7 +853,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["other1"] = Param(value:"123")
   p["other2"] = Param(value:"123")
   p["valid"] = Param(value:"abc")
@@ -871,7 +871,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["other1"] = Param(value:"123")
   p["other2"] = Param(value:"123")
   p["valid"] = Param(value:"abc")
@@ -889,7 +889,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid"] = Param(value:"abc")
   p["other"] = Param(value:"123")
   p["invalid1"] = Param(value:"")
@@ -906,7 +906,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["a"] = Param(value:"a")
   p["b"] = Param(value:"a")
   p["c"] = Param(value:"c")
@@ -918,7 +918,7 @@ block:
   check v.errors["a"][0] == "The a and c must match."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["num"] = Param(value:"2")
   p["file"] = Param(value:"a".repeat(2*1024), ext:"jpg")
   p["str"] = Param(value:"ab")
@@ -941,7 +941,7 @@ block:
 
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["base"] = Param(value:"abcde")
   let v = RequestValidation.new(p)
   v.startsWith("base", ["abc", "bcd"])
@@ -951,7 +951,7 @@ block:
   check v.errors["base"][0] == "The base must be start with one of following [\"bcd\", \"cde\"]."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["validtimestamp"] = Param(value:"1577804400")
   p["invalidtimestamp"] = Param(value:"18446744073709551615")
   p["negative"] = Param(value:"-1")
@@ -964,7 +964,7 @@ block:
   check v.errors["invalidtimestamp"][0] == "The invalidtimestamp is not a valid timestamp."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid"] = Param(value:"https://google.com:8000/xxx/yyy/zzz?key=value")
   p["invalid"] = Param(value:"fnyuaAxmoiniancywcnsnmuaic")
   let v = RequestValidation.new(p)
@@ -976,7 +976,7 @@ block:
   check v.errors["invalid"][0] == "The invalid format is invalid."
 
 block:
-  let p = newParams()
+  let p = Params.new()
   p["valid"] = Param(value:"a0a2a2d2-0b87-4a18-83f2-2529882be2de")
   p["invalid"] = Param(value:"iuajfassacds")
   let v = RequestValidation.new(p)
