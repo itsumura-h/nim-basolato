@@ -6,8 +6,7 @@ nimble -v
 # run server
 nimble install -y
 cd /root/project/tests/server
-#nim c main
-ducere build
+nim c main
 nohup ./main > /dev/null 2>&1 &
 
 # run test
