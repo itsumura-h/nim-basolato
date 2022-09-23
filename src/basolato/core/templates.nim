@@ -69,7 +69,7 @@ proc add*(self:Component, value:string) =
   self.value.add(value)
 
 proc toString*(self:Component):string =
-  return self.value
+  return self.value.strip()
 
 proc `$`*(self:Component):string =
   return self.toString()
@@ -467,7 +467,7 @@ when not defined(js):
 macro tmpli*(body: untyped): void =
   result = newStmtList()
 
-  result.add parseExpr("let res = Component.new()")
+  result.add parseExpr("result = Component.new()")
 
   var value = if body.kind in nnkStrLit..nnkTripleStrLit: body.strVal
                 else: body[1].strVal
