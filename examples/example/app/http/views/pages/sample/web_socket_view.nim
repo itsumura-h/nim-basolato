@@ -3,14 +3,14 @@ import ../../layouts/application_view
 
 
 proc webSocketComponentImpl():Component =
-  style "css", style:"""
+  let style = styleTmpl(Css, """
     <style>
       .form {
         border: 0px;
         box-shadow: none;
       }
     </style>
-  """
+  """)
 
   tmpli html"""
     <script>
@@ -50,24 +50,27 @@ proc webSocketComponent*():string =
 
 
 proc impl():Component =
-  style "css", style:"""
+  let style = styleTmpl(Css, """
     <style>
       .iframe {
         height: 80vh;
       }
     </style>
-  """
+  """)
 
   tmpli html"""
     $(style)
-    <section>
-      <aside>
-        <iframe src="/sample/web-socket-component" class="$(style.element("iframe"))"></iframe>
-      </aside>
-      <aside>
-        <iframe src="/sample/web-socket-component" class="$(style.element("iframe"))"></iframe>
-      </aside>
-    </section>
+    <main>
+      <a href="/">go back</a>
+      <section>
+        <aside>
+          <iframe src="/sample/web-socket-component" class="$(style.element("iframe"))"></iframe>
+        </aside>
+        <aside>
+          <iframe src="/sample/web-socket-component" class="$(style.element("iframe"))"></iframe>
+        </aside>
+      </section>
+    </main>
   """
 
 proc webSocketView*():string =

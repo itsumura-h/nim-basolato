@@ -5,27 +5,28 @@ Ducere command
 Table of Contents
 
 <!--ts-->
-   * [Ducere command](#ducere-command)
-      * [Introduction](#introduction)
-      * [Usages](#usages)
-         * [new](#new)
-         * [serve](#serve)
-         * [build](#build)
-         * [migrate](#migrate)
-         * [migrate](#migrate-1)
-         * [make](#make)
-            * [config](#config)
-            * [key](#key)
-            * [controller](#controller)
-            * [view](#view)
-            * [migration](#migration)
-            * [model](#model)
-               * [Create child domain model in aggregate](#create-child-domain-model-in-aggregate)
-            * [value object](#value-object)
-            * [usecase](#usecase)
-      * [Bash-completion](#bash-completion)
+* [Ducere command](#ducere-command)
+   * [Introduction](#introduction)
+   * [Usages](#usages)
+      * [new](#new)
+      * [serve](#serve)
+      * [build](#build)
+      * [migrate](#migrate)
+      * [migrate](#migrate-1)
+      * [make](#make)
+         * [config](#config)
+         * [key](#key)
+         * [controller](#controller)
+         * [view](#view)
+         * [migration](#migration)
+         * [model](#model)
+            * [Create child domain model in aggregate](#create-child-domain-model-in-aggregate)
+         * [value object](#value-object)
+         * [usecase](#usecase)
+   * [Bash-completion](#bash-completion)
 
-<!-- Added by: root, at: Wed Jun 15 11:34:20 UTC 2022 -->
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: root, at: Fri Sep 23 13:13:59 UTC 2022 -->
 
 <!--te-->
 

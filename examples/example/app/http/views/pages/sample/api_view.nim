@@ -6,11 +6,11 @@ import
 
 
 proc impl():Future[Component] {.async.} =
-  style "css", style:"""
+  let style = styleTmpl(Css, """
     <style>
       .className {}
     </style>
-  """
+  """)
 
   tmpli html"""
   $(style)

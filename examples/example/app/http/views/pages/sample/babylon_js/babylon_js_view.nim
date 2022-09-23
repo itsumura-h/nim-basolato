@@ -4,7 +4,7 @@ import ../../../layouts/application_view
 
 
 proc impl():Future[Component] {.async.} =
-  style "css", style:"""
+  let style = styleTmpl(Css, """
     <style>
       #renderCanvas {
         width   : 100%;
@@ -12,7 +12,7 @@ proc impl():Future[Component] {.async.} =
         touch-action: none;
       }
     </style>
-  """
+  """)
 
   tmpli html"""
   <main>

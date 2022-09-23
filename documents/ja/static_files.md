@@ -4,6 +4,11 @@ Public
 
 目次
 <!--ts-->
+* [Public](#public)
+
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: root, at: Fri Sep 23 13:14:41 UTC 2022 -->
+
 <!--te-->
 
 デフォルトでは、Basolatoはる静的ファイルへのリクエストを受け取ると、publicディレクトリの中を探します。

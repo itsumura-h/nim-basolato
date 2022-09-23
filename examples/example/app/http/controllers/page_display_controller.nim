@@ -7,6 +7,7 @@ from ../../../config/database import rdb
 import allographer/query_builder
 # views
 import ../views/pages/welcome_view
+import ../views/pages/welcome_scf_view
 import ../views/pages/sample/with_style_view
 import ../views/pages/sample/babylon_js/babylon_js_view
 import ../views/pages/sample/with_script_view
@@ -15,11 +16,15 @@ import ../views/pages/sample/api_view
 
 
 proc index*(context:Context, params:Params):Future[Response] {.async.} =
-  return render(await asyncHtml("pages/sample/index.html"))
+  return render(asyncHtml("pages/sample/index.html").await)
 
 proc welcome*(context:Context, params:Params):Future[Response] {.async.} =
   let name = "Basolato " & BasolatoVersion
   return render(welcomeView(name))
+
+proc welcomeScf*(context:Context, params:Params):Future[Response] {.async.} =
+  let name = "Basolato " & BasolatoVersion
+  return render(welcomeScfView(name).await)
 
 proc fib_logic(n: int): int =
   if n < 2:
@@ -102,11 +107,11 @@ var connections = newSeq[WebSocket]()
 
 proc webSocket*(context:Context, params:Params):Future[Response] {.async.} =
   try:
-    var ws = await newWebSocket(context.request)
+    var ws = newWebSocket(context.request).await
     connections.add(ws)
     await ws.send("Welcome to simple chat server")
     while ws.readyState == Open:
-      let packet = await ws.receiveStrPacket()
+      let packet = ws.receiveStrPacket().await
       echo "Received packet: " & packet
       for other in connections:
         if other.readyState == Open:

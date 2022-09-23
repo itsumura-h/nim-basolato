@@ -5,15 +5,18 @@ import
   ./with_script_layout_view_model
 
 const s = staticRead("./with_script_layout_script.js")
-let script = Component(value:s)
+
+proc script():Component = tmpli html"""
+${result.add(s)}
+"""
 
 proc withScriptLayoutView*():Future[Component] {.async.} =
-  style "css", style:"""
+  let style = styleTmpl(Css, """
     <style>
       .className {
       }
     </style>
-  """
+  """)
 
   tmpli html"""
     <div class="$(style.element("className"))">
@@ -22,7 +25,7 @@ proc withScriptLayoutView*():Future[Component] {.async.} =
     </div>
     $(style)
     <script>
-      $(script)
+      $(script())
       window.addEventListener('load', ()=>{init('num')})
     </script>
   """

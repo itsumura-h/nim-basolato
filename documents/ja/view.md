@@ -4,55 +4,97 @@
 
 目次
 <!--ts-->
-   * [ビュー](#ビュー)
-      * [イントロダクション](#イントロダクション)
-      * [コンポーネント指向](#コンポーネント指向)
-         * [CSS](#css)
-         * [SCSS](#scss)
-         * [API](#api)
-      * [ヘルパー関数](#ヘルパー関数)
-         * [Csrfトークン](#csrfトークン)
-         * [old関数](#old関数)
-      * [その他のテンプレートライブラリ](#その他のテンプレートライブラリ)
-         * [ブロックコンポーネントの例](#ブロックコンポーネントの例)
-            * [htmlgen](#htmlgen)
-            * [SCF](#scf)
-            * [Karax](#karax)
+* [ビュー](#ビュー)
+   * [イントロダクション](#イントロダクション)
+   * [文法](#文法)
+      * [if](#if)
+      * [for](#for)
+      * [while](#while)
+   * [コンポーネント指向](#コンポーネント指向)
+      * [CSS](#css)
+      * [SCSS](#scss)
+      * [API](#api)
+   * [ヘルパー関数](#ヘルパー関数)
+      * [Csrfトークン](#csrfトークン)
+      * [old関数](#old関数)
+   * [SCFをテンプレートエンジンとして使う](#scfをテンプレートエンジンとして使う)
 
-<!-- Added by: root, at: Wed Jun 15 11:35:55 UTC 2022 -->
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: root, at: Fri Sep 23 13:15:09 UTC 2022 -->
 
 <!--te-->
 
 ## イントロダクション
-Basolatoでは、デフォルトのテンプレートエンジンとして、`nim-templates`を使用しています。これは `basolato/view` をインポートすることで利用できます。
+Basolatoでは、デフォルトのテンプレートエンジンとして、[nim-templates](https://github.com/onionhammer/nim-templates)をカスタマイズしたオリジナルのものを使用しています。これは `basolato/view` をインポートすることで利用できます。
 
 ```nim
 import basolato/view
 
-proc baseImpl(content:string): string =
+proc baseImpl(content:Component): Component =
   tmpli html"""
     <html>
       <heade>
         <title>Basolato</title>
       </head>
       <body>
-        $(content.get)
+        $(content)
       </body>
     </html>
   """
 
-proc indexImpl(message:string): string =
+proc indexImpl(message:string): Component =
   tmpli html"""
-    <p>$(message.get)</p>
+    <p>$(message)</p>
   """
 
 proc indexView*(message:string): string =
-  baseImpl(indexImpl(message))
+  $baseImpl(indexImpl(message))
+```
+
+## 文法
+### if
+```nim
+proc indexView(arg:string):Component = tmpli html"""
+$if arg == "a"{
+  <p>A</p>
+}
+$elif arg == "b"{
+  <p>B</p>
+}
+$else{
+  <p>C</p>
+}
+"""
+```
+
+### for
+```nim
+proc indexView(args:openarray[string]):Component = tmpli html"""
+<li>
+  $for row in args{
+    <ul>$(row)</ul>
+  }
+</li>
+"""
+```
+
+### while
+```nim
+proc indexView(args:openarray[string]):Component = tmpli html"""
+<ul>
+  ${ var y = 0 }
+  $while y < 4 {
+    <li>$(y)</li>
+    ${ inc(y) }
+  }
+</ul>
 ```
 
 ## コンポーネント指向
 Basolato viewは、ReactやVueのようなコンポーネント指向のデザインを採用しています。 
-コンポーネントとは、htmlとJavaScriptとCSSの単一の塊であり、htmlの文字列を返す関数のことです。
+コンポーネントとは、htmlとJavaScriptとCSSの単一の塊であり、htmlの文字列を返す関数のことです。  
+Basolatoではコンポーネントの親子構造を実現するために、`Componnet`という型を用意しています。コンポーネントの返り値には `Component`を使ってください。
+
 
 ### CSS
 controller
@@ -70,7 +112,7 @@ import ../layouts/application_view
 
 
 proc impl():Component =
-  style "css", style:"""
+  let style = styleTmpl(Css, """
     <style>
       .background {
         height: 200px;
@@ -82,7 +124,7 @@ proc impl():Component =
         background-color: green;
       }
     </style>
-  """
+  """)
 
   tmpli html"""
     $(style)
@@ -133,31 +175,31 @@ apk add --no-cache libsass-dev
 
 そして、次のようにスタイルブロックを書きます。
 ```nim
-style "scss", style:"""
-<style>
-  .background {
-    height: 200px;
-    width: 200px;
-    background-color: blue;
+let style = styleTmpl(Scss, """
+  <style>
+    .background {
+      height: 200px;
+      width: 200px;
+      background-color: blue;
 
-    &:hover {
-      background-color: green;
+      &:hover {
+        background-color: green;
+      }
     }
-  }
-</style>
+  </style>
 """
 ```
 
 ### API
-`style` テンプレートは `Css` 型のインスタンスを `name` の 引数に格納します。
+`styleTmpl`関数は `Style` 型のインスタンスを作ります。
 
 ```nim
-# for CSS
-template style*(typ:string, name, body: untyped):untyped
+type StyleType* = enum
+  Css, Scss
 
-proc `$`*(self:Css):string
+proc styleTmpl*(typ:StyleType, body:string):Style
 
-proc element*(self:Css, name:string):string
+proc element*(self:Style, name:string):string
 ```
 
 ## ヘルパー関数
@@ -168,7 +210,7 @@ proc element*(self:Css, name:string):string
 ```nim
 import basolato/view
 
-proc index*():string =
+proc index*():Component =
   tmpli html"""
     <form>
       $(csrfToken())
@@ -182,10 +224,9 @@ proc index*():string =
 
 API
 ```nim
-proc old*(params:JsonNode, key:string):string =
-
-proc old*(params:TableRef, key:string):string =
-
+proc old*(params:JsonNode, key:string, default=""):string
+proc old*(params:TableRef, key:string, default=""):string
+proc old*(params:Params, key:string, default=""):string
 ```
 
 controller
@@ -217,172 +258,39 @@ proc signinView*(params=newJObject()):string =
 ```
 `params` にキー `email` があれば値を表示し、なければ空の文字列を表示します。
 
-## その他のテンプレートライブラリ
-HTMLを生成する他のライブラリもBasolatoに選択することができます。しかし、それぞれのライブラリには、それぞれの利点と欠点があります。 
+## SCFをテンプレートエンジンとして使う
+少し手を加えるだけで、テンプレートエンジンとして[SCF](https://nim-lang.org/docs/filters.html)を使うこともできます。
 
-- [htmlgen](https://nim-lang.org/docs/htmlgen.html)
-- [SCF](https://nim-lang.org/docs/filters.html)
-- [Karax](https://github.com/pragmagic/karax)
-- [nim-templates](https://github.com/onionhammer/nim-templates)
+1. `#? stdtmpl | standard` を `#? stdtmpl(toString="toString") | standard`に差し替える
+1. `basolato/view`をimportする
+1. 返り値の型を`Component`にする
+1. `result = ""` を `result = Component.new()`に差し替える
+1. もし非同期で使いたい場合には、返り値の型を`Future[Componente]`にし、`{.async.}`プラグマを付けます
 
-<table>
-  <tr>
-    <th>ライブラリ</th><th>メリット</th><th>デメリット</th>
-  </tr>
-  <tr>
-    <td>htmlgen</td>
-    <td>
-      <ul>
-        <li>Nim標準ライブラリ</li>
-        <li>Nimプログラマなら簡単に使える</li>
-        <li>1つのファイルに複数の関数を定義できる</li>
-      </ul>
-    </td>
-    <td>
-      <ul>
-        <li>if文やfor文が使えない</li>
-        <li>デザイナーやマークアップエンジニアとの共同作業は難しいかもしれない</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td>SCF</td>
-    <td>
-      <li>Nim標準ライブラリ</li>
-      <li>if文、for文が使える</li>
-      <li>デザイナーやマークアップエンジニアとの共同作業が容易</li>
-    </td>
-    <td>
-      <ul>
-        <li>1つのファイルに複数の関数を定義できない</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td>Karax</td>
-    <td>
-      <li>1つのファイルに複数の関数を定義できる</li>
-      <li>if文、for文が使える</li>
-    </td>
-    <td>
-      <ul>
-        <li>デザイナーやマークアップエンジニアとの共同作業は難しいかもしれない</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td>nim-templates</td>
-    <td>
-      <ul>
-        <li>1つのファイルに複数の関数を定義できる</li>
-        <li>if文、for文が使える</li>
-        <li>デザイナーやマークアップエンジニアとの共同作業が容易</li>
-      </ul>
-    </td>
-    <td>
-      <ul>
-        <li>個人がメンテナンスしている</li>
-      </ul>
-    </td>
-  </tr>
-</table>
-
-ビューファイルは、`app/http/views`ディレクトリにある必要があります。
-
-### ブロックコンポーネントの例
-
-コントローラと出力結果はそれぞれの例で同じです。
-
-controller
+結果としてこのようにします。
 ```nim
-proc index*(): Response =
-  let message = "Basolato"
-  return render(indexView(message))
-```
-
-出力結果
-```html
-<html>
-  <head>
-    <title>Basolato</title>
-  </head>
+#? stdtmpl(toString="toString") | standard
+#import std/asyncdispatch
+#import basolato/view
+#proc indexView*(str:string, arr:openArray[string]): Future[Component] {.async.} =
+# result = Component.new()
+<!DOCTYPE html>
+<html lang="en">
   <body>
-    <p>Basolato</p>
+    <p>${str}</p>
+    <ul>
+      #for row in arr:
+        <li>${row}</li>
+      #end for
+    </ul>
   </body>
 </html>
 ```
 
-#### htmlgen
-
+コントローラー
 ```nim
-import htmlgen
-
-proc baseImpl(content:string): string =
-  html(
-    head(
-      title("Basolato")
-    ),
-    body(content)
-  )
-
-proc indexImpl(message:string): string =
-  p(message)
-
-proc indexView*(message:string): string =
-  baseImpl(indexImpl(message))
-```
-
-#### SCF
-SCFでは関数毎にファイルを分ける必要があります。
-
-baseImpl.nim
-```nim
-#? stdtmpl | standard
-#proc baseImpl*(content:string): string =
-<html>
-  <heade>
-    <title>Basolato</title>
-  </head>
-  <body>
-    $content
-  </body>
-</html>
-```
-
-indexImpl.nim
-```nim
-#? stdtmpl | standard
-#proc indexImpl*(message:string): string =
-<p>$message</p>
-```
-
-index_view.nim
-```nim
-#? stdtmpl | standard
-#import baseImpl
-#import indexImpl
-#proc indexView*(message:string): string =
-${baseImpl(indexImpl(message))}
-```
-
-#### Karax
-**Server Side HTML Rendering** の使い方をしています。
-
-```nim
-import karax / [karasdsl, vdom]
-
-proc baseImpl(content:string): string =
-  var vnode = buildView(html):
-    head:
-      title: text("Basolato")
-    body: text(content)
-  return $vnode
-
-proc indexImpl(message:string): string =
-  var vnode = buildView(p):
-    text(message)
-  return $vnode
-
-proc indexView*(message:string): string =
-  baseImpl(indexImpl(message))
+proc index(context:Context, params:Params):Future[Response] {.async.} =
+  let str = "<script>alert('aaa')</script>"
+  let arr = ["aaa", "bbb", "ccc"]
+  return render(indexView(str, arr).await)
 ```

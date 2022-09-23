@@ -5,13 +5,14 @@ Headers
 Table of Contents
 
 <!--ts-->
-   * [Headers](#headers)
-      * [Request Header](#request-header)
-      * [Response header](#response-header)
-         * [Type of headers](#type-of-headers)
-         * [Set headers in controller](#set-headers-in-controller)
+* [Headers](#headers)
+   * [Request Header](#request-header)
+   * [Response header](#response-header)
+      * [Type of headers](#type-of-headers)
+      * [Set headers in controller](#set-headers-in-controller)
 
-<!-- Added by: root, at: Wed Jun 15 11:34:11 UTC 2022 -->
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: root, at: Fri Sep 23 13:13:33 UTC 2022 -->
 
 <!--te-->
 

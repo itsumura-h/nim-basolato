@@ -8,7 +8,8 @@ import
   ./logger,
   ./security/context,
   ./security/cookie,
-  ./security/session
+  ./security/session,
+  ./templates
 
 
 type Response* = ref object
@@ -50,6 +51,42 @@ func render*(body:string, headers:HttpHeaders):Response =
   return Response(
     status:Http200,
     body:body,
+    headers: headers
+  )
+
+func render*(status:HttpCode, body:Component):Response =
+  let headers = newHttpHeaders(true)
+  headers["Content-Type"] = "text/html; charset=utf-8"
+  return Response(
+    status:status,
+    body: $body,
+    headers: headers
+  )
+
+proc render*(status:HttpCode, body:Component, headers:HttpHeaders):Response =
+  if not headers.hasKey("Content-Type"):
+    headers["Content-Type"] = "text/html; charset=utf-8"
+  return Response(
+    status:status,
+    body: $body,
+    headers: headers
+  )
+
+func render*(body:Component):Response =
+  let headers = newHttpHeaders(true)
+  headers["Content-Type"] = "text/html; charset=utf-8"
+  return Response(
+    status:Http200,
+    body: $body,
+    headers: headers
+  )
+
+func render*(body:Component, headers:HttpHeaders):Response =
+  if not headers.hasKey("Content-Type"):
+    headers["Content-Type"] = "text/html; charset=utf-8"
+  return Response(
+    status:Http200,
+    body: $body,
     headers: headers
   )
 

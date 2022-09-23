@@ -5,23 +5,24 @@ Controller
 Table of Contents
 
 <!--ts-->
-   * [Controller](#controller)
-      * [Introduction](#introduction)
-      * [Creating a Controller](#creating-a-controller)
-      * [How to get params](#how-to-get-params)
-         * [Request params](#request-params)
-         * [Url params](#url-params)
-         * [Query params](#query-params)
-      * [Response](#response)
-         * [Returning string](#returning-string)
-         * [Returning HTML file](#returning-html-file)
-         * [Returning template](#returning-template)
-         * [Returning JSON](#returning-json)
-         * [Response with status](#response-with-status)
-         * [Response with header](#response-with-header)
-      * [Redirect](#redirect)
+* [Controller](#controller)
+   * [Introduction](#introduction)
+   * [Creating a Controller](#creating-a-controller)
+   * [How to get params](#how-to-get-params)
+      * [Request params](#request-params)
+      * [Url params](#url-params)
+      * [Query params](#query-params)
+   * [Response](#response)
+      * [Returning string](#returning-string)
+      * [Returning HTML file](#returning-html-file)
+      * [Returning template](#returning-template)
+      * [Returning JSON](#returning-json)
+      * [Response with status](#response-with-status)
+      * [Response with header](#response-with-header)
+   * [Redirect](#redirect)
 
-<!-- Added by: root, at: Wed Jun 15 11:34:56 UTC 2022 -->
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: root, at: Fri Sep 23 13:13:21 UTC 2022 -->
 
 <!--te-->
 

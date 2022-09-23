@@ -4,12 +4,13 @@
 
 目次
 <!--ts-->
-   * [ログ](#ログ)
-      * [イントロダクション](#イントロダクション)
-      * [API](#api)
-      * [サンプル](#サンプル)
+* [ログ](#ログ)
+   * [イントロダクション](#イントロダクション)
+   * [API](#api)
+   * [サンプル](#サンプル)
 
-<!-- Added by: root, at: Wed Jun 15 11:35:28 UTC 2022 -->
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: root, at: Fri Sep 23 13:15:22 UTC 2022 -->
 
 <!--te-->
 

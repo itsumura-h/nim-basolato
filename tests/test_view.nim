@@ -10,7 +10,7 @@ block:
   # html expression
   proc a():Component = tmpli html"""
     <p>aaa</p>
-  """
+  """ 
   check a().toString() == "<p>aaa</p>"
 
 block:
@@ -74,11 +74,11 @@ block:
   check b(arg).toString() == "<div><p>aaa</p></div>"
 
 block:
-  style "css", style:"""
+  let style = styleTmpl(Css, """
     .className{
       color: red;
     }
-  """
+  """)
   let className = style.element("className")
 
   let expanded = fmt("""

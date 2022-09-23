@@ -5,55 +5,100 @@ View
 Table of Contents
 
 <!--ts-->
-   * [View](#view)
-      * [Introduction](#introduction)
-      * [Component style design](#component-style-design)
-         * [CSS](#css)
-         * [SCSS](#scss)
-         * [API](#api)
-      * [Helper functions](#helper-functions)
-         * [Csrf Token](#csrf-token)
-         * [old helper](#old-helper)
-      * [Other template libraries](#other-template-libraries)
-         * [Block component example](#block-component-example)
-            * [htmlgen](#htmlgen)
-            * [SCF](#scf)
-            * [Karax](#karax)
+* [View](#view)
+   * [Introduction](#introduction)
+   * [Template syntax](#template-syntax)
+      * [if](#if)
+      * [for](#for)
+      * [while](#while)
+   * [Component style design](#component-style-design)
+      * [CSS](#css)
+      * [SCSS](#scss)
+      * [API](#api)
+   * [Helper functions](#helper-functions)
+      * [Csrf Token](#csrf-token)
+      * [old helper](#old-helper)
+   * [Uses SCF as template engine](#uses-scf-as-template-engine)
 
-<!-- Added by: root, at: Wed Jun 15 11:34:34 UTC 2022 -->
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: root, at: Fri Sep 23 13:13:51 UTC 2022 -->
 
 <!--te-->
 
 ## Introduction
-Basolato use `nim-templates` as a default template engin. It can be used by importing `basolato/view`.
+Basolato uses the customized version of [nim-templates](https://github.com/onionhammer/nim-templates) as a default template engin. It can be used by importing `basolato/view`.
 
 ```nim
 import basolato/view
 
-proc baseImpl(content:string): string =
+proc baseImpl(content:Component): Component =
   tmpli html"""
     <html>
       <heade>
         <title>Basolato</title>
       </head>
       <body>
-        $(content.get)
+        $(content)
       </body>
     </html>
   """
 
-proc indexImpl(message:string): string =
+proc indexImpl(message:string): Component =
   tmpli html"""
-    <p>$(message.get)</p>
+    <p>$(message)</p>
   """
 
 proc indexView*(message:string): string =
-  baseImpl(indexImpl(message))
+  $baseImpl(indexImpl(message))
+```
+
+## Template syntax
+### if
+```nim
+proc indexView(arg:string):Component =
+  tmpli html"""
+    $if arg == "a"{
+      <p>A</p>
+    }
+    $elif arg == "b"{
+      <p>B</p>
+    }
+    $else{
+      <p>C</p>
+    }
+  """
+```
+
+### for
+```nim
+proc indexView(args:openarray[string]):Component =
+  tmpli html"""
+    <li>
+      $for row in args{
+        <ul>$(row)</ul>
+      }
+    </li>
+  """
+```
+
+### while
+```nim
+proc indexView(args:openarray[string]):Component =
+  tmpli html"""
+    <ul>
+      ${ var y = 0 }
+      $while y < 4 {
+        <li>$(y)</li>
+        ${ inc(y) }
+      }
+    </ul>
+  """
 ```
 
 ## Component style design
 Basolato view is designed for component oriented design like React and Vue.  
-Component is a single chunk of html, JavaScriptand and css, and just a procedure that return html string.
+Component is a single chunk of html, JavaScriptand and css, and just a procedure that return html string.  
+Basolato provides a type `Componnet` to realize the parent-child structure of components. Use `Component` for the return value of a component.
 
 ### CSS
 controller
@@ -70,7 +115,7 @@ import basolato/view
 
 
 proc impl():Component = 
-  style "css", style:"""
+  let style = styleTmpl(Css, """
     <style>
       .background {
         height: 200px;
@@ -133,7 +178,7 @@ apk add --no-cache libsass-dev
 
 Then you can write style block like this.
 ```nim
-style "scss", style:"""
+let style = styleTmpl(Scss, """
   <style>
     .background {
       height: 200px;
@@ -149,15 +194,15 @@ style "scss", style:"""
 ```
 
 ### API
-`style` template crate `Css` type instance in `name` arg variable.
+`styleTmpl` proc create `Style` type instance.
 
 ```nim
-# for CSS
-template style*(typ:string, name, body: untyped):untyped
+type StyleType* = enum
+  Css, Scss
 
-proc `$`*(self:Css):string
+proc styleTmpl*(typ:StyleType, body:string):Style
 
-proc element*(self:Css, name:string):string
+proc element*(self:Style, name:string):string
 ```
 
 ## Helper functions
@@ -168,7 +213,7 @@ To send POST request from `form`, you have to set `csrf token`. You can use help
 ```nim
 import basolato/view
 
-proc index*():string =
+proc index*():Component =
   tmpli html"""
     <form>
       $(csrfToken())
@@ -182,10 +227,9 @@ If the user's input value is invalid and you want to back the input page and dis
 
 API
 ```nim
-proc old*(params:JsonNode, key:string):string =
-
-proc old*(params:TableRef, key:string):string =
-
+proc old*(params:JsonNode, key:string, default=""):string
+proc old*(params:TableRef, key:string, default=""):string
+proc old*(params:Params, key:string, default=""):string
 ```
 
 controller
@@ -217,172 +261,39 @@ proc signinView*(params=newJObject()):string =
 ```
 It display value if `params` has key `email`, otherwise display empty string.
 
-## Other template libraries
-Other libraries which generate HTML can be chosen for Basolato too. However, each library has it's own benefits and drawbacks.  
+## Uses SCF as template engine
+You can also use [SCF](https://nim-lang.org/docs/filters.html) as a template engine with only a few modifications.
 
-- [htmlgen](https://nim-lang.org/docs/htmlgen.html)
-- [SCF](https://nim-lang.org/docs/filters.html)
-- [Karax](https://github.com/pragmagic/karax)
-- [nim-templates](https://github.com/onionhammer/nim-templates)
+1. replace `#? stdtmpl | standard` to `#? stdtmpl(toString="toString") | standard`
+1. import `basolato/view`
+1. return type should be `Component`
+1. replace `result = ""` to `result = Component.new()`
+1. if you want to use in async, return type shoud be `Future[Component]` and add `{.async.}` pragma.
 
-<table>
-  <tr>
-    <th>Library</th><th>Benefits</th><th>Drawbacks</th>
-  </tr>
-  <tr>
-    <td>htmlgen</td>
-    <td>
-      <ul>
-        <li>Nim standard library</li>
-        <li>Easy to use for Nim programmer</li>
-        <li>Available to define plural Procedures in one file</li>
-      </ul>
-    </td>
-    <td>
-      <ul>
-        <li>Cannot use `if` statement and `for` statement</li>
-        <li>Maybe difficult to collaborate with designer or markup enginner</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td>SCF</td>
-    <td>
-      <li>Nim standard library</li>
-      <li>Available to use `if` statement and `for` statement</li>
-      <li>Easy to collaborate with designer or markup enginner</li>
-    </td>
-    <td>
-      <ul>
-        <li>Cannot define plural procedures in one file</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td>Karax</td>
-    <td>
-      <li>Available to define plural Procedures in one file</li>
-      <li>Available to use `if` statement and `for` statement</li>
-    </td>
-    <td>
-      <ul>
-        <li>Maybe difficult to collaborate with designer or markup enginner</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td>nim-templates</td>
-    <td>
-      <ul>
-        <li>Available to define plural Procedures in one file</li>
-        <li>Available to use `if` statement and `for` statement</li>
-        <li>Easy to collaborate with designer or markup enginner</li>
-      </ul>
-    </td>
-    <td>
-      <ul>
-        <li>Maintained by a person</li>
-      </ul>
-    </td>
-  </tr>
-</table>
-
-Views file should be in `app/http/views` dir.
-
-### Block component example
-
-Controller and result is same for each example.
+Full example
+```nim
+#? stdtmpl(toString="toString") | standard
+#import std/asyncdispatch
+#import basolato/view
+#proc indexView*(str:string, arr:openArray[string]): Future[Component] {.async.} =
+# result = Component.new()
+<!DOCTYPE html>
+<html lang="en">
+  <body>
+    <p>${str}</p>
+    <ul>
+      #for row in arr:
+        <li>${row}</li>
+      #end for
+    </ul>
+  </body>
+</html>
+```
 
 controller
 ```nim
-proc index*(): Response =
-  let message = "Basolato"
-  return render(indexView(message))
-```
-
-result
-```html
-<html>
-  <head>
-    <title>Basolato</title>
-  </head>
-  <body>
-    <p>Basolato</p>
-  </body>
-</html>
-```
-
-#### htmlgen
-
-```nim
-import htmlgen
-
-proc baseImpl(content:string): string =
-  html(
-    head(
-      title("Basolato")
-    ),
-    body(content)
-  )
-
-proc indexImpl(message:string): string =
-  p(message)
-
-proc indexView*(message:string): string =
-  baseImpl(indexImpl(message))
-```
-
-#### SCF
-SCF should divide procs for each file
-
-baseImpl.nim
-```nim
-#? stdtmpl | standard
-#proc baseImpl*(content:string): string =
-<html>
-  <heade>
-    <title>Basolato</title>
-  </head>
-  <body>
-    $content
-  </body>
-</html>
-```
-
-indexImpl.nim
-```nim
-#? stdtmpl | standard
-#proc indexImpl*(message:string): string =
-<p>$message</p>
-```
-
-index_view.nim
-```nim
-#? stdtmpl | standard
-#import baseImpl
-#import indexImpl
-#proc indexView*(message:string): string =
-${baseImpl(indexImpl(message))}
-```
-
-#### Karax
-This usage is **Server Side HTML Rendering**
-
-```nim
-import karax / [karasdsl, vdom]
-
-proc baseImpl(content:string): string =
-  var vnode = buildView(html):
-    head:
-      title: text("Basolato")
-    body: text(content)
-  return $vnode
-
-proc indexImpl(message:string): string =
-  var vnode = buildView(p):
-    text(message)
-  return $vnode
-
-proc indexView*(message:string): string =
-  baseImpl(indexImpl(message))
+proc index(context:Context, params:Params):Future[Response] {.async.} =
+  let str = "<script>alert('aaa')</script>"
+  let arr = ["aaa", "bbb", "ccc"]
+  return render(indexView(str, arr).await)
 ```

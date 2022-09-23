@@ -22,6 +22,8 @@ let ROUTES = @[
     Route.group("/sample", @[
       Route.get("/welcome", page_display_controller.welcome)
         .middleware(example_middleware.setMiddleware2),
+      Route.get("/welcome-scf", page_display_controller.welcomeScf)
+        .middleware(example_middleware.setMiddleware2),
       Route.get("/fib/{num:int}", page_display_controller.fib),
       Route.get("/with-style", page_display_controller.withStylePage),
       Route.get("/babylon-js", page_display_controller.babylonJsPage),
