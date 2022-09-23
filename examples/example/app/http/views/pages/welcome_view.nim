@@ -3,7 +3,7 @@ import ../layouts/application_view
 
 
 proc impl(name:string):Component =
-  style "css", style:"""
+  let style = styleTmpl(Css, """
     <style>
       body {
         background-color: black;
@@ -76,7 +76,7 @@ proc impl(name:string):Component =
         margin-top: 0;
       }
     </style>
-  """
+  """)
 
   tmpli html"""
     $(style)

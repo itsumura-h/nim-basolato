@@ -5,12 +5,10 @@ import
   std/json,
   std/macros,
   std/parseutils,
-  std/random,
   std/strutils,
-  std/tables
+  std/tables,
+  ./security/random_string
 
-
-randomize()
 
 # ========== xmlEncode ==========
 # extract from `cgi` to be able to run for JavaScript.
@@ -57,13 +55,6 @@ proc toString*(val:string):string =
 proc toString*(val:bool | int | float):string =
   return val.`$`.xmlEncode
 
-# ========== random string ==========
-proc randStr*(
-  size: int = 21,
-  alphabet: string = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-):string {.gcsafe.} =
-  for _ in 1..size:
-    result.add(alphabet.sample())
 
 # ========== Component ==========
 type Component* = ref object
@@ -476,7 +467,7 @@ when not defined(js):
 macro tmpli*(body: untyped): void =
   result = newStmtList()
 
-  result.add parseExpr("result = Component.new()")
+  result.add parseExpr("let res = Component.new()")
 
   var value = if body.kind in nnkStrLit..nnkTripleStrLit: body.strVal
                 else: body[1].strVal

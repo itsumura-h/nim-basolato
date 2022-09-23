@@ -3,7 +3,7 @@ import ../../layouts/application_view
 
 
 proc component1():Component =
-  style "css", style1:"""
+  let style1 = styleTmpl(Css, """
     <style>
       .className{
         height: 200px;
@@ -14,7 +14,7 @@ proc component1():Component =
         background-color: blue;
       }
     </style>
-  """
+  """)
 
   tmpli html"""
     $(style1)
@@ -23,7 +23,7 @@ proc component1():Component =
 
 
 proc component2():Component =
-  style "css", style2:"""
+  let style2 = styleTmpl(Css, """
     <style>
       .className{
         height: 200px;
@@ -34,7 +34,7 @@ proc component2():Component =
         background-color: green;
       }
     </style>
-  """
+  """)
 
   tmpli html"""
     $(style2)
@@ -42,7 +42,7 @@ proc component2():Component =
   """
 
 proc component3():Component =
-  style "scss", style3:"""
+  let style3= styleTmpl(Scss, """
     <style>
       .className{
         height: 200px;
@@ -54,7 +54,7 @@ proc component3():Component =
         }
       }
     </style>
-  """
+  """)
 
   tmpli html"""
     $(style3)

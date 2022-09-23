@@ -6,8 +6,8 @@ import ../../../../../src/basolato/request_validation
 import ../views/pages/sample/validation_view
 
 proc index*(context:Context, params:Params):Future[Response] {.async.} =
-  let (params, errors) = await context.getValidationResult()
-  return render(await validationView(params, errors))
+  let (params, errors) = context.getValidationResult().await
+  return render(validationView(params, errors).await)
 
 proc store*(context:Context, params:Params):Future[Response] {.async.} =
   let validation = RequestValidation.new(params)
@@ -24,5 +24,5 @@ proc store*(context:Context, params:Params):Future[Response] {.async.} =
   validation.betweenNum("number", 1, 10)
   validation.betweenNum("float", 0.1, 1.0)
   if validation.hasErrors:
-    await context.storeValidationResult(validation)
+    context.storeValidationResult(validation).await
   return redirect("/sample/validation")

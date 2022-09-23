@@ -11,12 +11,12 @@ ${result.add(s)}
 """
 
 proc withScriptLayoutView*():Future[Component] {.async.} =
-  style "css", style:"""
+  let style = styleTmpl(Css, """
     <style>
       .className {
       }
     </style>
-  """
+  """)
 
   tmpli html"""
     <div class="$(style.element("className"))">

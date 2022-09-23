@@ -4,14 +4,14 @@ import ../../layouts/application_view
 
 
 proc impl(params, errors:JsonNode):Future[Component] {.async.} =
-  style "css", style:"""
+  let style = styleTmpl(Css, """
     <style>
       .error {
         background-color: pink;
         color: red;
       }
     </style>
-  """
+  """)
 
   tmpli html"""
     $(style)

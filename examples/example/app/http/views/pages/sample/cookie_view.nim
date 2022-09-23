@@ -5,10 +5,10 @@ import ../../layouts/application_view
 
 
 proc impl(cookies:JsonNode):Future[Component] {.async.} =
-  style "css", style:"""
+  let style = styleTmpl(Css, """
     .className {
     }
-  """
+  """)
 
   tmpli html"""
     <main>
