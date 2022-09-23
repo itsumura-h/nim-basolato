@@ -175,29 +175,31 @@ apk add --no-cache libsass-dev
 
 そして、次のようにスタイルブロックを書きます。
 ```nim
-style "scss", style:"""
-<style>
-  .background {
-    height: 200px;
-    width: 200px;
-    background-color: blue;
+let style = styleTmpl(Scss, """
+  <style>
+    .background {
+      height: 200px;
+      width: 200px;
+      background-color: blue;
 
-    &:hover {
-      background-color: green;
+      &:hover {
+        background-color: green;
+      }
     }
-  }
-</style>
+  </style>
 """
 ```
 
 ### API
-`style` テンプレートは `Css` 型のインスタンスを `name` の 引数に格納します。
+`styleTmpl`関数は `Style` 型のインスタンスを作ります。
 
 ```nim
-# for CSS
-template style*(typ:string, name, body: untyped):untyped
+type StyleType* = enum
+  Css, Scss
 
-proc element*(self:Css, name:string):string
+proc styleTmpl*(typ:StyleType, body:string):Style
+
+proc element*(self:Style, name:string):string
 ```
 
 ## ヘルパー関数
@@ -222,9 +224,9 @@ proc index*():Component =
 
 API
 ```nim
-proc old*(params:JsonNode, key:string):string
-proc old*(params:TableRef, key:string):string
-proc old*(params:Params, key:string):string
+proc old*(params:JsonNode, key:string, default=""):string
+proc old*(params:TableRef, key:string, default=""):string
+proc old*(params:Params, key:string, default=""):string
 ```
 
 controller

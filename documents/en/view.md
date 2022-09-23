@@ -194,13 +194,15 @@ let style = styleTmpl(Scss, """
 ```
 
 ### API
-`style` template crate `Css` type instance in `name` arg variable.
+`styleTmpl` proc create `Style` type instance.
 
 ```nim
-# for CSS
-template style*(typ:string, name, body: untyped):untyped
+type StyleType* = enum
+  Css, Scss
 
-proc element*(self:Css, name:string):string
+proc styleTmpl*(typ:StyleType, body:string):Style
+
+proc element*(self:Style, name:string):string
 ```
 
 ## Helper functions
@@ -225,10 +227,9 @@ If the user's input value is invalid and you want to back the input page and dis
 
 API
 ```nim
-proc old*(params:JsonNode, key:string):string =
-
-proc old*(params:TableRef, key:string):string =
-
+proc old*(params:JsonNode, key:string, default=""):string
+proc old*(params:TableRef, key:string, default=""):string
+proc old*(params:Params, key:string, default=""):string
 ```
 
 controller
