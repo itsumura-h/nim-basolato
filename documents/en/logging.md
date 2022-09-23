@@ -5,12 +5,13 @@ Logging
 Table of Contents
 
 <!--ts-->
-   * [Logging](#logging)
-      * [Introduction](#introduction)
-      * [API](#api)
-      * [Sample](#sample)
+* [Logging](#logging)
+   * [Introduction](#introduction)
+   * [API](#api)
+   * [Sample](#sample)
 
-<!-- Added by: root, at: Wed Jun 15 11:34:06 UTC 2022 -->
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: root, at: Fri Sep 23 13:14:03 UTC 2022 -->
 
 <!--te-->
 

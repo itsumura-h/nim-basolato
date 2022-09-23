@@ -19,12 +19,13 @@ serve(ROUTES)
 Table of Contents
 
 <!--ts-->
-   * [Routing](#routing)
-      * [HTTP_Verbs](#http_verbs)
-      * [Routing group](#routing-group)
-      * [URL Params](#url-params)
+* [Routing](#routing)
+   * [HTTP_Verbs](#http_verbs)
+   * [Routing group](#routing-group)
+   * [URL Params](#url-params)
 
-<!-- Added by: root, at: Wed Jun 15 11:33:56 UTC 2022 -->
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: root, at: Fri Sep 23 13:13:17 UTC 2022 -->
 
 <!--te-->
 

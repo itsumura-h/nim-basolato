@@ -4,11 +4,12 @@
 
 目次
 <!--ts-->
-   * [マイグレーション](#マイグレーション)
-      * [イントロダクション](#イントロダクション)
-      * [サンプル](#サンプル)
+* [マイグレーション](#マイグレーション)
+   * [イントロダクション](#イントロダクション)
+   * [サンプル](#サンプル)
 
-<!-- Added by: root, at: Wed Jun 15 11:36:00 UTC 2022 -->
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: root, at: Fri Sep 23 13:14:57 UTC 2022 -->
 
 <!--te-->
 

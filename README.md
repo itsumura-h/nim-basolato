@@ -21,20 +21,21 @@ https://hub.docker.com/r/nimlang/nim
 ## Table of Contents
 
 <!--ts-->
-   * [Basolato Framework](#basolato-framework)
-      * [Table of Contents](#table-of-contents)
-      * [Introduction](#introduction)
-         * [Set up your environment](#set-up-your-environment)
-         * [Dependencies](#dependencies)
-         * [Installation](#installation)
-         * [Creating projects](#creating-projects)
-      * [Documentation](#documentation)
-      * [Benchmark](#benchmark)
-      * [Roadmap](#roadmap)
-      * [Development](#development)
-         * [Generate TOC of documents](#generate-toc-of-documents)
+* [Basolato Framework](#basolato-framework)
+   * [Table of Contents](#table-of-contents)
+   * [Introduction](#introduction)
+      * [Set up your environment](#set-up-your-environment)
+      * [Dependencies](#dependencies)
+      * [Installation](#installation)
+      * [Creating projects](#creating-projects)
+   * [Documentation](#documentation)
+   * [Benchmark](#benchmark)
+   * [Roadmap](#roadmap)
+   * [Development](#development)
+      * [Generate TOC of documents](#generate-toc-of-documents)
 
-<!-- Added by: root, at: Wed Jun 15 11:40:11 UTC 2022 -->
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: root, at: Fri Sep 23 13:12:54 UTC 2022 -->
 
 <!--te-->
 

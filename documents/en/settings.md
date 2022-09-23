@@ -5,30 +5,35 @@ Settings
 Table of Contents
 
 <!--ts-->
-   * [Settings](#settings)
-      * [Introduction](#introduction)
-      * [Environment variables called at compile time](#environment-variables-called-at-compile-time)
-         * [SECRET_KEY :string](#secret_key-string)
-         * [DB_DRIVER :string = "sqlite"](#db_driver-string--sqlite)
-         * [SESSION_TYPE :string = "file"](#session_type-string--file)
-      * [Environment variables called at runtime](#environment-variables-called-at-runtime)
-         * [DB_CONNECTION :string = "sqlite"](#db_connection-string--sqlite)
-         * [DB_USER :string = ""](#db_user-string--)
-         * [DB_PASSWORD :string = ""](#db_password-string--)
-         * [DB_DATABASE :string = ""](#db_database-string--)
-         * [DB_MAX_CONNECTION :int = 1](#db_max_connection-int--1)
-         * [LOG_IS_DISPLAY :bool = true](#log_is_display-bool--true)
-         * [LOG_IS_FILE :bool = true](#log_is_file-bool--true)
-         * [LOG_IS_ERROR_FILE :bool = true](#log_is_error_file-bool--true)
-         * [LOG_DIR :string = getCurrentDir() / "logs"](#log_dir-string--getcurrentdir--logs)
-         * [SESSION_DB_PATH :string = getCurrentDir() / "session.db"](#session_db_path-string--getcurrentdir--sessiondb)
-         * [SESSION_TIME :int = 20160](#session_time-int--20160)
-         * [ENABLE_ANONYMOUS_COOKIE :bool = true](#enable_anonymous_cookie-bool--true)
-         * [COOKIE_DOMAINS :string = ""](#cookie_domains-string--)
-         * [HOST :string = "0.0.0.0"](#host-string--0000)
-         * [LOCALE :string = "en"](#locale-string--en)
+* [Settings](#settings)
+   * [Introduction](#introduction)
+   * [Environment variables called at compile time (config.nims)](#environment-variables-called-at-compile-time-confignims)
+      * [HOST :string = "0.0.0.0"](#host-string--0000)
+      * [DB_SQLITE :string = "true"](#db_sqlite-string--true)
+      * [DB_POSTGRES :string = "false"](#db_postgres-string--false)
+      * [DB_MYSQL :string = "false"](#db_mysql-string--false)
+      * [DB_MARIADB :string = "false"](#db_mariadb-string--false)
+      * [SESSION_TYPE :string = "file"](#session_type-string--file)
+      * [LIBSASS :string = "false"](#libsass-string--false)
+   * [Environment variables called at runtime (.env)](#environment-variables-called-at-runtime-env)
+      * [SECRET_KEY :string](#secret_key-string)
+      * [DB_CONNECTION :string = "sqlite"](#db_connection-string--sqlite)
+      * [DB_USER :string = ""](#db_user-string--)
+      * [DB_PASSWORD :string = ""](#db_password-string--)
+      * [DB_DATABASE :string = ""](#db_database-string--)
+      * [DB_MAX_CONNECTION :int = 1](#db_max_connection-int--1)
+      * [LOG_IS_DISPLAY :bool = true](#log_is_display-bool--true)
+      * [LOG_IS_FILE :bool = true](#log_is_file-bool--true)
+      * [LOG_IS_ERROR_FILE :bool = true](#log_is_error_file-bool--true)
+      * [LOG_DIR :string = getCurrentDir() / "logs"](#log_dir-string--getcurrentdir--logs)
+      * [SESSION_DB_PATH :string = getCurrentDir() / "session.db"](#session_db_path-string--getcurrentdir--sessiondb)
+      * [SESSION_TIME :int = 20160](#session_time-int--20160)
+      * [ENABLE_ANONYMOUS_COOKIE :bool = true](#enable_anonymous_cookie-bool--true)
+      * [COOKIE_DOMAINS :string = ""](#cookie_domains-string--)
+      * [LOCALE :string = "en"](#locale-string--en)
 
-<!-- Added by: root, at: Wed Jun 15 11:34:24 UTC 2022 -->
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: root, at: Fri Sep 23 13:13:10 UTC 2022 -->
 
 <!--te-->
 

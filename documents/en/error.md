@@ -5,12 +5,13 @@ Error
 Table of Contents
 
 <!--ts-->
-   * [Error](#error)
-      * [Introduction](#introduction)
-      * [Raise Error and Redirect](#raise-error-and-redirect)
-      * [How to display custom error page](#how-to-display-custom-error-page)
+* [Error](#error)
+   * [Introduction](#introduction)
+   * [Raise Error and Redirect](#raise-error-and-redirect)
+   * [How to display custom error page](#how-to-display-custom-error-page)
 
-<!-- Added by: root, at: Wed Jun 15 11:33:46 UTC 2022 -->
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: root, at: Fri Sep 23 13:13:02 UTC 2022 -->
 
 <!--te-->
 

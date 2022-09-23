@@ -5,11 +5,12 @@ Migration
 Table of Contents
 
 <!--ts-->
-   * [Migration](#migration)
-      * [Introduction](#introduction)
-      * [Example](#example)
+* [Migration](#migration)
+   * [Introduction](#introduction)
+   * [Example](#example)
 
-<!-- Added by: root, at: Wed Jun 15 11:34:42 UTC 2022 -->
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: root, at: Fri Sep 23 13:13:42 UTC 2022 -->
 
 <!--te-->
 

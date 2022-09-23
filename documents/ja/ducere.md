@@ -4,25 +4,26 @@ Ducereコマンド
 
 目次
 <!--ts-->
-   * [Ducereコマンド](#ducereコマンド)
-      * [イントロダクション](#イントロダクション)
-      * [使い方](#使い方)
-         * [new](#new)
-         * [serve](#serve)
-         * [build](#build)
-         * [migrate](#migrate)
-         * [make](#make)
-            * [config](#config)
-            * [key](#key)
-            * [controller](#controller)
-            * [view](#view)
-            * [migration](#migration)
-            * [model](#model)
-            * [value object](#value-object)
-            * [usecase](#usecase)
-      * [Bash-completion](#bash-completion)
+* [Ducereコマンド](#ducereコマンド)
+   * [イントロダクション](#イントロダクション)
+   * [使い方](#使い方)
+      * [new](#new)
+      * [serve](#serve)
+      * [build](#build)
+      * [migrate](#migrate)
+      * [make](#make)
+         * [config](#config)
+         * [key](#key)
+         * [controller](#controller)
+         * [view](#view)
+         * [migration](#migration)
+         * [model](#model)
+         * [value object](#value-object)
+         * [usecase](#usecase)
+   * [Bash-completion](#bash-completion)
 
-<!-- Added by: root, at: Wed Jun 15 11:35:41 UTC 2022 -->
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: root, at: Fri Sep 23 13:15:17 UTC 2022 -->
 
 <!--te-->
 

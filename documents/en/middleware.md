@@ -5,11 +5,12 @@ Middleware
 Table of Contents
 
 <!--ts-->
-   * [Middleware](#middleware)
-      * [API](#api)
-      * [Sample](#sample)
+* [Middleware](#middleware)
+   * [API](#api)
+   * [Sample](#sample)
 
-<!-- Added by: root, at: Wed Jun 15 11:34:15 UTC 2022 -->
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: root, at: Fri Sep 23 13:13:47 UTC 2022 -->
 
 <!--te-->
 

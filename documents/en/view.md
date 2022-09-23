@@ -5,22 +5,23 @@ View
 Table of Contents
 
 <!--ts-->
-   * [View](#view)
-      * [Introduction](#introduction)
-      * [Component style design](#component-style-design)
-         * [CSS](#css)
-         * [SCSS](#scss)
-         * [API](#api)
-      * [Helper functions](#helper-functions)
-         * [Csrf Token](#csrf-token)
-         * [old helper](#old-helper)
-      * [Other template libraries](#other-template-libraries)
-         * [Block component example](#block-component-example)
-            * [htmlgen](#htmlgen)
-            * [SCF](#scf)
-            * [Karax](#karax)
+* [View](#view)
+   * [Introduction](#introduction)
+   * [Template syntax](#template-syntax)
+      * [if](#if)
+      * [for](#for)
+      * [while](#while)
+   * [Component style design](#component-style-design)
+      * [CSS](#css)
+      * [SCSS](#scss)
+      * [API](#api)
+   * [Helper functions](#helper-functions)
+      * [Csrf Token](#csrf-token)
+      * [old helper](#old-helper)
+   * [Uses SCF as template engine](#uses-scf-as-template-engine)
 
-<!-- Added by: root, at: Wed Jun 15 11:34:34 UTC 2022 -->
+<!-- Created by https://github.com/ekalinin/github-markdown-toc -->
+<!-- Added by: root, at: Fri Sep 23 13:13:51 UTC 2022 -->
 
 <!--te-->
 
