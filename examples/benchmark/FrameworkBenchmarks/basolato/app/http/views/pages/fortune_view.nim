@@ -1,10 +1,11 @@
 import
   std/asyncdispatch,
   std/json,
-  basolato/view
+  basolato/view,
+  ../../../models/fortune
 
 
-proc impl(title:string, rows:seq[JsonNode]):Future[Component] {.async.} =
+proc impl(title:string, rows:seq[Fortune]):Future[Component] {.async.} =
   tmpli html"""
 <!DOCTYPE html>
 <html>
@@ -21,8 +22,8 @@ proc impl(title:string, rows:seq[JsonNode]):Future[Component] {.async.} =
     </tr>
     $for row in rows{
       <tr>
-        <td>$(row["id"])</td>
-        <td>$(row["message"])</td>
+        <td>$(row.id)</td>
+        <td>$(row.message)</td>
       </tr>
     }
   </table>
@@ -31,6 +32,6 @@ proc impl(title:string, rows:seq[JsonNode]):Future[Component] {.async.} =
 </html>
   """
 
-proc fortuneView*(rows=newSeq[JsonNode]()):Future[string] {.async.} =
+proc fortuneView*(rows=newSeq[Fortune]()):Future[Component] {.async.} =
   let title = "Fortunes"
-  return $impl(title, rows).await
+  return impl(title, rows).await

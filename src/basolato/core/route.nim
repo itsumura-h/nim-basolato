@@ -1,26 +1,20 @@
-import
-  std/asyncdispatch,
-  # std/asyncfile,
-  std/httpcore,
-  std/json,
-  std/macros,
-  # std/mimetypes,
-  std/os,
-  std/re,
-  std/strformat,
-  std/strutils,
-  std/tables,
-  # std/times
-# from osproc import countProcessors
-  ./baseEnv,
-  ./header,
-  ./logger,
-  ./request,
-  ./response,
-  # ./resources/dd_page,
-  ./security/cookie,
-  ./security/context,
-  ../controller
+import std/asyncdispatch
+import std/httpcore
+import std/json
+import std/macros
+import std/os
+import std/re
+import std/strformat
+import std/strutils
+import std/tables
+import ./baseEnv
+import ./header
+import ./logger
+import ./request
+import ./response
+import ./security/cookie
+import ./security/context
+import ../controller
 
 
 type Middleware* = ref object
@@ -228,7 +222,7 @@ proc createResponse*(req:Request, route:Route, httpMethod:HttpMethod, context:Co
   if ENABLE_ANONYMOUS_COOKIE:
     await context.updateNonce()
   if httpMethod != HttpOptions:
-    response = runController(req, route, response.headers, context).await
+    response = runController(req, route, response.headers, context).waitFor
   return response
 
 

@@ -1,30 +1,35 @@
-import
-  std/algorithm,
-  std/json,
-  std/options,
-  std/random,
-  std/strutils
-# framework
-import basolato2/controller
+import std/asyncdispatch
+import std/httpcore
+import std/json
+import std/random
+import std/strutils
+import std/options
+import std/sequtils
+import std/algorithm
+  # framework
+import ../../../../../src/basolato/controller
 import allographer/query_builder
-import ../../../config/database # rdb, cacheDb
-import ../views/pages/fortune_view
+import ../../models/fortune
+import ../views/pages/benchmark/fortune_view
+import ../views/pages/benchmark/fortune_scf_view
+from ../../../config/database import pgDb, cacheDb
 
+randomize()
 
-proc json*(context:Context, params:Params):Future[Response] {.async.} =
-  return render(%*{"message":"Hello, World!"})
-
-
-proc plainText*(context:Context, params:Params):Future[Response] {.async.} =
+proc plaintext*(context:Context, params:Params):Future[Response] {.async.} =
   let headers = newHttpHeaders()
   headers.add("Content-Type", "text/plain; charset=UTF-8")
   return render("Hello, World!", headers)
 
+proc json*(context:Context, params:Params):Future[Response] {.async.} =
+  return render(%*{"message":"Hello, World!"})
 
 proc db*(context:Context, params:Params):Future[Response] {.async.} =
   let i = rand(1..10000)
-  let res = rdb.table("World").findPlain(i).await
-  return render(%*{"id": res[0].parseInt, "randomNumber": res[1].parseInt})
+  # let res = pgDb.table("World").findPlain(i).await
+  # return render(%*{"id": res[0].parseInt, "randomNumber": res[1].parseInt})
+  let res = pgDb.table("World").find(i).await.get
+  return render(res)
 
 
 proc query*(context:Context, params:Params):Future[Response] {.async.} =
@@ -38,28 +43,30 @@ proc query*(context:Context, params:Params):Future[Response] {.async.} =
   elif countNum > 500:
     countNum = 500
 
-  var futures = newSeq[Future[seq[string]]](countNum)
+  var futures = newSeq[Future[Option[JsonNode]]](countNum)
   for i in 1..countNum:
     let n = rand(1..10000)
-    futures[i-1] = rdb.table("World").findPlain(n)
+    futures[i-1] = pgDb.table("World").find(n)
   let resp = all(futures).await
-  var response = newSeq[JsonNode](resp.len)
-  for i, data in resp:
-    response[i-1] = %*{"id": data[0].parseInt, "randomNumber": data[1].parseInt}
+  let response = resp.map(
+    proc(x:Option[JsonNode]):JsonNode =
+      x.get()
+  )
   return render(%response)
 
 
-proc fortunes*(context:Context, params:Params):Future[Response] {.async.} =
-  let results = rdb.table("Fortune").orderBy("message", Asc).getPlain().await
-  var rows = newSeq[JsonNode](results.len+1)
+proc fortune*(context:Context, params:Params):Future[Response] {.async.} =
+  let results = pgDb.table("Fortune").orderBy("message", Asc).getPlain().await
+  var rows = newSeq[Fortune]()
   for i, data in results:
-    rows[i] = %*{"id": data[0].parseInt, "message":data[1]}
-  rows[results.len] = %*{
-    "id": 0,
-    "message": "Additional fortune added at request time."
-  }
-  rows = rows.sortedByIt(it["message"].getStr)
-  return render(fortuneView(rows).await)
+    rows.add(Fortune(id: data[0].parseInt, message: data[1]))
+  rows.add Fortune(
+    id: 0,
+    message: "Additional fortune added at request time."
+  )
+  rows = rows.sortedByIt(it.message)
+  # return render(fortuneView(rows).await)
+  return render(fortuneScfView(rows).await)
 
 
 proc update*(context:Context, params:Params):Future[Response] {.async.} =
@@ -79,8 +86,8 @@ proc update*(context:Context, params:Params):Future[Response] {.async.} =
   for n in 1..countNum:
     let i = rand(1..10000)
     let newRandomNumber = rand(1..10000)
-    proc1[n-1] = rdb.table("World").findPlain(i)
-    proc2[n-1] = rdb.table("World").where("id", "=", i).update(%*{"randomnumber": newRandomNumber})
+    proc1[n-1] = pgDb.table("World").findPlain(i)
+    proc2[n-1] = pgDb.table("World").where("id", "=", i).update(%*{"randomnumber": newRandomNumber})
     response.add(%*{"id":i, "randomNumber": newRandomNumber})
 
   discard all(proc1).await
@@ -88,7 +95,7 @@ proc update*(context:Context, params:Params):Future[Response] {.async.} =
   return render(response)
 
 
-proc cached*(context:Context, params:Params):Future[Response] {.async.} =
+proc cache*(context:Context, params:Params):Future[Response] {.async.} =
   var countNum =
     try:
       params.getInt("count")

@@ -41,7 +41,7 @@ proc runCommand(port:int, f:bool) =
     if pid > 0:
       discard execShellCmd(&"kill {pid}")
     let fStr = if f: "-f" else: ""
-    if execShellCmd(&"nim c --putenv:PORT={port} --spellSuggest:5 -d:ssl {fStr} main") > 0:
+    if execShellCmd(&"nim c --putenv:PORT={port} --spellSuggest:5 -d:ssl -d:useMalloc -d:useRealtimeGC {fStr} main") > 0:
       raise newException(Exception, "")
     echoMsg(bgGreen, "[SUCCESS] Building dev server")
     p = startProcess("./main", currentDir, ["&"],

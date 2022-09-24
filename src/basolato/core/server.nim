@@ -1,25 +1,26 @@
-import
-  std/asyncdispatch,
-  std/asyncfile,
-  std/httpcore,
-  std/options,
-  std/os,
-  std/re,
-  std/strutils,
-  std/strformat,
-  std/tables,
-  std/times,
-  std/mimetypes,
-  ./baseEnv,
-  ./security/context,
-  ./security/cookie,
-  ./route,
-  ./request,
-  ./header,
-  ./response,
-  ./logger,
-  ./resources/dd_page,
-  ./resources/error_page
+import std/asyncdispatch
+import std/asyncfile
+import std/httpcore
+import std/options
+import std/os
+import std/re
+import std/strutils
+import std/strformat
+import std/tables
+import std/times
+import std/mimetypes
+import std/math
+import ./baseEnv
+import ./security/context
+import ./security/cookie
+import ./route
+import ./request
+import ./header
+import ./response
+import ./logger
+import ./resources/dd_page
+import ./resources/error_page
+import ./benchmark
 from ./httpbeast/httpbeast import send, initSettings, run
 
 
@@ -49,10 +50,10 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
           response = Response(status:Http200, body:data, headers:headers)
       else:
         # check path match with controller routing → run middleware → run controller
-        let key = $(req.httpMethod) & ":" & req.path
+        let key = $(req.httpMethod) & ":" & req.path.split("?")[0]
         let context = Context.new(req, ENABLE_ANONYMOUS_COOKIE).await
-        # withoutParams
         if routes.withoutParams.hasKey(key):
+          # withoutParams
           let route = routes.withoutParams[key]
           response = createResponse(req, route, req.httpMethod, context).await
         else:
@@ -92,15 +93,14 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
       else:
         let status = checkHttpCode(exception)
         response = Response(status:status, body:errorPage(status, exception.msg), headers:headers)
-        echoErrorMsg(&"{$response.status}  {req.hostname()}  {httpMethodStr}  {req.path}")
+        echoErrorMsg(&"{$response.status}  {httpMethodStr}  {req.path}")
         echoErrorMsg(exception.msg)
-
 
     if response.status == HttpCode(0):
       var headers = newHttpHeaders(true)
       headers["Content-Type"] = "text/html; charset=utf-8"
       response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)
-      echoErrorMsg(&"{$response.status}  {req.hostname()}  {httpMethodStr}  {req.path}")
+      echoErrorMsg(&"{$response.status}  {httpMethodStr}  {req.path}")
 
     response.headers.setDefaultHeaders()
     req.send(response.status, response.body, response.headers.format())

@@ -3,12 +3,17 @@ import
   std/json,
   std/options,
   std/random,
-  std/strutils
+  std/strutils,
+  std/httpcore,
+  std/times,
+  std/math
 # framework
 import basolato/controller
 import allographer/query_builder
 import ../../../config/database # rdb, cacheDb
+import ../../models/fortune
 import ../views/pages/fortune_view
+import ../views/pages/aaa_view
 
 
 proc json*(context:Context, params:Params):Future[Response] {.async.} =
@@ -51,15 +56,17 @@ proc query*(context:Context, params:Params):Future[Response] {.async.} =
 
 proc fortunes*(context:Context, params:Params):Future[Response] {.async.} =
   let results = rdb.table("Fortune").orderBy("message", Asc).getPlain().await
-  var rows = newSeq[JsonNode](results.len+1)
+  var rows = newSeq[Fortune]()
   for i, data in results:
-    rows[i] = %*{"id": data[0].parseInt, "message":data[1]}
-  rows[results.len] = %*{
-    "id": 0,
-    "message": "Additional fortune added at request time."
-  }
-  rows = rows.sortedByIt(it["message"].getStr)
+    rows.add(Fortune(id: data[0].parseInt, message: data[1]))
+  rows.add Fortune(
+    id: 0,
+    message: "Additional fortune added at request time."
+  )
+  rows = rows.sortedByIt(it.message)
+  # discard aaaView("Fortunes", rows).await
   return render(fortuneView(rows).await)
+  # return render(aaaView("Fortunes", rows).await)
 
 
 proc update*(context:Context, params:Params):Future[Response] {.async.} =
