@@ -11,9 +11,9 @@ proc makeLayout*(target:string, scf=false, message:var string):int =
   let targetCaptalizedProc = snakeToCamelProcName(targetName)
 
   var VIEW_MODEL = &"""
-import
-  std/asyncdispatch,
-  std/json
+import std/asyncdispatch
+import std/json
+
 
 type {targetCaptalizedType}ViewModel* = ref object
 
@@ -35,11 +35,10 @@ proc new*(_:type {targetCaptalizedType}ViewModel):{targetCaptalizedType}ViewMode
 """
   else:
     VIEW = &"""
-import
-  std/asyncdispatch,
-  std/json,
-  basolato/view,
-  ./{targetName}_view_model
+import std/asyncdispatch
+import std/json
+import basolato/view
+import ./{targetName}_view_model
 
 
 proc {targetCaptalizedProc}View*():Future[Component] [[.async.]] =

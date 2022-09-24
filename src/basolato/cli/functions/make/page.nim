@@ -22,11 +22,10 @@ proc makePage*(target:string, scf=false, message:var string):int =
 """
   else:  
     VIEW = &"""
-import
-  std/asyncdispatch,
-  std/json,
-  basolato/view,
-  {relativeToApplicationPath}
+import std/asyncdispatch
+import std/json
+import basolato/view
+import {relativeToApplicationPath}
 
 
 proc impl():Future[Component] [[.async.]] =
