@@ -10,14 +10,17 @@ proc build*(port="5000", args:seq[string]) =
 
   discard execShellCmd(&"""
     nim c \
+    -f \
     --threads:off \
+    --threadAnalysis:off \
+    -d:ssl \
     -d:release \
     -d:danger \
     --checks:off \
-    -d:ssl \
+    -d:useMalloc \
+    -d:useRealtimeGC \
     --gc:orc \
     --putenv:PORT={port} \
     --out:{outputFileName} \
-    --threadAnalysis:off \
     main.nim
   """)

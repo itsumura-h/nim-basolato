@@ -163,7 +163,7 @@ func getUrlParams*(requestPath, routePath:string):Params =
         let key = keyInUrl[0]
         result[key] = Param(value:requestPath[i].split(":")[0])
 
-func getQueryParams*(request:Request):Params =
+proc getQueryParams*(request:Request):Params =
   result = Params.new()
   let query = request.path().parseUri().query
   for key, val in cgi.decodeData(query):
