@@ -12,7 +12,7 @@ import allographer/query_builder
 import ../../models/fortune
 import ../views/pages/benchmark/fortune_view
 import ../views/pages/benchmark/fortune_scf_view
-from ../../../config/database import pgDb, cacheDb
+from ../../../config/database import pgDb
 
 randomize()
 
