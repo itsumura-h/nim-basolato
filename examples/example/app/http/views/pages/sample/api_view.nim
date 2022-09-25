@@ -8,12 +8,16 @@ import
 proc impl():Future[Component] {.async.} =
   let style = styleTmpl(Css, """
     <style>
-      .className {}
+      pre {
+        margin: 0px;
+      }
     </style>
   """)
 
   tmpli html"""
-  $(style)
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/vs2015.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
+    $(style)
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
       const request = axios.create({
@@ -26,7 +30,9 @@ proc impl():Future[Component] {.async.} =
       })
 
       const setResult=(resp)=>{
-        document.getElementById('result').innerText = JSON.stringify(resp, null, 2)
+        const el = document.getElementById('result');
+        el.innerHTML = JSON.stringify(resp, null, "  ");
+        hljs.highlightElement(el);
       }
 
       const getRequest=async()=>{
@@ -62,21 +68,27 @@ proc impl():Future[Component] {.async.} =
         setResult(resp)
       }
     </script>
-    <div class="$(style.element(" className"))">
-      <a href="/">go back</a>
-      <h2>JSON request body</h2>
-      <textarea id="param">
+    <main>
+      <article>
+        <div class="$(style.element(" className"))">
+          <a href="/">go back</a>
+          <h2>JSON request body</h2>
+          <textarea id="param" rows="5">
 {
   "key": "value"
 }
-      </textarea>
-      <button type="button" onclick="getRequest()">get</button>
-      <button type="button" onclick="postRequest()">post</button>
-      <button type="button" onclick="patchRequest()">patch</button>
-      <button type="button" onclick="putRequest()">put</button>
-      <button type="button" onclick="deleteRequest()">delete</button>
-      <pre id="result"></pre>
-    </div>
+          </textarea>
+          <button type="button" onclick="getRequest()">get</button>
+          <button type="button" onclick="postRequest()">post</button>
+          <button type="button" onclick="patchRequest()">patch</button>
+          <button type="button" onclick="putRequest()">put</button>
+          <button type="button" onclick="deleteRequest()">delete</button>
+          <pre>
+            <code class="language-json hljs" id="result"></code>
+          </pre>
+        </div>
+      </article>
+    </main>
   """
 
 proc apiView*():Future[string] {.async.} =

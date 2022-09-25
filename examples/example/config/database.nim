@@ -34,28 +34,3 @@ let pgDb* = dbopen(
   getEnv("LOG_IS_FILE").parseBool,
   getEnv("LOG_DIR"),
 )
-
-# ========== cache ==========
-let cacheDb* = dbopen(
-  SQLite3, # SQLite3 or MySQL or MariaDB or PostgreSQL
-  ":memory:",
-  maxConnections = 100,
-  shouldDisplayLog = false
-)
-
-block:
-  # migrate cacheDb
-  cacheDb.create(
-    table("World", [
-      Column.increments("id"),
-      Column.integer("randomNumber").default(0)
-    ])
-  )
-
-  # seed cacheDb
-  randomize()
-  var data = newSeq[JsonNode]()
-  for i in 1..10000:
-    let randomNum = rand(10000)
-    data.add(%*{"id": i, "randomNumber": randomNum})
-  cacheDb.table("World").insert(data).waitFor

@@ -110,8 +110,8 @@ proc cache*(context:Context, params:Params):Future[Response] {.async.} =
   for i in 1..countNum:
     let n = rand(1..10000)
     let newRandomNumber = rand(1..10000)
-    discard cacheDb.table("World").findPlain(n).await
-    cacheDb.table("World").where("id", "=", n).update(%*{"randomnumber": newRandomNumber}).await
-    response.add(%*{"id":i, "randomNumber": newRandomNumber})
+    # discard cacheDb.table("World").findPlain(n).await
+    # cacheDb.table("World").where("id", "=", n).update(%*{"randomnumber": newRandomNumber}).await
+    response.add(%*{"id":n, "randomNumber": newRandomNumber})
 
   return render(response)
