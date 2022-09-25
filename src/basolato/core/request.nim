@@ -66,7 +66,7 @@ func isNumeric(str:string):bool =
       return false
 
 func isMatchUrl*(requestPath, routePath:string):bool =
-  let requestPath = requestPath.split("/")[1..^1]
+  let requestPath = requestPath.split("?")[0].split("/")[1..^1]
   let routePath = routePath.split("/")[1..^1]
   if requestPath.len != routePath.len:
     return false
@@ -343,49 +343,3 @@ proc save*(params:Params, key, dir, newFileName:string) =
     var f = open(&"{dir}/{newFileName}.{param.ext}", fmWrite)
     defer: f.close()
     f.write(param.value)
-
-
-when isMainModule:
-  block:
-    let requestPath = "/name/john/id/1"
-    let routePath = "/name/{name:str}/id/{id:int}"
-    let params = getUrlParams(requestPath, routePath)
-    assert params.getStr("name") == "john"
-    assert params.getInt("id") == 1
-
-  block:
-    var requestPath = "/name/john/id/1"
-    var routePath = "/name/{name:str}/id/{id:int}"
-    assert isMatchUrl(requestPath, routePath) == true
-
-    requestPath = "/name"
-    routePath = "/{id:int}"
-    assert isMatchUrl(requestPath, routePath) == false
-
-    requestPath = "/1"
-    routePath = "/{name:str}"
-    assert isMatchUrl(requestPath, routePath) == false
-
-    requestPath = "/1"
-    routePath = "/{id:int}"
-    assert isMatchUrl(requestPath, routePath) == true
-
-    requestPath = "/john"
-    routePath = "/{name:str}"
-    assert isMatchUrl(requestPath, routePath) == true
-
-    requestPath = "/"
-    routePath = "/{id:int}"
-    assert isMatchUrl(requestPath, routePath) == false
-
-    requestPath = "/1/asd"
-    routePath = "/{id:int}"
-    assert isMatchUrl(requestPath, routePath) == false
-
-    requestPath = "/1/1"
-    routePath = "/{id:int}"
-    assert isMatchUrl(requestPath, routePath) == false
-
-    requestPath = "/john/1"
-    routePath = "/{name:str}"
-    assert isMatchUrl(requestPath, routePath) == false
