@@ -55,12 +55,12 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
         if routes.withoutParams.hasKey(key):
           # withoutParams
           let route = routes.withoutParams[key]
-          response = createResponse(req, route, req.httpMethod, context).await
+          response = createResponse(req, route, req.httpMethod, context).waitFor
         else:
           # withParams
           for route in routes.withParams:
             if route.httpMethod == req.httpMethod and isMatchUrl(req.path, route.path):
-              response = createResponse(req, route, req.httpMethod, context).await
+              response = createResponse(req, route, req.httpMethod, context).waitFor
               break
 
         if req.httpMethod == HttpHead:
