@@ -297,3 +297,9 @@ proc index(context:Context, params:Params):Future[Response] {.async.} =
   let arr = ["aaa", "bbb", "ccc"]
   return render(indexView(str, arr).await)
 ```
+
+It you add `--scf` option for view creating command, SCF view will be created.
+```sh
+ducere make layout buttons/success_button --scf
+ducere make page login --scf
+```

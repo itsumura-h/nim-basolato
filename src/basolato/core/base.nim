@@ -1,7 +1,7 @@
 import cgi, json
 
 const
-  BasolatoVersion* = "0.13.0"
+  BasolatoVersion* = "0.12.3"
 
 type
   Error505* = object of CatchableError
@@ -44,7 +44,6 @@ type
   Error300* = object of CatchableError
   ErrorRedirect* = object of CatchableError
   ErrorAuthRedirect* = object of CatchableError
-  ErrorHttpParse* = object of CatchableError
   DD* = object of CatchableError
 
 const errorStatusArray* = [505, 504, 503, 502, 501, 500, 451, 431, 429, 428, 426,

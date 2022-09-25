@@ -294,3 +294,9 @@ proc index(context:Context, params:Params):Future[Response] {.async.} =
   let arr = ["aaa", "bbb", "ccc"]
   return render(indexView(str, arr).await)
 ```
+
+ビューを作るコマンドに `--scf` を付けると、SCFでのビューファイルが作られます。
+```sh
+ducere make layout buttons/success_button --scf
+ducere make page login --scf
+```

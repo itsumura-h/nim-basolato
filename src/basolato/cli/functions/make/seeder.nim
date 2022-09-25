@@ -10,8 +10,7 @@ proc makeSeeder*(target:string, message:var string):int =
   createDir(parentDir(targetPath))
 
   var SEEDER = &"""
-import std/asyncdispatch
-import std/json
+import asyncdispatch, json
 import allographer/query_builder
 from ../../config/database import rdb
 

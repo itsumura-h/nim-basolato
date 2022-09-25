@@ -21,7 +21,7 @@ template getArg2() =
     styledWriteLine(stdout, fgRed, bgDefault, message, resetStyle)
     return 0
 
-proc make*(args:seq[string], scf=false):int =
+proc make*(args:seq[string]):int =
   ## make file
   var
     message:string
@@ -83,10 +83,10 @@ proc make*(args:seq[string], scf=false):int =
     return makeSeeder(arg1, message)
   of "layout":
     getArg1
-    return makelayout(arg1, scf, message)
+    return makelayout(arg1, message)
   of "page":
     getArg1
-    return makePage(arg1, scf, message)
+    return makePage(arg1, message)
   else:
     message = "invalid things to make"
 

@@ -1,39 +1,27 @@
-# Edited for sanitizing
-# https://github.com/onionhammer/nim-templates
+# Ref:
+# http://nim-lang.org/docs/macros.html
+# http://nim-lang.org/docs/parseutils.html
 
+
+# Imports
 import
-  std/json,
-  std/macros,
-  std/parseutils,
-  std/strutils,
-  std/tables,
-  ./security/random_string
+  cgi,
+  json,
+  macros,
+  parseutils,
+  strutils,
+  tables
 
 
-# ========== xmlEncode ==========
-# extract from `cgi` to be able to run for JavaScript.
-# https://nim-lang.org/docs/cgi.html#xmlEncode%2Cstring
+type Component* = ref object
+  value*:string
 
-proc addXmlChar(dest: var string, c: char) {.inline.} =
-  case c
-  of '&': add(dest, "&amp;")
-  of '<': add(dest, "&lt;")
-  of '>': add(dest, "&gt;")
-  of '\"': add(dest, "&quot;")
-  else: add(dest, c)
+proc toString*(self:Component):string =
+  return self.value.strip
 
-proc xmlEncode*(s: string): string =
-  ## Encodes a value to be XML safe:
-  ## * `"` is replaced by `&quot;`
-  ## * `<` is replaced by `&lt;`
-  ## * `>` is replaced by `&gt;`
-  ## * `&` is replaced by `&amp;`
-  ## * every other character is carried over.
-  result = newStringOfCap(s.len + s.len shr 2)
-  for i in 0..len(s)-1: addXmlChar(result, s[i])
+proc `$`*(self:Component):string =
+  return self.toString()
 
-
-# ========== libView ==========
 proc toString*(val:JsonNode):string =
   case val.kind
   of JString:
@@ -56,44 +44,22 @@ proc toString*(val:bool | int | float):string =
   return val.`$`.xmlEncode
 
 
-# ========== Component ==========
-type Component* = ref object
-  value:string
-  id:string
-
-proc new*(_:type Component):Component =
-  let id = randStr(10)
-  return Component(value:"", id:id)
-
-proc add*(self:Component, value:string) =
-  self.value.add(value)
-
-proc toString*(self:Component):string =
-  return self.value.strip()
-
-proc `$`*(self:Component):string =
-  return self.toString()
-
-proc id*(self:Component):string = self.id
-
-
-# ========== annotate ==========
 # Generate tags
 macro make(names: varargs[untyped]): void =
   result = newStmtList()
 
   for i in 0 .. names.len-1:
     result.add newProc(
-        name = ident($names[i]).postfix("*"),
-        params = [
-            ident("string"),
-            newIdentDefs(
-                ident("content"),
-                ident("string")
-      )
-    ],
-        body = newStmtList(
-            parseStmt("reindent(content)")
+      name = ident($names[i]).postfix("*"),
+      params = [
+        ident("string"),
+        newIdentDefs(
+          ident("content"),
+          ident("string")
+        )
+      ],
+      body = newStmtList(
+        parseStmt("reindent(content)")
       )
     )
 
@@ -106,7 +72,7 @@ iterator lines(value: string): string =
     yield line
 
 
-proc reindent*(value: string, preset_indent = 0): string =
+proc reindent(value: string, preset_indent = 0): string =
   var indent = -1
 
   # Detect indentation!
@@ -117,7 +83,7 @@ proc reindent*(value: string, preset_indent = 0): string =
     if read == ln.len: continue
 
     indent = if indent < 0: read
-                 else: min(indent, read)
+              else: min(indent, read)
 
   # Create a precursor indent as-needed
   var precursor = newString(0)
@@ -138,11 +104,10 @@ proc reindent*(value: string, preset_indent = 0): string =
 
   return result
 
+
 #Define tags
 make(html, xml, glsl, js, css, rst, md, nim)
 
-
-# ========== templates ==========
 # Fields
 const identChars = {'a'..'z', 'A'..'Z', '0'..'9', '_'}
 
@@ -154,9 +119,9 @@ proc parse_template(node: NimNode, value: string) {.compiletime.}
 # Procedure Definitions
 proc substring(value: string, index: int, length = -1): string {.compiletime.} =
   ## Returns a string at most `length` characters long, starting at `index`.
-  return if length < 0: value.substr(index)
-           elif length == 0: ""
-           else: value.substr(index, index + length-1)
+  return if length < 0:    value.substr(index)
+          elif length == 0: ""
+          else:             value.substr(index, index + length-1)
 
 
 proc parse_thru_eol(value: string, index: int): int {.compiletime.} =
@@ -188,10 +153,10 @@ proc trim_eol(value: var string) {.compiletime.} =
       value = value.substr(0, i)
       break
 
-    # Skip change
+      # Skip change
     if not (value[i] in [' ', '\t']): break
 
-    # This is the first character, and it's not whitespace
+      # This is the first character, and it's not whitespace
     if i == 0:
       value = ""
       break
@@ -209,29 +174,27 @@ proc detect_indent(value: string, index: int): int {.compiletime.} =
       dec(lastChar)
 
 
-proc parse_thru_string(value: string, i: var int,
-        strType = '"') {.compiletime.} =
+proc parse_thru_string(value: string, i: var int, strType = '"') {.compiletime.} =
   ## Parses until ending " or ' is reached.
   inc(i)
   if i < value.len-1:
-    inc(i, value.skipUntil({'\\', strType}, i))
+      inc(i, value.skipUntil({'\\', strType}, i))
 
 
-proc parse_to_close(value: string, index: int, open = '(', close = ')',
-        opened = 0): int {.compiletime.} =
+proc parse_to_close(value: string, index: int, open='(', close=')', opened=0): int {.compiletime.} =
   ## Reads until all opened braces are closed
   ## ignoring any strings "" or ''
-  var remainder = value.substring(index)
+  var remainder   = value.substring(index)
   var open_braces = opened
   result = 0
 
   while result < remainder.len:
     var c = remainder[result]
 
-    if c == open: inc(open_braces)
+    if   c == open:  inc(open_braces)
     elif c == close: dec(open_braces)
-    elif c == '"': remainder.parse_thru_string(result)
-    elif c == '\'': remainder.parse_thru_string(result, '\'')
+    elif c == '"':   remainder.parse_thru_string(result)
+    elif c == '\'':  remainder.parse_thru_string(result, '\'')
 
     if open_braces == 0: break
     else: inc(result)
@@ -239,8 +202,8 @@ proc parse_to_close(value: string, index: int, open = '(', close = ')',
 
 iterator parse_stmt_list(value: string, index: var int): string =
   ## Parses unguided ${..} block
-  var read = value.parse_to_close(index, open = '{', close = '}')
-  var expressions = value.substring(index + 1, read - 1).split({';', 0x0A.char})
+  var read        = value.parse_to_close(index, open='{', close='}')
+  var expressions = value.substring(index + 1, read - 1).split({ ';', 0x0A.char })
 
   for expression in expressions:
     let value = expression.strip
@@ -252,8 +215,7 @@ iterator parse_stmt_list(value: string, index: var int): string =
   inc(index, value.parse_thru_eol(index))
 
 
-iterator parse_compound_statements(value, identifier: string,
-        index: int): string =
+iterator parse_compound_statements(value, identifier: string, index: int): string =
   ## Parses through several statements, i.e. if {} elif {} else {}
   ## and returns the initialization of each as an empty statement
   ## i.e. if x == 5 { ... } becomes if x == 5: nil.
@@ -269,7 +231,7 @@ iterator parse_compound_statements(value, identifier: string,
       # We have to handle case a bit differently
       read = value.parseUntil(next, '$', i)
       inc(i, read)
-      yield next.strip(leading = false) & "\n"
+      yield next.strip(leading=false) & "\n"
 
     else:
       read = value.parseUntil(next, '{', i)
@@ -277,7 +239,7 @@ iterator parse_compound_statements(value, identifier: string,
       if nextIdent in expected:
         inc(i, read)
         # Parse until closing }, then skip whitespace afterwards
-        read = value.parse_to_close(i, open = '{', close = '}')
+        read = value.parse_to_close(i, open='{', close='}')
         inc(i, read + 1)
         inc(i, value.skipWhitespace(i))
         yield next & ": nil\n"
@@ -298,8 +260,7 @@ iterator parse_compound_statements(value, identifier: string,
       get_next_ident(["try", "$except", "$finally"])
 
 
-proc parse_complex_stmt(value, identifier: string,
-        index: var int): NimNode {.compiletime.} =
+proc parse_complex_stmt(value, identifier: string, index: var int): NimNode {.compiletime.} =
   ## Parses if/when/try /elif /else /except /finally statements
 
   # Build up complex statement string
@@ -307,7 +268,7 @@ proc parse_complex_stmt(value, identifier: string,
   var numStatements = 0
   for statement in value.parse_compound_statements(identifier, index):
     if statement[0] == '$': stmtString.add(statement.substr(1))
-    else: stmtString.add(statement)
+    else:                   stmtString.add(statement)
     inc(numStatements)
 
   # Parse stmt string
@@ -320,7 +281,6 @@ proc parse_complex_stmt(value, identifier: string,
     inc(resultIndex)
 
   while resultIndex < numStatements:
-
     # Detect indentation
     let indent = detect_indent(value, index)
 
@@ -332,10 +292,10 @@ proc parse_complex_stmt(value, identifier: string,
     inc(index, value.parse_thru_eol(index))
 
     # Parse through { .. }
-    read = value.parse_to_close(index, open = '{', close = '}', opened = 1)
+    read = value.parse_to_close(index, open='{', close='}', opened=1)
 
     # Add parsed sub-expression into body
-    var body = newStmtList()
+    var body       = newStmtList()
     var stmtString = value.substring(index, read)
     trim_after_eol(stmtString)
     stmtString = reindent(stmtString, indent)
@@ -351,8 +311,7 @@ proc parse_complex_stmt(value, identifier: string,
     inc(resultIndex)
 
 
-proc parse_simple_statement(value: string,
-        index: var int): NimNode {.compiletime.} =
+proc parse_simple_statement(value: string, index: var int): NimNode {.compiletime.} =
   ## Parses for/while
 
   # Detect indentation
@@ -361,17 +320,17 @@ proc parse_simple_statement(value: string,
   # Parse until an open brace `{`
   var splitValue: string
   var read = value.parseUntil(splitValue, '{', index)
-  result = parseExpr(splitValue & ":nil")
+  result   = parseExpr(splitValue & ":nil")
   inc(index, read + 1)
 
   # Parse through EOL
   inc(index, value.parse_thru_eol(index))
 
   # Parse through { .. }
-  read = value.parse_to_close(index, open = '{', close = '}', opened = 1)
+  read = value.parse_to_close(index, open='{', close='}', opened=1)
 
   # Add parsed sub-expression into body
-  var body = newStmtList()
+  var body       = newStmtList()
   var stmtString = value.substring(index, read)
   trim_after_eol(stmtString)
   stmtString = reindent(stmtString, indent)
@@ -386,8 +345,7 @@ proc parse_simple_statement(value: string,
   inc(index, value.parse_thru_eol(index))
 
 
-proc parse_until_symbol(node: NimNode, value: string,
-        index: var int): bool {.compiletime.} =
+proc parse_until_symbol(node: NimNode, value: string, index: var int): bool {.compiletime.} =
   ## Parses a string until a $ symbol is encountered, if
   ## two $$'s are encountered in a row, a split will happen
   ## removing one of the $'s from the resulting output
@@ -401,16 +359,41 @@ proc parse_until_symbol(node: NimNode, value: string,
     case value[index]
     of '$':
       # Check for duplicate `$`, meaning this is an escaped $
-      node.add newCall("add", ident("result"), newStrLitNode("$"))
+      # node.add newCall("add", ident("result"), newStrLitNode("$"))
+      node.add newCall("add", ident("res"), newStrLitNode("$"))
       inc(index)
+
+    # of '(':
+    #   # Check for open `(`, which means parse as simple single-line expression.
+    #   trim_eol(splitValue)
+    #   read = value.parse_to_close(index, open='(', close=')', opened=0) + 1
+    #   node.add newCall("add", ident("result"),
+    #     newCall(bindSym"strip", parseExpr("$" & value.substring(index, read)[1..^2]))
+    #   )
+    #   inc(index, read)
+
+    # of '[':
+    #   # Check for open `(`, which means parse as simple single-line expression.
+    #   trim_eol(splitValue)
+    #   read = value.parse_to_close(index, open='[', close=']', opened=0) + 1
+    #   node.add newCall("add", ident("result"),
+    #     newCall(bindSym"strip", parseExpr("$" & value.substring(index, read)[1..^2]))
+    #   )
+    #   inc(index, read)
 
     of '(':
       # Check for open `(`, which means parse as simple single-line expression.
       trim_eol(splitValue)
       read = value.parse_to_close(index) + 1
-      node.add newCall("add", ident("result"),
-          # newCall(bindSym"strip", parseExpr("$" & value.substring(index, read)))
-          newCall("toString", parseExpr(value.substring(index, read)))
+      node.add(
+        newCall(
+          "add",
+          ident("res"),
+          newCall(
+            "toString",
+            parseExpr(value.substring(index, read))
+          )
+        )
       )
       inc(index, read)
 
@@ -437,15 +420,16 @@ proc parse_until_symbol(node: NimNode, value: string,
 
       elif identifier.len > 0:
         ## Treat as simple variable
-        node.add newCall("add", ident("result"), newCall("$", ident(identifier)))
+        # node.add newCall("add", ident("result"), newCall("$", ident(identifier)))
+        node.add newCall("add", ident("res"), newCall("$", ident(identifier)))
         inc(index, read)
 
     result = true
 
   # Insert
   if splitValue.len > 0:
-    node.insert insertionPoint, newCall("add", ident("result"),
-            newStrLitNode(splitValue))
+    # node.insert insertionPoint, newCall("add", ident("result"), newStrLitNode(splitValue))
+    node.insert insertionPoint, newCall("add", ident("res"), newStrLitNode(splitValue))
 
 
 proc parse_template(node: NimNode, value: string) =
@@ -453,13 +437,12 @@ proc parse_template(node: NimNode, value: string) =
   ## Nim code into the input `node` AST.
   var index = 0
   while index < value.len and
-        parse_until_symbol(node, value, index): discard
+    parse_until_symbol(node, value, index): discard
 
 when not defined(js):
   macro tmplf*(body: untyped): void =
     result = newStmtList()
-    # result.add parseExpr("result = \"\"")
-    result.add parseExpr("result = Component.new()")
+    result.add parseExpr("result = \"\"")
     var value = readFile(body.strVal)
     parse_template(result, reindent(value))
 
@@ -467,18 +450,20 @@ when not defined(js):
 macro tmpli*(body: untyped): void =
   result = newStmtList()
 
-  result.add parseExpr("result = Component.new()")
+  # result.add parseExpr("result = \"\"")
+  result.add parseExpr("var res = \"\"")
 
   var value = if body.kind in nnkStrLit..nnkTripleStrLit: body.strVal
-                else: body[1].strVal
+              else: body[1].strVal
 
   parse_template(result, reindent(value))
+  result.add parseExpr("result = Component(value: res)")
 
 
 macro tmpl*(body: untyped): void =
   result = newStmtList()
 
   var value = if body.kind in nnkStrLit..nnkTripleStrLit: body.strVal
-                else: body[1].strVal
+              else: body[1].strVal
 
   parse_template(result, reindent(value))

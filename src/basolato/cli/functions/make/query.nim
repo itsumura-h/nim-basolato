@@ -10,7 +10,7 @@ proc makeQuery*(target:string, message:var string):int =
   let relativeToInterfacePath = "../".repeat(target.split("/").len) & &"../../"
 
   let QUERY_INTERFACE = &"""
-import std/asyncdispatch
+import asyncdispatch
 
 
 type I{targetCaptalized}Query* = tuple

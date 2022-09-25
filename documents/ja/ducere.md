@@ -226,6 +226,12 @@ ducere make page login
 >> app/http/views/pages/login_view.nim
 ```
 
+ビューを作るコマンドに `--scf` を付けると、SCFでのビューファイルが作られます。
+```sh
+ducere make layout buttons/success_button --scf
+ducere make page login --scf
+```
+
 #### migration
 マイグレーションファイルを作ります。
 

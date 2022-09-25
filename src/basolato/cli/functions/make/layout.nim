@@ -1,7 +1,7 @@
 import os, strformat, terminal, strutils
 import utils
 
-proc makeLayout*(target:string, scf=false, message:var string):int =
+proc makeLayout*(target:string, message:var string):int =
   let targetDir = &"{getCurrentDir()}/app/http/views/layouts/{target}"
   let targetName = target.split("/")[^1]
   let targetViewPath = &"{getCurrentDir()}/app/http/views/layouts/{target}/{targetName}_view.nim"
@@ -11,38 +11,26 @@ proc makeLayout*(target:string, scf=false, message:var string):int =
   let targetCaptalizedProc = snakeToCamelProcName(targetName)
 
   var VIEW_MODEL = &"""
-import std/asyncdispatch
-import std/json
-
+import
+  std/asyncdispatch,
+  std/json
 
 type {targetCaptalizedType}ViewModel* = ref object
 
 proc new*(_:type {targetCaptalizedType}ViewModel):{targetCaptalizedType}ViewModel =
   discard
 """
-  var VIEW = ""
-  if scf:
-    VIEW = &"""
-#? stdtmpl(toString="toString") | standard
-#import std/asyncdispatch
-#import std/json
-#import basolato/view
-#import ./{targetName}_view_model
-# proc {targetCaptalizedProc}View*():Future[Component] [[.async.]] =
-# result = Component.new()
-<div>
-</div
-"""
-  else:
-    VIEW = &"""
-import std/asyncdispatch
-import std/json
-import basolato/view
-import ./{targetName}_view_model
+
+  var VIEW = &"""
+import
+  std/asyncdispatch,
+  std/json,
+  basolato/view,
+  ./{targetName}_view_model
 
 
 proc {targetCaptalizedProc}View*():Future[Component] [[.async.]] =
-  let style = styleTmpl(Css, '''
+  style "css", style:'''
     <style>
       .className [[
       ]]

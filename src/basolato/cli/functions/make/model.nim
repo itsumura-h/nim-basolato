@@ -25,7 +25,7 @@ proc new*(_:type {targetCaptalized}):{targetCaptalized} =
 """
 
   let REPOSITORY_INTERFACE = &"""
-import std/asyncdispatch
+import asyncdispatch
 import {parent}_value_objects
 import {targetName}_entity
 
@@ -34,7 +34,7 @@ type I{targetCaptalized}Repository* = tuple
 """
 
   let REPOSITORY = &"""
-import std/asyncdispatch
+import asyncdispatch
 import interface_implements
 import allographer/query_builder
 from ../../../../config/database import rdb
