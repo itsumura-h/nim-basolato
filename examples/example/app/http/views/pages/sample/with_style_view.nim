@@ -62,9 +62,14 @@ proc component3():Component =
   """
 
 proc impl():Component = tmpli html"""
-$(component1())
-$(component2())
-$(component3())
+<main>
+  <article>
+    <a href="/">go back</a>
+    $(component1())
+    $(component2())
+    $(component3())
+  </article>
+</main>
 """
 
 proc withStyleView*():string =
