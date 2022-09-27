@@ -1,6 +1,6 @@
 import
-  ./basolato_beta/core/route,
-  ./basolato_beta/core/server
+  ./basolato/beta/core/route,
+  ./basolato/beta/core/server
 export
   route,
   server

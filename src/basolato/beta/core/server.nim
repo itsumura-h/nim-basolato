@@ -18,8 +18,8 @@ import ./request
 import ./header
 import ./response
 import ./logger
+import ./error_page
 import ./resources/dd_page
-import ./resources/error_page
 import ./benchmark
 from ./httpbeast/httpbeast import send, initSettings, run
 
@@ -55,12 +55,12 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
         if routes.withoutParams.hasKey(key):
           # withoutParams
           let route = routes.withoutParams[key]
-          response = createResponse(req, route, req.httpMethod, context).waitFor
+          response = createResponse(req, route, req.httpMethod, context).await
         else:
           # withParams
           for route in routes.withParams:
             if route.httpMethod == req.httpMethod and isMatchUrl(req.path, route.path):
-              response = createResponse(req, route, req.httpMethod, context).waitFor
+              response = createResponse(req, route, req.httpMethod, context).await
               break
 
         if req.httpMethod == HttpHead:
@@ -108,5 +108,6 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
     req.dealKeepAlive()
 
   
-  let settings = initSettings(port=Port(port))
+  let settings = initSettings(port=Port(PORT_NUM), bindAddr=HOST_ADDR)
+  echo(&"Basolato based on httpbeast listening on {HOST_ADDR}:{PORT_NUM}")
   run(cd, settings)

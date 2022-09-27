@@ -74,6 +74,7 @@ let ROUTES = @[
   .middleware(auth_middleware.checkCsrfTokenMiddleware),
   Route.group("/benchmark", @[
     Route.get("/plaintext", benchmark_controller.plaintext),
+    Route.get("/sleep", benchmark_controller.sleep),
     Route.get("/json", benchmark_controller.json),
     Route.get("/db", benchmark_controller.db),
     Route.get("/queries", benchmark_controller.query),

@@ -222,7 +222,7 @@ proc createResponse*(req:Request, route:Route, httpMethod:HttpMethod, context:Co
   if ENABLE_ANONYMOUS_COOKIE:
     await context.updateNonce()
   if httpMethod != HttpOptions:
-    response = runController(req, route, response.headers, context).waitFor
+    response = runController(req, route, response.headers, context).await
   return response
 
 

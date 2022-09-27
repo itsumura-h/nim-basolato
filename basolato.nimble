@@ -9,7 +9,7 @@ backend       = "c"
 bin           = @["basolato/cli/ducere"]
 binDir        = "src/bin"
 installExt    = @["nim"]
-skipDirs      = @["basolato/cli", "basolato.old"]
+skipDirs      = @["basolato/cli"]
 
 # Dependencies
 

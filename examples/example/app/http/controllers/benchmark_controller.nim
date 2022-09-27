@@ -115,3 +115,8 @@ proc cache*(context:Context, params:Params):Future[Response] {.async.} =
     response.add(%*{"id":n, "randomNumber": newRandomNumber})
 
   return render(response)
+
+
+proc sleep*(context:Context, params:Params):Future[Response] {.async.} =
+  sleepAsync(10000).await
+  return render("hello")

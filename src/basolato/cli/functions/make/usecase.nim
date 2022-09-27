@@ -27,7 +27,7 @@ proc run*(self:{targetCaptalized}Usecase) =
 """
 
   let QUERY_INTERFACE = &"""
-import asyncdispatch
+import std/asyncdispatch
 
 
 type I{dirCaptalized}Query* = tuple

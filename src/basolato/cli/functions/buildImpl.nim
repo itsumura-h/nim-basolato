@@ -1,34 +1,30 @@
-import os, strformat, strutils
+import os, strformat
 
-proc build*(ports="5000", threads="off", args:seq[string]) =
+proc build*(port="5000", f=false, httpbeast=false, args:seq[string]) =
   ## Build for production.
   var outputFileName = "main"
+  let fStr = if f: "-f" else: ""
+  let httpbeastStr = if httpbeast: "-d:httpbeast" else: ""
   try:
     outputFileName = args[0]
   except:
     discard
 
-  if ports.contains(","):
-    for port in ports.split(","):
-      let port = port.strip
-      discard execShellCmd(&"""
-        nim c \
-        -d:release \
-        -d:ssl \
-        --gc:orc \
-        --putenv:PORT={port} \
-        --out:{outputFileName}{port} \
-        main.nim
-      """)
-  else:
-    discard execShellCmd(&"""
-      nim c \
-      -d:release \
-      -d:ssl \
-      --gc:orc \
-      --putenv:PORT={ports} \
-      --out:{outputFileName} \
-      --threads:{threads} \
-      --threadAnalysis:off \
-      main.nim
-    """)
+  discard execShellCmd(&"""
+    nim c \
+    {fStr} \
+    {httpbeastStr} \
+    --threads:off \
+    --threadAnalysis:off \
+    -d:ssl \
+    -d:release \
+    -d:danger \
+    --checks:off \
+    -d:useMalloc \
+    -d:useRealtimeGC \
+    --panics:on \
+    --gc:orc \
+    --putenv:PORT={port} \
+    --out:{outputFileName} \
+    main.nim
+  """)

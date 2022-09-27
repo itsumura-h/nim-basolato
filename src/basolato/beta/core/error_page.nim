@@ -1,5 +1,5 @@
 import os, httpcore, strformat
-import ./original_error_page
+import ./resources/original_error_page
 
 proc errorPage*(status:HttpCode, msg:string):string =
   when defined(release):

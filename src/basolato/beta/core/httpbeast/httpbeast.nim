@@ -539,7 +539,7 @@ proc run*(onRequest: OnRequest, settings: Settings) =
   #       )
   #   else:
   #     assert false
-  echo("Listening on port ", settings.port) # This line is used in the tester to signal readiness.
+  # echo("Listening on port ", settings.port) # This line is used in the tester to signal readiness.
   eventLoop((onRequest, settings, true))
 
 proc run*(onRequest: OnRequest) {.inline.} =
