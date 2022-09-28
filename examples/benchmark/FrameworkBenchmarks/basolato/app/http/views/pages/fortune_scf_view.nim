@@ -1,15 +1,14 @@
 #? stdtmpl(toString="toString") | standard
 #import std/asyncdispatch
-#import std/json
 #import basolato/view
 #import ../../../models/fortune
-#proc aaaView*(title:string, rows:seq[Fortune]):Future[Component] {.async.} =
+#proc fortuneScfView*(rows:seq[Fortune]):Future[Component] {.async.} =
 # result = Component.new()
 <!DOCTYPE html>
 <html>
 
 <head>
-  <title>${title}</title>
+  <title>Fortunes</title>
 </head>
 
 <body>

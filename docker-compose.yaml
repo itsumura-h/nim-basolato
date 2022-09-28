@@ -27,12 +27,12 @@ services:
   # app-debian:
   #   build:
   #     context: .
-  #     dockerfile: ./docker/nim/ubuntu/Dockerfile
+  #     dockerfile: ./docker/nim/debian/Dockerfile
   #     args:
   #       VERSION: 1.6.8
   #   tty: true
   #   ports:
-  #     - 9002:5000
+  #     - 9001:5000
   #   volumes:
   #     - .:/root/project
 

@@ -1,9 +1,13 @@
-FROM debian:11.2-slim
+FROM debian:11.5-slim
+
+# prevent timezone dialogue
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt update --fix-missing && \
     apt upgrade -y
-RUN apt install -y  --fix-missing \
+RUN apt install -y --fix-missing \
         gcc \
+        g++ \
         xz-utils \
         ca-certificates \
         vim \
