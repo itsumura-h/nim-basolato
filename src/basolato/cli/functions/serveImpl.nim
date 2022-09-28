@@ -42,7 +42,7 @@ proc runCommand(port:int, f:bool, httpbeast:bool) =
       discard execShellCmd(&"kill {pid}")
     let fStr = if f: "-f" else: ""
     let httpbeastStr = if httpbeast: "-d:httpbeast" else: ""
-    if execShellCmd(&"nim c --putenv:PORT={port} --spellSuggest:5 -d:ssl -d:useRealtimeGC {fStr} {httpbeastStr} main") > 0:
+    if execShellCmd(&"nim c --putenv:PORT={port} --spellSuggest:5 -d:ssl {fStr} {httpbeastStr} main") > 0:
       raise newException(Exception, "")
     echoMsg(bgGreen, "[SUCCESS] Building dev server")
     p = startProcess("./main", currentDir, ["&"],

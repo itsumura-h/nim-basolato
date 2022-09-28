@@ -187,17 +187,18 @@ proc params(request:Request, route:Route):Params =
       params[k] = v
   return params
 
-proc runMiddleware(req:Request, route:Route, headers:HttpHeaders, context:Context):Future[Response] {.async.} =
+
+proc runMiddleware(req:Request, route:Route, context:Context):Future[Response] {.async.} =
   var
-    headers = headers
+    headers = newHttpHeaders()
     status = HttpCode(0)
   let params = req.params(route)
   for middleware in route.middlewares:
     let res = await middleware.action(context, params)
     headers &= res.headers
     if res.status != HttpCode(0): status = res.status
-  let response = Response(headers:headers, status:status)
-  return response
+  return Response(headers:headers, status:status)
+
 
 proc runController(req:Request, route:Route, headers: HttpHeaders, context:Context):Future[Response] {.async.} =
   let params = req.params(route)
@@ -206,12 +207,8 @@ proc runController(req:Request, route:Route, headers: HttpHeaders, context:Conte
   echoLog(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
   return response
 
-proc createResponse*(req:Request, route:Route, httpMethod:HttpMethod, headers:HttpHeaders, context:Context):Future[Response] {.async.} =
-  var
-    headers = headers
-    response = Response(status:HttpCode(0), headers:newHttpHeaders())
-
-  response = await runMiddleware(req, route, headers, context)
+proc createResponse*(req:Request, route:Route, httpMethod:HttpMethod, context:Context):Future[Response] {.async.} =
+  var response = await runMiddleware(req, route, context)
   if ENABLE_ANONYMOUS_COOKIE:
     await context.updateNonce()
   if httpMethod != HttpOptions:

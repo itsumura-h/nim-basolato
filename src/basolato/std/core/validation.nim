@@ -282,6 +282,7 @@ proc domain*(self:Validation, value:string):bool =
 
 
 proc email(value:string):bool =
+  ## references https://gist.github.com/frodo821/681869a36148b5214632166e0ad293a9
   var value = value
   try:
     let valid = "abcdefghijklmnopqrstuvwxyz1234567890!#$%&\'*+-/=?^_`{}|~"

@@ -2,9 +2,11 @@ discard """
   cmd: "nim c -r $file"
 """
 
-import unittest, times
-include ../src/basolato/core/request
-include ../src/basolato/request_validation
+import std/unittest
+import std/times
+include ../src/basolato/std/core/request
+include ../src/basolato/std/request_validation
+
 
 block:
   let p = Params.new()

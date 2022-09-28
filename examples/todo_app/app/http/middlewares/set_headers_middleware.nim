@@ -23,7 +23,7 @@ proc setCorsHeadersMiddleware*(c:Context, p:Params):Future[Response] {.async.} =
     "Access-Control-Allow-Methods": @allowedMethods,
     "Access-Control-Allow-Headers": @allowedHeaders,
     "Access-Control-Expose-Headers": @allowedHeaders,
-  }.newHttpHeaders()
+  }.newHttpHeaders(true)
   return next(status=Http204, headers=headers)
 
 proc setSecureHeadersMiddlware*(c:Context, p:Params):Future[Response] {.async.} =
@@ -35,5 +35,5 @@ proc setSecureHeadersMiddlware*(c:Context, p:Params):Future[Response] {.async.} 
     "Referrer-Policy": @["no-referrer", "strict-origin-when-cross-origin"],
     "Cache-Control": @["no-cache", "no-store", "must-revalidate"],
     "Pragma": @["no-cache"],
-  }.newHttpHeaders()
+  }.newHttpHeaders(true)
   return next(status=Http204, headers=headers)

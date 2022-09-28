@@ -1,6 +1,14 @@
-import unittest, os, strformat, strutils
-from ../src/basolato/core/baseEnv import LOG_DIR
-import ../src/basolato/core/logger
+discard """
+  cmd: "nim c -r $file"
+"""
+
+import std/unittest
+import std/os
+import std/strformat
+import std/strutils
+from ../src/basolato/std/core/baseEnv import LOG_DIR
+import ../src/basolato/std/core/logger
+
 
 block:
   echoLog("test log message")

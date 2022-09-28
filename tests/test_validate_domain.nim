@@ -1,5 +1,10 @@
-import unittest
-include ../src/basolato/core/validation
+discard """
+  cmd: "nim c -r $file"
+"""
+
+import std/unittest
+include ../src/basolato/std/core/validation
+
 
 const validDomains = [
   "domain.com",

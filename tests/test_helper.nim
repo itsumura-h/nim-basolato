@@ -1,9 +1,13 @@
-import
-  unittest,
-  httpclient,
-  strformat,
-  strutils,
-  cgi
+discard """
+  cmd: "nim c -r $file"
+"""
+
+import std/unittest
+import std/httpclient
+import std/strformat
+import std/strutils
+import std/cgi
+
 
 const HOST = "http://0.0.0.0:5000"
 

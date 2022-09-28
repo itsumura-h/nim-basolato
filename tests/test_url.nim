@@ -3,7 +3,8 @@ discard """
 """
 
 import std/unittest
-include ../src/basolato/core/request
+include ../src/basolato/std/core/request
+
 
 block:
   let requestPath = "/name/john/id/1"

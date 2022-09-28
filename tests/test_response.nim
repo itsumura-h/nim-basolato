@@ -2,9 +2,14 @@ discard """
   cmd: "nim c -r $file"
 """
 
-import unittest, strformat, httpclient, strutils, asyncdispatch
-import ../src/basolato/core/security/session as a
-import ../src/basolato/core/security/session_db as b
+import std/asyncdispatch
+import std/httpclient
+import std/strformat
+import std/strutils
+import std/unittest
+import ../src/basolato/std/core/security/session as a
+import ../src/basolato/std/core/security/session_db as b
+
 
 const HOST = "http://0.0.0.0:5000"
 let session = waitFor genNewSession()
