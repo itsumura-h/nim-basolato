@@ -2,8 +2,10 @@ discard """
   cmd: "nim c -r $file"
 """
 
-import unittest, json, strutils
-include ../src/basolato/view
+import std/unittest
+import std/json
+import std/strutils
+include ../src/basolato/std/view
 
 
 block:

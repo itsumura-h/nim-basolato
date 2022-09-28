@@ -452,6 +452,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
   assert v.hasErrors == false
 ```
 
+こちらのPythonコードを参考にして実装されています。  
+https://gist.github.com/frodo821/681869a36148b5214632166e0ad293a9
+
 ## endsWith
 フィールドの値が、指定された値で終わることをバリデートします。
 ```nim

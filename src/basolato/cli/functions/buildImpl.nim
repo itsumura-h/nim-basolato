@@ -1,8 +1,10 @@
 import os, strformat
 
-proc build*(port="5000", args:seq[string]) =
+proc build*(port="5000", f=false, httpbeast=false, args:seq[string]) =
   ## Build for production.
   var outputFileName = "main"
+  let fStr = if f: "-f" else: ""
+  let httpbeastStr = if httpbeast: "-d:httpbeast" else: ""
   try:
     outputFileName = args[0]
   except:
@@ -10,17 +12,31 @@ proc build*(port="5000", args:seq[string]) =
 
   discard execShellCmd(&"""
     nim c \
-    -f \
+    {fStr} \
+    {httpbeastStr} \
     --threads:off \
-    --threadAnalysis:off \
+    --gc:orc \
     -d:ssl \
     -d:release \
-    -d:danger \
-    --checks:off \
-    -d:useMalloc \
-    -d:useRealtimeGC \
-    --gc:orc \
+    --panics:on \
+    --stackTrace \
+    --lineTrace \
     --putenv:PORT={port} \
     --out:{outputFileName} \
     main.nim
   """)
+
+#[
+
+--threads:off \
+--threadAnalysis:off \
+-d:ssl \
+-d:release \
+-d:danger \
+--checks:off \
+-d:useMalloc \
+-d:useRealtimeGC \
+--panics:on \
+--gc:orc \
+
+]#

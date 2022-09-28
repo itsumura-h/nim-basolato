@@ -1,5 +1,5 @@
 import os, strformat, terminal, strutils
-from ../../core/base import BasolatoVersion
+from ../../std/core/base import BasolatoVersion
 from make/utils import isDirExists
 
 proc create(dirPath:string, packageDir:string):int =

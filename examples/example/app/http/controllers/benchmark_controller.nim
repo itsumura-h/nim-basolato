@@ -26,10 +26,13 @@ proc json*(context:Context, params:Params):Future[Response] {.async.} =
 
 proc db*(context:Context, params:Params):Future[Response] {.async.} =
   let i = rand(1..10000)
-  # let res = pgDb.table("World").findPlain(i).await
-  # return render(%*{"id": res[0].parseInt, "randomNumber": res[1].parseInt})
-  let res = pgDb.table("World").find(i).await.get
-  return render(res)
+  let res = pgDb.table("World").findPlain(i).await
+  if res.len > 0:
+    return render(%*{"id": res[0].parseInt, "randomNumber": res[1].parseInt})
+  else:
+    return render(newJObject())
+  # let res = pgDb.table("World").find(i).await.get
+  # return render(res)
 
 
 proc query*(context:Context, params:Params):Future[Response] {.async.} =
@@ -43,14 +46,15 @@ proc query*(context:Context, params:Params):Future[Response] {.async.} =
   elif countNum > 500:
     countNum = 500
 
-  var futures = newSeq[Future[Option[JsonNode]]](countNum)
+  var futures = newSeq[Future[seq[string]]](countNum)
   for i in 1..countNum:
     let n = rand(1..10000)
-    futures[i-1] = pgDb.table("World").find(n)
+    futures[i-1] = pgDb.table("World").findPlain(n)
   let resp = all(futures).await
   let response = resp.map(
-    proc(x:Option[JsonNode]):JsonNode =
-      x.get()
+    proc(x:seq[string]):JsonNode =
+      if x.len > 0: %*{"id": x[0].parseInt, "randomnumber": x[1]}
+      else: newJObject()
   )
   return render(%response)
 
@@ -80,18 +84,22 @@ proc update*(context:Context, params:Params):Future[Response] {.async.} =
   elif countNum > 500:
     countNum = 500
 
-  var proc1 = newSeq[Future[seq[string]]](countNum)
-  var proc2 = newSeq[Future[void]](countNum)
+  # var proc1 = newSeq[Future[seq[string]]](countNum)
+  var procs = newSeq[Future[void]](countNum)
   let response = newJArray()
   for n in 1..countNum:
     let i = rand(1..10000)
     let newRandomNumber = rand(1..10000)
-    proc1[n-1] = pgDb.table("World").findPlain(i)
-    proc2[n-1] = pgDb.table("World").where("id", "=", i).update(%*{"randomnumber": newRandomNumber})
+    # proc1[n-1] = pgDb.table("World").findPlain(i)
+    # proc2[n-1] = pgDb.table("World").where("id", "=", i).update(%*{"randomnumber": newRandomNumber})
+    procs[n-1] = (proc():Future[void]=
+      discard pgDb.table("World").findPlain(i)
+      pgDb.table("World").where("id", "=", i).update(%*{"randomnumber": newRandomNumber})
+    )()
     response.add(%*{"id":i, "randomNumber": newRandomNumber})
 
-  discard all(proc1).await
-  all(proc2).await
+  # discard all(proc1).await
+  all(procs).await
   return render(response)
 
 
@@ -115,3 +123,8 @@ proc cache*(context:Context, params:Params):Future[Response] {.async.} =
     response.add(%*{"id":n, "randomNumber": newRandomNumber})
 
   return render(response)
+
+
+proc sleep*(context:Context, params:Params):Future[Response] {.async.} =
+  sleepAsync(10000).await
+  return render("hello")

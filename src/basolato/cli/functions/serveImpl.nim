@@ -36,12 +36,13 @@ proc jsBuild() =
       if execShellCmd(&"nim js -d:nimExperimentalAsyncjsThen -d:release -o:{jsFilePath}.js {f}") > 0:
         echoMsg(bgRed, "[FAILED] Build error")
 
-proc runCommand(port:int, f:bool) =
+proc runCommand(port:int, f:bool, httpbeast:bool) =
   try:
     if pid > 0:
       discard execShellCmd(&"kill {pid}")
     let fStr = if f: "-f" else: ""
-    if execShellCmd(&"nim c --putenv:PORT={port} --spellSuggest:5 -d:ssl -d:useMalloc -d:useRealtimeGC {fStr} main") > 0:
+    let httpbeastStr = if httpbeast: "-d:httpbeast" else: ""
+    if execShellCmd(&"nim c --putenv:PORT={port} --spellSuggest:5 -d:ssl {fStr} {httpbeastStr} main") > 0:
       raise newException(Exception, "")
     echoMsg(bgGreen, "[SUCCESS] Building dev server")
     p = startProcess("./main", currentDir, ["&"],
@@ -52,10 +53,10 @@ proc runCommand(port:int, f:bool) =
     echo getCurrentExceptionMsg()
     # quit 1
 
-proc serve*(port=5000, force=false) =
+proc serve*(port=5000, force=false, httpbeast=false) =
   ## Run dev application with hot reload.
   jsBuild()
-  runCommand(port, force)
+  runCommand(port, force, httpbeast)
   while true:
     sleep sleepTime * 1000
     for f in walkDirRec(currentDir, {pcFile}):
@@ -84,4 +85,4 @@ proc serve*(port=5000, force=false) =
     if isModified:
       isModified = false
       # jsBuild()
-      runCommand(port, false)
+      runCommand(port, false, httpbeast)

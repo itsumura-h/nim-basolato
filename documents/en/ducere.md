@@ -233,6 +233,12 @@ ducere make page login
 >> app/http/views/pages/login_view.nim
 ```
 
+It you add `--scf` option for view creating command, SCF view will be created.
+```sh
+ducere make layout buttons/success_button --scf
+ducere make page login --scf
+```
+
 #### migration
 Create new migration file
 ```sh

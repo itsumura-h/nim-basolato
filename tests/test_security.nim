@@ -2,13 +2,14 @@ discard """
   cmd: "nim c -r $file"
 """
 
-import unittest, times, asyncdispatch
-
-include ../src/basolato/core/security/csrf_token
-include ../src/basolato/core/security/session_db/file_session_db
-include ../src/basolato/core/security/session_db
-include ../src/basolato/core/security/session
-include ../src/basolato/core/security/context
+import std/unittest
+import std/times
+import std/asyncdispatch
+include ../src/basolato/std/core/security/csrf_token
+include ../src/basolato/std/core/security/session_db/file_session_db
+include ../src/basolato/std/core/security/session_db
+include ../src/basolato/std/core/security/session
+include ../src/basolato/std/core/security/context
 
 
 # =============================================================================

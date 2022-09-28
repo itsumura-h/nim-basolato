@@ -1,7 +1,6 @@
 import strutils, times, json
 # framework
 import ../../../../../src/basolato/controller
-import ../../../../../src/basolato/core/security/cookie
 # view
 import ../views/pages/sample/cookie_view
 

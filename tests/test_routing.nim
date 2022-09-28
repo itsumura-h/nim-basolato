@@ -2,8 +2,10 @@ discard """
   cmd: "nim c -r $file"
 """
 
-import unittest, strformat, httpclient
-import ../src/basolato/core/security/csrf_token
+import std/httpclient
+import std/strformat
+import std/unittest
+import ../src/basolato/std/core/security/csrf_token
 
 const HOST = "http://0.0.0.0:5000"
 let client = newHttpClient()

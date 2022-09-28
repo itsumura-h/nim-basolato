@@ -2,8 +2,9 @@ discard """
   cmd: "nim c -r $file"
 """
 
-import unittest
-include ../src/basolato/core/request
+import std/unittest
+include ../src/basolato/std/core/request
+
 
 let params = Params.new()
 params["a"] = Param(value:"a")
