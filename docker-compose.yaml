@@ -17,7 +17,7 @@ services:
       context: .
       dockerfile: ./docker/nim/ubuntu/Dockerfile
       args:
-        VERSION: 1.6.6
+        VERSION: 1.6.8
     tty: true
     ports:
       - 9000:5000
@@ -29,7 +29,7 @@ services:
   #     context: .
   #     dockerfile: ./docker/nim/ubuntu/Dockerfile
   #     args:
-  #       - VERSION=1.6.6
+  #       VERSION: 1.6.8
   #   tty: true
   #   ports:
   #     - 9002:5000
@@ -37,7 +37,11 @@ services:
   #     - .:/root/project
 
   # app-centos:
-  #   build: ./docker/nim/centos
+  #   build:
+  #     context: .
+  #     dockerfile:./docker/nim/centos
+  #     args:
+  #       VERSION: 1.6.8
   #   tty: true
   #   privileged: true
   #   ports:
@@ -49,6 +53,8 @@ services:
   #   build:
   #     context: .
   #     dockerfile: ./docker/frontend/Dockerfile
+  #     args:
+  #       VERSION: 1.6.8
   #   tty: true
   #   ports:
   #     - 3000:3000
