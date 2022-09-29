@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 # prevent timezone dialogue
 ENV DEBIAN_FRONTEND=noninteractive
@@ -18,7 +18,7 @@ RUN apt install -y --fix-missing \
         libmariadb-dev \
         libsass-dev
 
-ARG VERSION="1.6.6"
+ARG VERSION="1.6.8"
 WORKDIR /root
 RUN wget --inet4-only https://nim-lang.org/download/nim-${VERSION}-linux_x64.tar.xz && \
     tar -Jxf nim-${VERSION}-linux_x64.tar.xz && \

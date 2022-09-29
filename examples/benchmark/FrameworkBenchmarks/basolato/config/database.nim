@@ -4,7 +4,7 @@ import allographer/schema_builder
 import allographer/query_builder
 
 
-var rdb* = dbopen(
+var pgDb* = dbopen(
   PostgreSQL, # SQLite3 or MySQL or MariaDB or PostgreSQL
   getEnv("DB_DATABASE"),
   getEnv("DB_USER"),
@@ -19,19 +19,19 @@ var rdb* = dbopen(
 )
 
 block:
-  rdb.create(
+  pgDb.create(
     table("World", [
         Column.integer("id"),
         Column.integer("randomnumber")
     ])
   )
 
-  seeder rdb, "World":
+  seeder pgDb, "World":
     var data = newSeq[JsonNode]()
     for i in 1..10000:
       let randomNum = rand(10000)
       data.add(%*{"id": i, "randomnumber": randomNum})
-    rdb.table("World").insert(data).waitFor
+    pgDb.table("World").insert(data).waitFor
 
 
 # ========== cache ==========
