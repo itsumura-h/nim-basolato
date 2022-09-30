@@ -1,10 +1,11 @@
 import os, strformat
 
-proc build*(port="5000", force=false, httpbeast=false, args:seq[string]) =
+proc build*(port="5000", force=false, httpbeast=false, httpx=false, args:seq[string]) =
   ## Build for production.
   var outputFileName = "main"
   let fStr = if force: "-f" else: ""
   let httpbeastStr = if httpbeast: "-d:httpbeast" else: ""
+  let httpxStr = if httpx: "-d:httpx" else: ""
   try:
     outputFileName = args[0]
   except:
@@ -14,6 +15,7 @@ proc build*(port="5000", force=false, httpbeast=false, args:seq[string]) =
     nim c \
     {fStr} \
     {httpbeastStr} \
+    {httpxStr} \
     --gc:orc \
     -d:ssl \
     -d:release \
