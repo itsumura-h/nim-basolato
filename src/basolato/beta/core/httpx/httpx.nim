@@ -73,7 +73,7 @@ type
     # Identifier used to distinguish requests.
     requestID: uint
 
-  OnRequest* = proc (req: Request): Future[void] {.gcsafe, async.}
+  OnRequest* = proc (req: Request): Future[void] {.async.}
 
   Startup = proc () {.closure, gcsafe.}
 

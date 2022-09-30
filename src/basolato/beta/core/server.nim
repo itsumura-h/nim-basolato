@@ -21,7 +21,10 @@ import ./logger
 import ./error_page
 import ./resources/dd_page
 import ./benchmark
-from ./httpbeast/httpbeast import send, initSettings, run
+when defined(httpbeast):
+  from ./httpbeast/httpbeast import send, initSettings, run
+else:
+  from ./httpx/httpx import send, initSettings, run
 
 
 proc serve*(seqRoutes:seq[Routes], port=5000) =

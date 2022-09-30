@@ -15,7 +15,10 @@ import
   std/strutils,
   std/uri,
   ./core/request
-from ./core/httpbeast/httpbeast import send, forget
+when defined(httpbeast):
+  from ./core/httpbeast/httpbeast import send, forget
+else:
+  from ./core/httpx/httpx import send, forget
 
 type
   ReadyState* = enum

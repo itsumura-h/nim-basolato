@@ -1,5 +1,7 @@
 when defined(httpbeast):
   import ./beta/request_validation
+elif defined(httpx):
+  import ./beta/request_validation
 else:
   import ./std/request_validation
 

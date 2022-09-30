@@ -13,8 +13,12 @@ import
   std/tables,
   std/uri,
   ./base
-from ./httpbeast/httpbeast import Request, body, headers, httpMethod, path, ip, forget
-export Request
+when defined(httpbeast):
+  from ./httpbeast/httpbeast import Request, body, headers, httpMethod, path, ip, forget
+  export Request
+else:
+  from ./httpx/httpx as httpbeast import Request, body, headers, httpMethod, path, ip, forget
+  export Request
 
 func body*(request:Request):string =
   if not httpbeast.body(request).isSome():
