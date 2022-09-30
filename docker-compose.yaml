@@ -12,10 +12,22 @@ services:
   #   volumes:
   #     - .:/root/project
 
-  app-ubuntu:
+  # app-ubuntu:
+  #   build:
+  #     context: .
+  #     dockerfile: ./docker/nim/ubuntu/Dockerfile
+  #     args:
+  #       VERSION: 1.6.8
+  #   tty: true
+  #   ports:
+  #     - 9000:5000
+  #   volumes:
+  #     - .:/root/project
+
+  app-debian:
     build:
       context: .
-      dockerfile: ./docker/nim/ubuntu/Dockerfile
+      dockerfile: ./docker/nim/debian/Dockerfile
       args:
         VERSION: 1.6.8
     tty: true
@@ -23,18 +35,6 @@ services:
       - 9000:5000
     volumes:
       - .:/root/project
-
-  # app-debian:
-  #   build:
-  #     context: .
-  #     dockerfile: ./docker/nim/debian/Dockerfile
-  #     args:
-  #       VERSION: 1.6.8
-  #   tty: true
-  #   ports:
-  #     - 9001:5000
-  #   volumes:
-  #     - .:/root/project
 
   # app-centos:
   #   build:
