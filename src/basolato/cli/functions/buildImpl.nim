@@ -1,11 +1,10 @@
 import os, strformat
 
-proc build*(port="5000", threads=false, f=false, httpbeast=false, args:seq[string]) =
+proc build*(port="5000", force=false, httpbeast=false, args:seq[string]) =
   ## Build for production.
   var outputFileName = "main"
-  let fStr = if f: "-f" else: ""
+  let fStr = if force: "-f" else: ""
   let httpbeastStr = if httpbeast: "-d:httpbeast" else: ""
-  let threadStr = if threads: "--threads:on" else: ""
   try:
     outputFileName = args[0]
   except:
@@ -15,7 +14,6 @@ proc build*(port="5000", threads=false, f=false, httpbeast=false, args:seq[strin
     nim c \
     {fStr} \
     {httpbeastStr} \
-    {threadStr} \
     --gc:orc \
     -d:ssl \
     -d:release \

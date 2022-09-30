@@ -33,7 +33,9 @@ proc jsBuild() =
   for f in walkDirRec(currentDir, {pcFile}):
     if f.contains("_script.nim"):
       let jsFilePath = f.split(".")[0..^2].join(".")
-      if execShellCmd(&"nim js -d:nimExperimentalAsyncjsThen -d:release -o:{jsFilePath}.js {f}") > 0:
+      let cmd = &"nim js -d:nimExperimentalAsyncjsThen -d:release -o:{jsFilePath}.js {f}"
+      echo cmd
+      if execShellCmd(cmd) > 0:
         echoMsg(bgRed, "[FAILED] Build error")
 
 proc runCommand(port:int, f:bool, httpbeast:bool) =
@@ -42,7 +44,9 @@ proc runCommand(port:int, f:bool, httpbeast:bool) =
       discard execShellCmd(&"kill {pid}")
     let fStr = if f: "-f" else: ""
     let httpbeastStr = if httpbeast: "-d:httpbeast" else: ""
-    if execShellCmd(&"nim c --putenv:PORT={port} --spellSuggest:5 -d:ssl {fStr} {httpbeastStr} main") > 0:
+    let cmd = &"nim c --putenv:PORT={port} --spellSuggest:5 -d:ssl {fStr} {httpbeastStr} main"
+    echo cmd
+    if execShellCmd(cmd) > 0:
       raise newException(Exception, "")
     echoMsg(bgGreen, "[SUCCESS] Building dev server")
     p = startProcess("./main", currentDir, ["&"],
