@@ -80,4 +80,4 @@ services:
       POSTGRES_DB: database
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
-      TZ: Asia/Tokyo
+    command: postgres -c 'max_connections=2000'
