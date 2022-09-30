@@ -109,5 +109,6 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
 
   
   let settings = initSettings(port=Port(PORT_NUM), bindAddr=HOST_ADDR)
-  echo(&"Basolato based on httpbeast listening on {HOST_ADDR}:{PORT_NUM}")
+  let libStr = when defined(httpbeast): "httpbeast" elif defined(httpx): "httpx" else: ""
+  echo(&"Basolato based on {libStr} listening on {HOST_ADDR}:{PORT_NUM}")
   run(cd, settings)
