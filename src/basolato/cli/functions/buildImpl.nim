@@ -16,6 +16,7 @@ proc build*(port="5000", force=false, httpbeast=false, httpx=false, args:seq[str
     {fStr} \
     {httpbeastStr} \
     {httpxStr} \
+    --threads:off \
     --gc:orc \
     -d:ssl \
     -d:release \

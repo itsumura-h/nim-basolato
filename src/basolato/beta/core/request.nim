@@ -1,24 +1,25 @@
-import
-  std/cgi,
-  std/httpcore,
-  std/json,
-  std/net,
-  std/nativesockets,
-  std/options,
-  std/os,
-  std/parseutils,
-  std/strformat,
-  std/strtabs,
-  std/strutils,
-  std/tables,
-  std/uri,
-  ./base
+import std/cgi
+import std/httpcore
+import std/json
+import std/net
+import std/nativesockets
+import std/options
+import std/os
+import std/parseutils
+import std/strformat
+import std/strtabs
+import std/strutils
+import std/tables
+import std/uri
+import ./base
+
 when defined(httpbeast):
-  from ./httpbeast/httpbeast import Request, body, headers, httpMethod, path, ip, forget
+  from httpbeast import Request, body, headers, httpMethod, path, ip, forget
   export Request
 else:
-  from ./httpx/httpx as httpbeast import Request, body, headers, httpMethod, path, ip, forget
+  from httpx as httpbeast import Request, body, headers, httpMethod, path, ip, forget
   export Request
+
 
 func body*(request:Request):string =
   if not httpbeast.body(request).isSome():

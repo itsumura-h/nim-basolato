@@ -9,7 +9,6 @@ import std/strformat
 import std/tables
 import std/times
 import std/mimetypes
-import std/math
 import ./baseEnv
 import ./security/context
 import ./security/cookie
@@ -21,10 +20,11 @@ import ./logger
 import ./error_page
 import ./resources/dd_page
 import ./benchmark
+
 when defined(httpbeast):
-  from ./httpbeast/httpbeast import send, initSettings, run
+  from httpbeast import send, initSettings, run
 else:
-  from ./httpx/httpx import send, initSettings, run
+  from httpx import send, initSettings, run
 
 
 proc serve*(seqRoutes:seq[Routes], port=5000) =
@@ -34,7 +34,7 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
     for path, route in tmpRoutes.withoutParams:
       routes.withoutParams[path] = route
   
-  proc cd(req:Request):Future[void] {.async.}=
+  proc cd(req:Request):Future[void] {.gcsafe, async.}=
     var
       response = Response(status:HttpCode(0), headers:newHttpHeaders(true))
       httpMethodStr = ""

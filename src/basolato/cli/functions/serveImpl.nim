@@ -45,7 +45,17 @@ proc runCommand(port:int, f:bool, httpbeast:bool, httpx:bool) =
     let fStr = if f: "-f" else: ""
     let httpbeastStr = if httpbeast: "-d:httpbeast" else: ""
     let httpxStr = if httpx: "-d:httpx" else: ""
-    let cmd = &"nim c --putenv:PORT={port} --spellSuggest:5 -d:ssl {fStr} {httpbeastStr} {httpxStr} main"
+    let cmd = &"""
+      nim c \
+      {fStr} \
+      {httpbeastStr} \
+      {httpxStr} \
+      --threads:off \
+      -d:ssl \
+      --putenv:PORT={port}\
+      --spellSuggest:5 \
+      main
+    """
     echo cmd
     if execShellCmd(cmd) > 0:
       raise newException(Exception, "")

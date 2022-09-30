@@ -3,7 +3,6 @@ import
   std/options,
   std/strutils,
   std/json,
-  # ../httpbeast/httpbeast,
   ./session,
   ./session_db,
   ../request

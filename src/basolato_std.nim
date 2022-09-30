@@ -1,9 +1,5 @@
-import
-  ./basolato/std/core/route,
-  ./basolato/std/core/server
-export
-  route,
-  server
-
-import asynchttpserver, asyncdispatch, mimetypes
-export asynchttpserver, asyncdispatch, mimetypes
+import std/asynchttpserver; export asynchttpserver
+import std/asyncdispatch; export asyncdispatch
+import std/mimetypes; export mimetypes
+import ./basolato/std/core/route; export route
+import ./basolato/std/core/server; export server

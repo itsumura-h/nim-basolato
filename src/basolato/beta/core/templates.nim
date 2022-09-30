@@ -1,13 +1,12 @@
 # Edited for sanitizing
 # https://github.com/onionhammer/nim-templates
 
-import
-  std/json,
-  std/macros,
-  std/parseutils,
-  std/strutils,
-  std/tables,
-  ./security/random_string
+import std/json
+import std/macros
+import std/parseutils
+import std/strutils
+import std/tables
+import ./security/random_string
 
 
 # ========== xmlEncode ==========

@@ -1,22 +1,21 @@
 # https://github.com/treeform/ws
 
-import
-  std/asyncdispatch,
-  std/asynchttpserver,
-  std/asyncnet,
-  std/base64,
-  std/httpclient,
-  std/httpcore,
-  std/nativesockets,
-  std/net,
-  std/random,
-  std/sha1,
-  std/streams,
-  std/strformat,
-  std/strutils,
-  std/uri,
-  ./core/request
-# from ./core/httpbeast/httpbeast import send, forget
+import std/asyncdispatch
+import std/asynchttpserver
+import std/asyncnet
+import std/base64
+import std/httpclient
+import std/httpcore
+import std/nativesockets
+import std/net
+import std/random
+import std/sha1
+import std/streams
+import std/strformat
+import std/strutils
+import std/uri
+import ./core/request
+
 
 type
   ReadyState* = enum

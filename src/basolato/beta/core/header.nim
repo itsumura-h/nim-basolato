@@ -1,5 +1,9 @@
-import tables, strutils, httpcore, times, strformat
-import base
+import std/tables
+import std/strutils
+import std/httpcore
+import std/times
+import std/strformat
+import ./base
 
 
 # type Headers* = ref object

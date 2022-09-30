@@ -5,7 +5,6 @@ import
   std/tables,
   ../baseEnv,
   ../request
-# from ../httpbeast/httpbeast import Request
 
 
 type

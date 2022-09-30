@@ -1,5 +1,8 @@
-import os, httpcore, strformat
+import std/os
+import std/httpcore
+import std/strformat
 import ./resources/original_error_page
+
 
 proc errorPage*(status:HttpCode, msg:string):string =
   when defined(release):
