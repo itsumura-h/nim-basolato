@@ -65,6 +65,9 @@ Options:
   --help-syntax               advanced: prepend,plurals,..
   --version      bool  false  print version
   -p=, --port=   int   5000   set port
+  -f, --force    bool  false  set force
+  --httpbeast    bool  false  set httpbeast
+  --httpx        bool  false  set httpx
 ```
 
 ```sh
@@ -81,96 +84,34 @@ You can change host by editing env of `config.nims`
 putEnv("HOST", "127.0.0.2")
 ```
 
+You can choose [httpbeast](https://github.com/dom96/httpbeast) or [httpx](https://github.com/ringabout/httpx) insted of [asynchttpserver](https://nim-lang.org/docs/asynchttpserver.html) for basolato core server.
+```sh
+ducere serve --httpbeast
+ducere serve --httpx
+```
+
 ### build
 Compiling for production.  
-By default, it will be compiled to run 5000 port and multithreaded for the number of cores in your PC.
+By default, it will be compiled to run 5000 port and single thread.
 
 ```sh
 Usage:
   build [optional-params] [args: string...]
 Build for production.
 Options:
-  -h, --help                       print this cligen-erated help
-  --help-syntax                    advanced: prepend,plurals,..
-  --version        bool    false   print version
-  -p=, --ports=    string  "5000"  set ports
-  -t=, --threads=  string  "off"   set threads
+  -h, --help                     print this cligen-erated help
+  --help-syntax                  advanced: prepend,plurals,..
+  --version      bool    false   print version
+  -p=, --port=   string  "5000"  set port
+  -f, --force    bool    false   set force
+  --httpbeast    bool    false   set httpbeast
+  --httpx        bool    false   set httpx
 ```
 
-```
-ducere build
-./main
->> Starting 4 threads
->> Listening on port 5000
-```
-
-When you specify multi ports, it will be compiled to run each port and singlethreaded.
-
-**Running with Multithreads is buggy. I recommand to compile for singlethreaded and run with nginx road balancer.**
-
-```
-ducere build -p:5000,5001,5002
->> generated main5000, main5001, main5002
-
-./main5000
->> Starting 1 thread
->> Listening on port 5000
-
-./main5001
->> Starting 1 thread
->> Listening on port 5001
-```
-
-Here is a sample to run in production environment.
-
-autorestart.sh
+You can choose [httpbeast](https://github.com/dom96/httpbeast) or [httpx](https://github.com/ringabout/httpx) insted of [asynchttpserver](https://nim-lang.org/docs/asynchttpserver.html) for basolato core server.
 ```sh
-ducere build -p:5000,5001,5002,5003
-while [ 1 ]; do
-  ./main5000 & \
-  ./main5001 & \
-  ./main5002 & \
-  ./main5003
-done
-```
-
-nginx.conf
-```nginx
-worker_processes  auto;
-worker_rlimit_nofile 150000;
-
-events {
-   worker_connections  65535;
-   multi_accept on;
-   use epoll;
-}
-
-http {
-   access_log  /var/log/nginx/access.log  main;
-   error_log   /var/log/nginx/error.log  info;
-   tcp_nopush  on;
-
-   upstream basolato {
-      least_conn;
-      server      127.0.0.1:5000;
-      server      127.0.0.1:5001;
-      server      127.0.0.1:5002;
-      server      127.0.0.1:5003;
-   }
-
-   ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-   server {
-      listen 443;
-      ssl on;
-      server_name www.example.com;
-      ssl_certificate /etc/pki/tls/certs/example_com_combined.crt; # path to certification
-      ssl_certificate_key /etc/pki/tls/private/example_com.key; # path to private key
-
-      location / {
-         proxy_pass http://basolato;
-      }
-   }
-}
+ducere serve --httpbeast
+ducere serve --httpx
 ```
 
 ### migrate
