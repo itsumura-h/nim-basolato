@@ -31,7 +31,6 @@ jobs:
     strategy:
       matrix:
         os:
-          - debian-latest
           - ubuntu-latest
           # - macOS-latest
           # Need sqlite3_64.dll
@@ -67,7 +66,7 @@ jobs:
         run: nimble install -Y
 
   test-on-docker:
-    runs-on: debian-11.5
+    runs-on: ubuntu-22.04
     needs: before
     strategy:
       matrix:
