@@ -1,8 +1,9 @@
+import std/asynchttpserver
+export asynchttpserver
+import std/asyncnet
 import std/cgi
-import std/httpcore
 import std/json
 import std/net
-import std/nativesockets
 import std/options
 import std/os
 import std/parseutils
@@ -11,68 +12,26 @@ import std/strtabs
 import std/strutils
 import std/tables
 import std/uri
-import ./base
 
-when defined(httpbeast):
-  from httpbeast import Request; export Request
-  from httpbeast import body
-  from httpbeast import headers
-  from httpbeast import httpMethod
-  from httpbeast import path
-  from httpbeast import ip
-  from httpbeast import forget
-else:
-  from httpx as httpbeast import Request; export Request
-  from httpx as httpbeast import body
-  from httpx as httpbeast import headers
-  from httpx as httpbeast import httpMethod
-  from httpx as httpbeast import path
-  from httpx as httpbeast import ip
-  from httpx as httpbeast import forget
-
-
-func body*(request:Request):string =
-  if not httpbeast.body(request).isSome():
-    raise newException(ErrorHttpParse, "")
-  return httpbeast.body(request).get()
-
-func headers*(request:Request):HttpHeaders =
-  if not httpbeast.headers(request).isSome():
-    raise newException(ErrorHttpParse, "")
-  return httpbeast.headers(request).get()
-
-func httpMethod*(request:Request):HttpMethod =
-  if not httpbeast.httpMethod(request).isSome():
-    raise newException(ErrorHttpParse, "")
-  return httpbeast.httpMethod(request).get()
 
 func path*(request:Request):string =
-  if not httpbeast.path(request).isSome():
-    raise newException(ErrorHttpParse, "")
-  return httpbeast.path(request).get()
+  return request.url.path
 
-func hostname*(request:Request):string =
-  return httpbeast.ip(request)
-
+func httpMethod*(request:Request):HttpMethod =
+  return request.reqMethod
 
 proc dealKeepAlive*(req:Request) =
-  # if (
-  #   req.protocol.major == 1 and
-  #   req.protocol.minor == 1 and
-  #   cmpIgnoreCase(req.headers.getOrDefault("Connection"), "close") == 0
-  # ) or
-  # (
-  #   req.protocol.major == 1 and
-  #   req.protocol.minor == 0 and
-  #   cmpIgnoreCase(req.headers.get().getOrDefault("Connection"), "keep-alive") != 0
-  # ):
-  #   req.client.close()
-  if req.headers.hasKey("Connection") and
+  if (
+    req.protocol.major == 1 and
+    req.protocol.minor == 1 and
+    cmpIgnoreCase(req.headers.getOrDefault("Connection"), "close") == 0
+  ) or
   (
-    req.headers["Connection"].toLowerAscii() == "close" or
-    req.headers["Connection"].toLowerAscii() != "keep-alive"
+    req.protocol.major == 1 and
+    req.protocol.minor == 0 and
+    cmpIgnoreCase(req.headers.getOrDefault("Connection"), "keep-alive") != 0
   ):
-    req.forget()
+    req.client.close()
 
 func isNumeric(str:string):bool =
   result = true
@@ -115,7 +74,7 @@ func len*(self:Param):int =
 
 type Params* = TableRef[string, Param]
 
-proc new*(_:type Params):Params =
+proc newParams*():Params =
   return newTable[string, Param]()
 
 
@@ -168,7 +127,7 @@ proc getAll*(params:Params):JsonNode =
     result[key] = %*{"ext": ext, "fileName": fileName, "value": value}
 
 func getUrlParams*(requestPath, routePath:string):Params =
-  result = Params.new()
+  result = newParams()
   if routePath.contains("{"):
     let requestPath = requestPath.split("/")[1..^1]
     let routePath = routePath.split("/")[1..^1]
@@ -178,15 +137,15 @@ func getUrlParams*(requestPath, routePath:string):Params =
         let key = keyInUrl[0]
         result[key] = Param(value:requestPath[i].split(":")[0])
 
-proc getQueryParams*(request:Request):Params =
-  result = Params.new()
-  let query = request.path().parseUri().query
+func getQueryParams*(request:Request):Params =
+  result = newParams()
+  let query = request.url.query
   for key, val in cgi.decodeData(query):
     result[key] = Param(value:val)
 
 proc getJsonParams*(request:Request):Params =
-  result = Params.new()
-  let jsonParams = request.body().parseJson()
+  result = newParams()
+  let jsonParams = request.body.parseJson()
   for k, v in jsonParams.pairs:
     case v.kind
     of JInt:
@@ -298,9 +257,9 @@ func parseMPFD(contentType: string, body: string): MultiData =
   return parseMultiPart(body, boundary)
 
 proc getRequestParams*(request:Request):Params =
-  let params = Params.new()
-  if request.headers.hasKey("Content-Type"):
-    let contentType = request.headers["Content-Type"].toString
+  let params = newParams()
+  if request.headers.hasKey("content-type"):
+    let contentType = request.headers["content-type"].toString
     if contentType.contains("multipart/form-data"):
       let formdata = parseMPFD(contentType, request.body)
       for key, row in formdata:
@@ -358,3 +317,49 @@ proc save*(params:Params, key, dir, newFileName:string) =
     var f = open(&"{dir}/{newFileName}.{param.ext}", fmWrite)
     defer: f.close()
     f.write(param.value)
+
+
+when isMainModule:
+  block:
+    let requestPath = "/name/john/id/1"
+    let routePath = "/name/{name:str}/id/{id:int}"
+    let params = getUrlParams(requestPath, routePath)
+    assert params.getStr("name") == "john"
+    assert params.getInt("id") == 1
+
+  block:
+    var requestPath = "/name/john/id/1"
+    var routePath = "/name/{name:str}/id/{id:int}"
+    assert isMatchUrl(requestPath, routePath) == true
+
+    requestPath = "/name"
+    routePath = "/{id:int}"
+    assert isMatchUrl(requestPath, routePath) == false
+
+    requestPath = "/1"
+    routePath = "/{name:str}"
+    assert isMatchUrl(requestPath, routePath) == false
+
+    requestPath = "/1"
+    routePath = "/{id:int}"
+    assert isMatchUrl(requestPath, routePath) == true
+
+    requestPath = "/john"
+    routePath = "/{name:str}"
+    assert isMatchUrl(requestPath, routePath) == true
+
+    requestPath = "/"
+    routePath = "/{id:int}"
+    assert isMatchUrl(requestPath, routePath) == false
+
+    requestPath = "/1/asd"
+    routePath = "/{id:int}"
+    assert isMatchUrl(requestPath, routePath) == false
+
+    requestPath = "/1/1"
+    routePath = "/{id:int}"
+    assert isMatchUrl(requestPath, routePath) == false
+
+    requestPath = "/john/1"
+    routePath = "/{name:str}"
+    assert isMatchUrl(requestPath, routePath) == false

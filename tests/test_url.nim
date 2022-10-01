@@ -1,9 +1,13 @@
 discard """
   cmd: "nim c -r $file"
+  matrix: "; -d:httpbeast"
 """
 
 import std/unittest
-include ../src/basolato/std/core/request
+when defined(httpbeast):
+  include ../src/basolato/core/libservers/std/request
+else:
+  include ../src/basolato/core/libservers/nostd/request
 
 
 block:

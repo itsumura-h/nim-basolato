@@ -9,17 +9,17 @@ import std/strformat
 import std/tables
 import std/times
 import std/mimetypes
-import ./baseEnv
-import ./security/context
-import ./security/cookie
-import ./route
+import ../../baseEnv
+import ../../security/context
+import ../../security/cookie
+import ../../route
 import ./request
-import ./header
-import ./response
-import ./logger
-import ./error_page
-import ./resources/dd_page
-import ./benchmark
+import ../../header
+import ../../response
+import ../../logger
+import ../../error_page
+import ../../resources/dd_page
+import ../../benchmark
 
 when defined(httpbeast):
   from httpbeast import send, initSettings, run
@@ -105,7 +105,8 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
       response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)
       echoErrorMsg(&"{$response.status}  {httpMethodStr}  {req.path}")
 
-    response.headers.setDefaultHeaders()
+    when defined(httpx):
+      response.headers.setDefaultHeaders()
     req.send(response.status, response.body, response.headers.format().toString())
     # keep-alive
     req.dealKeepAlive()

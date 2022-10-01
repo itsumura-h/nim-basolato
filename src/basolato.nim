@@ -1,12 +1,8 @@
 import std/asyncdispatch; export asyncdispatch
 import std/mimetypes; export mimetypes
+import ./basolato/core/route; export route
 
-when defined(httpbeast):
-  import ./basolato/beta/core/route; export route
-  import ./basolato/beta/core/server; export server
-elif defined(httpx):
-  import ./basolato/beta/core/route; export route
-  import ./basolato/beta/core/server; export server
+when defined(httpbeast) or defined(httpx):
+  import ./basolato/core/libservers/nostd/server; export server
 else:
-  import ./basolato/std/core/route; export route
-  import ./basolato/std/core/server; export server
+  import ./basolato/core/libservers/std/server; export server

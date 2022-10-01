@@ -1,5 +1,6 @@
 discard """
   cmd: "nim c -r $file"
+  matrix: "; -d:httpbeast"
 """
 
 import std/unittest
@@ -7,9 +8,9 @@ import std/tables
 import std/httpcore
 import std/strformat
 from strutils import join, contains
-import ../src/basolato/std/core/base
-import ../src/basolato/std/core/security/cookie
-import ../src/basolato/beta/core/header
+import ../src/basolato/core/base
+import ../src/basolato/core/security/cookie
+import ../src/basolato/core/header
 
 
 block:
