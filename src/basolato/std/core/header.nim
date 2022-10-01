@@ -105,3 +105,23 @@ proc format*(self:HttpHeaders):HttpHeaders =
     else:
       tmp.add((key, values.join(", ")))
   return tmp.newHttpHeaders(true)
+
+# proc toString*(self:HttpHeaders):string =
+#   result = ""
+#   for key, values in self.table:
+#     if result.len > 0:
+#       result.add("\c\L")
+#     if key.toLowerAscii == "date": # date should have only one value
+#       result.add(key & ": " & values[0])
+#     elif key.toLowerAscii == "set-cookie": # each cookie should have own "set-cookie" key
+#       for i, value in values:
+#         if i > 0:
+#           result.add("\c\L")
+#         result.add(key & ": " & value)
+#     else:
+#       result.add(key & ": " & values.join(", "))
+
+proc toString*(headers: HttpHeaders):string =
+  result = ""
+  for k, v in headers:
+    result.add(k & ": " & v & "\c\L")

@@ -1,5 +1,8 @@
-import logging, os, terminal
+import std/logging
+import std/os
+import std/terminal
 import ./baseEnv
+
 
 proc echoLog*(output: auto, args:varargs[string]) =
   if IS_DISPLAY:

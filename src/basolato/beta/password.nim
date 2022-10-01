@@ -1,4 +1,5 @@
-import bcrypt
+import std/bcrypt
+
 
 func genHashedPassword*(val:string):string =
   let salt = genSalt(10)

@@ -1,14 +1,12 @@
-import std/asyncdispatch
-import std/mimetypes
-export asyncdispatch
-export mimetypes
+import std/asyncdispatch; export asyncdispatch
+import std/mimetypes; export mimetypes
 
 when defined(httpbeast):
-  import ./basolato/beta/core/route
-  import ./basolato/beta/core/server
+  import ./basolato/beta/core/route; export route
+  import ./basolato/beta/core/server; export server
+elif defined(httpx):
+  import ./basolato/beta/core/route; export route
+  import ./basolato/beta/core/server; export server
 else:
-  import ./basolato/std/core/route
-  import ./basolato/std/core/server
-
-export route
-export server
+  import ./basolato/std/core/route; export route
+  import ./basolato/std/core/server; export server

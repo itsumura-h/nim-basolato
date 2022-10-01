@@ -38,13 +38,24 @@ proc jsBuild() =
       if execShellCmd(cmd) > 0:
         echoMsg(bgRed, "[FAILED] Build error")
 
-proc runCommand(port:int, f:bool, httpbeast:bool) =
+proc runCommand(port:int, f:bool, httpbeast:bool, httpx:bool) =
   try:
     if pid > 0:
       discard execShellCmd(&"kill {pid}")
     let fStr = if f: "-f" else: ""
     let httpbeastStr = if httpbeast: "-d:httpbeast" else: ""
-    let cmd = &"nim c --putenv:PORT={port} --spellSuggest:5 -d:ssl {fStr} {httpbeastStr} main"
+    let httpxStr = if httpx: "-d:httpx" else: ""
+    let cmd = &"""
+      nim c \
+      {fStr} \
+      {httpbeastStr} \
+      {httpxStr} \
+      --threads:off \
+      -d:ssl \
+      --putenv:PORT={port}\
+      --spellSuggest:5 \
+      main
+    """
     echo cmd
     if execShellCmd(cmd) > 0:
       raise newException(Exception, "")
@@ -57,10 +68,10 @@ proc runCommand(port:int, f:bool, httpbeast:bool) =
     echo getCurrentExceptionMsg()
     # quit 1
 
-proc serve*(port=5000, force=false, httpbeast=false) =
+proc serve*(port=5000, force=false, httpbeast=false, httpx=false) =
   ## Run dev application with hot reload.
   jsBuild()
-  runCommand(port, force, httpbeast)
+  runCommand(port, force, httpbeast, httpx)
   while true:
     sleep sleepTime * 1000
     for f in walkDirRec(currentDir, {pcFile}):
@@ -89,4 +100,4 @@ proc serve*(port=5000, force=false, httpbeast=false) =
     if isModified:
       isModified = false
       # jsBuild()
-      runCommand(port, false, httpbeast)
+      runCommand(port, false, httpbeast, httpx)

@@ -1,28 +1,16 @@
-import
-  std/asyncdispatch,
-  std/cgi,
-  std/json,
-  std/strformat,
-  std/strutils,
-  std/tables,
-  std/re,
-  ./core/baseEnv,
-  ./core/security/context,
-  ./core/security/csrf_token,
-  ./core/security/random_string,
-  ./core/templates,
-  ./core/request
-
-export
-  asyncdispatch,
-  cgi,
-  re,
-  tables,
-  strutils,
-  csrf_token,
-  context,
-  templates,
-  request
+import std/asyncdispatch; export asyncdispatch
+import std/cgi; export cgi
+import std/json
+import std/strformat
+import std/strutils; export strutils
+import std/tables; export tables
+import std/re; export re
+import ./core/baseEnv
+import ./core/security/context; export context
+import ./core/security/csrf_token; export csrf_token
+import ./core/security/random_string
+import ./core/templates; export templates
+import ./core/request; export request
 
 
 proc old*(params:JsonNode, key:string, default=""):string =
@@ -44,7 +32,7 @@ proc old*(params:JsonNode, key:string, default=""):string =
 
 func old*(params:TableRef, key:string, default=""):string =
   if params.hasKey(key):
-    return params[key]
+    return $params[key]
   else:
     return default
 

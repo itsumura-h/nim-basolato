@@ -74,8 +74,8 @@ implements {targetCaptalized}Query, I{targetCaptalized}Query:
     textArr.insert("", 0)
     importOffset = 1
   # insert import
-  textArr.insert(&"import data_stores/query_services/{target}/{targetName}_query", importOffset-1)
-  textArr.insert(&"import usecases/{target}/{targetName}_query_interface", importOffset-1)
+  textArr.insert(&"import ./data_stores/query_services/{target}/{targetName}_query", importOffset-1)
+  textArr.insert(&"import ./usecases/{target}/{targetName}_query_interface", importOffset-1)
   textArr.insert(&"# {targetName}", importOffset-1)
   # insert di difinition
   var isAfterDiDifinision:bool

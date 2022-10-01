@@ -1,6 +1,5 @@
 #? stdtmpl | standard
-#import strutils
-## framework
+#import std/strutils
 #import ../base
 #proc ddPage*(msg:string): string =
   <html xmlns="http://www.w3.org/1999/xhtml">

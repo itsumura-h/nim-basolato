@@ -41,7 +41,7 @@ proc {target}*() [[.async.]] =
     if row == "":
       offsets.add(i)
   # insert array
-  textArr.insert(&"import seeder_{target}", offsets[0])
+  textArr.insert(&"import ./seeder_{target}", offsets[0])
   textArr.insert(&"  waitFor {target}()", offsets[1]+1)
   # write in file
   f = open(targetPath, fmWrite)

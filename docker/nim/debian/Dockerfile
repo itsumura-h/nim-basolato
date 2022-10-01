@@ -12,6 +12,7 @@ RUN apt install -y --fix-missing \
         ca-certificates \
         vim \
         wget \
+        procps \
         git \
         sqlite3 \
         libpq-dev \

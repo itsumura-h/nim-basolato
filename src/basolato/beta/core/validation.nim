@@ -1,11 +1,10 @@
-import
-  json,
-  re,
-  tables,
-  strformat,
-  strutils,
-  unicode,
-  times
+import std/json
+import std/re
+import std/tables
+import std/strformat
+import std/strutils
+import std/unicode
+import std/times
 
 
 type Validation* = ref object

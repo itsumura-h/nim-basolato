@@ -1,6 +1,5 @@
 #? stdtmpl | standard
-#import httpcore
-## framework
+#import std/httpcore
 #from ../base import BasolatoVersion
 #proc originalErrorPage*(status:HttpCode, msg:string): string =
   #when defined(release):

@@ -1,5 +1,9 @@
-import os, strformat, terminal, strutils
+import std/os
+import std/strformat
+import std/strutils
+import std/terminal
 import utils
+
 
 proc makeLayout*(target:string, scf=false, message:var string):int =
   let targetDir = &"{getCurrentDir()}/app/http/views/layouts/{target}"

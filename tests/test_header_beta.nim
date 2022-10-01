@@ -6,10 +6,10 @@ import std/unittest
 import std/tables
 import std/httpcore
 import std/strformat
-from strutils import join
+from strutils import join, contains
 import ../src/basolato/std/core/base
 import ../src/basolato/std/core/security/cookie
-include ../src/basolato/std/core/header
+import ../src/basolato/beta/core/header
 
 
 block:
@@ -51,16 +51,17 @@ block:
 
 block:
   var headers = newHttpHeaders()
-  headers.add("a", "a")
-  headers.add("a", "b")
+  headers.add("key", "val1")
+  headers.add("key", "val2")
   headers.add("set-cookie", Cookie.new("key1", "val1").toCookieStr())
   headers.add("set-cookie", Cookie.new("key2", "val2").toCookieStr())
-  # check headers["A", 0] == @["a", "b"]
-  check headers["A", 0] == "a"
-  check headers["A", 1] == "b"
+  headers.setDefaultHeaders()
+  check headers["Key", 0] == "val1"
+  check headers["Key", 1] == "val2"
   check headers["Set-Cookie", 0].contains("key1=val1")
   check headers["Set-Cookie", 1].contains("key2=val2")
   echo headers.format()
+  echo headers.format().toString()
 
 block:
   var headers = newHttpHeaders()

@@ -1,7 +1,7 @@
 import std/times
-import std/math
-import strformat
-import strutils
+import std/strformat
+import std/strutils
+
 
 proc toString(t:Duration):string =
   let secound = t.inSeconds

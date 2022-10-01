@@ -1,20 +1,35 @@
-import
-  std/cgi,
-  std/httpcore,
-  std/json,
-  std/net,
-  std/nativesockets,
-  std/options,
-  std/os,
-  std/parseutils,
-  std/strformat,
-  std/strtabs,
-  std/strutils,
-  std/tables,
-  std/uri,
-  ./base
-from ./httpbeast/httpbeast import Request, body, headers, httpMethod, path, ip, forget
-export Request
+import std/cgi
+import std/httpcore
+import std/json
+import std/net
+import std/nativesockets
+import std/options
+import std/os
+import std/parseutils
+import std/strformat
+import std/strtabs
+import std/strutils
+import std/tables
+import std/uri
+import ./base
+
+when defined(httpbeast):
+  from httpbeast import Request; export Request
+  from httpbeast import body
+  from httpbeast import headers
+  from httpbeast import httpMethod
+  from httpbeast import path
+  from httpbeast import ip
+  from httpbeast import forget
+else:
+  from httpx as httpbeast import Request; export Request
+  from httpx as httpbeast import body
+  from httpx as httpbeast import headers
+  from httpx as httpbeast import httpMethod
+  from httpx as httpbeast import path
+  from httpx as httpbeast import ip
+  from httpx as httpbeast import forget
+
 
 func body*(request:Request):string =
   if not httpbeast.body(request).isSome():

@@ -9,7 +9,6 @@ import std/strformat
 import std/tables
 import std/times
 import std/mimetypes
-import std/math
 import ./baseEnv
 import ./security/context
 import ./security/cookie
@@ -21,7 +20,11 @@ import ./logger
 import ./error_page
 import ./resources/dd_page
 import ./benchmark
-from ./httpbeast/httpbeast import send, initSettings, run
+
+when defined(httpbeast):
+  from httpbeast import send, initSettings, run
+else:
+  from httpx import send, initSettings, run
 
 
 proc serve*(seqRoutes:seq[Routes], port=5000) =
@@ -31,7 +34,7 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
     for path, route in tmpRoutes.withoutParams:
       routes.withoutParams[path] = route
   
-  proc cd(req:Request):Future[void] {.async.}=
+  proc cd(req:Request):Future[void] {.gcsafe, async.}=
     var
       response = Response(status:HttpCode(0), headers:newHttpHeaders(true))
       httpMethodStr = ""
@@ -103,11 +106,12 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
       echoErrorMsg(&"{$response.status}  {httpMethodStr}  {req.path}")
 
     response.headers.setDefaultHeaders()
-    req.send(response.status, response.body, response.headers.format())
+    req.send(response.status, response.body, response.headers.format().toString())
     # keep-alive
     req.dealKeepAlive()
 
   
   let settings = initSettings(port=Port(PORT_NUM), bindAddr=HOST_ADDR)
-  echo(&"Basolato based on httpbeast listening on {HOST_ADDR}:{PORT_NUM}")
+  let libStr = when defined(httpbeast): "httpbeast" elif defined(httpx): "httpx" else: ""
+  echo(&"Basolato based on {libStr} listening on {HOST_ADDR}:{PORT_NUM}")
   run(cd, settings)

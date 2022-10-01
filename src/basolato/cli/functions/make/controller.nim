@@ -1,5 +1,9 @@
-import os, strformat, terminal, strutils
-import utils
+import std/os
+import std/strformat
+import std/strutils
+import std/terminal
+import ./utils
+
 
 proc makeController*(target:string, message:var string):int =
   let targetPath = &"{getCurrentDir()}/app/http/controllers/{target}_controller.nim"

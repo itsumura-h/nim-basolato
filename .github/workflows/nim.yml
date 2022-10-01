@@ -66,7 +66,7 @@ jobs:
         run: nimble install -Y
 
   test-on-docker:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: before
     strategy:
       matrix:
@@ -77,9 +77,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build docker image
-        run: docker-compose build --build-arg VERSION=${{ matrix.image-tag }} app-ubuntu
+        run: docker-compose build --build-arg VERSION=${{ matrix.image-tag }} app-debian
       - name: Test
-        run: docker-compose run app-ubuntu sh /root/project/runTest.sh
+        run: docker-compose run app-debian sh /root/project/runTest.sh
       # マルチスレッドは使わない
       # - name: Test multi-thread
       #   run: |
