@@ -4,7 +4,7 @@ discard """
 
 import std/unittest
 include ../src/basolato/std/core/request
-include ../src/basolato/std/view
+import ../src/basolato/std/view
 
 
 let p = Params.new()

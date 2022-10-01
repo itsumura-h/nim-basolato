@@ -5,7 +5,8 @@ discard """
 import std/unittest
 import std/json
 import std/strutils
-include ../src/basolato/std/view
+import std/strformat
+import ../src/basolato/std/view
 
 
 block:

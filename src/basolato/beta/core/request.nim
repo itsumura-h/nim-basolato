@@ -14,11 +14,21 @@ import std/uri
 import ./base
 
 when defined(httpbeast):
-  from httpbeast import Request, body, headers, httpMethod, path, ip, forget
-  export Request
+  from httpbeast import Request; export Request
+  from httpbeast import body
+  from httpbeast import headers
+  from httpbeast import httpMethod
+  from httpbeast import path
+  from httpbeast import ip
+  from httpbeast import forget
 else:
-  from httpx as httpbeast import Request, body, headers, httpMethod, path, ip, forget
-  export Request
+  from httpx as httpbeast import Request; export Request
+  from httpx as httpbeast import body
+  from httpx as httpbeast import headers
+  from httpx as httpbeast import httpMethod
+  from httpx as httpbeast import path
+  from httpx as httpbeast import ip
+  from httpx as httpbeast import forget
 
 
 func body*(request:Request):string =

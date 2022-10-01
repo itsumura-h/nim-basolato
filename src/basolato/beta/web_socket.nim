@@ -20,6 +20,7 @@ when defined(httpbeast):
 else:
   from httpx import send, forget
 
+
 type
   ReadyState* = enum
     Connecting = 0 # The connection is not yet open.

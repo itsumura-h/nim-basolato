@@ -106,7 +106,7 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
       echoErrorMsg(&"{$response.status}  {httpMethodStr}  {req.path}")
 
     response.headers.setDefaultHeaders()
-    req.send(response.status, response.body, response.headers.format())
+    req.send(response.status, response.body, response.headers.format().toString())
     # keep-alive
     req.dealKeepAlive()
 
