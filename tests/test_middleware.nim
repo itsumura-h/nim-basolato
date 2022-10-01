@@ -11,8 +11,8 @@ import std/strutils
 import std/unittest
 import std/xmltree
 import ../src/basolato/middleware
-include ../src/basolato/std/core/security/session
-include ../src/basolato/std/core/security/csrf_token
+include ../src/basolato/core/security/session
+include ../src/basolato/core/security/csrf_token
 
 
 const HOST = "http://localhost:5000"

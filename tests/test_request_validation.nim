@@ -4,8 +4,8 @@ discard """
 
 import std/unittest
 import std/times
-include ../src/basolato/std/core/request
-include ../src/basolato/std/request_validation
+include ../src/basolato/core/libservers/std/request
+include ../src/basolato/request_validation
 
 
 block:

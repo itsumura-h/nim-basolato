@@ -7,8 +7,8 @@ import std/httpclient
 import std/strformat
 import std/strutils
 import std/unittest
-import ../src/basolato/std/core/security/session as a
-import ../src/basolato/std/core/security/session_db as b
+import ../src/basolato/core/security/session as a
+import ../src/basolato/core/security/session_db as b
 
 
 const HOST = "http://0.0.0.0:5000"

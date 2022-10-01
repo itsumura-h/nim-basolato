@@ -36,7 +36,7 @@ proc old*(params:JsonNode, key:string, default=""):string =
 
 func old*(params:TableRef, key:string, default=""):string =
   if params.hasKey(key):
-    return params[key]
+    return $params[key]
   else:
     return default
 

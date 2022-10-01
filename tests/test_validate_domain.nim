@@ -3,7 +3,7 @@ discard """
 """
 
 import std/unittest
-include ../src/basolato/std/core/validation
+include ../src/basolato/core/validation
 
 
 const validDomains = [

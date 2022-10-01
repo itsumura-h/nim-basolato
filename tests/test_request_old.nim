@@ -1,11 +1,15 @@
 discard """
   cmd: "nim c -r $file"
+  matrix: "; -d:httpbeast"
 """
 
 import std/unittest
-include ../src/basolato/std/core/request
-import ../src/basolato/std/view
+import ../src/basolato/view
 
+when defined(httpbeast):
+  include ../src/basolato/core/libservers/nostd/request
+else:
+  include ../src/basolato/core/libservers/std/request
 
 let p = Params.new()
 p["a"] = Param(value:"a")

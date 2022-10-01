@@ -6,7 +6,7 @@ import app/http/middlewares/auth_middleware
 import app/http/controllers/test_controller
 
 
-let ROUTES = @[
+let routes = @[
   # test controller
   Route.get("/renderStr", test_controller.renderStr),
   Route.get("/renderHtml", test_controller.renderHtml),
@@ -42,4 +42,4 @@ let ROUTES = @[
     .middleware(checkSessionIdMiddleware),
 ]
 
-serve(ROUTES)
+serve(routes)

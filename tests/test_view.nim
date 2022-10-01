@@ -4,9 +4,8 @@ discard """
 
 import std/unittest
 import std/json
-import std/strutils
 import std/strformat
-import ../src/basolato/std/view
+import ../src/basolato/view
 
 
 block:
