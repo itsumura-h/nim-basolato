@@ -1,8 +1,7 @@
-import
-  std/asyncdispatch,
-  std/json,
-  basolato/view,
-  ../../../models/fortune
+import std/asyncdispatch
+import std/json
+import basolato/view
+import ../../../models/fortune
 
 
 proc impl(title:string, rows:seq[Fortune]):Future[Component] {.async.} =
