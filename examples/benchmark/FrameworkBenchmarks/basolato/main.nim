@@ -4,7 +4,7 @@ import basolato
 import app/http/controllers/benchmark_controller
 
 
-let ROUTES = @[
+let routes = @[
   Route.get("/plaintext", benchmark_controller.plainText),
   Route.get("/sleep", benchmark_controller.sleep),
   Route.get("/json", benchmark_controller.json),
@@ -15,4 +15,4 @@ let ROUTES = @[
   Route.get("/cached-queries", benchmark_controller.cache),
 ]
 
-serve(ROUTES)
+serve(routes)

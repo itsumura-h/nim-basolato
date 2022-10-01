@@ -106,7 +106,7 @@ iterator lines(value: string): string =
     yield line
 
 
-proc reindent*(value: string, preset_indent = 0): string =
+proc reindent*(value: string, presetIndent = 0): string =
   var indent = -1
 
   # Detect indentation!
@@ -121,7 +121,7 @@ proc reindent*(value: string, preset_indent = 0): string =
 
   # Create a precursor indent as-needed
   var precursor = newString(0)
-  for i in 1 .. preset_indent:
+  for i in 1 .. presetIndent:
     precursor.add(' ')
 
   # Re-indent
@@ -148,7 +148,7 @@ const identChars = {'a'..'z', 'A'..'Z', '0'..'9', '_'}
 
 
 # Procedure Declarations
-proc parse_template(node: NimNode, value: string) {.compiletime.}
+proc parseTemplate(node: NimNode, value: string) {.compiletime.}
 
 
 # Procedure Definitions
@@ -159,7 +159,7 @@ proc substring(value: string, index: int, length = -1): string {.compiletime.} =
            else: value.substr(index, index + length-1)
 
 
-proc parse_thru_eol(value: string, index: int): int {.compiletime.} =
+proc parseThruEol(value: string, index: int): int {.compiletime.} =
   ## Reads until and past the end of the current line, unless
   ## a non-whitespace character is encountered first
   var remainder: string
@@ -168,7 +168,7 @@ proc parse_thru_eol(value: string, index: int): int {.compiletime.} =
     return read + 1
 
 
-proc trim_after_eol(value: var string) {.compiletime.} =
+proc trimAfterEol(value: var string) {.compiletime.} =
   ## Trims any whitespace at end after \n
   var toTrim = 0
   for i in countdown(value.len-1, 0):
@@ -180,7 +180,7 @@ proc trim_after_eol(value: var string) {.compiletime.} =
     value = value.substring(0, value.len - toTrim)
 
 
-proc trim_eol(value: var string) {.compiletime.} =
+proc trimEol(value: var string) {.compiletime.} =
   ## Removes everything after the last line if it contains nothing but whitespace
   for i in countdown(value.len - 1, 0):
     # If \n, trim and return
@@ -196,7 +196,7 @@ proc trim_eol(value: var string) {.compiletime.} =
       value = ""
       break
 
-proc detect_indent(value: string, index: int): int {.compiletime.} =
+proc detectIndent(value: string, index: int): int {.compiletime.} =
   ## Detects how indented the line at `index` is.
   # Seek to the beginning of the line.
   var lastChar = index
@@ -209,7 +209,7 @@ proc detect_indent(value: string, index: int): int {.compiletime.} =
       dec(lastChar)
 
 
-proc parse_thru_string(value: string, i: var int,
+proc parseThruString(value: string, i: var int,
         strType = '"') {.compiletime.} =
   ## Parses until ending " or ' is reached.
   inc(i)
@@ -217,29 +217,29 @@ proc parse_thru_string(value: string, i: var int,
     inc(i, value.skipUntil({'\\', strType}, i))
 
 
-proc parse_to_close(value: string, index: int, open = '(', close = ')',
+proc parseToClose(value: string, index: int, open = '(', close = ')',
         opened = 0): int {.compiletime.} =
   ## Reads until all opened braces are closed
   ## ignoring any strings "" or ''
   var remainder = value.substring(index)
-  var open_braces = opened
+  var openBraces = opened
   result = 0
 
   while result < remainder.len:
     var c = remainder[result]
 
-    if c == open: inc(open_braces)
-    elif c == close: dec(open_braces)
-    elif c == '"': remainder.parse_thru_string(result)
-    elif c == '\'': remainder.parse_thru_string(result, '\'')
+    if c == open: inc(openBraces)
+    elif c == close: dec(openBraces)
+    elif c == '"': remainder.parseThruString(result)
+    elif c == '\'': remainder.parseThruString(result, '\'')
 
-    if open_braces == 0: break
+    if openBraces == 0: break
     else: inc(result)
 
 
-iterator parse_stmt_list(value: string, index: var int): string =
+iterator parseStmtList(value: string, index: var int): string =
   ## Parses unguided ${..} block
-  var read = value.parse_to_close(index, open = '{', close = '}')
+  var read = value.parseToClose(index, open = '{', close = '}')
   var expressions = value.substring(index + 1, read - 1).split({';', 0x0A.char})
 
   for expression in expressions:
@@ -249,16 +249,16 @@ iterator parse_stmt_list(value: string, index: var int): string =
 
   #Increment index & parse thru EOL
   inc(index, read + 1)
-  inc(index, value.parse_thru_eol(index))
+  inc(index, value.parseThruEol(index))
 
 
-iterator parse_compound_statements(value, identifier: string,
+iterator parseCompoundStatements(value, identifier: string,
         index: int): string =
   ## Parses through several statements, i.e. if {} elif {} else {}
   ## and returns the initialization of each as an empty statement
   ## i.e. if x == 5 { ... } becomes if x == 5: nil.
 
-  template get_next_ident(expected): void =
+  template getNextIdent(expected): void =
     var nextIdent: string
     discard value.parseWhile(nextIdent, {'$'} + identChars, i)
 
@@ -277,7 +277,7 @@ iterator parse_compound_statements(value, identifier: string,
       if nextIdent in expected:
         inc(i, read)
         # Parse until closing }, then skip whitespace afterwards
-        read = value.parse_to_close(i, open = '{', close = '}')
+        read = value.parseToClose(i, open = '{', close = '}')
         inc(i, read + 1)
         inc(i, value.skipWhitespace(i))
         yield next & ": nil\n"
@@ -289,23 +289,23 @@ iterator parse_compound_statements(value, identifier: string,
   while true:
     # Check if next statement would be valid, given the identifier
     if identifier in ["if", "when"]:
-      get_next_ident([identifier, "$elif", "$else"])
+      getNextIdent([identifier, "$elif", "$else"])
 
     elif identifier == "case":
-      get_next_ident(["case", "$of", "$elif", "$else"])
+      getNextIdent(["case", "$of", "$elif", "$else"])
 
     elif identifier == "try":
-      get_next_ident(["try", "$except", "$finally"])
+      getNextIdent(["try", "$except", "$finally"])
 
 
-proc parse_complex_stmt(value, identifier: string,
+proc parseComplexStmt(value, identifier: string,
         index: var int): NimNode {.compiletime.} =
   ## Parses if/when/try /elif /else /except /finally statements
 
   # Build up complex statement string
   var stmtString = newString(0)
   var numStatements = 0
-  for statement in value.parse_compound_statements(identifier, index):
+  for statement in value.parseCompoundStatements(identifier, index):
     if statement[0] == '$': stmtString.add(statement.substr(1))
     else: stmtString.add(statement)
     inc(numStatements)
@@ -322,24 +322,24 @@ proc parse_complex_stmt(value, identifier: string,
   while resultIndex < numStatements:
 
     # Detect indentation
-    let indent = detect_indent(value, index)
+    let indent = detectIndent(value, index)
 
     # Parse until an open brace `{`
     var read = value.skipUntil('{', index)
     inc(index, read + 1)
 
     # Parse through EOL
-    inc(index, value.parse_thru_eol(index))
+    inc(index, value.parseThruEol(index))
 
     # Parse through { .. }
-    read = value.parse_to_close(index, open = '{', close = '}', opened = 1)
+    read = value.parseToClose(index, open = '{', close = '}', opened = 1)
 
     # Add parsed sub-expression into body
     var body = newStmtList()
     var stmtString = value.substring(index, read)
-    trim_after_eol(stmtString)
+    trimAfterEol(stmtString)
     stmtString = reindent(stmtString, indent)
-    parse_template(body, stmtString)
+    parseTemplate(body, stmtString)
     inc(index, read + 1)
 
     # Insert body into result
@@ -347,16 +347,16 @@ proc parse_complex_stmt(value, identifier: string,
     result[resultIndex][stmtIndex] = body
 
     # Parse through EOL again & increment result index
-    inc(index, value.parse_thru_eol(index))
+    inc(index, value.parseThruEol(index))
     inc(resultIndex)
 
 
-proc parse_simple_statement(value: string,
+proc parseSimpleStatement(value: string,
         index: var int): NimNode {.compiletime.} =
   ## Parses for/while
 
   # Detect indentation
-  let indent = detect_indent(value, index)
+  let indent = detectIndent(value, index)
 
   # Parse until an open brace `{`
   var splitValue: string
@@ -365,17 +365,17 @@ proc parse_simple_statement(value: string,
   inc(index, read + 1)
 
   # Parse through EOL
-  inc(index, value.parse_thru_eol(index))
+  inc(index, value.parseThruEol(index))
 
   # Parse through { .. }
-  read = value.parse_to_close(index, open = '{', close = '}', opened = 1)
+  read = value.parseToClose(index, open = '{', close = '}', opened = 1)
 
   # Add parsed sub-expression into body
   var body = newStmtList()
   var stmtString = value.substring(index, read)
-  trim_after_eol(stmtString)
+  trimAfterEol(stmtString)
   stmtString = reindent(stmtString, indent)
-  parse_template(body, stmtString)
+  parseTemplate(body, stmtString)
   inc(index, read + 1)
 
   # Insert body into result
@@ -383,10 +383,10 @@ proc parse_simple_statement(value: string,
   result[stmtIndex] = body
 
   # Parse through EOL again
-  inc(index, value.parse_thru_eol(index))
+  inc(index, value.parseThruEol(index))
 
 
-proc parse_until_symbol(node: NimNode, value: string,
+proc parseUntilSymbol(node: NimNode, value: string,
         index: var int): bool {.compiletime.} =
   ## Parses a string until a $ symbol is encountered, if
   ## two $$'s are encountered in a row, a split will happen
@@ -406,8 +406,8 @@ proc parse_until_symbol(node: NimNode, value: string,
 
     of '(':
       # Check for open `(`, which means parse as simple single-line expression.
-      trim_eol(splitValue)
-      read = value.parse_to_close(index) + 1
+      trimEol(splitValue)
+      read = value.parseToClose(index) + 1
       node.add newCall("add", ident("result"),
           # newCall(bindSym"strip", parseExpr("$" & value.substring(index, read)))
           newCall("toString", parseExpr(value.substring(index, read)))
@@ -416,8 +416,8 @@ proc parse_until_symbol(node: NimNode, value: string,
 
     of '{':
       # Check for open `{`, which means open statement list
-      trim_eol(splitValue)
-      for s in value.parse_stmt_list(index):
+      trimEol(splitValue)
+      for s in value.parseStmtList(index):
         node.add parseExpr(s)
 
     else:
@@ -427,13 +427,13 @@ proc parse_until_symbol(node: NimNode, value: string,
 
       if identifier in ["for", "while"]:
         ## for/while means open simple statement
-        trim_eol(splitValue)
-        node.add value.parse_simple_statement(index)
+        trimEol(splitValue)
+        node.add value.parseSimpleStatement(index)
 
       elif identifier in ["if", "when", "case", "try"]:
         ## if/when/case/try means complex statement
-        trim_eol(splitValue)
-        node.add value.parse_complex_stmt(identifier, index)
+        trimEol(splitValue)
+        node.add value.parseComplexStmt(identifier, index)
 
       elif identifier.len > 0:
         ## Treat as simple variable
@@ -448,12 +448,12 @@ proc parse_until_symbol(node: NimNode, value: string,
             newStrLitNode(splitValue))
 
 
-proc parse_template(node: NimNode, value: string) =
+proc parseTemplate(node: NimNode, value: string) =
   ## Parses through entire template, outputing valid
   ## Nim code into the input `node` AST.
   var index = 0
   while index < value.len and
-        parse_until_symbol(node, value, index): discard
+        parseUntilSymbol(node, value, index): discard
 
 when not defined(js):
   macro tmplf*(body: untyped): void =
@@ -461,7 +461,7 @@ when not defined(js):
     # result.add parseExpr("result = \"\"")
     result.add parseExpr("result = Component.new()")
     var value = readFile(body.strVal)
-    parse_template(result, reindent(value))
+    parseTemplate(result, reindent(value))
 
 
 macro tmpli*(body: untyped): void =
@@ -472,7 +472,7 @@ macro tmpli*(body: untyped): void =
   var value = if body.kind in nnkStrLit..nnkTripleStrLit: body.strVal
                 else: body[1].strVal
 
-  parse_template(result, reindent(value))
+  parseTemplate(result, reindent(value))
 
 
 macro tmpl*(body: untyped): void =
@@ -481,4 +481,4 @@ macro tmpl*(body: untyped): void =
   var value = if body.kind in nnkStrLit..nnkTripleStrLit: body.strVal
                 else: body[1].strVal
 
-  parse_template(result, reindent(value))
+  parseTemplate(result, reindent(value))

@@ -1,5 +1,8 @@
-import os, strutils, strformat
+import std/os
+import std/strformat
+import std/strutils
 import ./utils
+
 
 proc makeKey*():int =
   let path = getCurrentDir() / ".env"

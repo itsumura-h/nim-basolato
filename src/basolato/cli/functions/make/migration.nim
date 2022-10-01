@@ -1,5 +1,9 @@
-import os, strformat, terminal, strutils
+import std/os
+import std/strformat
+import std/strutils
+import std/terminal
 import utils
+
 
 proc makeMigration*(target:string, message:var string):int =
   # let now = now().format("yyyyMMddHHmmss")
@@ -12,7 +16,8 @@ proc makeMigration*(target:string, message:var string):int =
   createDir(parentDir(targetPath))
 
   var MIGRATION = &"""
-import asyncdispatch, json
+import std/asyncdispatch
+import std/json
 import allographer/schema_builder
 from ../../config/database import rdb
 
@@ -40,7 +45,7 @@ proc {target}*() [.async.] =
     if row == "":
       offsets.add(i)
   # insert array
-  textArr.insert(&"import migration_{target}", offsets[0])
+  textArr.insert(&"import ./migration_{target}", offsets[0])
   textArr.insert(&"  waitFor {target}()", offsets[1]+1)
   # write in file
   f = open(targetPath, fmWrite)

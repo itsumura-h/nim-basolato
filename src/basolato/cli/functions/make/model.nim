@@ -1,5 +1,9 @@
-import os, strformat, terminal, strutils
+import std/os
+import std/strformat
+import std/strutils
+import std/terminal
 import utils
+
 
 # When aggregate is created,
 # aggregate, repository, repository interface(in aggregate)
@@ -128,8 +132,8 @@ proc new*(_:type {targetCaptalized}Service, repository:I{parentCapitalized}Repos
       textArr.insert("", 0)
       importOffset = 1
     # insert import
-    textArr.insert(&"import data_stores/repositories/{target}/{targetName}_repository", importOffset-1)
-    textArr.insert(&"import models/{targetName}/{targetName}_repository_interface", importOffset-1)
+    textArr.insert(&"import ./data_stores/repositories/{target}/{targetName}_repository", importOffset-1)
+    textArr.insert(&"import ./models/{targetName}/{targetName}_repository_interface", importOffset-1)
     textArr.insert(&"# {targetName}", importOffset-1)
     # insert di difinition
     var isAfterDiDifinision:bool

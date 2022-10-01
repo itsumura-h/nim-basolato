@@ -26,22 +26,22 @@ proc welcomeScf*(context:Context, params:Params):Future[Response] {.async.} =
   let name = "Basolato " & BasolatoVersion
   return render(welcomeScfView(name).await)
 
-proc fib_logic(n: int): int =
+proc fibLogic(n: int): int =
   if n < 2:
     return n
-  return fib_logic(n - 2) + fib_logic(n - 1)
+  return fibLogic(n - 2) + fibLogic(n - 1)
 
 proc fib*(context:Context, params:Params):Future[Response] {.async.} =
   let num = params.getInt("num")
   var results: seq[int]
-  let start_time = getTime()
+  let startTime = getTime()
   for i in 0..<num:
-    results.add(fib_logic(i))
-  let end_time = getTime() - start_time # Duration type
+    results.add(fibLogic(i))
+  let endTime = getTime() - startTime # Duration type
   var data = %*{
     "nim": "Nim " & NimVersion,
     "basolato": "Basolato " & BasolatoVersion,
-    "time": &"{end_time.inSeconds}.{end_time.inMicroseconds}",
+    "time": &"{endTime.inSeconds}.{endTime.inMicroseconds}",
     "fib": results
   }
   return render(data)

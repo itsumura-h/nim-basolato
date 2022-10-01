@@ -15,7 +15,7 @@ import app/http/controllers/validation_controller
 import app/http/controllers/api_controller
 
 
-let ROUTES = @[
+let routes = @[
   Route.group("", @[
     Route.get("/", page_display_controller.index)
       .middleware(example_middleware.setMiddleware1),
@@ -73,4 +73,4 @@ let ROUTES = @[
   .middleware(auth_middleware.checkCsrfTokenMiddleware),
 ]
 
-serve(ROUTES)
+serve(routes)

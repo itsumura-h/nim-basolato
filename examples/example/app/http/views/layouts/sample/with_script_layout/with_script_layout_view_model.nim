@@ -1,6 +1,6 @@
-import
-  std/asyncdispatch,
-  std/json
+import std/asyncdispatch
+import std/json
+
 
 type WithScriptLayoutViewModel* = ref object
 

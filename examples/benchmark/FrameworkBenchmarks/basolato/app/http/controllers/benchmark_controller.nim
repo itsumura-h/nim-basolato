@@ -5,14 +5,12 @@ import std/random
 import std/strutils
 import std/sequtils
 import std/httpcore
-import std/times
-import std/math
 # framework
 import basolato/controller
 import allographer/query_builder
 import ../../../config/database # pgDb, cacheDb
 import ../../models/fortune
-import ../views/pages/fortune_view
+# import ../views/pages/fortune_view
 import ../views/pages/fortune_scf_view
 
 

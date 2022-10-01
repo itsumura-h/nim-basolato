@@ -1,5 +1,7 @@
-import os, strformat, terminal
-import utils
+import std/os
+import std/strformat
+import std/terminal
+import ./utils
 
 
 template createConfigCommon(target, CONFIG:untyped) =
@@ -17,7 +19,7 @@ template createConfigCommon(target, CONFIG:untyped) =
 proc makeConfig*():int =
   createConfigCommon "config.nims":
     &"""
-import os
+import std/os
 putEnv("HOST", "0.0.0.0")
 putEnv("DB_SQLITE", $true) # "true" or "false"
 # putEnv("DB_POSTGRES", $true) # "true" or "false"
