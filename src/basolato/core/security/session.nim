@@ -1,6 +1,13 @@
-import asyncdispatch, json, asynchttpserver, options
-import session_db
-import cookie
+import std/asyncdispatch
+import std/json
+import std/options
+import ./session_db
+import ./cookie
+when defined(httpbeast) or defined(httpx):
+  import ../libservers/nostd/request
+else:
+  import ../libservers/std/request
+
 
 type Session* = ref object
   db: SessionDb

@@ -43,13 +43,11 @@ proc runCommand(port:int, f:bool, httpbeast:bool, httpx:bool) =
     if pid > 0:
       discard execShellCmd(&"kill {pid}")
     let fStr = if f: "-f" else: ""
-    let httpbeastStr = if httpbeast: "-d:httpbeast" else: ""
-    let httpxStr = if httpx: "-d:httpx" else: ""
+    let serverStr = if httpbeast: "-d:httpbeast" elif httpx: "-d:httpx" else: ""
     let cmd = &"""
       nim c \
       {fStr} \
-      {httpbeastStr} \
-      {httpxStr} \
+      {serverStr} \
       --threads:off \
       -d:ssl \
       --putenv:PORT={port}\

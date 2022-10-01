@@ -1,5 +1,13 @@
-import httpcore, asynchttpserver, times, strutils, tables
+import std/httpcore
+import std/times
+import std/strutils
+import std/tables
 import ../baseEnv
+
+when defined(httpbeast) or defined(httpx):
+  import ../libservers/nostd/request
+else:
+  import ../libservers/std/request
 
 
 type

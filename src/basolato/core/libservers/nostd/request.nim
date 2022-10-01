@@ -11,7 +11,7 @@ import std/strtabs
 import std/strutils
 import std/tables
 import std/uri
-import ./base
+import ../../base
 
 when defined(httpbeast):
   from httpbeast import Request; export Request

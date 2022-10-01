@@ -4,8 +4,8 @@ proc build*(port="5000", force=false, httpbeast=false, httpx=false, args:seq[str
   ## Build for production.
   var outputFileName = "main"
   let fStr = if force: "-f" else: ""
-  let httpbeastStr = if httpbeast: "-d:httpbeast" else: ""
-  let httpxStr = if httpx: "-d:httpx" else: ""
+  let serverStr = if httpbeast: "-d:httpbeast" elif httpx: "-d:httpx" else: ""
+
   try:
     outputFileName = args[0]
   except:
@@ -14,8 +14,7 @@ proc build*(port="5000", force=false, httpbeast=false, httpx=false, args:seq[str
   let cmd = &"""
     nim c \
     {fStr} \
-    {httpbeastStr} \
-    {httpxStr} \
+    {serverStr} \
     --threads:off \
     --gc:orc \
     -d:ssl \

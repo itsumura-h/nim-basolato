@@ -10,11 +10,15 @@ import std/tables
 import ./baseEnv
 import ./header
 import ./logger
-import ./request
 import ./response
 import ./security/cookie
 import ./security/context
 import ../controller
+
+when defined(httpbeast) or defined(httpx):
+  import ./libservers/nostd/request
+else:
+  import ./libservers/std/request
 
 
 type Middleware* = ref object

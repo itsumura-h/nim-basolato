@@ -1,16 +1,25 @@
-import asyncdispatch, asynchttpserver, options, strutils, json
-import ./session, ./session_db
-import ../request
+import std/asyncdispatch 
+import std/options
+import std/strutils
+import std/json
+import ./session
+import ./session_db
+
+when defined(httpbeast) or defined(httpx):
+  import ../libservers/nostd/request
+else:
+  import ../libservers/std/request
+
 
 type Context* = ref object
   request: Request
   session: Option[Session]
 
-proc new*(typ:type Context, request:Request, isCreateNew=false):Future[Context]{.async.} =
-  var session = await Session.new(request)
+proc new*(_:type Context, request:Request, isCreateNew=false):Future[Context]{.async.} =
+  var session = Session.new(request).await
   if isCreateNew and not session.isSome:
     session = genNewSession().await.some
-  return typ(
+  return Context(
     request:request,
     session:session
   )

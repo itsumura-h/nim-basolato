@@ -1,11 +1,10 @@
-import
-  ../std/core/base,
-  functions/newImpl,
-  functions/makeImpl,
-  functions/serveImpl,
-  functions/buildImpl,
-  functions/migrateImpl,
-  functions/seedImpl
+import ../core/base
+import ./functions/newImpl
+import ./functions/makeImpl
+import ./functions/serveImpl
+import ./functions/buildImpl
+import ./functions/migrateImpl
+import ./functions/seedImpl
 
 when isMainModule:
   import cligen
