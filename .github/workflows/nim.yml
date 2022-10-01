@@ -31,7 +31,7 @@ jobs:
     strategy:
       matrix:
         os:
-          - ubuntu-latest
+          - debian-latest
           # - macOS-latest
           # Need sqlite3_64.dll
           # - windows-latest
