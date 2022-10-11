@@ -29,7 +29,7 @@ func message*(self:MiddlewareResult):string =
   return self.message
 
 func next*(status:HttpCode=HttpCode(200), body="", headers:HttpHeaders=newHttpHeaders()):Response =
-  return Response(status:status, body:body, headers:headers)
+  return Response.new(status, body, headers)
 
 proc checkCsrfToken*(request:Request, params:Params):Future[MiddlewareResult] {.async.} =
   result = MiddlewareResult()

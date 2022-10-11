@@ -13,9 +13,17 @@ import ./templates
 
 type Response* = ref object
   status*:HttpCode
-  body*:string
+  body:string
   headers*:HttpHeaders
 
+proc new*(_:type Response, status:HttpCode, body:string, headers:HttpHeaders):Response =
+  return Response(status:status, body:body, headers:headers)
+
+proc body*(self:Response):string =
+  return self.body
+
+proc setBody*(self:Response, body:string) =
+  self.body = body
 
 func render*(status:HttpCode, body:string):Response =
   let headers = newHttpHeaders(true)

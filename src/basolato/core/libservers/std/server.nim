@@ -28,7 +28,7 @@ proc serveCore(params:(Routes, int)){.async.} =
   var server = newAsyncHttpServer(true, true)
 
   proc cb(req: Request) {.async, gcsafe.} =
-    var response = Response(status:HttpCode(0), headers:newHttpHeaders())
+    var response = Response.new(HttpCode(0), "", newHttpHeaders())
 
     try:
       # static file response
@@ -40,7 +40,7 @@ proc serveCore(params:(Routes, int)){.async.} =
           let contentType = newMimetypes().getMimetype(req.path.split(".")[^1])
           var headers = newHttpHeaders()
           headers["content-type"] = contentType
-          response = Response(status:Http200, body:data, headers:headers)
+          response = Response.new(Http200, data, headers)
       else:
         # check path match with controller routing → run middleware → run controller
         let key = $(req.httpMethod) & ":" & req.path.split("?")[0]
@@ -57,7 +57,7 @@ proc serveCore(params:(Routes, int)){.async.} =
               break
 
         if req.httpMethod == HttpHead:
-          response.body = ""
+          response.setBody("")
 
         # anonymous user login should run only for response from controler
         if doesRunAnonymousLogin(req, response) and context.isValid().await:
@@ -73,19 +73,19 @@ proc serveCore(params:(Routes, int)){.async.} =
       if exception.name == "DD".cstring:
         var msg = exception.msg
         msg = msg.replace(re"Async traceback:[.\s\S]*")
-        response = Response(status:Http200, body:ddPage(msg), headers:headers)
+        response = Response.new(Http200, ddPage(msg), headers)
       elif exception.name == "ErrorAuthRedirect".cstring:
         headers["location"] = exception.msg
         headers["set-cookie"] = "session_id=; expires=31-Dec-1999 23:59:59 GMT" # Delete session id
-        response = Response(status:Http302, body:"", headers:headers)
+        response = Response.new(Http302, "", headers)
       elif exception.name == "ErrorRedirect".cstring:
         headers["location"] = exception.msg
-        response = Response(status:Http302, body:"", headers:headers)
+        response = Response.new(Http302, "", headers)
       elif exception.name == "ErrorHttpParse".cstring:
-        response = Response(status:Http501, body:"", headers:headers)
+        response = Response.new(Http501, "", headers)
       else:
         let status = checkHttpCode(exception)
-        response = Response(status:status, body:errorPage(status, exception.msg), headers:headers)
+        response = Response.new(status, errorPage(status, exception.msg), headers)
         echoErrorMsg(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
         echoErrorMsg(exception.msg)
 
@@ -93,7 +93,7 @@ proc serveCore(params:(Routes, int)){.async.} =
     if response.status == HttpCode(0):
       var headers = newHttpHeaders()
       headers["content-type"] = "text/html; charset=utf-8"
-      response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)
+      response = Response.new(Http404, errorPage(Http404, ""), headers)
       echoErrorMsg(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
 
     response.headers.setDefaultHeaders()
