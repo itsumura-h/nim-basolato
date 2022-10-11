@@ -17,6 +17,7 @@ proc build*(port="5000", force=false, httpbeast=false, httpx=false, args:seq[str
     {serverStr} \
     --threads:off \
     --gc:orc \
+    -d:danger \
     -d:ssl \
     -d:release \
     --panics:on \

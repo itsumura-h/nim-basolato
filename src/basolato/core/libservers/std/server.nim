@@ -11,17 +11,16 @@ import std/tables
 import std/times
 import std/mimetypes
 import ../../baseEnv
-import ../../security/context
-import ../../security/cookie
-import ../../route
+import ../../benchmark
+import ../../error_page
 import ../../header
-import ../../response
 import ../../logger
 import ../../resources/dd_page
-import ../../error_page
-import ../../benchmark
+import ../../response
+import ../../route
+import ../../security/context
+import ../../security/cookie
 import ./request
-from osproc import countProcessors
 
 
 proc serveCore(params:(Routes, int)){.async.} =
@@ -29,8 +28,7 @@ proc serveCore(params:(Routes, int)){.async.} =
   var server = newAsyncHttpServer(true, true)
 
   proc cb(req: Request) {.async, gcsafe.} =
-    var
-      response = Response(status:HttpCode(0), headers:newHttpHeaders())
+    var response = Response(status:HttpCode(0), headers:newHttpHeaders())
 
     try:
       # static file response
@@ -38,7 +36,7 @@ proc serveCore(params:(Routes, int)){.async.} =
         let filepath = getCurrentDir() & "/public" & req.path
         if fileExists(filepath):
           let file = openAsync(filepath, fmRead)
-          let data = await file.readAll()
+          let data = file.readAll().await
           let contentType = newMimetypes().getMimetype(req.path.split(".")[^1])
           var headers = newHttpHeaders()
           headers["content-type"] = contentType
@@ -46,16 +44,16 @@ proc serveCore(params:(Routes, int)){.async.} =
       else:
         # check path match with controller routing → run middleware → run controller
         let key = $(req.httpMethod) & ":" & req.path.split("?")[0]
-        let context = await Context.new(req, ENABLE_ANONYMOUS_COOKIE)
+        let context = Context.new(req, ENABLE_ANONYMOUS_COOKIE).await
         if routes.withoutParams.hasKey(key):
           # withoutParams
           let route = routes.withoutParams[key]
-          response = await createResponse(req, route, req.httpMethod, context)
+          response = createResponse(req, route, req.httpMethod, context).await
         else:
           # withParams
           for route in routes.withParams:
             if route.httpMethod == req.httpMethod and isMatchUrl(req.path, route.path):
-              response = await createResponse(req, route, req.httpMethod, context)
+              response = createResponse(req, route, req.httpMethod, context).await
               break
 
         if req.httpMethod == HttpHead:
@@ -64,8 +62,8 @@ proc serveCore(params:(Routes, int)){.async.} =
         # anonymous user login should run only for response from controler
         if doesRunAnonymousLogin(req, response) and context.isValid().await:
           # keep session id from request and update expire
+          let sessionId = context.getToken().await
           var cookies = Cookies.new(req)
-          let sessionId = await context.getToken()
           cookies.set("session_id", sessionId, expire=timeForward(SESSION_TIME, Minutes))
           response = response.setCookie(cookies)
     except:
@@ -83,6 +81,8 @@ proc serveCore(params:(Routes, int)){.async.} =
       elif exception.name == "ErrorRedirect".cstring:
         headers["location"] = exception.msg
         response = Response(status:Http302, body:"", headers:headers)
+      elif exception.name == "ErrorHttpParse".cstring:
+        response = Response(status:Http501, body:"", headers:headers)
       else:
         let status = checkHttpCode(exception)
         response = Response(status:status, body:errorPage(status, exception.msg), headers:headers)
@@ -97,7 +97,7 @@ proc serveCore(params:(Routes, int)){.async.} =
       echoErrorMsg(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
 
     response.headers.setDefaultHeaders()
-    await req.respond(response.status, response.body, response.headers.format())
+    req.respond(response.status, response.body, response.headers.format()).await
     # keep-alive
     req.dealKeepAlive()
 

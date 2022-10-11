@@ -222,12 +222,13 @@ proc runController(req:Request, route:Route, headers: HttpHeaders, context:Conte
 
 
 proc createResponse*(req:Request, route:Route, httpMethod:HttpMethod, context:Context):Future[Response] {.async.} =
-  var response = runMiddleware(req, route, context).await
+  let response1 = runMiddleware(req, route, context).await
   if ENABLE_ANONYMOUS_COOKIE:
     await context.updateNonce()
-  if httpMethod != HttpOptions:
-    response = runController(req, route, response.headers, context).await
-  return response
+  if httpMethod == HttpOptions:
+    return response1
+  let response2 = runController(req, route, response1.headers, context).await
+  return response2
 
 
 const errorStatusArray* = [505, 504, 503, 502, 501, 500, 451, 431, 429, 428, 426,
