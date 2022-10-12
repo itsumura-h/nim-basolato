@@ -3,7 +3,6 @@ import std/strutils
 import std/httpcore
 import std/times
 import std/strformat
-import ./base
 
 
 func toTitleCase(s: string): string =
@@ -31,7 +30,7 @@ func newHttpHeaders*(
         result.table[pair.key] = pair.val
 
 proc setDefaultHeaders*(self:HttpHeaders) =
-  self.add("Server", &"Nim/{NimVersion}; Basolato/{BasolatoVersion}")
+  self.add("Server", &"Basolato/Nim")
   let formatter = initTimeFormat("ddd, dd MMM YYYY HH:mm:ss 'GMT'")
   self.add("Date",  now().format(formatter))
   self.add("Connection", "Keep-Alive")
@@ -82,4 +81,6 @@ proc format*(self:HttpHeaders):HttpHeaders =
 proc toString*(headers: HttpHeaders):string =
   result = ""
   for k, v in headers:
-    result.add(k & ": " & v & "\c\L")
+    if result.len > 0:
+      result.add("\c\L")
+    result.add(k & ": " & v)
