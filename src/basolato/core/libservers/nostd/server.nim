@@ -10,16 +10,16 @@ import std/tables
 import std/times
 import std/mimetypes
 import ../../baseEnv
+import ../../benchmark
+import ../../error_page
+import ../../header
+import ../../logger
+import ../../resources/dd_page
+import ../../response
+import ../../route
 import ../../security/context
 import ../../security/cookie
-import ../../route
 import ./request
-import ../../header
-import ../../response
-import ../../logger
-import ../../error_page
-import ../../resources/dd_page
-import ../../benchmark
 
 when defined(httpbeast):
   from httpbeast import send, initSettings, run
@@ -35,12 +35,9 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
       routes.withoutParams[path] = route
   
   proc cd(req:Request):Future[void] {.gcsafe, async.}=
-    var
-      response = Response(status:HttpCode(0), headers:newHttpHeaders(true))
-      httpMethodStr = ""
+    var response = Response.new(HttpCode(0), "", newHttpHeaders())
 
     try:
-      httpMethodStr = $req.httpMethod()
       # static file response
       if req.path.contains("."):
         let filepath = getCurrentDir() & "/public" & req.path
@@ -48,9 +45,9 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
           let file = openAsync(filepath, fmRead)
           let data = file.readAll().await
           let contentType = newMimetypes().getMimetype(req.path.split(".")[^1])
-          var headers = newHttpHeaders(true)
-          headers["Content-Type"] = contentType
-          response = Response(status:Http200, body:data, headers:headers)
+          var headers = newHttpHeaders()
+          headers["content-type"] = contentType
+          response = Response.new(Http200, data, headers)
       else:
         # check path match with controller routing → run middleware → run controller
         let key = $(req.httpMethod) & ":" & req.path.split("?")[0]
@@ -58,16 +55,16 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
         if routes.withoutParams.hasKey(key):
           # withoutParams
           let route = routes.withoutParams[key]
-          response = createResponse(req, route, req.httpMethod, context).await
+          response = createResponse(req, route, req.httpMethod, context).waitFor
         else:
           # withParams
           for route in routes.withParams:
             if route.httpMethod == req.httpMethod and isMatchUrl(req.path, route.path):
-              response = createResponse(req, route, req.httpMethod, context).await
+              response = createResponse(req, route, req.httpMethod, context).waitFor
               break
 
         if req.httpMethod == HttpHead:
-          response.body = ""
+          response.setBody("")
 
         # anonymous user login should run only for response from controler
         if doesRunAnonymousLogin(req, response) and context.isValid().await:
@@ -77,37 +74,38 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
           cookies.set("session_id", sessionId, expire=timeForward(SESSION_TIME, Minutes))
           response = response.setCookie(cookies)
     except:
-      var headers = newHttpHeaders(true)
-      headers["Content-Type"] = "text/html; charset=utf-8"
+      var headers = newHttpHeaders()
+      headers["content-type"] = "text/html; charset=utf-8"
       let exception = getCurrentException()
       if exception.name == "DD".cstring:
         var msg = exception.msg
         msg = msg.replace(re"Async traceback:[.\s\S]*")
-        response = Response(status:Http200, body:ddPage(msg), headers:headers)
+        response = Response.new(Http200, ddPage(msg), headers)
       elif exception.name == "ErrorAuthRedirect".cstring:
-        headers["Location"] = exception.msg
-        headers["Set-Cookie"] = "session_id=; expires=31-Dec-1999 23:59:59 GMT" # Delete session id
-        response = Response(status:Http302, body:"", headers:headers)
+        headers["location"] = exception.msg
+        headers["set-cookie"] = "session_id=; expires=31-Dec-1999 23:59:59 GMT" # Delete session id
+        response = Response.new(Http302, "", headers)
       elif exception.name == "ErrorRedirect".cstring:
-        headers["Location"] = exception.msg
-        response = Response(status:Http302, body:"", headers:headers)
+        headers["location"] = exception.msg
+        response = Response.new(Http302, "", headers)
       elif exception.name == "ErrorHttpParse".cstring:
-        response = Response(status:Http501, body:"", headers:headers)
+        response = Response.new(Http501, "", headers)
       else:
         let status = checkHttpCode(exception)
-        response = Response(status:status, body:errorPage(status, exception.msg), headers:headers)
-        echoErrorMsg(&"{$response.status}  {httpMethodStr}  {req.path}")
+        response = Response.new(status, errorPage(status, exception.msg), headers)
+        echoErrorMsg(&"{$response.status}  {$req.httpMethod}  {req.path}")
         echoErrorMsg(exception.msg)
 
     if response.status == HttpCode(0):
-      var headers = newHttpHeaders(true)
-      headers["Content-Type"] = "text/html; charset=utf-8"
-      response = Response(status:Http404, body:errorPage(Http404, ""), headers:headers)
-      echoErrorMsg(&"{$response.status}  {httpMethodStr}  {req.path}")
+      var headers = newHttpHeaders()
+      headers["content-type"] = "text/html; charset=utf-8"
+      response = Response.new(Http404, errorPage(Http404, ""), headers)
+      echoErrorMsg(&"{$response.status}  {$req.httpMethod}  {req.path}")
 
-    when defined(httpx):
-      response.headers.setDefaultHeaders()
-    req.send(response.status, response.body, response.headers.format().toString())
+    when defined(httpbeast):
+      req.send(response.status, response.body, response.headers.format().toString())
+    else:
+      req.send(response.status, response.body, some($response.body.len), response.headers.format().toString())
     # keep-alive
     req.dealKeepAlive()
 

@@ -30,9 +30,9 @@ proc loadCsrfToken():string =
 
 block:
   let session = waitFor genNewSession()
-  let authId = waitFor session.db.getToken()
+  let sessionId = waitFor session.db.getToken()
   client.headers = newHttpHeaders({
-    "Cookie": &"session_id={authId}",
+    "Cookie": &"session_id={sessionId}",
     "Content-Type": "application/x-www-form-urlencoded",
   })
   let csrfToken = loadCsrfToken()

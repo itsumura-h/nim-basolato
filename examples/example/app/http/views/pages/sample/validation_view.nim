@@ -63,7 +63,6 @@ proc impl(params, errors:JsonNode):Future[Component] {.async.} =
       </form>
     </main>
   """
-  echo result
 
 proc validationView*(params, errors:JsonNode):Future[string] {.async.} =
   let title = "Validation view"
