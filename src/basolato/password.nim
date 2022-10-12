@@ -1,4 +1,4 @@
-import std/bcrypt
+import bcrypt
 
 
 func genHashedPassword*(val:string):string =

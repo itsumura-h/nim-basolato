@@ -23,7 +23,7 @@ block:
 block:
   let header = newHttpHeaders()
   header.setDefaultHeaders()
-  check header["server"] == fmt"Nim/{NimVersion}; Basolato/{BasolatoVersion}"
+  check header["server"] == fmt"Basolato/Nim"
 
 block:
   let header = newHttpHeaders()
