@@ -69,9 +69,11 @@ proc fortune*(context:Context, params:Params):Future[Response] {.async.} =
   var rows = newSeq[Fortune]()
   for i, data in results:
     rows.add(Fortune(id: data[0].parseInt, message: data[1]))
-  rows.add Fortune(
-    id: 0,
-    message: "Additional fortune added at request time."
+  rows.add(
+    Fortune(
+      id: 0,
+      message: "Additional fortune added at request time."
+    )
   )
   rows = rows.sortedByIt(it.message)
   # return render(fortuneView(rows).await)
