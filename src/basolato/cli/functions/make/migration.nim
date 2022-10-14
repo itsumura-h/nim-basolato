@@ -46,7 +46,12 @@ proc {target}*() [.async.] =
       offsets.add(i)
   # insert array
   textArr.insert(&"import ./migration_{target}", offsets[0])
-  textArr.insert(&"  waitFor {target}()", offsets[1]+1)
+  textArr.insert(&"  waitFor {target}()", offsets[3]-1)
+  # delete discard
+  for i, row in textArr:
+    if row.contains("discard"):
+      textArr.delete(i)
+      break
   # write in file
   f = open(targetPath, fmWrite)
   defer: f.close()
