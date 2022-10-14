@@ -74,7 +74,7 @@ func len*(self:Param):int =
 
 type Params* = TableRef[string, Param]
 
-proc newParams*():Params =
+proc new*(_:type Params):Params =
   return newTable[string, Param]()
 
 
@@ -127,7 +127,7 @@ proc getAll*(params:Params):JsonNode =
     result[key] = %*{"ext": ext, "fileName": fileName, "value": value}
 
 func getUrlParams*(requestPath, routePath:string):Params =
-  result = newParams()
+  result = Params.new()
   if routePath.contains("{"):
     let requestPath = requestPath.split("/")[1..^1]
     let routePath = routePath.split("/")[1..^1]
@@ -138,13 +138,13 @@ func getUrlParams*(requestPath, routePath:string):Params =
         result[key] = Param(value:requestPath[i].split(":")[0])
 
 func getQueryParams*(request:Request):Params =
-  result = newParams()
+  result = Params.new()
   let query = request.url.query
   for key, val in cgi.decodeData(query):
     result[key] = Param(value:val)
 
 proc getJsonParams*(request:Request):Params =
-  result = newParams()
+  result = Params.new()
   let jsonParams = request.body.parseJson()
   for k, v in jsonParams.pairs:
     case v.kind
@@ -257,7 +257,7 @@ func parseMPFD(contentType: string, body: string): MultiData =
   return parseMultiPart(body, boundary)
 
 proc getRequestParams*(request:Request):Params =
-  let params = newParams()
+  let params = Params.new()
   if request.headers.hasKey("content-type"):
     let contentType = request.headers["content-type"].toString
     if contentType.contains("multipart/form-data"):
