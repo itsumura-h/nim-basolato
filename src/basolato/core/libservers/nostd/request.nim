@@ -46,27 +46,19 @@ func httpMethod*(request:Request):HttpMethod =
     raise newException(ErrorHttpParse, "")
   return httpbeast.httpMethod(request).get()
 
-func path*(request:Request):string =
+func url*(request:Request):Uri =
   if not httpbeast.path(request).isSome():
     raise newException(ErrorHttpParse, "")
-  return httpbeast.path(request).get()
+  return httpbeast.path(request).get().parseUri()
+
+func path*(request:Request):string =
+  return request.url.path
 
 func hostname*(request:Request):string =
   return httpbeast.ip(request)
 
 
 proc dealKeepAlive*(req:Request) =
-  # if (
-  #   req.protocol.major == 1 and
-  #   req.protocol.minor == 1 and
-  #   cmpIgnoreCase(req.headers.getOrDefault("Connection"), "close") == 0
-  # ) or
-  # (
-  #   req.protocol.major == 1 and
-  #   req.protocol.minor == 0 and
-  #   cmpIgnoreCase(req.headers.get().getOrDefault("Connection"), "keep-alive") != 0
-  # ):
-  #   req.client.close()
   if req.headers.hasKey("Connection") and
   (
     req.headers["Connection"].toLowerAscii() == "close" or
@@ -178,15 +170,15 @@ func getUrlParams*(requestPath, routePath:string):Params =
         let key = keyInUrl[0]
         result[key] = Param(value:requestPath[i].split(":")[0])
 
-proc getQueryParams*(request:Request):Params =
+func getQueryParams*(request:Request):Params =
   result = Params.new()
-  let query = request.path().parseUri().query
+  let query = request.url.query
   for key, val in cgi.decodeData(query):
     result[key] = Param(value:val)
 
 proc getJsonParams*(request:Request):Params =
   result = Params.new()
-  let jsonParams = request.body().parseJson()
+  let jsonParams = request.body.parseJson()
   for k, v in jsonParams.pairs:
     case v.kind
     of JInt:
@@ -299,8 +291,8 @@ func parseMPFD(contentType: string, body: string): MultiData =
 
 proc getRequestParams*(request:Request):Params =
   let params = Params.new()
-  if request.headers.hasKey("Content-Type"):
-    let contentType = request.headers["Content-Type"].toString
+  if request.headers.hasKey("content-type"):
+    let contentType = request.headers["content-type"].toString
     if contentType.contains("multipart/form-data"):
       let formdata = parseMPFD(contentType, request.body)
       for key, row in formdata:
