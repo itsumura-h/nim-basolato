@@ -1,4 +1,3 @@
-import std/nimprof
 # framework
 # import basolato
 import ../../../../src/basolato

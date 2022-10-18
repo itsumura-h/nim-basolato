@@ -100,8 +100,6 @@ proc serveCore(params:(Routes, int)){.async.} =
     req.respond(response.status, response.body, response.headers.format()).await
     # keep-alive
     req.dealKeepAlive()
-    when compileOption("profiler") or defined(memProfiler):
-      quit()
 
 
   server.listen(Port(port), HOST_ADDR)
