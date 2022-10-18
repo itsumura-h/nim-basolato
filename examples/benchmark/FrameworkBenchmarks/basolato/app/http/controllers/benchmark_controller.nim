@@ -6,7 +6,8 @@ import std/strutils
 import std/sequtils
 import std/httpcore
 # framework
-import basolato/controller
+# import basolato/controller
+import ../../../../../../../src/basolato/controller
 import allographer/query_builder
 import ../../../config/database # pgDb, cacheDb
 import ../../models/fortune
@@ -21,6 +22,10 @@ proc plaintext*(context:Context, params:Params):Future[Response] {.async.} =
 
 proc json*(context:Context, params:Params):Future[Response] {.async.} =
   return render(%*{"message":"Hello, World!"})
+
+proc sleep*(context:Context, params:Params):Future[Response] {.async.} =
+  sleepAsync(10000).await
+  return render("hello")
 
 proc db*(context:Context, params:Params):Future[Response] {.async.} =
   let i = rand(1..10000)
@@ -55,12 +60,6 @@ proc query*(context:Context, params:Params):Future[Response] {.async.} =
       else: newJObject()
   )
 
-  # var response: seq[JsonNode]
-  # for i in 1..countNum:
-  #   let n = rand(1..10000)
-  #   let resp = pgDb.table("World").findPlain(n).await
-  #   response.add(%*{"id": resp[0].parseInt, "randomnumber": resp[1]})
-
   return render(%response)
 
 
@@ -92,18 +91,6 @@ proc update*(context:Context, params:Params):Future[Response] {.async.} =
     countNum = 500
 
   let response = newJArray()
-
-  # var proc1 = newSeq[Future[seq[string]]](countNum)
-  # var proc2 = newSeq[Future[void]](countNum)
-  # for n in 1..countNum:
-  #   let i = rand(1..10000)
-  #   let newRandomNumber = rand(1..10000)
-  #   proc1[n-1] = pgDb.table("World").findPlain(i)
-  #   proc2[n-1] = pgDb.table("World").where("id", "=", i).update(%*{"randomNumber": newRandomNumber})
-  #   response.add(%*{"id":i, "randomNumber": newRandomNumber})
-  # discard all(proc1).await
-  # all(proc2).await
-
   var procs = newSeq[Future[void]](countNum)
   for n in 1..countNum:
     let i = rand(1..10000)
@@ -138,8 +125,3 @@ proc cache*(context:Context, params:Params):Future[Response] {.async.} =
     response.add(%*{"id":n, "randomNumber": newRandomNumber})
 
   return render(response)
-
-
-proc sleep*(context:Context, params:Params):Future[Response] {.async.} =
-  sleepAsync(10000).await
-  return render("hello")

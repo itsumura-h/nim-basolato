@@ -10,7 +10,7 @@ proc toString(t:Duration):string =
   return &"{secound}.{miliSecound}{nanoSecound}"
 
 var t:Time
-proc diffTime*(num:int) =
+proc diffTime*(num:int | string) =
   let c = getTime()
   if t == Time(): t = c
   echo (c - t).toString()

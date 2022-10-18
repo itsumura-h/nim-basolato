@@ -2,10 +2,14 @@ import std/asyncdispatch
 import std/asynchttpserver
 import std/json
 import std/osproc
+import std/strutils
+import std/sequtils
 import std/strformat
+import std/uri
 import std/random
 import allographer/connection
 import allographer/query_builder
+import ../../../../src/basolato/core/benchmark
   
 
 randomize()
@@ -14,9 +18,11 @@ proc threadProc(rdb:Rdb) {.thread.} =
   proc asyncProc() {.async.} =
     var server = newAsyncHttpServer(true, true)
     proc cb(req: Request) {.async, gcsafe.} =
+      diffTime("start")
       case req.url.path
       of "/plaintext":
         await req.respond(Http200, "Hello World")
+        diffTime("end")
       of "/json":
         await req.respond(Http200, $(%*{"message":"Hello, World!"}))
       of "/db":
@@ -24,25 +30,31 @@ proc threadProc(rdb:Rdb) {.thread.} =
         let response = await rdb.table("World").select("id", "randomNumber").find(i)
         await req.respond(Http200, $(%*response))
       of "/updates":
-        let countNum = 100
-        var response = newSeq[JsonNode](countNum)
-        var getFutures = newSeq[Future[seq[string]]](countNum)
-        var updateFutures = newSeq[Future[void]](countNum)
-        for i in 1..countNum:
-          let index = rand(1..10000)
-          let number = rand(1..10000)
-          getFutures[i-1] = rdb.table("World").select("id", "randomNumber").findPlain(index)
-          updateFutures[i-1] = rdb
-                              .table("World")
-                              .where("id", "=", index)
-                              .update(%*{"randomNumber": number})
-          response[i-1] = %*{"id":index, "randomNumber": number}
+        var countNum =
+          try:
+            (proc():int =
+              for row in req.url.query.decodeQuery().toSeq():
+                if row.key == "queries":
+                  return row.value.parseInt
+            )()
+          except:
+            1
+        if countNum < 1:
+          countNum = 1
+        elif countNum > 500:
+          countNum = 500
 
-        try:
-          discard await all(getFutures)
-          await all(updateFutures)
-        except:
-          discard
+        let response = newJArray()
+        var procs = newSeq[Future[void]](countNum)
+        for n in 1..countNum:
+          let i = rand(1..10000)
+          let newRandomNumber = rand(1..10000)
+          procs[n-1] = (proc():Future[void]=
+            discard rdb.table("World").findPlain(i)
+            rdb.table("World").where("id", "=", i).update(%*{"randomNumber": newRandomNumber})
+          )()
+          response.add(%*{"id":i, "randomNumber": newRandomNumber})
+        all(procs).await
 
         await req.respond(Http200, $response)
       else:

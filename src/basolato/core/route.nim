@@ -13,13 +13,14 @@ import ./logger
 import ./response
 import ./security/cookie
 import ./security/context
-import ../controller
 
 when defined(httpbeast) or defined(httpx):
   import ./libservers/nostd/request
 else:
   import ./libservers/std/request
 
+
+type Controller* = proc(c:Context, params:Params):Future[Response] {.async.}
 
 type Middleware* = ref object
   action: Controller
@@ -67,12 +68,12 @@ func path*(self:Route):string =
 
 type Routes* = ref object
   withParams*: seq[Route]
-  withoutParams*: OrderedTableRef[string, Route]
+  withoutParams*: TableRef[string, Route]
 
 func new*(_:type Routes):Routes =
   return Routes(
     withParams: newSeq[Route](),
-    withoutParams: newOrderedTable[string, Route](),
+    withoutParams: newTable[string, Route](),
   )
 
 func add(
