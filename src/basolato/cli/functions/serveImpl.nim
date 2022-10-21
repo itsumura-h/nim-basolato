@@ -50,7 +50,8 @@ proc runCommand(port:int, f:bool, httpbeast:bool, httpx:bool) =
       {serverStr} \
       --threads:off \
       -d:ssl \
-      --putenv:PORT={port}\
+      --parallelBuild:0 \
+      --putenv:PORT={port} \
       --spellSuggest:5 \
       main
     """
