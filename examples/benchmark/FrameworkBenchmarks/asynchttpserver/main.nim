@@ -18,11 +18,9 @@ proc threadProc(rdb:Rdb) {.thread.} =
   proc asyncProc() {.async.} =
     var server = newAsyncHttpServer(true, true)
     proc cb(req: Request) {.async, gcsafe.} =
-      diffTime("start")
       case req.url.path
       of "/plaintext":
         await req.respond(Http200, "Hello World")
-        diffTime("end")
       of "/json":
         await req.respond(Http200, $(%*{"message":"Hello, World!"}))
       of "/db":
