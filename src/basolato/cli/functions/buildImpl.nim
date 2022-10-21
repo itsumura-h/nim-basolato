@@ -1,6 +1,6 @@
   import os, strformat
 
-proc build*(port="5000", force=false, httpbeast=false, httpx=false, args:seq[string]) =
+proc build*(port=5000, force=false, httpbeast=false, httpx=false, args:seq[string]) =
   ## Build for production.
   var outputFileName = "main"
   let fStr = if force: "-f" else: ""
