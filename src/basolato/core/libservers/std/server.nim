@@ -43,7 +43,7 @@ proc serveCore(params:(Routes, int)){.async.} =
           response = Response.new(Http200, data, headers)
       else:
         # check path match with controller routing → run middleware → run controller
-        let key = $(req.httpMethod) & ":" & req.path.split("?")[0]
+        let key = $(req.httpMethod) & ":" & req.path
         let context = Context.new(req, ENABLE_ANONYMOUS_COOKIE).await
         if routes.withoutParams.hasKey(key):
           # withoutParams

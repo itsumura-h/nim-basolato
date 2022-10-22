@@ -16,8 +16,6 @@ else:
   import core/libservers/std/request; export request
 
 
-type Controller* = proc(c:Context, params:Params):Future[Response] {.async.}
-
 proc asyncHtml*(path:string):Future[string] {.async.} =
   ## Open html file asynchronous.
   ## arg path is relative path from app/http/views

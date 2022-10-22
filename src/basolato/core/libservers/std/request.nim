@@ -15,6 +15,8 @@ import std/uri
 
 
 func path*(request:Request):string =
+  ## "/aaa/bbb?key=val" => "/aaa/bbb"
+  ## 
   return request.url.path
 
 func httpMethod*(request:Request):HttpMethod =
@@ -40,7 +42,7 @@ func isNumeric(str:string):bool =
       return false
 
 func isMatchUrl*(requestPath, routePath:string):bool =
-  let requestPath = requestPath.split("?")[0].split("/")[1..^1]
+  let requestPath = requestPath.split("/")[1..^1]
   let routePath = routePath.split("/")[1..^1]
   if requestPath.len != routePath.len:
     return false
