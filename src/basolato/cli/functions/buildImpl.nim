@@ -1,24 +1,41 @@
-  import os, strformat
+import std/os
+import std/osproc
+import std/strformat
+import std/strutils
 
-proc build*(port=5000, force=false, httpbeast=false, httpx=false, args:seq[string]) =
+
+proc jsBuild() =
+  for f in walkDirRec(getCurrentDir(), {pcFile}):
+    if f.contains("_script.nim"):
+      let jsFilePath = f.split(".")[0..^2].join(".")
+      let cmd = &"nim js -d:nimExperimentalAsyncjsThen -d:release -o:{jsFilePath}.js {f}"
+      echo cmd
+      if execCmd(cmd) > 0:
+        echo("[FAILED] Build error")
+        quit(QuitFailure)
+
+
+proc build*(port=5000, numProcesses=0, force=false, httpbeast=false, httpx=false, args:seq[string]) =
   ## Build for production.
+  jsBuild()
   var outputFileName = "main"
   let fStr = if force: "-f" else: ""
   let serverStr = if httpbeast: "-d:httpbeast" elif httpx: "-d:httpx" else: ""
+  let numProcesses = if numProcesses == 0: countProcessors() else: numProcesses
 
   try:
     outputFileName = args[0]
   except:
     discard
 
-  let cmd = &"""
+  var cmd = &"""
     nim c \
     {fStr} \
     {serverStr} \
     --threads:off \
     --gc:orc \
-    -d:danger \
     -d:ssl \
+    -d:danger \
     -d:release \
     --parallelBuild:0 \
     --passC:"-flto"\
@@ -31,7 +48,46 @@ proc build*(port=5000, force=false, httpbeast=false, httpx=false, args:seq[strin
     main.nim
   """
   echo cmd
-  discard execShellCmd(cmd)
+  discard execCmd(cmd)
+
+  for i in 1..numProcesses:
+    copyFile(&"./{outputFileName}", outputFileName & $i)
+    setFilePermissions(outputFileName & $i, {fpUserExec})
+
+  var mainContent = "while [ 1 ]; do \c\L"
+  for i in 1..numProcesses:
+    mainContent.add(&"  ./{outputFileName}{i}")
+    if i < numProcesses:
+      mainContent.add(" & \\\c\L")
+    else:
+      mainContent.add("\c\L")
+  mainContent.add("done")
+  let msg = if numProcesses > 1: "processes" else: "process"
+
+  var startServer = &"""
+import std/osproc
+
+let cmd = '''
+{mainContent}
+'''
+echo "running {numProcesses} {msg}"
+discard execCmd(cmd)
+"""
+  startServer = startServer.replace("'", "\"")
+  writeFile("./startServer.nim", startServer)
+  cmd = &"""
+    nim c \
+    --threads:off \
+    --gc:orc \
+    -d:danger \
+    -d:release \
+    --parallelBuild:0 \
+    --panics:on \
+    startServer.nim
+  """
+  discard execCmd(cmd)
+  removeFile("startServer.nim")
+
 
 #[
 

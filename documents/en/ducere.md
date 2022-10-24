@@ -92,26 +92,60 @@ ducere serve --httpx
 
 ### build
 Compiling for production.  
-By default, it will be compiled to run 5000 port and single thread.
 
 ```sh
 Usage:
   build [optional-params] [args: string...]
 Build for production.
 Options:
-  -h, --help                     print this cligen-erated help
-  --help-syntax                  advanced: prepend,plurals,..
-  --version      bool    false   print version
-  -p=, --port=   string  "5000"  set port
-  -f, --force    bool    false   set force
-  --httpbeast    bool    false   set httpbeast
-  --httpx        bool    false   set httpx
+  -h, --help                         print this cligen-erated help
+  --help-syntax                      advanced: prepend,plurals,..
+  --version             bool  false  print version
+  -p=, --port=          int   5000   set port
+  -n=, --numProcesses=  int   0      set numProcesses
+  -f, --force           bool  false  set force
+  --httpbeast           bool  false  set httpbeast
+  --httpx               bool  false  set httpx
+```
+By default, it will be compiled to run 5000 port and single threadand and multiple processing.  
+When you build application, a runnable binary file named `startServer` is generated. Run this file to start server.
+
+```sh
+ducere build
+./startServer
+
+> running 4 processes
+> Basolato uses config file '/basolato/.env'
+> Basolato uses config file '/basolato/.env'
+> Basolato uses config file '/basolato/.env'
+> Basolato uses config file '/basolato/.env'
+> Basolato based on asynchttpserver listening on 0.0.0.0:5000
+> Basolato based on asynchttpserver listening on 0.0.0.0:5000
+> Basolato based on asynchttpserver listening on 0.0.0.0:5000
+> Basolato based on asynchttpserver listening on 0.0.0.0:5000
+```
+
+You can switch port by setting `-p` option.
+```sh
+ducere build -p:8000
+```
+
+You can set the number of processes to run by setting `numProcesses`. The default is 0, which creates as many processes as the number of CPU cores in the build environment.
+```sh
+ducere build --numProcesses=2
+  or
+ducere build -n=2
+```
+
+You can change host by editing env of `config.nims`
+```sh
+putEnv("HOST", "127.0.0.2")
 ```
 
 You can choose [httpbeast](https://github.com/dom96/httpbeast) or [httpx](https://github.com/ringabout/httpx) insted of [asynchttpserver](https://nim-lang.org/docs/asynchttpserver.html) for basolato core server.
 ```sh
-ducere serve --httpbeast
-ducere serve --httpx
+ducere build --httpbeast
+ducere build --httpx
 ```
 
 ### migrate
