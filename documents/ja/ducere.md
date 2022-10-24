@@ -75,7 +75,7 @@ ducere serve
 ducere serve -p:8000
 ```
 
-ホストを設定するには`cinfig.nims`の環境変数を編集してください。
+ホストを設定するには`config.nims`の環境変数を編集してください。
 ```sh
 putEnv("HOST", "127.0.0.2")
 ```
@@ -88,35 +88,59 @@ ducere serve --httpx
 
 ### build
 本番環境用にプロジェクトをビルドします。
-何もオプションを付けない場合、5000番ポートを使い、シングルスレッドで起動します。
 ```sh
 Usage:
   build [optional-params] [args: string...]
 Build for production.
 Options:
-  -h, --help                     print this cligen-erated help
-  --help-syntax                  advanced: prepend,plurals,..
-  --version      bool    false   print version
-  -p=, --port=   string  "5000"  set port
-  -f, --force    bool    false   set force
-  --httpbeast    bool    false   set httpbeast
-  --httpx        bool    false   set httpx
+  -h, --help                         print this cligen-erated help
+  --help-syntax                      advanced: prepend,plurals,..
+  --version             bool  false  print version
+  -p=, --port=          int   5000   set port
+  -n=, --numProcesses=  int   0      set numProcesses
+  -f, --force           bool  false  set force
+  --httpbeast           bool  false  set httpbeast
+  --httpx               bool  false  set httpx
+```
+何もオプションを付けない場合、5000番ポートを使い、シングルスレッド・マルチプロセスで起動します。  
+ビルドすると`startServer`という実行バイナリが作られるので、これを実行することでサーバーを起動します。
+
+```sh
+ducere build
+./startServer
+
+> running 4 processes
+> Basolato uses config file '/basolato/.env'
+> Basolato uses config file '/basolato/.env'
+> Basolato uses config file '/basolato/.env'
+> Basolato uses config file '/basolato/.env'
+> Basolato based on asynchttpserver listening on 0.0.0.0:5000
+> Basolato based on asynchttpserver listening on 0.0.0.0:5000
+> Basolato based on asynchttpserver listening on 0.0.0.0:5000
+> Basolato based on asynchttpserver listening on 0.0.0.0:5000
 ```
 
 デフォルトでは5000番ポートで起動します。`-p`のオプションを付けることで起動ポートを変更できます。
 ```sh
-ducere serve -p:8000
+ducere build -p:8000
 ```
 
-ホストを設定するには`cinfig.nims`の環境変数を編集してください。
+`numProcesses`をセットすることで動かすプロセス数を設定できます。デフォルトは0で、ビルド環境のCPUのコア数分プロセスを作ります。
+```sh
+ducere build --numProcesses=2
+  or
+ducere build -n=2
+```
+
+ホストを設定するには`config.nims`の環境変数を編集してください。
 ```sh
 putEnv("HOST", "127.0.0.2")
 ```
 
 アプリケーションサーバーのコアを[asynchttpserver](https://nim-lang.org/docs/asynchttpserver.html)の代わりに[httpbeast](https://github.com/dom96/httpbeast), [httpx](https://github.com/ringabout/httpx)を使うこともできます。
 ```sh
-ducere serve --httpbeast
-ducere serve --httpx
+ducere build --httpbeast
+ducere build --httpx
 ```
 
 ### migrate

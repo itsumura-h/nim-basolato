@@ -68,7 +68,7 @@ proc runCommand(port:int, f:bool, httpbeast:bool, httpx:bool) =
     # quit 1
 
 proc serve*(port=5000, force=false, httpbeast=false, httpx=false) =
-  ## Run dev application with hot reload.
+  ## Run server for development with hot reload.
   jsBuild()
   runCommand(port, force, httpbeast, httpx)
   while true:

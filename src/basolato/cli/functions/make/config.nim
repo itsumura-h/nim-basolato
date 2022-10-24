@@ -40,7 +40,7 @@ DB_USER=""
 DB_PASSWORD=""
 DB_HOST=""  # host ip address
 DB_PORT=0 # postgres default...5432, mysql default...3306
-DB_MAX_CONNECTION=95 # should be smaller than (DB max connection / running threads num)
+DB_MAX_CONNECTION=95 # should be smaller than (DB max connection / running num processes)
 DB_TIMEOUT=30 # secounds
 
 # Logging
@@ -70,7 +70,7 @@ DB_USER=""
 DB_PASSWORD=""
 DB_HOST=""  # host ip address
 DB_PORT=0 # postgres default...5432, mysql default...3306
-DB_MAX_CONNECTION=95 # should be smaller than (DB max connection / running threads num)
+DB_MAX_CONNECTION=95 # should be smaller than (DB max connection / running num processes)
 DB_TIMEOUT=30 # secounds
 
 # Logging

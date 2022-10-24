@@ -9,7 +9,7 @@
 
 ---
 
-An asynchronous full-stack web framework for Nim, based on [asynchttpserver](https://nim-lang.org/docs/asynchttpserver.html).
+An asynchronous multiprocessing full-stack web framework for Nim, based on [asynchttpserver](https://nim-lang.org/docs/asynchttpserver.html).
 
 :warning: This project is under heavy development. It's not yet production-ready. :warning:
 
@@ -175,6 +175,11 @@ With your project ready, you can start serving requests using `ducere`:
 
 ```sh
 ducere serve # includes hot reloading
+> Run server for development
+
+ducere build
+./startServer
+> Run server for production 
 ```
 
 ## Documentation
