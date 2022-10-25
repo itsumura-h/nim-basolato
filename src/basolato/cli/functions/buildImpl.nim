@@ -15,7 +15,7 @@ proc jsBuild() =
         quit(QuitFailure)
 
 
-proc build*(port=5000, numProcesses=0, force=false, httpbeast=false, httpx=false, args:seq[string]) =
+proc build*(port=5000, numProcesses=0, force=false, httpbeast=false, httpx=false, autoRestart=false, args:seq[string]) =
   ## Build for production.
   jsBuild()
   var outputFileName = "main"
@@ -54,39 +54,31 @@ proc build*(port=5000, numProcesses=0, force=false, httpbeast=false, httpx=false
     copyFile(&"./{outputFileName}", outputFileName & $i)
     setFilePermissions(outputFileName & $i, {fpUserExec})
 
-  var mainContent = "while [ 1 ]; do \c\L"
-  for i in 1..numProcesses:
-    mainContent.add(&"  ./{outputFileName}{i}")
-    if i < numProcesses:
-      mainContent.add(" & \\\c\L")
-    else:
-      mainContent.add("\c\L")
-  mainContent.add("done")
-  let msg = if numProcesses > 1: "processes" else: "process"
+  var mainContent = ""
+  if autoRestart:
+    mainContent = "while [ 1 ]; do\n"
+    for i in 1..numProcesses:
+      mainContent.add(&"  ./{outputFileName}{i}")
+      if i < numProcesses:
+        mainContent.add(" & \\\n")
+      else:
+        mainContent.add("\n")
+    mainContent.add("done")
+  else:
+    for i in 1..numProcesses:
+      mainContent.add(&"./{outputFileName}{i}")
+      if i < numProcesses:
+        mainContent.add(" & ")
+  
+  let processes = if numProcesses > 1: "processes" else: "process"
 
-  var startServer = &"""
-import std/osproc
+  let startServer = &"""
+echo "running {numProcesses} {processes}"
 
-let cmd = '''
 {mainContent}
-'''
-echo "running {numProcesses} {msg}"
-discard execCmd(cmd)
 """
-  startServer = startServer.replace("'", "\"")
-  writeFile("./startServer.nim", startServer)
-  cmd = &"""
-    nim c \
-    --threads:off \
-    --gc:orc \
-    -d:danger \
-    -d:release \
-    --parallelBuild:0 \
-    --panics:on \
-    startServer.nim
-  """
-  discard execCmd(cmd)
-  removeFile("startServer.nim")
+  writeFile("./startServer.sh", startServer)
+  setFilePermissions("./startServer.sh", {fpUserExec})
 
 
 #[

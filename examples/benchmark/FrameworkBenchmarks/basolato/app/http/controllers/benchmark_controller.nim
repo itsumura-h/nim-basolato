@@ -56,7 +56,7 @@ proc query*(context:Context, params:Params):Future[Response] {.async.} =
   let resp = all(futures).await
   let response = resp.map(
     proc(x:seq[string]):JsonNode =
-      if x.len > 0: %*{"id": x[0].parseInt, "randomnumber": x[1]}
+      if x.len > 0: %*{"id": x[0].parseInt, "randomNumber": x[1]}
       else: newJObject()
   )
 
@@ -97,7 +97,7 @@ proc update*(context:Context, params:Params):Future[Response] {.async.} =
     let newRandomNumber = rand(1..10000)
     procs[n-1] = (proc():Future[void]=
       discard pgDb.table("World").findPlain(i)
-      pgDb.table("World").where("id", "=", i).update(%*{"randomNumber": newRandomNumber})
+      pgDb.table("World").where("id", "=", i).update(%*{"randomnumber": newRandomNumber})
     )()
     response.add(%*{"id":i, "randomNumber": newRandomNumber})
   all(procs).await
@@ -121,7 +121,7 @@ proc cache*(context:Context, params:Params):Future[Response] {.async.} =
     let n = rand(1..10000)
     let newRandomNumber = rand(1..10000)
     # discard cacheDb.table("World").findPlain(n).await
-    # cacheDb.table("World").where("id", "=", n).update(%*{"randomnumber": newRandomNumber}).await
+    # cacheDb.table("World").where("id", "=", n).update(%*{"randomNumber": newRandomNumber}).await
     response.add(%*{"id":n, "randomNumber": newRandomNumber})
 
   return render(response)
