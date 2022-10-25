@@ -1,11 +1,11 @@
 import asyncdispatch, json
 import allographer/schema_builder
 import allographer/query_builder
-from ../../config/database import rdb
+from ../../config/database import pgDb
 
 
 proc init*() {.async.} =
-  rdb.alter(
+  pgDb.alter(
     drop("World"),
     drop("Fortune")
   )
@@ -16,7 +16,8 @@ CREATE TABLE  "World" (
   randomNumber integer NOT NULL default 0,
   PRIMARY KEY  (id)
 );
-GRANT ALL PRIVILEGES ON "World" to benchmarkdbuser;
+--- GRANT ALL PRIVILEGES ON "World" to benchmarkdbuser;
+GRANT ALL PRIVILEGES ON "World" to "user";
 
 INSERT INTO "World" (id, randomnumber)
 SELECT x.id, least(floor(random() * 10000 + 1), 10000) FROM generate_series(1,10000) as x(id);
@@ -26,7 +27,8 @@ CREATE TABLE "Fortune" (
   message varchar(2048) NOT NULL,
   PRIMARY KEY  (id)
 );
-GRANT ALL PRIVILEGES ON "Fortune" to benchmarkdbuser;
+--- GRANT ALL PRIVILEGES ON "Fortune" to benchmarkdbuser;
+GRANT ALL PRIVILEGES ON "Fortune" to "user";
 
 INSERT INTO "Fortune" (id, message) VALUES (1, 'fortune: No such file or directory');
 INSERT INTO "Fortune" (id, message) VALUES (2, 'A computer scientist is someone who fixes things that aren''t broken.');
@@ -41,4 +43,4 @@ INSERT INTO "Fortune" (id, message) VALUES (10, 'Computers make very fast, very 
 INSERT INTO "Fortune" (id, message) VALUES (11, '<script>alert("This should not be displayed in a browser alert box.");</script>');
 INSERT INTO "Fortune" (id, message) VALUES (12, 'フレームワークのベンチマーク');
 """
-  rdb.raw(sql).exec().waitFor()
+  pgDb.raw(sql).exec().waitFor()
