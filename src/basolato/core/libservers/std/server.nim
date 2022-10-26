@@ -110,6 +110,8 @@ proc serveCore(params:(Routes, int)){.async.} =
       # too many concurrent connections, `maxFDs` exceeded
       # wait 500ms for FDs to be closed
       await sleepAsync(500)
+  
+  # asyncCheck server.serve(Port(port), cb, HOST_ADDR)
 
 proc serve*(seqRoutes: seq[Routes]) =
   var routes =  Routes.new()
