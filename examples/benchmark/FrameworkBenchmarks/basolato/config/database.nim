@@ -3,6 +3,7 @@ import allographer/connection
 import allographer/schema_builder
 import allographer/query_builder
 
+import db_postgres
 
 var pgDb* = dbopen(
   PostgreSQL, # SQLite3 or MySQL or MariaDB or PostgreSQL
@@ -32,6 +33,8 @@ block:
       let randomNum = rand(10000)
       data.add(%*{"id": i, "randomnumber": randomNum})
     pgDb.table("World").insert(data).waitFor
+
+let stdPg* = open(getEnv("DB_HOST"), getEnv("DB_USER"), getEnv("DB_PASSWORD"), getEnv("DB_DATABASE"))
 
 
 # ========== cache ==========
