@@ -15,13 +15,13 @@ proc jsBuild() =
         quit(QuitFailure)
 
 
-proc build*(port=5000, numProcesses=0, force=false, httpbeast=false, httpx=false, autoRestart=false, args:seq[string]) =
+proc build*(port=5000, workers:uint=0, force=false, httpbeast=false, httpx=false, autoRestart=false, args:seq[string]) =
   ## Build for production.
   jsBuild()
   var outputFileName = "main"
   let fStr = if force: "-f" else: ""
   let serverStr = if httpbeast: "-d:httpbeast" elif httpx: "-d:httpx" else: ""
-  let numProcesses = if numProcesses == 0: countProcessors() else: numProcesses
+  let workers = if workers == 0: countProcessors().uint else: workers
 
   try:
     outputFileName = args[0]
@@ -50,30 +50,30 @@ proc build*(port=5000, numProcesses=0, force=false, httpbeast=false, httpx=false
   echo cmd
   discard execCmd(cmd)
 
-  for i in 1..numProcesses:
+  for i in 1..workers:
     copyFile(&"./{outputFileName}", outputFileName & $i)
     setFilePermissions(outputFileName & $i, {fpUserExec})
 
   var mainContent = ""
   if autoRestart:
     mainContent = "while [ 1 ]; do\n"
-    for i in 1..numProcesses:
+    for i in 1..workers:
       mainContent.add(&"  ./{outputFileName}{i}")
-      if i < numProcesses:
+      if i < workers:
         mainContent.add(" & \\\n")
       else:
         mainContent.add("\n")
     mainContent.add("done")
   else:
-    for i in 1..numProcesses:
+    for i in 1..workers:
       mainContent.add(&"./{outputFileName}{i}")
-      if i < numProcesses:
+      if i < workers:
         mainContent.add(" & ")
   
-  let processes = if numProcesses > 1: "processes" else: "process"
+  let processes = if workers > 1: "processes" else: "process"
 
   let startServer = &"""
-echo "running {numProcesses} {processes}"
+echo "running {workers} {processes}"
 
 {mainContent}
 """
