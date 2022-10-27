@@ -113,7 +113,7 @@ When you build application, shell script file named `startServer.sh` is generate
 
 ```sh
 ducere build
-./startServer
+./startServer.sh
 
 > running 4 processes
 > Basolato uses config file '/basolato/.env'
