@@ -21,7 +21,6 @@ testresults.html
 .vscode/*
 
 *.sqlite3
-migration.json
 examples2
 *.out
 karax

@@ -226,7 +226,7 @@ ducere build
 
 ## Benchmark
 - https://github.com/the-benchmarker/web-frameworks
-- https://www.techempower.com/benchmarks/#section=test&shareid=d57ac3fe-2855-40ec-ac7a-424d34ce7a92&hw=ph&test=json&a=2
+- https://www.techempower.com/benchmarks/#section=test&shareid=1b8aa2f1-4f4b-4781-a482-10137ee7500c&test=composite
 
 ## Roadmap
 

@@ -14,6 +14,8 @@ import ../../models/fortune
 # import ../views/pages/fortune_view
 import ../views/pages/fortune_scf_view
 
+import db_postgres
+
 
 proc plaintext*(context:Context, params:Params):Future[Response] {.async.} =
   let headers = newHttpHeaders()
@@ -23,19 +25,10 @@ proc plaintext*(context:Context, params:Params):Future[Response] {.async.} =
 proc json*(context:Context, params:Params):Future[Response] {.async.} =
   return render(%*{"message":"Hello, World!"})
 
-proc sleep*(context:Context, params:Params):Future[Response] {.async.} =
-  sleepAsync(10000).await
-  return render("hello")
-
 proc db*(context:Context, params:Params):Future[Response] {.async.} =
   let i = rand(1..10000)
-  let res = pgDb.table("World").findPlain(i).await
-  if res.len > 0:
-    return render(%*{"id": res[0].parseInt, "randomNumber": res[1].parseInt})
-  else:
-    return render(newJObject())
-  # let res = pgDb.table("World").find(i).await.get
-  # return render(res)
+  let res = stdPg.getRow(sql""" SELECT * FROM "World" WHERE id = ? LIMIT 1""", i)
+  return render(%*{"id": res[0].parseInt, "randomNumber": res[1].parseInt})
 
 
 proc query*(context:Context, params:Params):Future[Response] {.async.} =
@@ -49,25 +42,24 @@ proc query*(context:Context, params:Params):Future[Response] {.async.} =
   elif countNum > 500:
     countNum = 500
 
-  var futures = newSeq[Future[seq[string]]](countNum)
+  var resp:seq[Row]
   for i in 1..countNum:
     let n = rand(1..10000)
-    futures[i-1] = pgDb.table("World").findPlain(n)
-  let resp = all(futures).await
+    resp.add(stdPg.getRow(sql"""SELECT * FROM "World" WHERE id = ? LIMIT 1""", n))
   let response = resp.map(
     proc(x:seq[string]):JsonNode =
-      if x.len > 0: %*{"id": x[0].parseInt, "randomnumber": x[1]}
-      else: newJObject()
-  )
+      %*{"id": x[0].parseInt, "randomNumber": x[1]}
+    )
 
   return render(%response)
 
 
 proc fortune*(context:Context, params:Params):Future[Response] {.async.} =
-  let results = pgDb.table("Fortune").orderBy("message", Asc).getPlain().await
-  var rows = newSeq[Fortune]()
-  for i, data in results:
-    rows.add(Fortune(id: data[0].parseInt, message: data[1]))
+  let results = stdPg.getAllRows(sql"""SELECT * FROM "Fortune" ORDER BY message ASC""")
+  var rows = results.map(
+    proc(x:seq[string]):Fortune =
+      return Fortune(id: x[0].parseInt, message: x[1])
+  )
   rows.add(
     Fortune(
       id: 0,
@@ -75,7 +67,6 @@ proc fortune*(context:Context, params:Params):Future[Response] {.async.} =
     )
   )
   rows = rows.sortedByIt(it.message)
-  # return render(fortuneView(rows).await)
   return render(fortuneScfView(rows).await)
 
 
@@ -97,7 +88,7 @@ proc update*(context:Context, params:Params):Future[Response] {.async.} =
     let newRandomNumber = rand(1..10000)
     procs[n-1] = (proc():Future[void]=
       discard pgDb.table("World").findPlain(i)
-      pgDb.table("World").where("id", "=", i).update(%*{"randomNumber": newRandomNumber})
+      pgDb.table("World").where("id", "=", i).update(%*{"randomnumber": newRandomNumber})
     )()
     response.add(%*{"id":i, "randomNumber": newRandomNumber})
   all(procs).await
@@ -120,8 +111,13 @@ proc cache*(context:Context, params:Params):Future[Response] {.async.} =
   for i in 1..countNum:
     let n = rand(1..10000)
     let newRandomNumber = rand(1..10000)
-    # discard cacheDb.table("World").findPlain(n).await
-    # cacheDb.table("World").where("id", "=", n).update(%*{"randomnumber": newRandomNumber}).await
+    discard cacheDb.table("World").findPlain(n).await
+    cacheDb.table("World").where("id", "=", n).update(%*{"randomNumber": newRandomNumber}).await
     response.add(%*{"id":n, "randomNumber": newRandomNumber})
 
   return render(response)
+
+
+proc sleep*(context:Context, params:Params):Future[Response] {.async.} =
+  sleepAsync(10000).await
+  return render("hello")
