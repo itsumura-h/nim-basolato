@@ -93,21 +93,22 @@ Usage:
   build [optional-params] [args: string...]
 Build for production.
 Options:
-  -h, --help                         print this cligen-erated help
-  --help-syntax                      advanced: prepend,plurals,..
-  --version             bool  false  print version
-  -p=, --port=          int   5000   set port
-  -n=, --numProcesses=  int   0      set numProcesses
-  -f, --force           bool  false  set force
-  --httpbeast           bool  false  set httpbeast
-  --httpx               bool  false  set httpx
+  -h, --help                      print this cligen-erated help
+  --help-syntax                   advanced: prepend,plurals,..
+  --version          bool  false  print version
+  -p=, --port=       int   5000   set port
+  -w=, --workers=    uint  0      set workers
+  -f, --force        bool  false  set force
+  --httpbeast        bool  false  set httpbeast
+  --httpx            bool  false  set httpx
+  -a, --autoRestart  bool  false  set autoRestart
 ```
 何もオプションを付けない場合、5000番ポートを使い、シングルスレッド・マルチプロセスで起動します。  
-ビルドすると`startServer`という実行バイナリが作られるので、これを実行することでサーバーを起動します。
+ビルドすると`startServer.sh`というシェルスクリプトが作られるので、これを実行することでサーバーを起動します。
 
 ```sh
 ducere build
-./startServer
+./startServer.sh
 
 > running 4 processes
 > Basolato uses config file '/basolato/.env'
@@ -125,11 +126,25 @@ ducere build
 ducere build -p:8000
 ```
 
-`numProcesses`をセットすることで動かすプロセス数を設定できます。デフォルトは0で、ビルド環境のCPUのコア数分プロセスを作ります。
+`workers`をセットすることで動かすプロセス数を設定できます。デフォルトは0で、ビルド環境のCPUのコア数分プロセスを作ります。
 ```sh
-ducere build --numProcesses=2
+ducere build --workers=2
   or
-ducere build -n=2
+ducere build -w=2
+```
+
+`autoRestart`をセットすることで、アプリケーションが何らかのエラーで落ちた時に自動で再起動するシェルを出力します。
+```sh
+# autoRestart = false
+./main1 & ./main2 & ./main3 & ./main4
+
+# autoRestart = true
+while [ 1 ]; do
+  ./main1 & \
+  ./main2 & \
+  ./main3 & \
+  ./main4
+done
 ```
 
 ホストを設定するには`config.nims`の環境変数を編集してください。

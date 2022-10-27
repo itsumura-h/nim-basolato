@@ -98,17 +98,18 @@ Usage:
   build [optional-params] [args: string...]
 Build for production.
 Options:
-  -h, --help                         print this cligen-erated help
-  --help-syntax                      advanced: prepend,plurals,..
-  --version             bool  false  print version
-  -p=, --port=          int   5000   set port
-  -n=, --numProcesses=  int   0      set numProcesses
-  -f, --force           bool  false  set force
-  --httpbeast           bool  false  set httpbeast
-  --httpx               bool  false  set httpx
+  -h, --help                      print this cligen-erated help
+  --help-syntax                   advanced: prepend,plurals,..
+  --version          bool  false  print version
+  -p=, --port=       int   5000   set port
+  -w=, --workers=    uint  0      set workers
+  -f, --force        bool  false  set force
+  --httpbeast        bool  false  set httpbeast
+  --httpx            bool  false  set httpx
+  -a, --autoRestart  bool  false  set autoRestart
 ```
 By default, it will be compiled to run 5000 port and single threadand and multiple processing.  
-When you build application, a runnable binary file named `startServer` is generated. Run this file to start server.
+When you build application, shell script file named `startServer.sh` is generated. Run this file to start server.
 
 ```sh
 ducere build
@@ -130,11 +131,25 @@ You can switch port by setting `-p` option.
 ducere build -p:8000
 ```
 
-You can set the number of processes to run by setting `numProcesses`. The default is 0, which creates as many processes as the number of CPU cores in the build environment.
+You can set the number of processes to run by setting `workers`. The default is 0, which creates as many processes as the number of CPU cores in the build environment.
 ```sh
-ducere build --numProcesses=2
+ducere build --workers=2
   or
-ducere build -n=2
+ducere build -w=2
+```
+
+To setting `autoRestart` true, a shell that automatically restarts the application when it fails with some error is generated.
+```sh
+# autoRestart = false
+./main1 & ./main2 & ./main3 & ./main4
+
+# autoRestart = true
+while [ 1 ]; do
+  ./main1 & \
+  ./main2 & \
+  ./main3 & \
+  ./main4
+done
 ```
 
 You can change host by editing env of `config.nims`
