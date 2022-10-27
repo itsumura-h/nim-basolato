@@ -50,15 +50,11 @@ proc build*(port=5000, workers:uint=0, force=false, httpbeast=false, httpx=false
   echo cmd
   discard execCmd(cmd)
 
-  for i in 1..workers:
-    copyFile(&"./{outputFileName}", outputFileName & $i)
-    setFilePermissions(outputFileName & $i, {fpUserExec})
-
   var mainContent = ""
   if autoRestart:
     mainContent = "while [ 1 ]; do\n"
     for i in 1..workers:
-      mainContent.add(&"  ./{outputFileName}{i}")
+      mainContent.add(&"  ./{outputFileName}")
       if i < workers:
         mainContent.add(" & \\\n")
       else:
@@ -66,7 +62,7 @@ proc build*(port=5000, workers:uint=0, force=false, httpbeast=false, httpx=false
     mainContent.add("done")
   else:
     for i in 1..workers:
-      mainContent.add(&"./{outputFileName}{i}")
+      mainContent.add(&"./{outputFileName}")
       if i < workers:
         mainContent.add(" & ")
   

@@ -136,14 +136,14 @@ ducere build -w=2
 `autoRestart`をセットすることで、アプリケーションが何らかのエラーで落ちた時に自動で再起動するシェルを出力します。
 ```sh
 # autoRestart = false
-./main1 & ./main2 & ./main3 & ./main4
+./main & ./main & ./main & ./main
 
 # autoRestart = true
 while [ 1 ]; do
-  ./main1 & \
-  ./main2 & \
-  ./main3 & \
-  ./main4
+  ./main & \
+  ./main & \
+  ./main & \
+  ./main
 done
 ```
 
