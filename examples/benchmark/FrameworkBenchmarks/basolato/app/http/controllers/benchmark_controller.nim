@@ -25,10 +25,6 @@ proc plaintext*(context:Context, params:Params):Future[Response] {.async.} =
 proc json*(context:Context, params:Params):Future[Response] {.async.} =
   return render(%*{"message":"Hello, World!"})
 
-proc sleep*(context:Context, params:Params):Future[Response] {.async.} =
-  sleepAsync(10000).await
-  return render("hello")
-
 proc db*(context:Context, params:Params):Future[Response] {.async.} =
   let i = rand(1..10000)
   let res = stdPg.getRow(sql""" SELECT * FROM "World" WHERE id = ? LIMIT 1""", i)
@@ -120,3 +116,8 @@ proc cache*(context:Context, params:Params):Future[Response] {.async.} =
     response.add(%*{"id":n, "randomNumber": newRandomNumber})
 
   return render(response)
+
+
+proc sleep*(context:Context, params:Params):Future[Response] {.async.} =
+  sleepAsync(10000).await
+  return render("hello")
