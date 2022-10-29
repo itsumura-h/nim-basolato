@@ -5,17 +5,19 @@ import std/random
 import std/strutils
 import std/sequtils
 import std/httpcore
+import std/db_postgres
 # framework
 # import basolato/controller
 import ../../../../../../../src/basolato/controller
 import allographer/query_builder
-import ../../../config/database # pgDb, cacheDb
+import ../../../config/database # rdb, stdRdb, cacheDb
 import ../../models/fortune
 # import ../views/pages/fortune_view
 import ../views/pages/fortune_scf_view
 
-import db_postgres
 
+const range1_10000 = 1..10000
+let getFirstPrepare = stdRdb.prepare("getFirst", sql""" SELECT * FROM "World" WHERE id = $1 LIMIT 1 """, 1)
 
 proc plaintext*(context:Context, params:Params):Future[Response] {.async.} =
   let headers = newHttpHeaders()
@@ -27,7 +29,7 @@ proc json*(context:Context, params:Params):Future[Response] {.async.} =
 
 proc db*(context:Context, params:Params):Future[Response] {.async.} =
   let i = rand(1..10000)
-  let res = stdPg.getRow(sql""" SELECT * FROM "World" WHERE id = ? LIMIT 1""", i)
+  let res = stdRdb.getRow(getFirstPrepare, i)
   return render(%*{"id": res[0].parseInt, "randomNumber": res[1].parseInt})
 
 
@@ -44,8 +46,8 @@ proc query*(context:Context, params:Params):Future[Response] {.async.} =
 
   var resp:seq[Row]
   for i in 1..countNum:
-    let n = rand(1..10000)
-    resp.add(stdPg.getRow(sql"""SELECT * FROM "World" WHERE id = ? LIMIT 1""", n))
+    let n = rand(range1_10000)
+    resp.add(stdRdb.getRow(getFirstPrepare, i))
   let response = resp.map(
     proc(x:seq[string]):JsonNode =
       %*{"id": x[0].parseInt, "randomNumber": x[1]}
@@ -55,7 +57,7 @@ proc query*(context:Context, params:Params):Future[Response] {.async.} =
 
 
 proc fortune*(context:Context, params:Params):Future[Response] {.async.} =
-  let results = stdPg.getAllRows(sql"""SELECT * FROM "Fortune" ORDER BY message ASC""")
+  let results = stdRdb.getAllRows(sql"""SELECT * FROM "Fortune" ORDER BY message ASC""")
   var rows = results.map(
     proc(x:seq[string]):Fortune =
       return Fortune(id: x[0].parseInt, message: x[1])
@@ -81,19 +83,19 @@ proc update*(context:Context, params:Params):Future[Response] {.async.} =
   elif countNum > 500:
     countNum = 500
 
-  let response = newJArray()
-  var procs = newSeq[Future[void]](countNum)
-  for n in 1..countNum:
-    let i = rand(1..10000)
-    let newRandomNumber = rand(1..10000)
-    procs[n-1] = (proc():Future[void]=
-      discard pgDb.table("World").findPlain(i)
-      pgDb.table("World").where("id", "=", i).update(%*{"randomnumber": newRandomNumber})
+  var response = newSeq[JsonNode](countNum)
+  var futures = newSeq[Future[void]](countNum)
+  for i in 1..countNum:
+    let index = rand(range1_10000)
+    let number = rand(range1_10000)
+    futures[i-1] = (proc():Future[void]=
+      discard stdRdb.getRow(getFirstPrepare, i)
+      rdb.raw(""" UPDATE "World" SET "randomnumber" = ? WHERE id = ? """, $number, $index).exec()
     )()
-    response.add(%*{"id":i, "randomNumber": newRandomNumber})
-  all(procs).await
-  
-  return render(response)
+    response[i-1] = %*{"id":i, "randomNumber": number}
+  all(futures).await
+
+  return render(%response)
 
 
 proc cache*(context:Context, params:Params):Future[Response] {.async.} =
@@ -109,11 +111,11 @@ proc cache*(context:Context, params:Params):Future[Response] {.async.} =
 
   let response = newJArray()
   for i in 1..countNum:
-    let n = rand(1..10000)
-    let newRandomNumber = rand(1..10000)
-    discard cacheDb.table("World").findPlain(n).await
-    cacheDb.table("World").where("id", "=", n).update(%*{"randomNumber": newRandomNumber}).await
-    response.add(%*{"id":n, "randomNumber": newRandomNumber})
+    let id = rand(1..10000)
+    let number = rand(1..10000)
+    discard cacheDb.table("World").findPlain(id).await
+    cacheDb.table("World").where("id", "=", id).update(%*{"randomnumber": number}).await
+    response.add(%*{"id":id, "randomNumber": number})
 
   return render(response)
 

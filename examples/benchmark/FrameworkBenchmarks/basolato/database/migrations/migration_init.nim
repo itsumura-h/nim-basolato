@@ -1,11 +1,11 @@
 import asyncdispatch, json
 import allographer/schema_builder
 import allographer/query_builder
-from ../../config/database import pgDb
+from ../../config/database import rdb
 
 
 proc init*() {.async.} =
-  pgDb.alter(
+  rdb.alter(
     drop("World"),
     drop("Fortune")
   )
@@ -43,4 +43,4 @@ INSERT INTO "Fortune" (id, message) VALUES (10, 'Computers make very fast, very 
 INSERT INTO "Fortune" (id, message) VALUES (11, '<script>alert("This should not be displayed in a browser alert box.");</script>');
 INSERT INTO "Fortune" (id, message) VALUES (12, 'フレームワークのベンチマーク');
 """
-  pgDb.raw(sql).exec().waitFor()
+  rdb.raw(sql).exec().waitFor()
