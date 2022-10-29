@@ -3,7 +3,7 @@ import std/json
 
 
 const
-  BasolatoVersion* = "0.13.3"
+  BasolatoVersion* = "0.14.0"
 
 type
   Error505* = object of CatchableError

@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.13.3"
+version       = "0.14.0"
 author        = "Hidenobu Itsumura @dumblepytech1 as 'medy'"
 description   = "A full-stack web framework for Nim"
 license       = "MIT"
@@ -14,7 +14,7 @@ skipDirs      = @["basolato/cli"]
 # Dependencies
 
 requires "nim >= 1.4.0"
-requires "allographer >= 0.21.3"
+requires "allographer >= 0.24.0"
 # requires "allographer#head"`
 requires "interface_implements >= 0.2.2"
 requires "httpbeast >= 0.4.1"
