@@ -141,14 +141,14 @@ ducere build -w=2
 To setting `autoRestart` true, a shell that automatically restarts the application when it fails with some error is generated.
 ```sh
 # autoRestart = false
-./main1 & ./main2 & ./main3 & ./main4
+./main & ./main & ./main & ./main
 
 # autoRestart = true
 while [ 1 ]; do
-  ./main1 & \
-  ./main2 & \
-  ./main3 & \
-  ./main4
+  ./main & \
+  ./main & \
+  ./main & \
+  ./main
 done
 ```
 

@@ -1,11 +1,15 @@
-import os, strutils, json, random, asyncdispatch
+import std/asyncdispatch
+import std/db_postgres
+import std/json
+import std/os
+import std/random
+import std/strutils
 import allographer/connection
 import allographer/schema_builder
 import allographer/query_builder
 
-import db_postgres
 
-var pgDb* = dbopen(
+let rdb* = dbopen(
   PostgreSQL, # SQLite3 or MySQL or MariaDB or PostgreSQL
   getEnv("DB_DATABASE"),
   getEnv("DB_USER"),
@@ -18,23 +22,22 @@ var pgDb* = dbopen(
   getEnv("LOG_IS_FILE").parseBool,
   getEnv("LOG_DIR"),
 )
+let stdRdb* = open(getEnv("DB_HOST"), getEnv("DB_USER"), getEnv("DB_PASSWORD"), getEnv("DB_DATABASE"))
 
 block:
-  pgDb.create(
+  rdb.create(
     table("World", [
         Column.integer("id"),
         Column.integer("randomnumber")
     ])
   )
 
-  seeder pgDb, "World":
+  seeder rdb, "World":
     var data = newSeq[JsonNode]()
     for i in 1..10000:
       let randomNum = rand(10000)
       data.add(%*{"id": i, "randomnumber": randomNum})
-    pgDb.table("World").insert(data).waitFor
-
-let stdPg* = open(getEnv("DB_HOST"), getEnv("DB_USER"), getEnv("DB_PASSWORD"), getEnv("DB_DATABASE"))
+    rdb.table("World").insert(data).waitFor
 
 
 # ========== cache ==========
