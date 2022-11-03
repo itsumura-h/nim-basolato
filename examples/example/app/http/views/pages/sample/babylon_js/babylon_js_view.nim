@@ -2,6 +2,7 @@ import json, asyncdispatch
 import ../../../../../../../../src/basolato/view
 import ../../../layouts/application_view
 
+const babylonScript = staticRead("./babylon_script.js")
 
 proc impl():Future[Component] {.async.} =
   let style = styleTmpl(Css, """
@@ -21,10 +22,9 @@ proc impl():Future[Component] {.async.} =
       <hr>
       $(style)
       <canvas id="renderCanvas"></canvas>
-      <script src="/js/nim-babylon.js"></script>
       <script src="https://preview.babylonjs.com/babylon.js"></script>
-      <script src="https://code.jquery.com/pep/0.4.1/pep.js"></script>
       <script>
+        $babylonScript
         window.addEventListener('DOMContentLoaded', main);
       </script>
     </article>

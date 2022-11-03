@@ -1,24 +1,20 @@
-import
-  std/asyncjs,
-  std/jscore,
-  std/jsfetch,
-  std/jsffi,
-  std/math
-from std/sugar import `=>`
+import std/asyncjs
+import std/dom
+import std/jscore
+import std/jsconsole
+import std/jsfetch
+import std/jsffi
+import std/math
 
-let
-  module {.importc.}: JsObject
-  document {.importc.}: JsObject
-  console {.importc.}: JsObject
-  BABYLON {.importc.}: JsObject
 
+let BABYLON {.importc.}: JsObject
 
 proc main*() {.exportc.} =
   let canvas = document.getElementById("renderCanvas")
   let engine = jsNew BABYLON.Engine(canvas)
 
   # ここから
-  proc createScene(canvas, engine:JsObject):JsObject =
+  proc createScene(canvas:Element, engine:JsObject):JsObject =
     # シーンを作成
     let scene = jsNew BABYLON.Scene(engine)
     # カメラを作成

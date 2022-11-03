@@ -51,7 +51,7 @@ proc {targetCaptalizedProc}View*():Future[Component] [[.async.]] =
       .className [[
       ]]
     </style>
-  '''
+  ''')
 
   tmpli html'''
     $(style)
