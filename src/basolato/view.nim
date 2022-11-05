@@ -64,6 +64,9 @@ proc `$`*(self:Style):string =
 func element*(self:Style, name:string):string =
   return name & self.saffix
 
+func get*(self:Style, name:string):string =
+  return self.element(name)
+
 
 type StyleType* = enum
   Css, Scss
@@ -84,13 +87,25 @@ when DOES_USE_LIBSASS:
     const options = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     let saffix = "_" & randStr(10, options)
 
-    var matches = newSeq[string]()
-    for row in css.findAll(re"\.[\d\w]+"):
-      if not matches.contains(row):
-        matches.add(row)
-    for match in matches:
-      css = css.replace(match, match & saffix)
-    return Style.new(css, saffix)
+    # var matches = newSeq[string]()
+    # for row in css.findAll(re"\.[\d\w]+"):
+    #   echo row
+    #   if not matches.contains(row):
+    #     matches.add(row)
+    # for match in matches:
+    #   css = css.replace(match, match & saffix)
+    # return Style.new(css, saffix)
+    var arr = newSeq[string](css.countLines())
+    let cssLines = css.splitLines()
+    for i, row in cssLines.pairs:
+      if row.contains(".") and not row.contains(";"):
+        var rowStr = row
+        for match in row.findAll(re"\.[\d\w]+"):
+          rowStr = rowStr.replace(match, match & saffix)
+        arr[i] = rowStr
+      else:
+        arr[i] = row
+    return Style.new(arr.join("\n"), saffix)
 else:
   proc styleTmpl*(typ:StyleType, body:string):Style =
     if typ != Css:
@@ -99,10 +114,21 @@ else:
     const options = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     let saffix = "_" & randStr(10, options)
 
-    var matches = newSeq[string]()
-    for row in css.findAll(re"\.[\d\w]+"):
-      if not matches.contains(row):
-        matches.add(row)
-    for match in matches:
-      css = css.replace(match, match & saffix)
-    return Style.new(css, saffix)
+    # var matches = newSeq[string]()
+    # for row in css.findAll(re"\.[\d\w]+"):
+    #   if not matches.contains(row):
+    #     matches.add(row)
+    # for match in matches:
+    #   css = css.replace(match, match & saffix)
+    # return Style.new(css, saffix)
+    var arr = newSeq[string](css.countLines())
+    let cssLines = css.splitLines()
+    for i, row in cssLines.pairs:
+      if row.contains(".") and not row.contains(";"):
+        var rowStr = row
+        for match in row.findAll(re"\.[\d\w]+"):
+          rowStr = rowStr.replace(match, match & saffix)
+        arr[i] = rowStr
+      else:
+        arr[i] = row
+    return Style.new(arr.join("\n"), saffix)
