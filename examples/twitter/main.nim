@@ -5,11 +5,12 @@ import ./app/http/middlewares/auth_middleware
 import ./app/http/middlewares/set_headers_middleware
 # controller
 import ./app/http/controllers/welcome_controller
+import ./app/http/controllers/toppage_controller
 
 
 let routes = @[
   Route.group("", @[
-    Route.get("/", welcome_controller.index),
+    Route.get("/", toppage_controller.index),
 
     Route.group("/api", @[
       Route.get("/index", welcome_controller.indexApi),
