@@ -57,7 +57,7 @@ proc main() =
       else:
         req.send(Http404)
 
-  let settings = initSettings(port=Port(5000), numThreads=2)
+  let settings = initSettings(port=Port(5000))
   run(onRequest, settings)
 
 main()
