@@ -8,7 +8,6 @@ proc applicationView*(title:string, body:Component):Component =
     <html lang="en">
       $(headView(title))
     <body>
-      <script src="/js/alpine.min.js"></script>
       $(body)
     </body>
     </html>

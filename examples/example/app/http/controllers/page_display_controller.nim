@@ -10,7 +10,6 @@ import ../views/pages/welcome_view
 import ../views/pages/welcome_scf_view
 import ../views/pages/sample/with_style_view
 import ../views/pages/sample/babylon_js/babylon_js_view
-import ../views/pages/sample/btc_price/btc_price_view
 import ../views/pages/sample/web_socket_view
 import ../views/pages/sample/api_view
 
@@ -53,10 +52,6 @@ proc withStylePage*(context:Context, params:Params):Future[Response] {.async.} =
 
 proc babylonJsPage*(context:Context, params:Params):Future[Response] {.async.} =
   return render(babylonJsView().await)
-
-
-proc btcPricePage*(context:Context, params:Params):Future[Response] {.async.} =
-  return render(btcPriceView().await)
 
 
 proc customHeaders*(context:Context, params:Params):Future[Response] {.async.} =
