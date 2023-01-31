@@ -3,7 +3,7 @@ FROM debian:11.5-slim
 # prevent timezone dialogue
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt update --fix-missing && \
+RUN apt update && \
     apt upgrade -y
 RUN apt install -y --fix-missing \
         gcc \
@@ -19,7 +19,7 @@ RUN apt install -y --fix-missing \
         libmariadb-dev \
         libsass-dev
 
-ARG VERSION="1.6.8"
+ARG VERSION="1.6.10"
 WORKDIR /root
 RUN wget --inet4-only https://nim-lang.org/download/nim-${VERSION}-linux_x64.tar.xz && \
     tar -Jxf nim-${VERSION}-linux_x64.tar.xz && \

@@ -36,11 +36,9 @@ jobs:
           # Need sqlite3_64.dll
           # - windows-latest
         nim-version:
-          - 1.6.0
-          - 1.6.2
-          - 1.6.4
           - 1.6.6
           - 1.6.8
+          - 1.6.10
     steps:
       - uses: actions/checkout@v2
       - name: Cache choosenim
@@ -71,15 +69,15 @@ jobs:
     strategy:
       matrix:
         image-tag:
-          - 1.6.4
           - 1.6.6
           - 1.6.8
+          - 1.6.10
     steps:
       - uses: actions/checkout@v2
       - name: Build docker image
-        run: docker-compose build --build-arg VERSION=${{ matrix.image-tag }} app-debian
+        run: docker-compose build --build-arg VERSION=${{ matrix.image-tag }} app-ubuntu
       - name: Test
-        run: docker-compose run app-debian sh /root/project/runTest.sh
+        run: docker-compose run app-ubuntu sh /root/project/runTest.sh
       # マルチスレッドは使わない
       # - name: Test multi-thread
       #   run: |

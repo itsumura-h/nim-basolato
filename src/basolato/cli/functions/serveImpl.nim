@@ -98,5 +98,5 @@ proc serve*(port=5000, force=false, httpbeast=false, httpx=false) =
 
     if isModified:
       isModified = false
-      # jsBuild()
+      jsBuild()
       runCommand(port, false, httpbeast, httpx)
