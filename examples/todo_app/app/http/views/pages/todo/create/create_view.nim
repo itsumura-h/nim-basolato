@@ -5,12 +5,12 @@ import ./create_view_model
 
 
 proc impl(viewModel:CreateViewModel):Component =
-  style "css", style:"""
+  let style = styleTmpl(Css, """
     <style>
       .className {
       }
     </style>
-  """
+  """)
 
   tmpli html"""
     $(style)

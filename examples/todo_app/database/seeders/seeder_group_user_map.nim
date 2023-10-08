@@ -6,8 +6,8 @@ from ../../config/database import rdb
 proc group_user_map*() {.async.} =
   seeder rdb, "group_user_map":
     var data: seq[JsonNode]
-    let groups = await rdb.table("groups").select("id").get()
-    let users = await rdb.table("users").select("id", "name").get()
+    let groups = await rdb.select("id").table("groups").get()
+    let users = await rdb.select("id", "name").table("users").get()
     for i, user in users:
       if 4 >= i and i >= 1:
         data.add(%*{

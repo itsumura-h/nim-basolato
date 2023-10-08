@@ -5,12 +5,12 @@ import ./task/task_view
 
 
 proc statusView*(status:StatusViewModel):Component =
-  style "css", style:"""
+  let style = styleTmpl(Css, """
     <style>
       .className {
       }
     </style>
-  """
+  """)
 
   tmpli html"""
     <div class="bulma-column">

@@ -2,7 +2,7 @@ import ../../../../../../src/basolato/view
 
 
 proc impl(title, name:string):Component =
-  style "css", style:"""
+  let style = styleTmpl(Css, """
     <style>
       body {
         background-color: black;
@@ -75,7 +75,7 @@ proc impl(title, name:string):Component =
         margin-top: 0;
       }
     </style>
-  """
+  """)
 
   tmpli html"""
     <!DOCTYPE html>

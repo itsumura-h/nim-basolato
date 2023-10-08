@@ -4,7 +4,7 @@ import ../../layouts/application_view
 
 
 proc impl(params, errors:JsonNode):Future[Component] {.async.} =
-  style "css", style:"""
+  let style = styleTmpl(Css, """
     @media screen{
       main{
         display: flex;
@@ -19,7 +19,7 @@ proc impl(params, errors:JsonNode):Future[Component] {.async.} =
       display: flex;
       justify-content: space-between;
     }
-  """
+  """)
 
   tmpli html"""
     $(style)

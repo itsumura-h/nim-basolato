@@ -4,12 +4,13 @@ import ./app_bar_view_model
 
 
 proc appBarView*(viewMode:AppBarViewModel):Future[Component] {.async.} =
-  style "css", style:"""
+  let style = styleTmpl(Css, """
     <style>
     </style>
-  """
+  """)
 
   tmpli html"""
+    $(style)
     <script>
       window.addEventListener('load', ()=>{
         if(window.matchMedia('screen and (max-width: 780px)').matches){
