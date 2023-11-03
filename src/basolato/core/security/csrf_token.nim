@@ -16,10 +16,6 @@ func getToken*(self:CsrfToken):string =
   self.token
 
 proc checkCsrfValid*(self:CsrfToken, session:Option[Session]):Future[bool] {.async.} =
-  echo "=== checkCsrfValid"
-  echo "self.token: ",self.token
-  echo "session: ",session.repr
-  echo "session.get(\"nonce\").await: ",session.get("nonce").await
   if not session.isSome:
     return false
   let nonce = session.get("nonce").await
