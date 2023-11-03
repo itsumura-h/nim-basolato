@@ -26,6 +26,7 @@ putEnv("DB_SQLITE", $true) # "true" or "false"
 # putEnv("DB_MYSQL", $true) # "true" or "false"
 # putEnv("DB_MARIADB", $true) # "true" or "false"
 putEnv("SESSION_TYPE", "file") # "file" or "redis"
+putEnv("SESSION_DB_PATH", "./session.db") # Session file path or redis host:port. ex:"127.0.0.1:6379"
 putEnv("LIBSASS", $false) # "true" or "false"
 """
 
@@ -51,7 +52,6 @@ LOG_DIR="{getCurrentDir()}/logs"
 
 # Session db
 # Session type, file or redis, is defined in config.nims
-SESSION_DB_PATH="{getCurrentDir()}/session.db" # Session file path or redis host:port. ex:"127.0.0.1:6379"
 SESSION_TIME=20160 # minutes of 2 weeks
 ENABLE_ANONYMOUS_COOKIE=true # true or false
 COOKIE_DOMAINS="" # to specify multiple domains, "sample.com, sample.org"

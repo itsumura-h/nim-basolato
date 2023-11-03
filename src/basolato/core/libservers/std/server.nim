@@ -121,5 +121,4 @@ proc serve*(seqRoutes: seq[Routes]) =
       routes.withoutParams[path] = route
 
   echo(&"Basolato based on asynchttpserver listening on {HOST_ADDR}:{PORT_NUM}")
-  asyncCheck serveCore((routes, PORT_NUM))
-  runForever()
+  serveCore((routes, PORT_NUM)).waitFor()

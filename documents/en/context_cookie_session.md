@@ -86,8 +86,6 @@ if res.isError:
 
 ## Session DB
 You can choose two options to use session, `File` or `Redis`.  
-File session uses [flatdb](https://github.com/enthus1ast/flatdb) , a document database like Mongo, inside.
-
 
 config.nims for file session
 ```nim
@@ -371,7 +369,7 @@ proc index(context:Context, params:Params):Future[Response] {.async.} =
 
 
 ## Session
-Basolato use [flatdb](https://github.com/enthus1ast/flatdb) as file session DB.
+Basolato use json file as file session DB.
 
 If you set `sessionId` in arg of `newSession()`, it return existing session otherwise create new session.
 

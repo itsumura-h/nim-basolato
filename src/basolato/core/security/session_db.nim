@@ -5,10 +5,9 @@ import ../baseEnv
 when SESSION_TYPE == "redis":
   import ./session_db/redis_session_db
 else:
-  import ./session_db/file_session_db
+  import ./session_db/json_session_db
 
 export globalNonce
-
 
 type SessionDb* = ref object
   impl:ISessionDb
@@ -18,14 +17,14 @@ proc new*(_:type SessionDb, token=""):Future[SessionDb] {.async.} =
     when SESSION_TYPE == "redis":
       RedisSessionDb.new(token).await.toInterface()
     else:
-      FileSessionDb.new(token).await.toInterface()
+      JsonSessionDb.new(token).await.toInterface()
   return SessionDb(impl:sessionDb)
 
 proc checkSessionIdValid*(_:type SessionDb, token=""):Future[bool] {.async.} =
   when SESSION_TYPE == "redis":
     return RedisSessionDb.checkSessionIdValid(token).await
   else:
-    return FileSessionDb.checkSessionIdValid(token).await
+    return JsonSessionDb.checkSessionIdValid(token).await
 
 proc getToken*(self:SessionDb):Future[string] {.async.} =
   return self.impl.getToken().await
@@ -36,11 +35,15 @@ proc setStr*(self:SessionDb, key, value: string):Future[void] {.async.} =
 proc setJson*(self:SessionDb, key:string, value: JsonNode):Future[void] {.async.} =
   self.impl.setJson(key, value).await
 
-proc some*(self:SessionDb, key:string):Future[bool] {.async.} =
-  return self.impl.some(key).await
+proc isSome*(self:SessionDb, key:string):Future[bool] {.async.} =
+  let res = self.impl.isSome(key).await
+  return res
 
-proc get*(self:SessionDb, key:string):Future[string] {.async.} =
-  return self.impl.get(key).await
+proc getStr*(self:SessionDb, key:string):Future[string] {.async.} =
+  return self.impl.getStr(key).await
+
+proc getJson*(self:SessionDb, key:string):Future[JsonNode] {.async.} =
+  return self.impl.getJson(key).await
 
 proc getRows*(self:SessionDb):Future[JsonNode] {.async.} =
   return self.impl.getRows().await

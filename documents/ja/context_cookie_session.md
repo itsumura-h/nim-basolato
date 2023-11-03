@@ -85,7 +85,6 @@ if res.isError:
 
 ## セッションDB
 セッションには`File`か`Redis`が使えます。
-ファイルセッションはMongoに似たドキュメントDBの[flatdb](https://github.com/enthus1ast/flatdb)を使っています。
 
 ファイルセッションの時
 
@@ -379,7 +378,7 @@ proc index(context:Context, params:Params):Future[Response] {.async.} =
 
 
 ## セッション
-Basolatoはファイルセッションのデータベースには[flatdb](https://github.com/enthus1ast/flatdb)を使っています。
+BasolatoはjsonファイルをローカルのセッションDBとしてを使うことができます。
 
 `newSession()`の引数に`sessionId`を設定すると、既存のセッションを返し、そうでなければ新しいセッションを作成します。
 
