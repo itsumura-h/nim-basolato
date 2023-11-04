@@ -91,10 +91,10 @@ if res.isError:
 config.nims
 ```nim
 putEnv("SESSION_TYPE", "file")
+putEnv(SESSION_DB_PATH, "/your/project/path/session.db") # db file path
 ```
 .env
 ```env
-SESSION_DB_PATH="/your/project/path/session.db" # db file path
 SESSION_TIME=20160
 ```
 
@@ -103,11 +103,11 @@ Redisセッションの時
 config.nims
 ```nim
 putEnv("SESSION_TYPE", "redis")
+putEnv("SESSION_DB_PATH", "localhost:6379") # Redis IP address
 ```
 
 .env
 ```env
-SESSION_DB_PATH="localhost:6379" # Redis IP address
 SESSION_TIME=20160
 ```
 

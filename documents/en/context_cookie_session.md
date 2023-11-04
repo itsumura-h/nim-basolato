@@ -91,14 +91,22 @@ config.nims for file session
 ```nim
 putEnv("SESSION_TYPE", "file")
 putEnv("SESSION_DB_PATH", "/your/project/path/session.db") # file path
-putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
+```
+
+.env
+```env
+SESSION_TIME=20160 # minutes of 2 weeks
 ```
 
 config.nims for redis session
 ```nim
 putEnv("SESSION_TYPE", "redis")
 putEnv("SESSION_DB_PATH", "localhost:6379") # Redis IP address
-putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
+```
+
+.env
+```env
+SESSION_TIME=20160 # minutes of 2 weeks
 ```
 
 ## Context

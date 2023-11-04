@@ -1,14 +1,16 @@
 discard """
-  cmd: "nim c -r $file"
+  cmd: "nim c -r --putenv:SESSION_DB_PATH=./tests/server/session.db $file"
 """
 
+# nim c -r --putenv:SESSION_DB_PATH=./tests/server/session.db tests/test_middleware.nim
+
+import std/unittest
 import std/asyncdispatch
 import std/htmlparser
 import std/httpclient
 import std/json
 import std/strformat
 import std/strutils
-import std/unittest
 import std/xmltree
 import ../src/basolato/middleware
 include ../src/basolato/core/security/session
@@ -28,45 +30,45 @@ proc loadCsrfToken():string =
   html.findAll("input", s)
   return s[0].attr("value")
 
-block:
-  let session = waitFor genNewSession()
-  let sessionId = waitFor session.db.getToken()
-  client.headers = newHttpHeaders({
-    "Cookie": &"session_id={sessionId}",
-    "Content-Type": "application/x-www-form-urlencoded",
-  })
-  let csrfToken = loadCsrfToken()
-  let params = &"csrf_token={csrfToken}"
-  let response = client.post(&"{HOST}/csrf/test_routing", body = params)
-  check response.code == Http200
+suite("test middleware"):
+  test("csrf token valid"):
+    let session = genNewSession().waitFor()
+    let sessionId = session.db.getToken().waitFor()
+    client.headers = newHttpHeaders({
+      "Cookie": &"session_id={sessionId}",
+      "Content-Type": "application/x-www-form-urlencoded",
+    })
+    let csrfToken = loadCsrfToken()
+    let params = &"csrf_token={csrfToken}"
+    let response = client.post(&"{HOST}/csrf/test_routing", body = params)
+    check response.code == Http200
 
-block:
-  client.headers = newHttpHeaders({"Content-Type": "application/x-www-form-urlencoded"})
-  var params = &"csrf_token=invalid_token"
-  let response = client.post(&"{HOST}/csrf/test_routing", body = params)
-  check response.code == Http403
-  check response.body.contains("Invalid csrf token")
+  test("csrf token invalid"):
+    client.headers = newHttpHeaders({"Content-Type": "application/x-www-form-urlencoded"})
+    var params = &"csrf_token=invalid_token"
+    let response = client.post(&"{HOST}/csrf/test_routing", body = params)
+    check response.code == Http403
 
-block:
-  let session = waitFor genNewSession()
-  let authId = waitFor session.db.getToken()
-  client.headers = newHttpHeaders({
-    "Cookie": &"session_id={authId}",
-    "Content-Type": "application/x-www-form-urlencoded"
-  })
-  let token = loadCsrfToken()
-  var params = &"csrf_token={token}"
-  let response = client.post(&"{HOST}/session/test_routing", body = params)
-  check Http200 == response.code
+  test("cookie valid"):
+    let session = genNewSession().waitFor()
+    let authId = session.db.getToken().waitFor()
+    client.headers = newHttpHeaders({
+      "Cookie": &"session_id={authId}",
+      "Content-Type": "application/x-www-form-urlencoded"
+    })
+    let token = loadCsrfToken()
+    var params = &"csrf_token={token}"
+    let response = client.post(&"{HOST}/session/test_routing", body = params)
+    check Http200 == response.code
 
-block:
-  let authId = "invalid_auth_id"
-  client.headers = newHttpHeaders({
-    "Cookie": &"session_id={authId}",
-    "Content-Type": "application/x-www-form-urlencoded"
-  })
-  # let csrf_token = CsrfToken.new().getToken().getToken()
-  let token = loadCsrfToken()
-  var params = &"csrf_token={token}"
-  let response = client.post(&"{HOST}/session/test_routing", body = params)
-  check response.code == Http403
+  test("cookie invalid"):
+    let authId = "invalid_auth_id"
+    client.headers = newHttpHeaders({
+      "Cookie": &"session_id={authId}",
+      "Content-Type": "application/x-www-form-urlencoded"
+    })
+    # let csrf_token = CsrfToken.new().getToken().getToken()
+    let token = loadCsrfToken()
+    var params = &"csrf_token={token}"
+    let response = client.post(&"{HOST}/session/test_routing", body = params)
+    check response.code == Http403

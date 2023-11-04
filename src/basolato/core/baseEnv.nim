@@ -40,6 +40,3 @@ let
 
   # others
   LOCALE* = getEnv("LOCALE", "en")
-
-echo "=== baseEnv"
-echo "=== SESSION_DB_PATH:", SESSION_DB_PATH

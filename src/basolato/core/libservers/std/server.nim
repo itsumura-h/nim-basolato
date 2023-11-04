@@ -70,6 +70,7 @@ proc serveCore(params:(Routes, int)){.async.} =
       var headers = newHttpHeaders()
       headers["content-type"] = "text/html; charset=utf-8"
       let exception = getCurrentException()
+      echo "exception.name: ",exception.name
       if exception.name == "DD".cstring:
         var msg = exception.msg
         msg = msg.replace(re"Async traceback:[.\s\S]*")
