@@ -1,0 +1,21 @@
+version: '3'
+services:
+  app-ubuntu-v1:
+    build:
+      context: .
+      dockerfile: ./docker/nim/ubuntu/Dockerfile
+      args:
+        VERSION: 1.6.16
+    tty: true
+    volumes:
+      - .:/root/project
+
+  app-ubuntu:
+    build:
+      context: .
+      dockerfile: ./docker/nim/ubuntu/Dockerfile
+      args:
+        VERSION: 2.0.0
+    tty: true
+    volumes:
+      - .:/root/project

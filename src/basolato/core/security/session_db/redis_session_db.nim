@@ -102,13 +102,13 @@ proc new*(_:type RedisSessionDb, sessionId:string):Future[RedisSessionDb] {.asyn
 
 proc toInterface*(self:RedisSessionDb):ISessionDb =
   return (
-    getToken: proc():Future[string] {.async.} = self.getToken().await,
+    getToken: proc():Future[string] {.async.} = return self.getToken().await,
     setStr: proc(key, value: string):Future[void] {.async.} = self.setStr(key, value).await,
     setJson: proc(key:string, value: JsonNode):Future[void] {.async.} = self.setJson(key, value).await,
-    isSome: proc(key:string):Future[bool] {.async.} = self.isSome(key).await,
-    getStr: proc(key:string):Future[string] {.async.} = self.getStr(key).await,
-    getJson: proc(key:string):Future[JsonNode] {.async.} = self.getJson(key).await,
-    getRows: proc():Future[JsonNode] {.async.} = self.getRows().await,
+    isSome: proc(key:string):Future[bool] {.async.} = return self.isSome(key).await,
+    getStr: proc(key:string):Future[string] {.async.} = return self.getStr(key).await,
+    getJson: proc(key:string):Future[JsonNode] {.async.} = return self.getJson(key).await,
+    getRows: proc():Future[JsonNode] {.async.} = return self.getRows().await,
     delete: proc(key:string):Future[void] {.async.} = self.delete(key).await,
     destroy: proc():Future[void] {.async.} = self.destroy().await,
     updateNonce: proc():Future[void] {.async.} = self.updateNonce().await

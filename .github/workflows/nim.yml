@@ -63,16 +63,16 @@ jobs:
     needs: before
     strategy:
       matrix:
-        image-tag:
+        nim-version:
           - 1.6.16
           - 2.0.0
 
     steps:
       - uses: actions/checkout@v2
       - name: Build docker image
-        run: docker-compose build --build-arg VERSION=${{ matrix.image-tag }} app-ubuntu
+        run: docker compose build --build-arg VERSION=${{ matrix.nim-version }} app-ubuntu
       - name: Test
-        run: docker-compose run app-ubuntu sh /root/project/runTest.sh
+        run: docker compose run app-ubuntu sh runTest.sh
       # マルチスレッドは使わない
       # - name: Test multi-thread
       #   run: |
