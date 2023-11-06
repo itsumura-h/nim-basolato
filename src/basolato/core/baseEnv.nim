@@ -11,6 +11,9 @@ const
   HOST_ADDR* = getEnv("HOST", "0.0.0.0")
   PORT_NUM* = getEnv("PORT", "5000").parseInt
 
+echo "SESSION_TYPE: ",SESSION_TYPE
+echo "SESSION_DB_PATH: ",SESSION_DB_PATH
+
 for f in walkDir(getCurrentDir()):
   if f.path.split("/")[^1] == ".env":
     let path = getCurrentDir() / ".env"
