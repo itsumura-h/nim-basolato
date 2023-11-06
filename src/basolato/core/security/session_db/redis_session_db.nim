@@ -87,9 +87,11 @@ proc new*(_:type RedisSessionDb, sessionId:string):Future[RedisSessionDb] {.asyn
     else:
       sessionId
 
-  let conn = await openAsync(REDIS_IP, Port(REDIS_PORT))
+  echo "REDIS_IP: ",REDIS_IP
+  echo "REDIS_PORT: ",REDIS_PORT
+  let conn = openAsync(REDIS_IP, Port(REDIS_PORT)).await
   # discard await conn.hSet(id, "last_access", $getTime())
-  discard await conn.expire(id, SESSION_TIME * 60)
+  discard conn.expire(id, SESSION_TIME * 60).await
 
   let sessionDb = RedisSessionDb(
     conn: conn,
