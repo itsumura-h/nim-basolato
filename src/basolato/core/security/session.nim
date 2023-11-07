@@ -13,12 +13,16 @@ type Session* = ref object
   db: SessionDb
 
 proc genNewSession*(token=""):Future[Session] {.async.} =
-  return Session(db:SessionDb.new(token).await)
+  let db = SessionDb.new(token).await
+  let session = Session(db:db)
+  return session
 
 proc new*(typ:type Session, request:Request):Future[Option[Session]] {.async.} =
   let sessionId = Cookies.new(request).get("session_id")
   if SessionDb.checkSessionIdValid(sessionId).await:
-    return genNewSession(sessionId).await.some
+    let session = genNewSession(sessionId).await
+    let someSesson = session.some()
+    return someSesson
   else:
     return none(typ)
 
@@ -41,21 +45,21 @@ proc set*(self:Option[Session], key, value:string) {.async.} =
 
 proc set*(self:Option[Session], key:string, value:JsonNode) {.async.} =
   if self.isSome:
-    await self.get.db.setJson(key, value)
+    self.get.db.setJson(key, value).await
 
 proc isSome*(self:Option[Session], key:string):Future[bool] {.async.} =
-  return self.isSome and await self.get.db.some(key)
+  return self.isSome and self.get.db.isSome(key).await
 
 proc get*(self:Option[Session], key:string):Future[string] {.async.} =
   if await self.isSome(key):
-    return await self.get.db.get(key)
+    return self.get.db.getStr(key).await
   else:
     return ""
 
 proc delete*(self:Option[Session], key:string) {.async.} =
   if self.isSome:
-    await self.get.db.delete(key)
+    self.get.db.delete(key).await
 
 proc destroy*(self:Option[Session]) {.async.} =
   if self.isSome:
-    await self.get.db.destroy()
+    self.get.db.destroy().await

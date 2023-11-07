@@ -70,6 +70,7 @@ proc serveCore(params:(Routes, int)){.async.} =
       var headers = newHttpHeaders()
       headers["content-type"] = "text/html; charset=utf-8"
       let exception = getCurrentException()
+      echo "exception.name: ",exception.name
       if exception.name == "DD".cstring:
         var msg = exception.msg
         msg = msg.replace(re"Async traceback:[.\s\S]*")
@@ -121,5 +122,4 @@ proc serve*(seqRoutes: seq[Routes]) =
       routes.withoutParams[path] = route
 
   echo(&"Basolato based on asynchttpserver listening on {HOST_ADDR}:{PORT_NUM}")
-  asyncCheck serveCore((routes, PORT_NUM))
-  runForever()
+  serveCore((routes, PORT_NUM)).waitFor()

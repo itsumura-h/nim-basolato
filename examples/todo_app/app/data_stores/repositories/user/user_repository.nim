@@ -1,4 +1,7 @@
-import asyncdispatch, json, options
+import std/asyncdispatch
+import std/json
+import std/options
+import std/strutils
 import interface_implements
 import ../../../../../../src/basolato/password
 import allographer/query_builder
@@ -41,8 +44,9 @@ implements UserRepository, IUserRepository:
     ).some
 
   proc save(self:UserRepository, user:DraftUser):Future[int] {.async.} =
-    return rdb.table("users").insertId(%*{
+    let strId = rdb.table("users").insertId(%*{
       "name": $user.name,
       "email": $user.email,
       "password": genHashedPassword($user.password)
     }).await
+    return strId.parseInt

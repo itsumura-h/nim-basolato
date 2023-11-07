@@ -33,7 +33,7 @@ proc build*(port=5000, workers:uint=0, force=false, httpbeast=false, httpx=false
     {fStr} \
     {serverStr} \
     --threads:off \
-    --gc:orc \
+    --mm:orc \
     -d:ssl \
     -d:danger \
     -d:release \

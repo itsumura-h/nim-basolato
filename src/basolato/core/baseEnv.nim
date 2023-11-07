@@ -6,9 +6,13 @@ import std/parsecfg
 
 const
   SESSION_TYPE* = getEnv("SESSION_TYPE", "file")
+  SESSION_DB_PATH* = getEnv("SESSION_DB_PATH", "./session.db")
   DOES_USE_LIBSASS* = when existsEnv("LIBSASS"): getEnv("LIBSASS").parseBool else: false
   HOST_ADDR* = getEnv("HOST", "0.0.0.0")
   PORT_NUM* = getEnv("PORT", "5000").parseInt
+
+echo "SESSION_TYPE: ",SESSION_TYPE
+echo "SESSION_DB_PATH: ",SESSION_DB_PATH
 
 for f in walkDir(getCurrentDir()):
   if f.path.split("/")[^1] == ".env":
@@ -33,7 +37,6 @@ let
   IS_ERROR_FILE* = getEnv("LOG_IS_ERROR_FILE", $true).parseBool
   LOG_DIR* = getEnv("LOG_DIR", getCurrentDir() / "logs")
   # Session db
-  SESSION_DB_PATH* = getEnv("SESSION_DB_PATH", getCurrentDir() / "session.db")
   SESSION_TIME* = getEnv("SESSION_TIME", "20160").parseInt
   COOKIE_DOMAINS* = getEnv("COOKIE_DOMAINS")
   ENABLE_ANONYMOUS_COOKIE* = getEnv("ENABLE_ANONYMOUS_COOKIE", $true).parseBool

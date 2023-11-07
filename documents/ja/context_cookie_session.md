@@ -85,17 +85,16 @@ if res.isError:
 
 ## セッションDB
 セッションには`File`か`Redis`が使えます。
-ファイルセッションはMongoに似たドキュメントDBの[flatdb](https://github.com/enthus1ast/flatdb)を使っています。
 
 ファイルセッションの時
 
 config.nims
 ```nim
 putEnv("SESSION_TYPE", "file")
+putEnv(SESSION_DB_PATH, "/your/project/path/session.db") # db file path
 ```
 .env
 ```env
-SESSION_DB_PATH="/your/project/path/session.db" # db file path
 SESSION_TIME=20160
 ```
 
@@ -104,11 +103,11 @@ Redisセッションの時
 config.nims
 ```nim
 putEnv("SESSION_TYPE", "redis")
+putEnv("SESSION_DB_PATH", "localhost:6379") # Redis IP address
 ```
 
 .env
 ```env
-SESSION_DB_PATH="localhost:6379" # Redis IP address
 SESSION_TIME=20160
 ```
 
@@ -379,7 +378,7 @@ proc index(context:Context, params:Params):Future[Response] {.async.} =
 
 
 ## セッション
-Basolatoはファイルセッションのデータベースには[flatdb](https://github.com/enthus1ast/flatdb)を使っています。
+BasolatoはjsonファイルをローカルのセッションDBとしてを使うことができます。
 
 `newSession()`の引数に`sessionId`を設定すると、既存のセッションを返し、そうでなければ新しいセッションを作成します。
 

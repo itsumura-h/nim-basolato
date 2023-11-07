@@ -4,7 +4,7 @@ import ./task_view_model
 
 
 proc taskView*(viewModel:TaskViewModel):Component =
-  style "css", style:"""
+  let style = styleTmpl(Css, """
     <style>
       .columns {
         max-width: 100%;
@@ -21,7 +21,7 @@ proc taskView*(viewModel:TaskViewModel):Component =
         height: 100%;
       }
     </style>
-  """
+  """)
 
   tmpli html"""
     $(style)

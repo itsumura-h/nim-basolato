@@ -10,14 +10,14 @@ import
 
 
 proc impl(viewModel:IndexViewModel):Future[Component] {.async.} =
-  style "css", style:"""
+  let style = styleTmpl(Css, """
     <style>
       .columns {
         max-width: 100%;
         margin: auto;
       }
     </style>
-  """
+  """)
 
   tmpli html"""
     $(style)

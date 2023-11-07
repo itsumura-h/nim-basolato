@@ -18,7 +18,7 @@ implements TodoQuery, ITodoQuery:
     return rdb.table("users").where("auth_id", ">", 1).get().await
 
   proc getTodoList(self:TodoQuery):Future[seq[JsonNode]] {.async.} =
-    return await rdb.table("todo")
+    return await rdb
       .select(
         "todo.id",
         "todo.title",
@@ -32,6 +32,7 @@ implements TodoQuery, ITodoQuery:
         "status.name as status",
         "todo.sort"
       )
+      .table("todo")
       .join("users as created_user", "created_user.id", "=", "created_id")
       .join("users as assign_user", "assign_user.id", "=", "assign_id")
       .join("status", "status.id", "=", "todo.status_id")

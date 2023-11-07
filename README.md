@@ -98,7 +98,6 @@ export PATH=$PATH:~/.nimble/bin
 
 The framework depends on several libraries (installed automatically by Nimble):
 - [allographer](https://github.com/itsumura-h/nim-allographer), a library for building queries.
-- [flatdb](https://github.com/enthus1ast/flatdb), a small Flatfile database, used for sessions.
 - [bcrypt](https://github.com/runvnc/bcryptnim), used for hashing passwords.
 - [faker](https://github.com/jiro4989/faker), for generating fake data.
 - [sass](https://github.com/dom96/sass), provides a Sass/SCSS to CSS compiler for `Nim` through bindings to `libsass`.

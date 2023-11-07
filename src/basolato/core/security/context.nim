@@ -19,7 +19,6 @@ proc new*(_:type Context, request:Request, isCreateNew=false):Future[Context]{.a
   var session = Session.new(request).await
   if isCreateNew and not session.isSome:
     session = genNewSession().await.some
-  
   return Context(
     request:request,
     session:session
