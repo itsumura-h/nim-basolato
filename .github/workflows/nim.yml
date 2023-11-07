@@ -66,7 +66,7 @@ jobs:
     - name: Test
       run: |
         docker compose -f compose.test.yaml build
-        docker compose -f compose.test.yaml run
+        docker compose -f compose.test.yaml up -d
         docker ps
         docker compose -f compose.test.yaml run app-ubuntu-v1 sh runTest.sh
 
@@ -78,7 +78,7 @@ jobs:
     - name: Test
       run: |
         docker compose -f compose.test.yaml build
-        docker compose -f compose.test.yaml run
+        docker compose -f compose.test.yaml up -d
         docker ps
         docker compose -f compose.test.yaml run app-ubuntu sh runTest.sh
 
