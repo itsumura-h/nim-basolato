@@ -64,7 +64,11 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Test
-      run: docker compose -f compose.test.yaml build && docker compose -f compose.test.yaml run app-ubuntu-v1 sh runTest.sh
+      run: |
+        docker compose -f compose.test.yaml build
+        docker compose -f compose.test.yaml run
+        docker ps
+        docker compose -f compose.test.yaml run app-ubuntu-v1 sh runTest.sh
 
   test-on-docker-nim-v2:
     runs-on: ubuntu-latest
@@ -72,7 +76,11 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Test
-      run: docker compose -f compose.test.yaml build && docker compose -f compose.test.yaml run app-ubuntu sh runTest.sh
+      run: |
+        docker compose -f compose.test.yaml build
+        docker compose -f compose.test.yaml run
+        docker ps
+        docker compose -f compose.test.yaml run app-ubuntu sh runTest.sh
 
   # test-on-docker:
   #   runs-on: ubuntu-22.04
