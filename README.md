@@ -13,14 +13,10 @@ An asynchronous multiprocessing full-stack web framework for Nim, based on [asyn
 
 :warning: This project is under heavy development. It's not yet production-ready. :warning:
 
-The only supported OS are Alpine, Debian, and Ubuntu.  
-~~It is recommended to use Docker regular flavor for development.  
-`nimlang/nim:1.6.6-alpine-regular` or `nimlang/nim:1.6.6-ubuntu-regular`  
-https://hub.docker.com/r/nimlang/nim~~  
-in Ubuntu 22.04、Nim can' run because of OpenSSL3 and recommand to use Debian 11.
+The only supported OS are Alpine, Debian, and Ubuntu. 
 
 ```dockerfile
-FROM debian:11.5-slim
+FROM ubuntu:22.04
 
 # prevent timezone dialogue
 ENV DEBIAN_FRONTEND=noninteractive
@@ -32,23 +28,26 @@ RUN apt install -y --fix-missing \
         g++ \
         xz-utils \
         ca-certificates \
-        vim \
-        wget \
-        procps \
+        curl \
         git \
         sqlite3 \
         libpq-dev \
         libmariadb-dev \
         libsass-dev
 
-ARG VERSION="1.6.8"
+ARG VERSION="2.0.0"
 WORKDIR /root
-RUN wget --inet4-only https://nim-lang.org/download/nim-${VERSION}-linux_x64.tar.xz && \
-    tar -Jxf nim-${VERSION}-linux_x64.tar.xz && \
-    rm -f nim-${VERSION}-linux_x64.tar.xz && \
-    mv nim-${VERSION} .nimble
+RUN curl https://nim-lang.org/choosenim/init.sh -o init.sh
+RUN sh init.sh -y
+RUN rm -f init.sh
+ENV PATH $PATH:/root/.nimble/bin
+RUN choosenim ${VERSION}
 
 ENV PATH $PATH:/root/.nimble/bin
+WORKDIR /root/project
+COPY ./basolato.nimble .
+RUN nimble install -y -d
+RUN git config --global --add safe.directory /root/project
 ```
 
 
