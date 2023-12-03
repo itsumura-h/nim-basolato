@@ -14,6 +14,7 @@ type JsonSessionDb* = ref object
   db:JsonFileDb
 
 proc new*(_:type JsonSessionDb):Future[JsonSessionDb] {.async.} =
+  echo "=== JsonSessionDb.new"
   if not dirExists(SESSION_DB_PATH.parentDir()):
     createDir(SESSION_DB_PATH.parentDir())
 
@@ -25,6 +26,7 @@ proc new*(_:type JsonSessionDb):Future[JsonSessionDb] {.async.} =
 
 
 proc new*(_:type JsonSessionDb, sessionId:string):Future[JsonSessionDb] {.async.} =
+  echo "=== JsonSessionDb.new"
   if not dirExists(SESSION_DB_PATH.parentDir()):
     createDir(SESSION_DB_PATH.parentDir())
 

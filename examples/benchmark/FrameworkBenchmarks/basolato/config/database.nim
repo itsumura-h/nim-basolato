@@ -1,9 +1,9 @@
 import std/asyncdispatch
-import std/db_postgres
 import std/json
 import std/os
 import std/random
 import std/strutils
+import db_connector/db_postgres
 import allographer/connection
 import allographer/schema_builder
 import allographer/query_builder
@@ -15,7 +15,7 @@ let rdb* = dbopen(
   getEnv("DB_USER"),
   getEnv("DB_PASSWORD"),
   getEnv("DB_HOST"),
-  getEnv("DB_PORT").parseInt,
+  getEnv("DB_PORT").parseInt.int32,
   getEnv("DB_MAX_CONNECTION").parseInt,
   getEnv("DB_TIMEOUT").parseInt,
   getEnv("LOG_IS_DISPLAY").parseBool,

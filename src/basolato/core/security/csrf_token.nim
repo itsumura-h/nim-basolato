@@ -15,10 +15,11 @@ proc new*(_:type CsrfToken, token=""):CsrfToken =
 func getToken*(self:CsrfToken):string =
   self.token
 
-proc checkCsrfValid*(self:CsrfToken, session:Option[Session]):Future[bool] {.async.} =
-  if not session.isSome:
+proc checkCsrfValid*(self:CsrfToken, session:Session):Future[bool] {.async.} =
+  const key = "nonce"
+  if not session.isSome(key).await:
     return false
-  let nonce = session.get("nonce").await
+  let nonce = session.get(key).await
   return self.token == nonce
 
 proc csrfToken*():CsrfToken =

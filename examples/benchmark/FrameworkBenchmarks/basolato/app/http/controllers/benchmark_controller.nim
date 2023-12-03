@@ -5,7 +5,7 @@ import std/random
 import std/strutils
 import std/sequtils
 import std/httpcore
-import std/db_postgres
+import db_connector/db_postgres
 # framework
 # import basolato/controller
 import ../../../../../../../src/basolato/controller
@@ -88,9 +88,9 @@ proc update*(context:Context, params:Params):Future[Response] {.async.} =
   for i in 1..countNum:
     let index = rand(range1_10000)
     let number = rand(range1_10000)
-    futures[i-1] = (proc():Future[void]=
+    futures[i-1] = (proc():Future[void] {.async.}=
       discard stdRdb.getRow(getFirstPrepare, i)
-      rdb.raw(""" UPDATE "World" SET "randomnumber" = ? WHERE id = ? """, $number, $index).exec()
+      rdb.raw(""" UPDATE "World" SET "randomnumber" = ? WHERE id = ? """, %*[number, index]).exec().await
     )()
     response[i-1] = %*{"id":i, "randomNumber": number}
   all(futures).await

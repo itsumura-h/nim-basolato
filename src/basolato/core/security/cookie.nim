@@ -92,7 +92,7 @@ func new*(_:type Cookies, request:Request):Cookies =
 
 func get*(self:Cookies, name:string):string =
   result = ""
-  if not self.request.headers.hasKey("Cookie"):
+  if (not self.request.headers.isNil) or (not self.request.headers.hasKey("Cookie")):
     return result
   let cookiesStrArr = self.request.headers["Cookie"].split("; ")
   for row in cookiesStrArr:

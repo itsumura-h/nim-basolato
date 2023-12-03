@@ -18,3 +18,9 @@ random_string
   - 新規作成してインスタンスを返す
 - 不正な値
   - エラーを返す
+
+## CookieにセッションIDがある時
+
+## CSRF Token
+
+## AuthorizationヘッダーにセッションIDがある時

@@ -17,49 +17,41 @@ proc genNewSession*(token=""):Future[Session] {.async.} =
   let session = Session(db:db)
   return session
 
-proc new*(typ:type Session, request:Request):Future[Option[Session]] {.async.} =
+proc new*(typ:type Session, request:Request):Future[Session] {.async.} =
   let sessionId = Cookies.new(request).get("session_id")
   if SessionDb.checkSessionIdValid(sessionId).await:
     let session = genNewSession(sessionId).await
-    let someSesson = session.some()
-    return someSesson
+    return session
   else:
-    return none(typ)
+    let session = genNewSession().await
+    return session
 
 proc db*(self:Session):SessionDb =
   return self.db
 
-proc getToken*(self:Option[Session]):Future[string] {.async.} =
-  if self.isSome:
-    return await self.get.db.getToken()
-  else:
-    return ""
+proc getToken*(self:Session):Future[string] {.async.} =
+  return await self.db.getToken()
 
-proc updateNonce*(self:Option[Session]) {.async.} =
-  if self.isSome:
-    await self.get.db.updateNonce()
+proc updateNonce*(self:Session) {.async.} =
+  await self.db.updateNonce()
 
-proc set*(self:Option[Session], key, value:string) {.async.} =
-  if self.isSome:
-    await self.get.db.setStr(key, value)
+proc set*(self:Session, key, value:string) {.async.} =
+  await self.db.setStr(key, value)
 
-proc set*(self:Option[Session], key:string, value:JsonNode) {.async.} =
-  if self.isSome:
-    self.get.db.setJson(key, value).await
+proc set*(self:Session, key:string, value:JsonNode) {.async.} =
+  self.db.setJson(key, value).await
 
-proc isSome*(self:Option[Session], key:string):Future[bool] {.async.} =
-  return self.isSome and self.get.db.isSome(key).await
+proc isSome*(self:Session, key:string):Future[bool] {.async.} =
+  return self.db.isSome(key).await
 
-proc get*(self:Option[Session], key:string):Future[string] {.async.} =
-  if await self.isSome(key):
-    return self.get.db.getStr(key).await
-  else:
-    return ""
+proc get*(self:Session, key:string):Future[string] {.async.} =
+  return self.db.getStr(key).await
 
-proc delete*(self:Option[Session], key:string) {.async.} =
-  if self.isSome:
-    self.get.db.delete(key).await
+proc delete*(self:Session, key:string) {.async.} =
+  self.db.delete(key).await
 
-proc destroy*(self:Option[Session]) {.async.} =
-  if self.isSome:
-    self.get.db.destroy().await
+proc destroy*(self:Session) {.async.} =
+  self.db.destroy().await
+
+# ==================== utils ====================
+# proc login*(self:)
