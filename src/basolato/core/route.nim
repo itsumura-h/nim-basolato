@@ -223,6 +223,7 @@ proc runController(req:Request, route:Route, headers: HttpHeaders, context:Conte
 
 
 proc createResponse*(req:Request, route:Route, httpMethod:HttpMethod, context:Context):Future[Response] {.async.} =
+  ## run middleware → run
   let response1 = runMiddleware(req, route, context).await
   if ENABLE_ANONYMOUS_COOKIE:
     await context.updateNonce()
