@@ -44,7 +44,7 @@ proc serveCore(params:(Routes, int)){.async.} =
       else:
         # check path match with controller routing → run middleware → run controller
         let key = $(req.httpMethod) & ":" & req.path
-        let context = Context.new(req, ENABLE_ANONYMOUS_COOKIE).await
+        let context = Context.new(req).await
         if routes.withoutParams.hasKey(key):
           # withoutParams
           let route = routes.withoutParams[key]
@@ -58,14 +58,6 @@ proc serveCore(params:(Routes, int)){.async.} =
 
         if req.httpMethod == HttpHead:
           response.setBody("")
-
-        # anonymous user login should run only for response from controler
-        if doesRunAnonymousLogin(req, response) and context.isValid().await:
-          # keep session id from request and update expire
-          let sessionId = context.getToken().await
-          var cookies = Cookies.new(req)
-          cookies.set("session_id", sessionId, expire=timeForward(SESSION_TIME, Minutes))
-          response = response.setCookie(cookies)
     except:
       var headers = newHttpHeaders()
       headers["content-type"] = "text/html; charset=utf-8"
