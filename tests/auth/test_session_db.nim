@@ -16,7 +16,17 @@ suite("session db"):
   var token:string
 
   test("new"):
+    let sessionDb = SessionDb.new().waitFor()
+    token = sessionDb.getToken().waitFor()
+    check token.len > 0
+
+  test("new with empty should regenerate id"):
     let sessionDb = SessionDb.new("").waitFor()
+    token = sessionDb.getToken().waitFor()
+    check token.len > 0
+
+  test("new with invalid id should regenerate id"):
+    let sessionDb = SessionDb.new("invalid").waitFor()
     token = sessionDb.getToken().waitFor()
     check token.len > 0
 
@@ -46,8 +56,6 @@ suite("session db"):
   test("delete"):
     let session = SessionDb.new(token).waitFor()
     session.delete("str").waitFor()
-    
-    # session = SessionDb.new(token).waitFor()
     check session.isSome("str").waitFor() == false
 
   test("destroy"):
@@ -55,6 +63,4 @@ suite("session db"):
     session.setStr("str", "value").waitFor()
     check session.getStr("str").waitFor() == "value"
     session.destroy().waitFor()
-    
-    # session = SessionDb.new(token).waitFor()
     check session.isSome("str").waitFor() == false

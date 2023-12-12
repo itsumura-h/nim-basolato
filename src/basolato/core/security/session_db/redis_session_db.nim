@@ -23,8 +23,8 @@ let REDIS_PORT = SESSION_DB_PATH.split(":")[1].parseInt
 
 
 proc checkSessionIdValid*(_:type RedisSessionDb, sessionId=""):Future[bool] {.async.} =
-  let conn = await openAsync(REDIS_IP, Port(REDIS_PORT))
-  if await conn.hExists(sessionId, "last_access"):
+  let conn = openAsync(REDIS_IP, Port(REDIS_PORT)).await
+  if conn.exists(sessionId).await:
     return true
   else:
     return false
@@ -80,17 +80,16 @@ proc updateNonce(self:RedisSessionDb):Future[void] {.async.} =
   self.setStr("nonce", nonce).await
 
 
-proc new*(_:type RedisSessionDb, sessionId:string):Future[RedisSessionDb] {.async.} =
+proc new*(_:type RedisSessionDb, sessionId=""):Future[RedisSessionDb] {.async.} =
   let id =
     if sessionId.len == 0:
+      secureRandStr(256)
+    elif not RedisSessionDb.checkSessionIdValid(sessionId).await:
       secureRandStr(256)
     else:
       sessionId
 
-  echo "REDIS_IP: ",REDIS_IP
-  echo "REDIS_PORT: ",REDIS_PORT
   let conn = openAsync(REDIS_IP, Port(REDIS_PORT)).await
-  # discard await conn.hSet(id, "last_access", $getTime())
   discard conn.expire(id, SESSION_TIME * 60).await
 
   let sessionDb = RedisSessionDb(

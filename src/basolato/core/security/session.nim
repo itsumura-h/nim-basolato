@@ -12,19 +12,14 @@ else:
 type Session* = ref object
   db: SessionDb
 
-proc genNewSession*(token=""):Future[Session] {.async.} =
-  let db = SessionDb.new(token).await
-  let session = Session(db:db)
-  return session
 
-proc new*(typ:type Session, request:Request):Future[Option[Session]] {.async.} =
-  let sessionId = Cookies.new(request).get("session_id")
-  if SessionDb.checkSessionIdValid(sessionId).await:
-    let session = genNewSession(sessionId).await
-    let someSesson = session.some()
-    return someSesson
-  else:
-    return none(typ)
+proc new*(typ:type Session, sessionId=""):Future[Option[Session]] {.async.} =
+  ## create Session
+  ## 
+  ## if sessionId is not exists, create new one
+  let sessionDb = SessionDb.new(sessionId).await
+  let session = Session(db:sessionDb)
+  return session.some()
 
 proc db*(self:Session):SessionDb =
   return self.db

@@ -13,18 +13,25 @@ import ../../src/basolato/core/security/session_db/json_session_db
 suite("json session db"):
   var token:string
 
-  test("new without arg"):
+  test("new"):
     let session = JsonSessionDb.new().waitFor().toInterface()
     token = session.getToken().waitFor()
     echo "token:",token
-    check token.len > 0
+    check token.len == 256
 
 
-  test("new with empty"):
+  test("new with empty should regenerate id"):
     let session = JsonSessionDb.new("").waitFor().toInterface()
     token = session.getToken().waitFor()
     echo "token:",token
-    check token.len > 0
+    check token.len == 256
+
+  
+  test("new with invalid id should regenerate id"):
+    let session = JsonSessionDb.new("invalid").waitFor().toInterface()
+    token = session.getToken().waitFor()
+    echo "token:",token
+    check token.len == 256
 
 
   test("new with token"):
