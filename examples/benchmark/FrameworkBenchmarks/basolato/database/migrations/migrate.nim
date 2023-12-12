@@ -3,6 +3,6 @@ import migration_init
 
 proc main() =
   discard
-  waitFor init()
+  init().waitFor()
 
 main()

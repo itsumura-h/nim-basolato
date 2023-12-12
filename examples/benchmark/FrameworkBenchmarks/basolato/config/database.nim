@@ -1,5 +1,5 @@
 import std/asyncdispatch
-import std/db_postgres
+import db_connector/db_postgres
 import std/json
 import std/os
 import std/random
@@ -9,7 +9,7 @@ import allographer/schema_builder
 import allographer/query_builder
 
 
-let rdb* = dbopen(
+let rdb* = dbOpen(
   PostgreSQL, # SQLite3 or MySQL or MariaDB or PostgreSQL
   getEnv("DB_DATABASE"),
   getEnv("DB_USER"),

@@ -1,6 +1,7 @@
 # framework
 import ../../src/basolato
 # middleware
+import app/http/middlewares/session_middleware
 import app/http/middlewares/auth_middleware
 import app/http/middlewares/set_headers_middleware
 import app/http/middlewares/example_middleware
@@ -58,7 +59,9 @@ let routes = @[
       Route.get("/web-socket", page_display_controller.webSocketPage),
       Route.get("/ws", page_display_controller.webSocket),
     ])
-    .middleware(example_middleware.setMiddleware3),
+    .middleware(example_middleware.setMiddleware3)
+    .middleware(session_middleware.sessionFromCookie),
+
     Route.group("/api", @[
       Route.get("/sample", api_controller.get),
       Route.post("/sample", api_controller.post),
@@ -66,10 +69,10 @@ let routes = @[
       Route.put("/sample", api_controller.put),
       Route.delete("/sample", api_controller.delete),
     ])
-    .middleware(set_headers_middleware.setCorsHeadersMiddleware)
+    .middleware(set_headers_middleware.setCorsHeaders)
   ])
-  .middleware(set_headers_middleware.setSecureHeadersMiddlware)
-  .middleware(auth_middleware.checkCsrfTokenMiddleware),
+  .middleware(set_headers_middleware.setSecureHeaders)
+  .middleware(auth_middleware.checkCsrfToken),
 ]
 
 serve(routes)

@@ -2,7 +2,7 @@ import asyncdispatch, httpcore
 import ../../../../../src/basolato/middleware
 
 
-proc setCorsHeadersMiddleware*(c:Context, p:Params):Future[Response] {.async.} =
+proc setCorsHeaders*(c:Context, p:Params):Future[Response] {.async.} =
   let allowedMethods = [
     "OPTIONS",
     "GET",
@@ -25,7 +25,7 @@ proc setCorsHeadersMiddleware*(c:Context, p:Params):Future[Response] {.async.} =
   }.newHttpHeaders(true)
   return next(status=Http204, headers=headers)
 
-proc setSecureHeadersMiddlware*(c:Context, p:Params):Future[Response] {.async.} =
+proc setSecureHeaders*(c:Context, p:Params):Future[Response] {.async.} =
   let headers = {
     "Strict-Transport-Security": @["max-age=63072000", "includeSubdomains"],
     "X-Frame-Options": @["SAMEORIGIN"],
