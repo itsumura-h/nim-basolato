@@ -1,6 +1,7 @@
 # framework
 import ../../src/basolato
 # middleware
+import app/http/middlewares/session_middleware
 import app/http/middlewares/auth_middleware
 # controller
 import app/http/controllers/test_controller
@@ -23,10 +24,13 @@ let routes = @[
   Route.get("/dd", test_controller.dd),
 
   # test response
-  Route.get("/set-header", test_controller.setHeader),
-  Route.get("/set-cookie", test_controller.setCookie),
-  Route.get("/set-auth", test_controller.setAuth),
-  Route.get("/destroy-auth", test_controller.destroyAuth),
+  Route.group("", @[
+    Route.get("/set-header", test_controller.setHeader),
+    Route.get("/set-cookie", test_controller.setCookie),
+    Route.get("/set-auth", test_controller.setAuth),
+    Route.get("/destroy-auth", test_controller.destroyAuth),
+  ])
+  .middleware(session_middleware.sessionFromCookie),
 
   # test routing
   Route.get("/test_routing", test_controller.getAction),
@@ -37,9 +41,9 @@ let routes = @[
 
   Route.get("/csrf/test_routing", test_controller.getCsrf),
   Route.post("/csrf/test_routing", test_controller.postAction)
-    .middleware(checkCsrfTokenMiddleware),
+    .middleware(checkCsrfToken),
   Route.post("/session/test_routing", test_controller.postAction)
-    .middleware(checkSessionIdMiddleware),
+    .middleware(checkCsrfToken),
 ]
 
 serve(routes)
