@@ -15,17 +15,17 @@ type Context* = ref object
   request: Request
   session: Option[Session]
 
-proc new*(_:type Context, request:Request, isCreateNew=false):Future[Context]{.async.} =
-  var session = Session.new(request).await
-  if isCreateNew and not session.isSome:
-    session = genNewSession().await.some
+proc new*(_:type Context, request:Request):Future[Context]{.async.} =
   return Context(
     request:request,
-    session:session
+    session:none(Session)
   )
 
 proc request*(self:Context):Request =
   return self.request
+
+proc setSession*(self:Context, session:Session) =
+  self.session = session.some()
 
 proc session*(self:Context):Option[Session] =
   return self.session

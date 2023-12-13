@@ -13,9 +13,19 @@ suite("redis session db"):
   var token:string
 
   test("new"):
+    let session = RedisSessionDb.new().waitFor().toInterface()
+    token = session.getToken().waitFor()
+    check token.len == 256
+
+  test("new with empty should regenerate id"):
     let session = RedisSessionDb.new("").waitFor().toInterface()
     token = session.getToken().waitFor()
-    check token.len > 0
+    check token.len == 256
+
+  test("new with invalid id should regenerate id"):
+    let session = RedisSessionDb.new("invalid").waitFor().toInterface()
+    token = session.getToken().waitFor()
+    check token.len == 256
 
   test("setStr / getStr"):
     let session = RedisSessionDb.new(token).waitFor().toInterface()

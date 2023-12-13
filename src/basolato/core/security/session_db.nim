@@ -12,12 +12,15 @@ export globalNonce
 type SessionDb* = ref object
   impl:ISessionDb
 
-proc new*(_:type SessionDb, token=""):Future[SessionDb] {.async.} =
+proc new*(_:type SessionDb, sessionId=""):Future[SessionDb] {.async.} =
+  ## create SessionDb
+  ## 
+  ## if sessionId is not exists, create new one
   let sessionDb =
     when SESSION_TYPE == "redis":
-      RedisSessionDb.new(token).await.toInterface()
+      RedisSessionDb.new(sessionId).await.toInterface()
     else:
-      JsonSessionDb.new(token).await.toInterface()
+      JsonSessionDb.new(sessionId).await.toInterface()
   return SessionDb(impl:sessionDb)
 
 proc checkSessionIdValid*(_:type SessionDb, token=""):Future[bool] {.async.} =

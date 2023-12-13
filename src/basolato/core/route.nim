@@ -7,6 +7,7 @@ import std/re
 import std/strformat
 import std/strutils
 import std/tables
+import std/options
 import ./baseEnv
 import ./header
 import ./logger
@@ -173,14 +174,16 @@ func group*(_:type Route, path:string, seqRoutes:seq[Routes]):Routes =
   return routes
 
 
-func middleware*(self:Routes, middleware:Controller):Routes =
+func middleware*(self:Routes, middleware: Controller):Routes =
   let data = Middleware(action:middleware)
   for route in self.withParams:
     if not route.middlewares.contains(data):
-      route.middlewares.add(data)
+      # route.middlewares.add(data)
+      route.middlewares.insert(data, 0)
   for path, route in self.withoutParams:
     if not route.middlewares.contains(data):
-      route.middlewares.add(data)
+      # route.middlewares.add(data)
+      route.middlewares.insert(data, 0)
 
   return self
 
@@ -223,10 +226,8 @@ proc runController(req:Request, route:Route, headers: HttpHeaders, context:Conte
 
 
 proc createResponse*(req:Request, route:Route, httpMethod:HttpMethod, context:Context):Future[Response] {.async.} =
-  ## run middleware → run
+  ## run middleware -> run controller
   let response1 = runMiddleware(req, route, context).await
-  if ENABLE_ANONYMOUS_COOKIE:
-    await context.updateNonce()
   if httpMethod == HttpOptions:
     return response1
   let response2 = runController(req, route, response1.headers, context).await

@@ -2,6 +2,7 @@ import std/asyncdispatch
 import std/json
 import std/os
 import std/strutils
+import std/times
 import ../../baseEnv
 import ../random_string
 import ./libs/json_file_db
@@ -13,18 +14,11 @@ var globalNonce*:string
 type JsonSessionDb* = ref object
   db:JsonFileDb
 
-proc new*(_:type JsonSessionDb):Future[JsonSessionDb] {.async.} =
-  if not dirExists(SESSION_DB_PATH.parentDir()):
-    createDir(SESSION_DB_PATH.parentDir())
 
-  let db = JsonFileDb.new().await
-  let sessionId = secureRandStr(256)
-  db.set("session_id", %sessionId)
-  db.sync().await
-  return JsonSessionDb(db:db)
-
-
-proc new*(_:type JsonSessionDb, sessionId:string):Future[JsonSessionDb] {.async.} =
+proc new*(_:type JsonSessionDb, sessionId=""):Future[JsonSessionDb] {.async.} =
+  ## create JsonSessionDb
+  ## 
+  ## if sessionId is not exists, create new one
   if not dirExists(SESSION_DB_PATH.parentDir()):
     createDir(SESSION_DB_PATH.parentDir())
 
@@ -32,6 +26,7 @@ proc new*(_:type JsonSessionDb, sessionId:string):Future[JsonSessionDb] {.async.
   if not db.hasKey("session_id"):
     let sessionId = secureRandStr(256)
     db.set("session_id", %sessionId)
+    db.set("last_access", %($getTime()))
     db.sync().await
   return JsonSessionDb(db:db)
 

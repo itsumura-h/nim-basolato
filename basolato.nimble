@@ -21,7 +21,6 @@ requires "httpbeast >= 0.4.1"
 requires "httpx >= 0.3.0"
 requires "bcrypt >= 0.2.1"
 requires "cligen >= 1.5.9"
-requires "faker >= 0.14.0"
 requires "redis >= 0.3.0"
 requires "sass >= 0.1.0"
 

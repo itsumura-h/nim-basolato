@@ -4,6 +4,15 @@ services:
     image: redis:alpine
     tty: true
 
+  redis-admin:
+    image: rediscommander/redis-commander:latest
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - '9001:8081'
+    depends_on:
+      - redis
+
   # app-alpine:
   #   build: ./docker/nim/alpine
   #   tty: true
