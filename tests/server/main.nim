@@ -23,27 +23,26 @@ let routes = @[
   # test helper
   Route.get("/dd", test_controller.dd),
 
-  # test response
   Route.group("", @[
+    # test response
     Route.get("/set-header", test_controller.setHeader),
     Route.get("/set-cookie", test_controller.setCookie),
     Route.get("/set-auth", test_controller.setAuth),
     Route.get("/destroy-auth", test_controller.destroyAuth),
+
+    # test routing
+    Route.get("/test_routing", test_controller.getAction),
+    Route.post("/test_routing", test_controller.postAction),
+    Route.patch("/test_routing", test_controller.patchAction),
+    Route.put("/test_routing", test_controller.putAction),
+    Route.delete("/test_routing", test_controller.deleteAction),
+
+    Route.get("/csrf/test_routing", test_controller.getCsrf),
+    Route.post("/csrf/test_routing", test_controller.postAction),
+    Route.post("/session/test_routing", test_controller.postAction)
   ])
-  .middleware(session_middleware.sessionFromCookie),
-
-  # test routing
-  Route.get("/test_routing", test_controller.getAction),
-  Route.post("/test_routing", test_controller.postAction),
-  Route.patch("/test_routing", test_controller.patchAction),
-  Route.put("/test_routing", test_controller.putAction),
-  Route.delete("/test_routing", test_controller.deleteAction),
-
-  Route.get("/csrf/test_routing", test_controller.getCsrf),
-  Route.post("/csrf/test_routing", test_controller.postAction)
-    .middleware(checkCsrfToken),
-  Route.post("/session/test_routing", test_controller.postAction)
-    .middleware(checkCsrfToken),
+  .middleware(session_middleware.sessionFromCookie)
+  .middleware(auth_middleware.checkCsrfToken),
 ]
 
 serve(routes)

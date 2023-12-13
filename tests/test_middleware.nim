@@ -1,8 +1,8 @@
 discard """
-  cmd: "nim c -r --putenv:SESSION_DB_PATH=./tests/server/session.db $file"
+  cmd: "nim c -r --putenv:SESSION_TYPE=file --putenv:SESSION_DB_PATH=./tests/server/session.db $file"
 """
 
-# nim c -r --putenv:SESSION_DB_PATH=./tests/server/session.db tests/test_middleware.nim
+# nim c -r --putenv:SESSION_TYPE=file --putenv:SESSION_DB_PATH=./tests/server/session.db tests/test_middleware.nim
 
 import std/unittest
 import std/asyncdispatch
@@ -32,7 +32,7 @@ proc loadCsrfToken():string =
 
 suite("test middleware"):
   test("csrf token valid"):
-    let session = genNewSession().waitFor()
+    let session = Session.new().waitFor().get()
     let sessionId = session.db.getToken().waitFor()
     client.headers = newHttpHeaders({
       "Cookie": &"session_id={sessionId}",
@@ -50,7 +50,7 @@ suite("test middleware"):
     check response.code == Http403
 
   test("cookie valid"):
-    let session = genNewSession().waitFor()
+    let session = Session.new().waitFor().get()
     let authId = session.db.getToken().waitFor()
     client.headers = newHttpHeaders({
       "Cookie": &"session_id={authId}",
