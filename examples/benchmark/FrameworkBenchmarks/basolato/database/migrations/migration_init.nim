@@ -16,7 +16,7 @@ proc init*() {.async.} =
   rdb.raw("""
     CREATE TABLE  "World" (
       id integer NOT NULL,
-      randomNumber integer NOT NULL default 0,
+      "randomNumber" integer NOT NULL default 0,
       PRIMARY KEY  (id)
     );  
   """).exec().waitFor
@@ -25,7 +25,7 @@ proc init*() {.async.} =
 
 
   rdb.raw("""
-    INSERT INTO "World" (id, randomnumber)
+    INSERT INTO "World" (id, "randomNumber")
     SELECT x.id, least(floor(random() * 10000 + 1), 10000) FROM generate_series(1,10000) as x(id);
   """).exec().waitFor
 

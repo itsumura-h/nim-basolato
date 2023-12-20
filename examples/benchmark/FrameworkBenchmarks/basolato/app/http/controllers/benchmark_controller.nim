@@ -18,6 +18,7 @@ import ../views/pages/fortune_scf_view
 
 const range1_10000 = 1..10000
 let getFirstPrepare = stdRdb.prepare("getFirst", sql""" SELECT * FROM "World" WHERE id = $1 LIMIT 1 """, 1)
+let updatePrepare = stdRdb.prepare("update", sql""" UPDATE "World" SET "randomNumber" = $1 WHERE id = $2  """, 2)
 
 proc plaintext*(context:Context, params:Params):Future[Response] {.async.} =
   let headers = newHttpHeaders()
@@ -44,14 +45,29 @@ proc query*(context:Context, params:Params):Future[Response] {.async.} =
   elif countNum > 500:
     countNum = 500
 
-  var resp:seq[Row]
+  # var resp:seq[Row]
+  # for i in 1..countNum:
+  #   let n = rand(range1_10000)
+  #   resp.add(stdRdb.getRow(getFirstPrepare, i))
+
+  # let response = resp.map(
+  #   proc(x:Row):JsonNode =
+  #     %*{"id": x[0].parseInt, "randomNumber": x[1].parseInt}
+  # )
+
+  var futures:seq[Future[seq[Row]]]
   for i in 1..countNum:
-    let n = rand(range1_10000)
-    resp.add(stdRdb.getRow(getFirstPrepare, i))
-  let response = resp.map(
-    proc(x:seq[string]):JsonNode =
-      %*{"id": x[0].parseInt, "randomNumber": x[1]}
+    futures.add(
+      (
+        proc():Future[seq[Row]] {.async.} =
+         return rdb.raw(""" SELECT * FROM "World" WHERE id = ? LIMIT 1""", %*[i]).getPlain().await
+      )()
     )
+  let resp = futures.all().await
+  let response = resp.map(
+    proc(x:seq[Row]):JsonNode =
+      %*{"id": x[0][0].`$`.parseInt, "randomNumber": x[0][1].`$`.parseInt}
+  )
 
   return render(%response)
 
@@ -88,9 +104,16 @@ proc update*(context:Context, params:Params):Future[Response] {.async.} =
   for i in 1..countNum:
     let index = rand(range1_10000)
     let number = rand(range1_10000)
-    futures[i-1] = (proc():Future[void] {.async.}=
-      discard stdRdb.getRow(getFirstPrepare, i)
-      rdb.raw(""" UPDATE "World" SET "randomnumber" = ? WHERE id = ? """, %*[number, index]).exec().await
+    futures[i-1] = (
+      proc():Future[void] =
+        discard stdRdb.getRow(getFirstPrepare, i)
+        # stdRdb.exec(updatePrepare, $number, $index)
+        
+        # discard rdb.raw(""" SELECT * FROM "World" WHERE id = ? LIMIT 1""", %*[index]).getPlain()
+        rdb.raw(""" UPDATE "World" SET "randomNumber" = ? WHERE id = ? """, %*[number, index]).exec()
+        
+        # discard rdb.table("World").findPlain(i).await
+        # rdb.table("World").where("id", "=", index).update(%*{"randomNumber": number}).await
     )()
     response[i-1] = %*{"id":i, "randomNumber": number}
   all(futures).await
@@ -121,5 +144,5 @@ proc cache*(context:Context, params:Params):Future[Response] {.async.} =
 
 
 proc sleep*(context:Context, params:Params):Future[Response] {.async.} =
-  sleepAsync(10000).await
+  sleepAsync(5000).await
   return render("hello")
