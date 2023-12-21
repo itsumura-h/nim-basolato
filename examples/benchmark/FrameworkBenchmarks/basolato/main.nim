@@ -1,8 +1,7 @@
 # framework
-# import basolato
-import ../../../../src/basolato
+import basolato
 # controller
-import app/http/controllers/benchmark_controller
+import ./app/http/controllers/benchmark_controller
 
 
 let routes = @[
@@ -12,8 +11,6 @@ let routes = @[
   Route.get("/queries", benchmark_controller.query),
   Route.get("/fortunes", benchmark_controller.fortune),
   Route.get("/updates", benchmark_controller.update),
-  Route.get("/cached-queries", benchmark_controller.cache),
-  Route.get("/sleep", benchmark_controller.sleep),
 ]
 
 serve(routes)

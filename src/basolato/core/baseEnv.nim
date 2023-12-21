@@ -26,17 +26,18 @@ for f in walkDir(getCurrentDir()):
       else: discard
     break
 
-let
-  SECRET_KEY* = getEnv("SECRET_KEY")
-  # Logging
-  IS_DISPLAY* = getEnv("LOG_IS_DISPLAY", $true).parseBool
-  IS_FILE* = getEnv("LOG_IS_FILE", $true).parseBool
-  IS_ERROR_FILE* = getEnv("LOG_IS_ERROR_FILE", $true).parseBool
-  LOG_DIR* = getEnv("LOG_DIR", getCurrentDir() / "logs")
-  # Session db
-  SESSION_TIME* = getEnv("SESSION_TIME", "20160").parseInt
-  COOKIE_DOMAINS* = getEnv("COOKIE_DOMAINS")
-  ENABLE_ANONYMOUS_COOKIE* = getEnv("ENABLE_ANONYMOUS_COOKIE", $true).parseBool
+{.cast(gcsafe).}:
+  let
+    SECRET_KEY* = getEnv("SECRET_KEY")
+    # Logging
+    IS_DISPLAY* = getEnv("LOG_IS_DISPLAY", $true).parseBool
+    IS_FILE* = getEnv("LOG_IS_FILE", $true).parseBool
+    IS_ERROR_FILE* = getEnv("LOG_IS_ERROR_FILE", $true).parseBool
+    LOG_DIR* = getEnv("LOG_DIR", getCurrentDir() / "logs")
+    # Session db
+    SESSION_TIME* = getEnv("SESSION_TIME", "20160").parseInt
+    COOKIE_DOMAINS* = getEnv("COOKIE_DOMAINS")
+    ENABLE_ANONYMOUS_COOKIE* = getEnv("ENABLE_ANONYMOUS_COOKIE", $true).parseBool
 
-  # others
-  LOCALE* = getEnv("LOCALE", "en")
+    # others
+    LOCALE* = getEnv("LOCALE", "en")

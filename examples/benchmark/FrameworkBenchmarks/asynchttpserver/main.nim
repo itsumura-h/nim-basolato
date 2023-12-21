@@ -14,7 +14,7 @@ import ../../../../src/basolato/core/benchmark
 
 randomize()
 
-proc threadProc(rdb:Rdb) {.thread.} =
+proc threadProc(rdb:PostgresConnections) {.thread.} =
   proc asyncProc() {.async.} =
     var server = newAsyncHttpServer(true, true)
     proc cb(req: Request) {.async, gcsafe.} =
@@ -25,7 +25,7 @@ proc threadProc(rdb:Rdb) {.thread.} =
         await req.respond(Http200, $(%*{"message":"Hello, World!"}))
       of "/db":
         let i = rand(1..10000)
-        let response = await rdb.table("World").select("id", "randomNumber").find(i)
+        let response = rdb.select("id", "randomNumber").table("World").find(i).await
         await req.respond(Http200, $(%*response))
       of "/updates":
         var countNum =
@@ -45,13 +45,14 @@ proc threadProc(rdb:Rdb) {.thread.} =
         let response = newJArray()
         var procs = newSeq[Future[void]](countNum)
         for n in 1..countNum:
-          let i = rand(1..10000)
+          # let i = rand(1..10000)
           let newRandomNumber = rand(1..10000)
-          procs[n-1] = (proc():Future[void]=
-            discard rdb.table("World").findPlain(i)
-            rdb.table("World").where("id", "=", i).update(%*{"randomNumber": newRandomNumber})
+          procs[n-1] = (
+            proc():Future[void] {.async.} =
+              discard rdb.table("World").findPlain(n)
+              rdb.table("World").where("id", "=", n).update(%*{"randomNumber": newRandomNumber})
           )()
-          response.add(%*{"id":i, "randomNumber": newRandomNumber})
+          response.add(%*{"id":n, "randomNumber": newRandomNumber})
         all(procs).await
 
         await req.respond(Http200, $response)
@@ -75,10 +76,10 @@ proc threadProc(rdb:Rdb) {.thread.} =
 proc serve() =
   when compileOption("threads"):
     let countThreads = countProcessors()
-    var arges = newSeq[Rdb](countThreads)
+    var arges = newSeq[PostgresConnections](countThreads)
     for i in 0..arges.len-1:
-      arges[i] = dbOpen(PostgreSQL, "database", "user", "pass", "postgreDb", 5432, 50, 30, false, false, "")
-    var thr = newSeq[Thread[Rdb]](countThreads)
+      arges[i] = dbOpen(PostgreSQL, "database", "user", "pass", "postgreDb", 5432, 458, 30, false, false, "")
+    var thr = newSeq[Thread[PostgresConnections]](countThreads)
     for i in 0..countThreads-1:
       createThread(thr[i], threadProc, arges[i])
     echo(&"Starting {countThreads} threads")

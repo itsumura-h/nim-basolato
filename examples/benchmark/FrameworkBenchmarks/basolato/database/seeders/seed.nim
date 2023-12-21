@@ -1,4 +1,5 @@
-import asyncdispatch
+import std/asyncdispatch
+
 
 proc main() =
   discard

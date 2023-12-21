@@ -1,8 +1,7 @@
-import asyncdispatch
-import migration_init
+import std/asyncdispatch
+
 
 proc main() =
   discard
-  init().waitFor()
 
 main()

@@ -17,5 +17,4 @@ lcov.info
 *.sqlite3
 *.db
 *.db.*
-
 startServer.sh

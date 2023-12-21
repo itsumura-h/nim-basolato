@@ -11,7 +11,6 @@ import std/tables
 import std/times
 import std/mimetypes
 import ../../baseEnv
-import ../../benchmark
 import ../../error_page
 import ../../header
 import ../../logger
@@ -19,7 +18,7 @@ import ../../resources/dd_page
 import ../../response
 import ../../route
 import ../../security/context
-import ../../security/cookie
+# import ../../security/cookie
 import ./request
 
 

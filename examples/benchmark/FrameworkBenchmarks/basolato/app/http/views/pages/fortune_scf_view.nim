@@ -1,7 +1,6 @@
 #? stdtmpl(toString="toString") | standard
 #import std/asyncdispatch
-##import basolato/view
-#import ../../../../../../../../src/basolato/view
+#import basolato/view
 #import ../../../models/fortune
 #proc fortuneScfView*(rows:seq[Fortune]):Future[Component] {.async.} =
 # result = Component.new()
