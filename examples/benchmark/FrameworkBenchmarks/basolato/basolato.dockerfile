@@ -12,7 +12,7 @@ RUN apt install -y --fix-missing \
         curl \
         git
 
-ARG VERSION="2.0.0"
+ARG VERSION="2.0.2"
 WORKDIR /root
 RUN curl https://nim-lang.org/choosenim/init.sh -o init.sh
 RUN sh init.sh -y
@@ -25,9 +25,8 @@ ENV PATH $PATH:/root/.nimble/bin
 ADD ./ /basolato
 WORKDIR /basolato
 
-RUN nimble install -y --verbose
-RUN ls -la
-RUN ducere build -p:8080 -w:4
+RUN nimble install -y
+RUN ducere build -p:8080 -o:speed
 
 
 FROM ubuntu:22.04 AS runtime
@@ -57,17 +56,15 @@ ENV DB_USER="benchmarkdbuser"
 ENV DB_PASSWORD="benchmarkdbpass"
 ENV DB_HOST="tfb-database"
 ENV DB_PORT=5432
-ENV DB_MAX_CONNECTION=498
+ENV DB_MAX_CONNECTION=2000
 ENV DB_TIMEOUT=30
 # Logging
 ENV LOG_IS_DISPLAY=false
 ENV LOG_IS_FILE=false
 ENV LOG_IS_ERROR_FILE=false
-ENV LOG_DIR="./logs"
 # Session db
 # Session type, file or redis, is defined in config.nims
 ENV SESSION_TIME=20160
-ENV COOKIE_DOMAINS=""
 ENV LOCALE=en
 
 
