@@ -5,7 +5,7 @@ import ./baseEnv
 
 
 proc echoLog*(output: auto, args:varargs[string]) =
-  {.cast(gcsafe).}:
+  {.cast(gcsafe).}: # fix: "which is a global using GC'ed memory" in server.nim
     if IS_DISPLAY:
       when not defined(release):
         let logger = newConsoleLogger()
@@ -20,7 +20,7 @@ proc echoLog*(output: auto, args:varargs[string]) =
 
 
 proc echoErrorMsg*(msg:string) =
-  {.cast(gcsafe).}:
+  {.cast(gcsafe).}: # fix: "which is a global using GC'ed memory" in server.nim
     let logDir = LOG_DIR
     # console log
     if IS_DISPLAY:
