@@ -2,6 +2,7 @@ import std/os
 import std/osproc
 import std/strformat
 import std/strutils
+from std/tables import toTable
 
 
 proc jsBuild() =
@@ -15,13 +16,22 @@ proc jsBuild() =
         quit(QuitFailure)
 
 
-proc build*(port=5000, workers:uint=0, force=false, httpbeast=false, httpx=false, autoRestart=false, args:seq[string]) =
+const BUILD_HELP* = {
+  "optimize": "memory|speed"
+}.toTable()
+
+proc build*(port=5000, workers:uint=0, force=false, httpbeast=false, httpx=false, autoRestart=false, optimize="memory", args:seq[string]) =
   ## Build for production.
   jsBuild()
   var outputFileName = "main"
   let fStr = if force: "-f" else: ""
   let serverStr = if httpbeast: "-d:httpbeast" elif httpx: "-d:httpx" else: ""
   let workers = if workers == 0: countProcessors().uint else: workers
+  let optimize =
+    if optimize == "speed":
+      "--mm:markAndSweep -d:useRealtimeGC"
+    else:
+      "--mm:orc -d:useMalloc"
 
   try:
     outputFileName = args[0]
@@ -32,8 +42,8 @@ proc build*(port=5000, workers:uint=0, force=false, httpbeast=false, httpx=false
     nim c \
     {fStr} \
     {serverStr} \
+    {optimize} \
     --threads:off \
-    --mm:orc \
     -d:ssl \
     -d:danger \
     -d:release \
