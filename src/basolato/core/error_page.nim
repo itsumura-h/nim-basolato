@@ -1,6 +1,7 @@
-import std/os
 import std/httpcore
-import std/strformat
+when defined(release):
+  import std/os
+  import std/strformat
 import ./resources/original_error_page
 
 

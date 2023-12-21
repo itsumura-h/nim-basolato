@@ -7,9 +7,10 @@ srcDir        = "."
 bin           = @["main"]
 backend       = "c"
 # Dependencies
-requires "nim >= 1.6.6"
-requires "https://github.com/itsumura-h/nim-basolato >= 0.13.0"
-requires "allographer >= 0.23.3"
+requires "nim >= 2.0.0"
+# requires "https://github.com/itsumura-h/nim-basolato >= 0.14.1"
+requires "https://github.com/itsumura-h/nim-basolato#head"
+requires "allographer >= 0.21.0"
 requires "interface_implements >= 0.2.2"
 requires "bcrypt >= 0.2.1"
 requires "cligen >= 1.5.9"

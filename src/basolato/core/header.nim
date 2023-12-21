@@ -53,7 +53,7 @@ func values*(headers: HttpHeaders, key: string):seq[string] =
   else:
     return newSeq[string]()
 
-proc `&`*(a, b:HttpHeaders = newHttpHeaders(true)):HttpHeaders =
+proc `&`*(a=newHttpHeaders(true), b=newHttpHeaders(true)):HttpHeaders =
   for key, values in b.table.pairs:
     if not a.table.hasKey(key):
       a.table[key] = values
