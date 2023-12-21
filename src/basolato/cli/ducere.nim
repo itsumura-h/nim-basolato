@@ -10,5 +10,5 @@ when isMainModule:
   import cligen
   clCfg.version = BasolatoVersion
   dispatchMulti(
-    [newImpl.new],[make],[serve],[build],[migrate],[seed]
+    [newImpl.new],[make],[serve],[build, help=BUILD_HELP],[migrate],[seed]
   )
