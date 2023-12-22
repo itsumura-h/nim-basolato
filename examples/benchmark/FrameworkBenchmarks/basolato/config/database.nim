@@ -8,9 +8,9 @@ when defined(release):
 
 let maxConnections =
   when defined(release):
-    (getEnv("DB_MAX_CONNECTION").parseInt div countProcessors()) - 1
+    (getEnv("DB_MAX_CONNECTION").parseInt div countProcessors()) - 2
   else:
-    100
+    95
 
 let rdb* = dbopen(
   PostgreSQL, # SQLite3 or MySQL or MariaDB or PostgreSQL
