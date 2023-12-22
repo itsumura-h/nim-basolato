@@ -226,7 +226,7 @@ proc runController(req:Request, route:Route, headers: HttpHeaders, context:Conte
 
 proc createResponse*(req:Request, route:Route, httpMethod:HttpMethod, context:Context):Future[Response] {.async.} =
   ## run middleware -> run controller
-  {.cast(gcsafe).}:
+  {.cast(gcsafe).}: # fix: "which is a global using GC'ed memory" in server.nim
     let response1 = runMiddleware(req, route, context).await
     if httpMethod == HttpOptions:
       return response1

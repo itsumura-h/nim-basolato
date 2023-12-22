@@ -11,7 +11,6 @@ let maxConnections =
     (getEnv("DB_MAX_CONNECTION").parseInt div countProcessors()) - 2
   else:
     95
-echo "maxConnections: ",maxConnections
 
 let rdb* = dbopen(
   PostgreSQL, # SQLite3 or MySQL or MariaDB or PostgreSQL
