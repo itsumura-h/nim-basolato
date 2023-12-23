@@ -98,15 +98,16 @@ Usage:
   build [optional-params] [args: string...]
 Build for production.
 Options:
-  -h, --help                      print this cligen-erated help
-  --help-syntax                   advanced: prepend,plurals,..
-  --version          bool  false  print version
-  -p=, --port=       int   5000   set port
-  -w=, --workers=    uint  0      set workers
-  -f, --force        bool  false  set force
-  --httpbeast        bool  false  set httpbeast
-  --httpx            bool  false  set httpx
-  -a, --autoRestart  bool  false  set autoRestart
+  -h, --help                           print this cligen-erated help
+  --help-syntax                        advanced: prepend,plurals,..
+  --version          bool    false     print version
+  -p=, --port=       int     5000      set port
+  -w=, --workers=    uint    0         set workers
+  -f, --force        bool    false     set force
+  --httpbeast        bool    false     set httpbeast
+  --httpx            bool    false     set httpx
+  -a, --autoRestart  bool    false     set autoRestart
+  -o=, --optimize=   string  "memory"  memory|speed
 ```
 By default, it will be compiled to run 5000 port and single threadand and multiple processing.  
 When you build application, shell script file named `startServer.sh` is generated. Run this file to start server.
@@ -161,6 +162,17 @@ You can choose [httpbeast](https://github.com/dom96/httpbeast) or [httpx](https:
 ```sh
 ducere build --httpbeast
 ducere build --httpx
+```
+
+You can choose optimize option for memory or speed.  
+If memory is selected, `ORC` is used for less memory consumption. If speed is selected, markAndSweep is used for more throughput.
+
+```sh
+ducere build --optimize=memory
+> nim c --mm:orc -d:useMalloc ... main
+
+ducere build --optimize=speed
+> nim c --mm:markAndSweep -d:useRealtimeGC ... main
 ```
 
 ### migrate

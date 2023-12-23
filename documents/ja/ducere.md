@@ -93,15 +93,16 @@ Usage:
   build [optional-params] [args: string...]
 Build for production.
 Options:
-  -h, --help                      print this cligen-erated help
-  --help-syntax                   advanced: prepend,plurals,..
-  --version          bool  false  print version
-  -p=, --port=       int   5000   set port
-  -w=, --workers=    uint  0      set workers
-  -f, --force        bool  false  set force
-  --httpbeast        bool  false  set httpbeast
-  --httpx            bool  false  set httpx
-  -a, --autoRestart  bool  false  set autoRestart
+  -h, --help                           print this cligen-erated help
+  --help-syntax                        advanced: prepend,plurals,..
+  --version          bool    false     print version
+  -p=, --port=       int     5000      set port
+  -w=, --workers=    uint    0         set workers
+  -f, --force        bool    false     set force
+  --httpbeast        bool    false     set httpbeast
+  --httpx            bool    false     set httpx
+  -a, --autoRestart  bool    false     set autoRestart
+  -o=, --optimize=   string  "memory"  memory|speed
 ```
 何もオプションを付けない場合、5000番ポートを使い、シングルスレッド・マルチプロセスで起動します。  
 ビルドすると`startServer.sh`というシェルスクリプトが作られるので、これを実行することでサーバーを起動します。
@@ -156,6 +157,17 @@ putEnv("HOST", "127.0.0.2")
 ```sh
 ducere build --httpbeast
 ducere build --httpx
+```
+
+optimizeオプションにはmemoryかspeedを選択することができます。  
+もしmemoryを選んだ時には `ORC` が使われ、メモリ消費が少なくなります。speedを選んだ時には `markAndSweep` が使われ、スループットがより多くなるようになります。
+
+```sh
+ducere build --optimize=memory
+> nim c --mm:orc -d:useMalloc ... main
+
+ducere build --optimize=speed
+> nim c --mm:markAndSweep -d:useRealtimeGC ... main
 ```
 
 ### migrate
