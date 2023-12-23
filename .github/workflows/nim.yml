@@ -31,8 +31,8 @@ jobs:
     strategy:
       matrix:
         nim-version:
-          - 1.6.16
-          - 2.0.0
+          - 1.6.18
+          - 2.0.2
 
     steps:
       - uses: actions/checkout@v2

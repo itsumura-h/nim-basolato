@@ -9,7 +9,7 @@ services:
       context: .
       dockerfile: ./docker/nim/ubuntu/Dockerfile
       args:
-        VERSION: 1.6.16
+        VERSION: 1.6.18
     tty: true
     volumes:
       - .:/root/project
@@ -19,7 +19,7 @@ services:
       context: .
       dockerfile: ./docker/nim/ubuntu/Dockerfile
       args:
-        VERSION: 2.0.0
+        VERSION: 2.0.2
     tty: true
     volumes:
       - .:/root/project
