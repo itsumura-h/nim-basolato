@@ -23,7 +23,7 @@ Ducereコマンド
    * [Bash-completion](#bash-completion)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: root, at: Fri Sep 23 13:15:17 UTC 2022 -->
+<!-- Added by: root, at: Fri Dec 22 21:23:07 UTC 2023 -->
 
 <!--te-->
 
