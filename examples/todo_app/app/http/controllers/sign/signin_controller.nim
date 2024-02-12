@@ -24,12 +24,15 @@ proc store*(context:Context, params:Params):Future[Response] {.async.} =
   try:
     let usecase = SigninUsecase.new()
     let user = usecase.run(email, password).await
+    echo "=== user ",user
     context.login().await
     context.set("id", user["id"].getStr).await
     context.set("name", user["name"].getStr).await
     context.set("auth", $user["auth"].getInt).await
     return redirect("/todo")
   except:
+    echo "=== except"
+    echo getCurrentExceptionMsg()
     v.errors.add("error", getCurrentExceptionMsg().splitLines()[0])
     context.storeValidationResult(v).await
     return redirect("/signin")

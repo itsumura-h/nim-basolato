@@ -28,7 +28,7 @@ func hasError*(self:MiddlewareResult):bool =
 func message*(self:MiddlewareResult):string =
   return self.message
 
-func next*(status:HttpCode=HttpCode(200), body="", headers:HttpHeaders=newHttpHeaders()):Response =
+func next*(status=HttpCode(0), body="", headers:HttpHeaders=newHttpHeaders()):Response =
   return Response.new(status, body, headers)
 
 proc checkCsrfToken*(request:Request, params:Params):Future[MiddlewareResult] {.async.} =

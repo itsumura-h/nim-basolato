@@ -57,10 +57,10 @@ import basolato/middleware
 
 proc checkLoginId*(r:Request, p:Params):Future[Response] {.async.} =
   if not r.headers.hasKey("X-login-id"):
-    raise newException(Error403, "リクエストヘッダーにX-login-idがありません")
+    return render(Http403, "リクエストヘッダーにX-login-idがありません")
 
   if not r.headers.hasKey("X-login-token"):
-    raise newException(Error403, "リクエストヘッダーにX-login-tokenがありません")
+    return render(Http403, "リクエストヘッダーにX-login-tokenがありません")
 
   return next()
 ```
@@ -69,7 +69,7 @@ proc checkLoginId*(r:Request, p:Params):Future[Response] {.async.} =
 
 ---
 
-もしログインチェックに失敗した時にログインページにリダイレクトさせたい時は、`ErrorRedirect`を使ってください。これは`Error 302`を呼び出します。
+ログインチェックが失敗した時にログインページにリダイレクトさせたい時は、`errorRedirect`関数を使うことができます。これは `HTTP 303`を返します。
 
 app/middleware/auth_middlware.nim
 ```nim
@@ -77,10 +77,11 @@ import basolato/middleware
 
 proc checkLoginId*(r:Request, p:Params):Future[Response] {.async.} =
   if not r.headers.hasKey("X-login-id"):
-    raise newException(ErrorRedirect, "/login")
+    return errorRedirect("/login")
 
   if not r.headers.hasKey("X-login-token"):
-    raise newException(ErrorRedirect, "/login")
+    return errorRedirect("/login")
+
   return next()
 ```
 

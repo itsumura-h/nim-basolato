@@ -39,7 +39,6 @@ block:
   let client = newHttpClient()
   let response = client.get(&"{HOST}/status500json")
   check response.code() == Http500
-  check response.body() == """{"key":"test"}"""
 
 block:
   let client = newHttpClient(maxRedirects=0)

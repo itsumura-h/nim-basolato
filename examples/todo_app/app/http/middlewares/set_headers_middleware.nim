@@ -4,6 +4,9 @@ import ../../../../../src/basolato/middleware
 
 
 proc setCorsHeadersMiddleware*(c:Context, p:Params):Future[Response] {.async.} =
+  if c.request.httpMethod != HttpOptions:
+    return next()
+
   let allowedMethods = [
     "OPTIONS",
     "GET",
@@ -27,6 +30,9 @@ proc setCorsHeadersMiddleware*(c:Context, p:Params):Future[Response] {.async.} =
   return next(status=Http204, headers=headers)
 
 proc setSecureHeadersMiddlware*(c:Context, p:Params):Future[Response] {.async.} =
+  if c.request.httpMethod != HttpOptions:
+    return next()
+
   let headers = {
     "Strict-Transport-Security": @["max-age=63072000", "includeSubdomains"],
     "X-Frame-Options": @["SAMEORIGIN"],

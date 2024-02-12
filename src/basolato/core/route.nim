@@ -208,12 +208,20 @@ proc runMiddleware(req:Request, route:Route, context:Context):Future[Response] {
   var
     headers = newHttpHeaders(true)
     status = HttpCode(0)
+    body = ""
   let params = req.params(route)
   for middleware in route.middlewares:
     let res = middleware.action(context, params).await
     headers &= res.headers
-    if res.status != HttpCode(0): status = res.status
-  return Response(headers:headers, status:status)
+
+    if res.status.is3xx or res.status.is4xx:
+      status = res.status
+      body = res.body
+      break
+    elif res.status != HttpCode(0):
+      status = res.status
+
+  return Response.new(status=status, body=body, headers=headers)
 
 
 proc runController(req:Request, route:Route, headers: HttpHeaders, context:Context):Future[Response] {.async.} =
@@ -229,6 +237,8 @@ proc createResponse*(req:Request, route:Route, httpMethod:HttpMethod, context:Co
   {.cast(gcsafe).}: # fix: "which is a global using GC'ed memory" in server.nim
     let response1 = runMiddleware(req, route, context).await
     if httpMethod == HttpOptions:
+      return response1
+    if response1.status != HttpCode(0):
       return response1
     let response2 = runController(req, route, response1.headers, context).await
     return response2

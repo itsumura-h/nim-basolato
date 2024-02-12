@@ -6,6 +6,7 @@ import app/http/controllers/todo_controller
 import app/http/controllers/sign/signin_controller
 import app/http/controllers/sign/signup_controller
 # middleware
+import app/http/middlewares/session_middleware
 import app/http/middlewares/auth_middleware
 import app/http/middlewares/set_headers_middleware
 
@@ -40,7 +41,8 @@ let ROUTES = @[
     .middleware(set_headers_middleware.setCorsHeadersMiddleware),
   ])
   .middleware(set_headers_middleware.setSecureHeadersMiddlware)
-  .middleware(auth_middleware.checkCsrfTokenMiddleware),
+  .middleware(auth_middleware.checkCsrfTokenMiddleware)
+  .middleware(session_middleware.sessionFromCookie),
 ]
 
 serve(ROUTES)

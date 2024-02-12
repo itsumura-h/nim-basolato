@@ -1,9 +1,7 @@
-import std/cgi
-import std/json
-
+import std/httpcore
 
 const
-  BasolatoVersion* = "0.14.1"
+  BasolatoVersion* = "0.15.0"
 
 type
   Error505* = object of CatchableError
@@ -54,15 +52,20 @@ const errorStatusArray* = [505, 504, 503, 502, 501, 500, 451, 431, 429, 428, 426
   405, 404, 403, 401, 400, 307, 305, 304, 303, 302, 301, 300]
 
 
-proc dd*(outputs: varargs[string, `$`]) =
-  when not defined(release):
-    var output:string
-    for i, row in outputs:
-      if i > 0:
-        output &= "\n\n" else: output &= "\n"
-      if row[0] == '{':
-        output.add(row.parseJson().pretty())
-      else:
-        output.add(row)
-    output = output.xmlEncode()
-    raise newException(DD, output)
+when not defined(release):
+  import std/cgi
+  import std/json
+
+  proc dd*(outputs: varargs[string, `$`]) =
+      var output:string
+      for i, row in outputs:
+        if i > 0:
+          output &= "\n\n" else: output &= "\n"
+        if row[0] == '{':
+          output.add(row.parseJson().pretty())
+        else:
+          output.add(row)
+      output = output.xmlEncode()
+      raise newException(DD, output)
+else:
+  proc dd*(outputs: varargs[string, `$`]) = discard
