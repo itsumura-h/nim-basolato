@@ -56,12 +56,12 @@ import asyncdispatch
 import basolato/middleware
 
 
-proc checkLoginId*(r:Request, p:Params):Future[Response] {.async.} =
-  if not r.headers.hasKey("X-login-id"):
-    raise newException(Error403, "X-login-id is missing in request header")
+proc checkLoginId*(c:Context, p:Params):Future[Response] {.async.} =
+  if not c.request.headers.hasKey("X-login-id"):
+    return render(Http403, "X-login-id is missing in request header")
 
-  if not r.headers.hasKey("X-login-token"):
-    raise newException(Error403, "X-login-token is missing in request header")
+  if not c.request.headers.hasKey("X-login-token"):
+    return render(Http403, "X-login-token is missing in request header")
 
   return next()
 ```
@@ -70,22 +70,19 @@ If `X-login-id` or `X-login-token` are missing in request header, return 403 oth
 
 ---
 
-If you want to redirect to login page when login check is fail, you can use `ErrorRedirect`. It calls `Error 302`.
-
----
-
-If you want to redirect the user to the login page when the login check fails, use `ErrorRedirect`. This will call `Error 302`.
+If you want to redirect the user to the login page when the login check fails, use `errorRedirect`. This will call `HTTP 303`.
 
 app/middleware/auth_middlware.nim
 ```nim
 import basolato/middleware
 
-proc checkLoginId*(r:Request, p:Params):Future[Response] {.async.} =
-  if not r.headers.hasKey("X-login-id"):
-    raise newException(ErrorRedirect, "/login")
+proc checkLoginId*(c:Context, p:Params):Future[Response] {.async.} =
+  if not c.request.headers.hasKey("X-login-id"):
+    return errorRedirect("/login")
 
-  if not r.headers.hasKey("X-login-token"):
-    raise newException(ErrorRedirect, "/login")
+  if not c.request.headers.hasKey("X-login-token"):
+    return errorRedirect("/login")
+
   return next()
 ```
 
@@ -104,8 +101,8 @@ let ROUTES = @[
 
 app/middleware/cors_middlware.nim
 ```nim
-proc setCorsMiddleware*(r:Request, p:Params):Future[Response] {.async.} =
-  if r.httpMethod == HttpOption:
+proc setCorsMiddleware*(c:Context, p:Params):Future[Response] {.async.} =
+  if c.request.httpMethod == HttpOption:
     let headers = corsHeader() & secureHeader()
     return next(status=Http204, headers=headers)
 ```
