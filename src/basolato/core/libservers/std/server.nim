@@ -81,8 +81,17 @@ proc serveCore(params:(Routes, int)){.async.} =
         echoErrorMsg(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
         echoErrorMsg(exception.msg)
 
-
-    if response.status == HttpCode(0):
+    if response.status.is4xx:
+      var headers = newHttpHeaders()
+      headers["content-type"] = "text/html; charset=utf-8"
+      echoErrorMsg(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
+      response = Response.new(response.status, errorPage(response.status, response.body), headers)
+    elif response.status.is5xx:
+      var headers = newHttpHeaders()
+      headers["content-type"] = "text/html; charset=utf-8"
+      echoErrorMsg(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
+      response = Response.new(response.status, errorPage(response.status, response.body), headers)
+    elif response.status == HttpCode(0):
       var headers = newHttpHeaders()
       headers["content-type"] = "text/html; charset=utf-8"
       response = Response.new(Http404, errorPage(Http404, ""), headers)
