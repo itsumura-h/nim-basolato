@@ -1,7 +1,7 @@
 import std/httpcore
 
 const
-  BasolatoVersion* = "0.14.1"
+  BasolatoVersion* = "0.15.0"
 
 type
   Error505* = object of CatchableError
