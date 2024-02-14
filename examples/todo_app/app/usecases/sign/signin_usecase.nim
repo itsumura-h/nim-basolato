@@ -16,6 +16,7 @@ proc new*(typ:type SigninUsecase):SigninUsecase =
   )
 
 proc run*(self:SigninUsecase, email, password:string):Future[JsonNode] {.async.} =
+  echo "=== SigninUsecase run ==="
   let email = Email.new(email)
   let userOpt = await self.repository.getUserByEmail(email)
   let errorMsg = "user is not found"
