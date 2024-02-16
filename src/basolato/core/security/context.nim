@@ -24,6 +24,9 @@ proc new*(_:type Context, request:Request):Future[Context]{.async.} =
 proc request*(self:Context):Request =
   return self.request
 
+proc origin*(self:Context):string =
+  return self.origin
+
 proc setSession*(self:Context, session:Session) =
   self.session = session.some()
 
@@ -33,8 +36,8 @@ proc session*(self:Context):Option[Session] =
 proc getToken*(self:Context):Future[string]{.async.} =
   return await self.session.getToken()
 
-proc updateNonce*(self:Context) {.async.} =
-  await self.session.updateNonce()
+proc updateCsrfToken*(self:Context) {.async.} =
+  await self.session.updateCsrfToken()
 
 proc login*(self:Context){.async.} =
   await self.session.set("is_login", $true)

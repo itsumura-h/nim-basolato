@@ -77,6 +77,9 @@ proc getAction*(context:Context, params:Params):Future[Response] {.async.} =
   return render("get")
 
 proc postAction*(context:Context, params:Params):Future[Response] {.async.} =
+  let status = params.getStr("status")
+  if status == "invalid":
+    return render("invalid status")
   return render("post")
 
 proc patchAction*(context:Context, params:Params):Future[Response] {.async.} =

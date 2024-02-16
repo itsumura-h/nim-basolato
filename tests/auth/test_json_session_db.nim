@@ -58,12 +58,12 @@ suite("json session db"):
     check session.isSome("invalid").waitFor() == false
 
 
-  test("updateNonce"):
+  test("updateCsrfToken"):
     let session = JsonSessionDb.new(token).waitFor().toInterface()
-    session.updateNonce().waitFor()
-    let nonce = session.getStr("nonce").waitFor()
-    session.updateNonce().waitFor()
-    check session.getStr("nonce").waitFor() != nonce
+    discard session.updateCsrfToken().waitFor()
+    let csrfToken = session.getStr("csrf_token").waitFor()
+    discard session.updateCsrfToken().waitFor()
+    check session.getStr("csrf_token").waitFor() != csrfToken
 
 
   test("delete"):

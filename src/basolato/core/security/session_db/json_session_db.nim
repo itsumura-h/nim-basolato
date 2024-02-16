@@ -9,7 +9,7 @@ import ./libs/json_file_db
 import ./session_db_interface
 
 
-var globalNonce*:string
+var globalCsrfToken*:string
 
 type JsonSessionDb* = ref object
   db:JsonFileDb
@@ -74,10 +74,10 @@ proc destroy(self:JsonSessionDb):Future[void] {.async.} =
   self.db.destroy().await
 
 
-proc updateNonce(self:JsonSessionDb):Future[void] {.async.} =
-  let nonce = randStr(100)
-  globalNonce = nonce
-  self.setStr("nonce", nonce).await
+proc updateCsrfToken(self:JsonSessionDb):Future[string] {.async.} =
+  let csrfToken = randStr(100)
+  self.setStr("csrf_token", csrfToken).await
+  return csrfToken
 
 
 proc toInterface*(self:JsonSessionDb):ISessionDb =
@@ -91,5 +91,5 @@ proc toInterface*(self:JsonSessionDb):ISessionDb =
     getRows: proc():Future[JsonNode] {.async.} = return self.getRows().await,
     delete: proc(key:string):Future[void] {.async.} = self.delete(key).await,
     destroy: proc():Future[void] {.async.} = self.destroy().await,
-    updateNonce: proc():Future[void] {.async.} = self.updateNonce().await
+    updateCsrfToken: proc():Future[string] {.async.} = return self.updateCsrfToken().await
   )

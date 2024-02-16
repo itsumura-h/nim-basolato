@@ -12,4 +12,4 @@ type ISessionDb* = tuple
   getRows: proc():Future[JsonNode]
   delete: proc(key:string):Future[void]
   destroy: proc():Future[void]
-  updateNonce: proc():Future[void]
+  updateCsrfToken: proc():Future[string]
