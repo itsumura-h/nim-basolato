@@ -1,8 +1,6 @@
-import
-  std/asyncdispatch,
-  std/options,
-  std/strformat
-from ./session_db import globalNonce
+import std/asyncdispatch
+import std/options
+import std/strformat
 import ./session
 
 

@@ -83,13 +83,15 @@ proc presentDd*(context:Context, params:Params):Future[Response] {.async.} =
 proc errorPage*(context:Context, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
   if id mod 2 == 1:
-    raise newException(Error400, "Displaying error page")
+    # raise newException(Error400, "Displaying error page")
+    return render(Http400, "Displaying error page")
   return render($id)
 
 proc errorRedirect*(context:Context, params:Params):Future[Response] {.async.} =
   let id = params.getInt("id")
   if id mod 2 == 1:
-    raise newException(ErrorRedirect, "/sample/login")
+    # raise newException(ErrorRedirect, "/sample/login")
+    return errorRedirect("/sample/login")
   return render($id)
 
 

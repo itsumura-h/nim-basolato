@@ -48,9 +48,9 @@ suite("session db"):
 
   test("updateNonce"):
     let session = SessionDb.new(token).waitFor()
-    session.updateNonce().waitFor()
+    discard session.updateNonce().waitFor()
     let nonce = session.getStr("nonce").waitFor()
-    session.updateNonce().waitFor()
+    discard session.updateNonce().waitFor()
     check session.getStr("nonce").waitFor() != nonce
 
   test("delete"):

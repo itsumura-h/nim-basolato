@@ -6,13 +6,10 @@ import std/times
 import std/os
 import std/strformat
 import redis
-import interface_implements
 import ../../baseEnv
 import ../random_string
 import ./session_db_interface
 
-
-var globalNonce*:string
 
 type RedisSessionDb* = ref object
   conn: AsyncRedis
@@ -74,10 +71,10 @@ proc delete(self:RedisSessionDb, key:string):Future[void] {.async.} =
 proc destroy(self:RedisSessionDb):Future[void] {.async.} =
   discard await self.conn.del(@[self.id])
 
-proc updateNonce(self:RedisSessionDb):Future[void] {.async.} =
+proc updateNonce(self:RedisSessionDb):Future[string] {.async.} =
   let nonce = randStr(100)
-  globalNonce = nonce
   self.setStr("nonce", nonce).await
+  return nonce
 
 
 proc new*(_:type RedisSessionDb, sessionId=""):Future[RedisSessionDb] {.async.} =
@@ -97,7 +94,7 @@ proc new*(_:type RedisSessionDb, sessionId=""):Future[RedisSessionDb] {.async.} 
     id:id,
   )
   sessionDb.setStr("last_access", $getTime()).await
-  sessionDb.updateNonce().await
+  discard sessionDb.updateNonce().await
   return sessionDb
 
 
@@ -112,5 +109,5 @@ proc toInterface*(self:RedisSessionDb):ISessionDb =
     getRows: proc():Future[JsonNode] {.async.} = return self.getRows().await,
     delete: proc(key:string):Future[void] {.async.} = self.delete(key).await,
     destroy: proc():Future[void] {.async.} = self.destroy().await,
-    updateNonce: proc():Future[void] {.async.} = self.updateNonce().await
+    updateNonce: proc():Future[string] {.async.} = return self.updateNonce().await
   )

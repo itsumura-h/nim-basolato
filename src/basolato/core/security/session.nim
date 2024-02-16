@@ -8,6 +8,7 @@ when defined(httpbeast) or defined(httpx):
 else:
   import ../libservers/std/request
 
+var globalNonce*:string
 
 type Session* = ref object
   db: SessionDb
@@ -32,7 +33,8 @@ proc getToken*(self:Option[Session]):Future[string] {.async.} =
 
 proc updateNonce*(self:Option[Session]) {.async.} =
   if self.isSome:
-    await self.get.db.updateNonce()
+    let nonce = self.get.db.updateNonce().await
+    globalNonce = nonce
 
 proc set*(self:Option[Session], key, value:string) {.async.} =
   if self.isSome:

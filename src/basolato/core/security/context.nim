@@ -13,9 +13,10 @@ else:
 
 type Context* = ref object
   request: Request
+  origin:string
   session: Option[Session]
 
-proc new*(_:type Context, request:Request):Future[Context]{.async.} =
+proc new*(_:type Context, request:Request, origin:string):Future[Context]{.async.} =
   return Context(
     request:request,
     session:none(Session)
@@ -23,6 +24,9 @@ proc new*(_:type Context, request:Request):Future[Context]{.async.} =
 
 proc request*(self:Context):Request =
   return self.request
+
+proc origin*(self:Context):string =
+  return self.origin
 
 proc setSession*(self:Context, session:Session) =
   self.session = session.some()

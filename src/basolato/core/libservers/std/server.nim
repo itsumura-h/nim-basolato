@@ -44,7 +44,8 @@ proc serveCore(params:(Routes, int)){.async.} =
       else:
         # check path match with controller routing → run middleware → run controller
         let key = $(req.httpMethod) & ":" & req.path
-        let context = Context.new(req).await
+        let origin = &"{HOST_ADDR}:{PORT_NUM}"
+        let context = Context.new(req, origin).await
         if routes.withoutParams.hasKey(key):
           # withoutParams
           let route = routes.withoutParams[key]

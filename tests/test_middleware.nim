@@ -20,55 +20,66 @@ include ../src/basolato/core/security/csrf_token
 const HOST = "http://localhost:5000"
 
 let client = newHttpClient(maxRedirects=0)
+var sessionId:string
 
 proc loadCsrfToken():string =
   # create session
   let response = client.get(&"{HOST}/csrf/test_routing")
   check response.code == Http200
+  sessionId = response.headers["Set-Cookie"].split(";")[0].split("=")[1]
   let html = response.body().parseHtml()
   var s = newSeq[XmlNode]()
   html.findAll("input", s)
-  return s[0].attr("value")
+  let csrftoken = s[0].attr("value")
+  return csrftoken
+
 
 suite("test middleware"):
   test("csrf token valid"):
-    let session = Session.new().waitFor().get()
-    let sessionId = session.db.getToken().waitFor()
+    let csrfToken = loadCsrfToken()
     client.headers = newHttpHeaders({
       "Cookie": &"session_id={sessionId}",
       "Content-Type": "application/x-www-form-urlencoded",
     })
-    let csrfToken = loadCsrfToken()
     let params = &"csrf_token={csrfToken}"
     let response = client.post(&"{HOST}/csrf/test_routing", body = params)
     check response.code == Http200
 
+
   test("csrf token invalid"):
-    client.headers = newHttpHeaders({"Content-Type": "application/x-www-form-urlencoded"})
-    var params = &"csrf_token=invalid_token"
+    client.headers = newHttpHeaders({
+      "Cookie": &"session_id={sessionId}",
+      "Content-Type": "application/x-www-form-urlencoded",
+    })
+    let params = "csrf_token=invalid_token"
     let response = client.post(&"{HOST}/csrf/test_routing", body = params)
     check response.code == Http403
 
-  test("cookie valid"):
-    let session = Session.new().waitFor().get()
-    let authId = session.db.getToken().waitFor()
-    client.headers = newHttpHeaders({
-      "Cookie": &"session_id={authId}",
-      "Content-Type": "application/x-www-form-urlencoded"
-    })
-    let token = loadCsrfToken()
-    var params = &"csrf_token={token}"
-    let response = client.post(&"{HOST}/session/test_routing", body = params)
-    check Http200 == response.code
 
-  test("cookie invalid"):
-    let authId = "invalid_auth_id"
+  test("session id invalid"):
+    let invalidSessionId = "invalid_session_id"
     client.headers = newHttpHeaders({
-      "Cookie": &"session_id={authId}",
+      "Cookie": &"session_id={invalidSessionId}",
       "Content-Type": "application/x-www-form-urlencoded"
     })
-    # let csrf_token = CsrfToken.new().getToken().getToken()
-    let token = loadCsrfToken()
-    var params = &"csrf_token={token}"
+    let csrfToken = loadCsrfToken()
+    let params = &"csrf_token={csrfToken}"
     let response = client.post(&"{HOST}/session/test_routing", body = params)
     check response.code == Http403
+
+
+  test("invalid params -> success"):
+    let csrfToken = loadCsrfToken()
+    client.headers = newHttpHeaders({
+      "Cookie": &"session_id={sessionId}",
+      "Content-Type": "application/x-www-form-urlencoded",
+    })
+    var params = &"csrf_token={csrfToken}&status=invalid"
+    var response = client.post(&"{HOST}/csrf/test_routing", body = params)
+    check response.code == Http200
+    check response.body() == "invalid status"
+
+    params = &"csrf_token={csrfToken}&status=valid"
+    response = client.post(&"{HOST}/csrf/test_routing", body = params)
+    check response.code == Http200
+    check response.body() == "post"

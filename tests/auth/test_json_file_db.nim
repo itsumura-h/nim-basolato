@@ -2,6 +2,8 @@ discard """
   cmd: "nim c -r $file"
 """
 
+# nim c -r tests/auth/test_json_file_db.nim
+
 import std/unittest
 import std/asyncdispatch
 import std/json

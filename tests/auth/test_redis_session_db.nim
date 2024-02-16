@@ -47,7 +47,7 @@ suite("redis session db"):
   test("updateNonce"):
     let session = RedisSessionDb.new(token).waitFor().toInterface()
     let nonce = session.getStr("nonce").waitFor()
-    session.updateNonce().waitFor()
+    discard session.updateNonce().waitFor()
     check session.getStr("nonce").waitFor() != nonce
 
   test("delete"):

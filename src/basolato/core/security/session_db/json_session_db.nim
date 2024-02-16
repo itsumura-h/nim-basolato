@@ -74,10 +74,10 @@ proc destroy(self:JsonSessionDb):Future[void] {.async.} =
   self.db.destroy().await
 
 
-proc updateNonce(self:JsonSessionDb):Future[void] {.async.} =
+proc updateNonce(self:JsonSessionDb):Future[string] {.async.} =
   let nonce = randStr(100)
-  globalNonce = nonce
   self.setStr("nonce", nonce).await
+  return nonce
 
 
 proc toInterface*(self:JsonSessionDb):ISessionDb =
@@ -91,5 +91,5 @@ proc toInterface*(self:JsonSessionDb):ISessionDb =
     getRows: proc():Future[JsonNode] {.async.} = return self.getRows().await,
     delete: proc(key:string):Future[void] {.async.} = self.delete(key).await,
     destroy: proc():Future[void] {.async.} = self.destroy().await,
-    updateNonce: proc():Future[void] {.async.} = self.updateNonce().await
+    updateNonce: proc():Future[string] {.async.} = return self.updateNonce().await
   )

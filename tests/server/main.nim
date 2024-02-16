@@ -1,8 +1,10 @@
 # framework
 import ../../src/basolato
+import ../../src/basolato/middleware/session_from_cookie_middleware
+import ../../src/basolato/middleware/check_csrf_token_middleware
 # middleware
-import app/http/middlewares/session_middleware
-import app/http/middlewares/auth_middleware
+# import app/http/middlewares/session_middleware
+# import app/http/middlewares/auth_middleware
 # controller
 import app/http/controllers/test_controller
 
@@ -41,8 +43,8 @@ let routes = @[
     Route.post("/csrf/test_routing", test_controller.postAction),
     Route.post("/session/test_routing", test_controller.postAction)
   ])
-  .middleware(session_middleware.sessionFromCookie)
-  .middleware(auth_middleware.checkCsrfToken),
+  .middleware(checkCsrfToken)
+  .middleware(sessionFromCookie),
 ]
 
 serve(routes)

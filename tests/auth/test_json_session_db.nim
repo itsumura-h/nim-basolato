@@ -60,9 +60,9 @@ suite("json session db"):
 
   test("updateNonce"):
     let session = JsonSessionDb.new(token).waitFor().toInterface()
-    session.updateNonce().waitFor()
+    discard session.updateNonce().waitFor()
     let nonce = session.getStr("nonce").waitFor()
-    session.updateNonce().waitFor()
+    discard session.updateNonce().waitFor()
     check session.getStr("nonce").waitFor() != nonce
 
 

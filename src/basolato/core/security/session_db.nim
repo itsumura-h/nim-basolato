@@ -7,8 +7,6 @@ when SESSION_TYPE == "redis":
 else:
   import ./session_db/json_session_db
 
-export globalNonce
-
 type SessionDb* = ref object
   impl:ISessionDb
 
@@ -57,5 +55,5 @@ proc delete*(self:SessionDb, key:string):Future[void] {.async.} =
 proc destroy*(self:SessionDb):Future[void] {.async.} =
   self.impl.destroy().await
 
-proc updateNonce*(self:SessionDb):Future[void] {.async.} =
-  self.impl.updateNonce().await
+proc updateNonce*(self:SessionDb):Future[string] {.async.} =
+  return self.impl.updateNonce().await

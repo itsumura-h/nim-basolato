@@ -47,6 +47,31 @@ proc checkCsrfToken*(request:Request, params:Params):Future[MiddlewareResult] {.
       result.hasError = true
       result.message = getCurrentExceptionMsg()
 
+
+proc checkCsrf*(context:Context):Future[MiddlewareResult] {.async.} =
+  ## check origin header in request which is sent by same host or allowed host
+  result = MiddlewareResult()
+  try:
+    # check origin header
+    let request = context.request
+    if [HttpPost, HttpPut, HttpPatch, HttpDelete].contains(request.httpMethod):
+      let requestOrigin =
+        if request.headers.hasKey("origin"):
+          request.headers["origin"].toString()
+        else:
+          ""
+      if requestOrigin.len == 0:
+        raise newException(Exception, "Origin header is missing")
+      if not requestOrigin.contains(context.origin):
+        raise newException(Exception, "Invalid origin")
+    # check
+  except:
+    result.hasError = true
+    result.message = getCurrentExceptionMsg()
+
+  
+
+
 proc checkSessionId*(request:Request):Future[MiddlewareResult] {.async.} =
   ## Check session id in cookie is valid.
   result = MiddlewareResult()
