@@ -17,7 +17,7 @@ services:
   #   build: ./docker/nim/alpine
   #   tty: true
   #   ports:
-  #     - 9000:5000
+  #     - 9000:8000
   #   volumes:
   #     - .:/root/project
 
@@ -29,7 +29,7 @@ services:
         VERSION: 2.0.2
     tty: true
     ports:
-      - 9000:5000
+      - 9000:8000
     volumes:
       - .:/root/project
 
@@ -41,7 +41,7 @@ services:
   #       VERSION: 1.6.10
   #   tty: true
   #   ports:
-  #     - 9000:5000
+  #     - 9000:8000
   #   volumes:
   #     - .:/root/project
 
@@ -54,7 +54,7 @@ services:
   #   tty: true
   #   privileged: true
   #   ports:
-  #     - 9003:5000
+  #     - 9003:8000
   #   volumes:
   #     - .:/root/project
 
@@ -79,7 +79,6 @@ services:
       MYSQL_DATABASE: database
       MYSQL_USER: user
       MYSQL_PASSWORD: pass
-      TZ: Asia/Tokyo
       default_authentication_plugin: mysql_native_password
 
   postgreDb:

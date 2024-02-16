@@ -67,7 +67,7 @@ proc runCommand(port:int, f:bool, httpbeast:bool, httpx:bool) =
     echo getCurrentExceptionMsg()
     # quit 1
 
-proc serve*(port=5000, force=false, httpbeast=false, httpx=false) =
+proc serve*(port=8000, force=false, httpbeast=false, httpx=false) =
   ## Run server for development with hot reload.
   jsBuild()
   runCommand(port, force, httpbeast, httpx)
