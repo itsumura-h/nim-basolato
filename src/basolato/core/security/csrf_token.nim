@@ -16,12 +16,12 @@ func getToken*(self:CsrfToken):string =
 proc checkCsrfValid*(self:CsrfToken, session:Option[Session]):Future[bool] {.async.} =
   if not session.isSome:
     return false
-  let nonce = session.get("nonce").await
-  return self.token == nonce
+  let csrfToken = session.get("csrf_token").await
+  return self.token == csrfToken
 
 proc csrfToken*():CsrfToken =
   ## used in view
-  return CsrfToken.new(globalNonce)
+  return CsrfToken.new(globalCsrfToken)
 
 proc toString*(self:CsrfToken):string =
   return &"""<input type="hidden" name="csrf_token" value="{self.token}">"""

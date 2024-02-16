@@ -40,12 +40,12 @@ suite("session db"):
     check session.isSome("str").waitFor()
     check session.isSome("invalid").waitFor() == false
 
-  test("updateNonce"):
+  test("updateCsrfToken"):
     let session = Session.new(token).waitFor()
-    session.updateNonce().waitFor()
-    let nonce = session.get("nonce").waitFor()
-    session.updateNonce().waitFor()
-    check session.get("nonce").waitFor() != nonce
+    session.updateCsrfToken().waitFor()
+    let csrfToken = session.get("csrf_token").waitFor()
+    session.updateCsrfToken().waitFor()
+    check session.get("csrf_token").waitFor() != csrfToken
 
   test("delete"):
     let session = Session.new(token).waitFor()

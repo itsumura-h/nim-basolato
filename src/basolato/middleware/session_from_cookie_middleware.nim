@@ -15,9 +15,9 @@ proc sessionFromCookie*(c:Context, p:Params):Future[Response] {.async.} =
     let sessionOpt = Session.new(sessionId).await
     c.setSession(sessionOpt.get())
     if c.request.httpMethod == HttpGet:
-      c.session.updateNonce().await
+      c.session.updateCsrfToken().await
     else:
-      globalNonce = sessionOpt.get("nonce").await
+      globalCsrfToken = sessionOpt.get("csrf_token").await
     let newSessionId = sessionOpt.getToken().await
     cookies.set("session_id", newSessionId, expire=timeForward(SESSION_TIME, Minutes))
     return next().setCookie(cookies)

@@ -44,11 +44,11 @@ suite("redis session db"):
     check session.isSome("str").waitFor()
     check session.isSome("invalid").waitFor() == false
 
-  test("updateNonce"):
+  test("updateCsrfToken"):
     let session = RedisSessionDb.new(token).waitFor().toInterface()
-    let nonce = session.getStr("nonce").waitFor()
-    discard session.updateNonce().waitFor()
-    check session.getStr("nonce").waitFor() != nonce
+    let csrfToken = session.getStr("csrf_token").waitFor()
+    discard session.updateCsrfToken().waitFor()
+    check session.getStr("csrf_token").waitFor() != csrfToken
 
   test("delete"):
     let session = RedisSessionDb.new(token).waitFor().toInterface()

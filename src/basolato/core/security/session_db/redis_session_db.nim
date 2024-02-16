@@ -71,10 +71,10 @@ proc delete(self:RedisSessionDb, key:string):Future[void] {.async.} =
 proc destroy(self:RedisSessionDb):Future[void] {.async.} =
   discard await self.conn.del(@[self.id])
 
-proc updateNonce(self:RedisSessionDb):Future[string] {.async.} =
-  let nonce = randStr(100)
-  self.setStr("nonce", nonce).await
-  return nonce
+proc updateCsrfToken(self:RedisSessionDb):Future[string] {.async.} =
+  let csrfToken = randStr(100)
+  self.setStr("csrf_token", csrfToken).await
+  return csrfToken
 
 
 proc new*(_:type RedisSessionDb, sessionId=""):Future[RedisSessionDb] {.async.} =
@@ -94,7 +94,7 @@ proc new*(_:type RedisSessionDb, sessionId=""):Future[RedisSessionDb] {.async.} 
     id:id,
   )
   sessionDb.setStr("last_access", $getTime()).await
-  discard sessionDb.updateNonce().await
+  discard sessionDb.updateCsrfToken().await
   return sessionDb
 
 
@@ -109,5 +109,5 @@ proc toInterface*(self:RedisSessionDb):ISessionDb =
     getRows: proc():Future[JsonNode] {.async.} = return self.getRows().await,
     delete: proc(key:string):Future[void] {.async.} = self.delete(key).await,
     destroy: proc():Future[void] {.async.} = self.destroy().await,
-    updateNonce: proc():Future[string] {.async.} = return self.updateNonce().await
+    updateCsrfToken: proc():Future[string] {.async.} = return self.updateCsrfToken().await
   )

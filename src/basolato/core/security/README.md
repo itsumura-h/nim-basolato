@@ -25,7 +25,7 @@ random_string
 - トークン生成
 - セッションを発行する
 - トークンをセッションDBに保存
-- globalNonceに代入
+- globalCsrfTokenに代入
 - cookieにセッションIDを入れてコントローラーへ送る
 - viewに値をセットしてクライアントへ返す
 
@@ -34,7 +34,7 @@ random_string
 - cookieからセッションIDを取り出す
 - セッションのインスタンスをcontextに作る
   - 値が不正ならセッションを新規作成
-- セッションからnonceを取り出してglobalNonceに代入
+- セッションからnonceを取り出してglobalCsrfTokenに代入
 
 ##### check csrf token
 - リクエストパラメータのcsrf-tokenから値を取り出す
@@ -52,7 +52,7 @@ random_string
 ##### session from header
 - リクエストヘッダーのX-SESSION-IDからセッションIDを取り出す
 - セッションのインスタンスをcontextに作る
-- セッションからnonceを取り出してglobalNonceに代入
+- セッションからnonceを取り出してglobalCsrfTokenに代入
 
 ##### check csrf token api
 - リクエストヘッダーのX-CSRF-TOKENから値を取り出す

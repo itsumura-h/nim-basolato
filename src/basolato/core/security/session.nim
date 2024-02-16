@@ -8,7 +8,7 @@ when defined(httpbeast) or defined(httpx):
 else:
   import ../libservers/std/request
 
-var globalNonce*:string
+var globalCsrfToken*:string
 
 type Session* = ref object
   db: SessionDb
@@ -31,10 +31,10 @@ proc getToken*(self:Option[Session]):Future[string] {.async.} =
   else:
     return ""
 
-proc updateNonce*(self:Option[Session]) {.async.} =
+proc updateCsrfToken*(self:Option[Session]) {.async.} =
   if self.isSome:
-    let nonce = self.get.db.updateNonce().await
-    globalNonce = nonce
+    let csrfToken = self.get.db.updateCsrfToken().await
+    globalCsrfToken = csrfToken
 
 proc set*(self:Option[Session], key, value:string) {.async.} =
   if self.isSome:
