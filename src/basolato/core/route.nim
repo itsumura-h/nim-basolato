@@ -186,6 +186,7 @@ func middleware*(self:Routes, middleware: Controller):Routes =
 
   return self
 
+
 proc params(request:Request, route:Route):Params =
   let url = request.path
   let path = route.path
@@ -212,7 +213,7 @@ proc runMiddleware(req:Request, route:Route, context:Context):Future[Response] {
   let params = req.params(route)
   for middleware in route.middlewares:
     let res = middleware.action(context, params).await
-    headers &= res.headers
+    headers = headers & res.headers
 
     if res.status.is3xx or res.status.is4xx:
       status = res.status
@@ -278,13 +279,13 @@ proc createResponse*(req:Request, route:Route, httpMethod:HttpMethod, context:Co
 #   ##   .
 #   createHttpCodeError
 
-proc doesRunAnonymousLogin*(req:Request, res:Response):bool =
-  if not ENABLE_ANONYMOUS_COOKIE:
-    return false
-  if res.isNil:
-    return false
-  if req.httpMethod() == HttpOptions:
-    return false
-  if res.headers.hasKey("set-cookie"):
-    return false
-  return true
+# proc doesRunAnonymousLogin*(req:Request, res:Response):bool =
+#   if not ENABLE_ANONYMOUS_COOKIE:
+#     return false
+#   if res.isNil:
+#     return false
+#   if req.httpMethod() == HttpOptions:
+#     return false
+#   if res.headers.hasKey("set-cookie"):
+#     return false
+#   return true
