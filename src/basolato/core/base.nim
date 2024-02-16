@@ -1,4 +1,4 @@
-import std/httpcore
+# import std/httpcore
 
 const
   BasolatoVersion* = "0.15.0"
@@ -47,9 +47,9 @@ type
   ErrorHttpParse* = object of CatchableError
   DD* = object of CatchableError
 
-const errorStatusArray* = [505, 504, 503, 502, 501, 500, 451, 431, 429, 428, 426,
-  422, 421, 418, 417, 416, 415, 414, 413, 412, 411, 410, 409, 408, 407, 406,
-  405, 404, 403, 401, 400, 307, 305, 304, 303, 302, 301, 300]
+# const errorStatusArray* = [505, 504, 503, 502, 501, 500, 451, 431, 429, 428, 426,
+#   422, 421, 418, 417, 416, 415, 414, 413, 412, 411, 410, 409, 408, 407, 406,
+#   405, 404, 403, 401, 400, 307, 305, 304, 303, 302, 301, 300]
 
 
 when not defined(release):
