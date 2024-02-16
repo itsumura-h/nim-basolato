@@ -23,7 +23,7 @@ from {relativeToDatabasePath}config/database import rdb
 import {relativeToInterfacePath}usecases/{target}/{targetName}_query_interface
 
 
-type {targetCaptalized}Query* = ref object
+type {targetCaptalized}Query* = object
 
 proc new*(typ:type {targetCaptalized}Query):{targetCaptalized}Query =
   return {targetCaptalized}Query()

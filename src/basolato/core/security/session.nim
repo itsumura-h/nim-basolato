@@ -10,7 +10,7 @@ else:
 
 var globalCsrfToken*:string
 
-type Session* = ref object
+type Session* = object
   db: SessionDb
 
 

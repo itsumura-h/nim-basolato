@@ -7,7 +7,7 @@ import std/unicode
 import std/times
 
 
-type Validation* = ref object
+type Validation* = object
 
 func newValidation*():Validation =
   return Validation()

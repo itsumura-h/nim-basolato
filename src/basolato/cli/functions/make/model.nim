@@ -22,7 +22,7 @@ proc makeModel*(target:string, message:var string):int =
 import {relativeToValueObjectsPath}
 
 
-type {targetCaptalized}* = ref object
+type {targetCaptalized}* = object
 
 proc new*(_:type {targetCaptalized}):{targetCaptalized} =
   return {targetCaptalized}()
@@ -47,7 +47,7 @@ import ../../../models/{targetName}/{targetName}_entity
 import ../../../models/{targetName}/{targetName}_repository_interface
 
 
-type {targetCaptalized}Repository* = ref object
+type {targetCaptalized}Repository* = object
 
 proc new*(_:type {targetCaptalized}Repository):{targetCaptalized}Repository =
   return {targetCaptalized}Repository()
@@ -62,7 +62,7 @@ import {relativeToRepoInterface}
 import {targetName}_entity
 
 
-type {targetCaptalized}Service* = ref object
+type {targetCaptalized}Service* = object
   repository: I{targetCaptalized}Repository
 
 proc new*(_:type {targetCaptalized}Service, repository:I{parentCapitalized}Repository):{targetCaptalized}Service =

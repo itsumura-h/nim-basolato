@@ -4,7 +4,7 @@ import std/strformat
 import ./session
 
 
-type CsrfToken* = ref object
+type CsrfToken* = object
   token:string
 
 proc new*(_:type CsrfToken, token=""):CsrfToken =

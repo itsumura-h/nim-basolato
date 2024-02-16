@@ -22,7 +22,7 @@ else:
 
 type Controller* = proc(c:Context, params:Params):Future[Response] {.async.}
 
-type Middleware* = ref object
+type Middleware* = object
   action: Controller
 
 proc action*(self:Middleware):Controller =
