@@ -14,7 +14,7 @@ import {relativeToDiContainer}
 import {dir}_query_interface
 
 
-type {targetCaptalized}Usecase* = ref object
+type {targetCaptalized}Usecase* = object
   query: I{dirCaptalized}Query
 
 proc new*(_:type {targetCaptalized}Usecase):{targetCaptalized}Usecase =
@@ -40,7 +40,7 @@ from ../../../config/database import rdb
 import ../../usecases/{dir}/{dir}_query_interface
 
 
-type {dirCaptalized}Query* = ref object
+type {dirCaptalized}Query* = object
 
 proc new*(_:type {dirCaptalized}Query):{dirCaptalized}Query =
   return {dirCaptalized}Query()

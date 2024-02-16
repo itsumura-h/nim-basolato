@@ -18,9 +18,13 @@ else:
   import ./core/libservers/std/request; export request
 
 
-type MiddlewareResult* = ref object
+type MiddlewareResult* = object
   hasError: bool
   message: string
+
+proc new(_:type MiddlewareResult, hasError=false, message=""):MiddlewareResult =
+  return MiddlewareResult(hasError: hasError, message: message)
+
 
 func hasError*(self:MiddlewareResult):bool =
   return self.hasError
@@ -32,7 +36,7 @@ func next*(status=HttpCode(0), body="", headers:HttpHeaders=newHttpHeaders()):Re
   return Response.new(status, body, headers)
 
 proc checkCsrfToken*(request:Request, params:Params):Future[MiddlewareResult] {.async.} =
-  result = MiddlewareResult()
+  result = MiddlewareResult.new()
   if request.httpMethod == HttpPost and not (request.headers.hasKey("content-type") and request.headers["content-type"].contains("application/json")):
     try:
       if not params.hasKey("csrf_token"):
@@ -44,13 +48,12 @@ proc checkCsrfToken*(request:Request, params:Params):Future[MiddlewareResult] {.
       if not csrfToken.checkCsrfValid(session).await:
         raise newException(Exception, "Invalid csrf token")
     except:
-      result.hasError = true
-      result.message = getCurrentExceptionMsg()
+      result = MiddlewareResult.new(true, getCurrentExceptionMsg())
 
 
 proc checkCsrf*(context:Context):Future[MiddlewareResult] {.async.} =
   ## check origin header in request which is sent by same host or allowed host
-  result = MiddlewareResult()
+  result = MiddlewareResult.new()
   try:
     # check origin header
     let request = context.request
@@ -66,15 +69,12 @@ proc checkCsrf*(context:Context):Future[MiddlewareResult] {.async.} =
         raise newException(Exception, "Invalid origin")
     # check
   except:
-    result.hasError = true
-    result.message = getCurrentExceptionMsg()
-
-  
+    result = MiddlewareResult.new(true, getCurrentExceptionMsg())
 
 
 proc checkSessionId*(request:Request):Future[MiddlewareResult] {.async.} =
   ## Check session id in cookie is valid.
-  result = MiddlewareResult()
+  result = MiddlewareResult.new()
   if request.httpMethod != HttpOptions:
     let cookie = Cookies.new(request)
     try:
@@ -86,5 +86,4 @@ proc checkSessionId*(request:Request):Future[MiddlewareResult] {.async.} =
       if not SessionDb.checkSessionIdValid(sessionId).await:
         raise newException(Exception, "Invalid session id")
     except:
-      result.hasError = true
-      result.message = getCurrentExceptionMsg()
+      result = MiddlewareResult.new(true, getCurrentExceptionMsg())

@@ -149,7 +149,7 @@ func add*(self:ValidationErrors, key, value:string) =
     self[key] = @[value]
 
 
-type RequestValidation* = ref object
+type RequestValidation* = object
   params: Params
   errors: ValidationErrors
 

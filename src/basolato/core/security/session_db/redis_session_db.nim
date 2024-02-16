@@ -11,7 +11,7 @@ import ../random_string
 import ./session_db_interface
 
 
-type RedisSessionDb* = ref object
+type RedisSessionDb* = object
   conn: AsyncRedis
   id: string
 

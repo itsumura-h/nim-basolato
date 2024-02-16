@@ -8,7 +8,7 @@ proc makeValueObject*(aggregate, target, message:var string):int =
   let VALUEOBJECT = &"""
 
 
-type {target}* = ref object
+type {target}* = object
   value:string
 
 proc new*(_:type {target}, value:string):{target} =

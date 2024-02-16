@@ -14,7 +14,7 @@ type
   SameSite = enum
     None, Lax, Strict
 
-  Cookie* = ref object
+  Cookie* = object
     name:string
     value:string
     expire:string
@@ -24,7 +24,7 @@ type
     domain:string
     path:string
 
-  Cookies* = ref object
+  Cookies* = object
     request:Request
     data*:seq[Cookie]
 

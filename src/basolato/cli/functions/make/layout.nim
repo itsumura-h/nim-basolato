@@ -19,7 +19,7 @@ import std/asyncdispatch
 import std/json
 
 
-type {targetCaptalizedType}ViewModel* = ref object
+type {targetCaptalizedType}ViewModel* = object
 
 proc new*(_:type {targetCaptalizedType}ViewModel):{targetCaptalizedType}ViewModel =
   discard

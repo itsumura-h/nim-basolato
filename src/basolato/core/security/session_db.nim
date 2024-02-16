@@ -7,7 +7,7 @@ when SESSION_TYPE == "redis":
 else:
   import ./session_db/json_session_db
 
-type SessionDb* = ref object
+type SessionDb* = object
   impl:ISessionDb
 
 proc new*(_:type SessionDb, sessionId=""):Future[SessionDb] {.async.} =

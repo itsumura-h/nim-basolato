@@ -11,7 +11,7 @@ import ./session_db_interface
 
 var globalCsrfToken*:string
 
-type JsonSessionDb* = ref object
+type JsonSessionDb* = object
   db:JsonFileDb
 
 

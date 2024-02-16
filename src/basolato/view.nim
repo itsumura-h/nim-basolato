@@ -48,7 +48,7 @@ func old*(params:Params, key:string, default=""):string =
 
 
 # ========== style ==========
-type Style* = ref object
+type Style* = object
   body:string
   saffix:string
 
