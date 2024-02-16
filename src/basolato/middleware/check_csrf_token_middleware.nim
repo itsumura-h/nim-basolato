@@ -1,13 +1,11 @@
 import std/asyncdispatch
-import std/options
-import std/times
+import std/httpcore
 import std/tables
-import std/json
-import ../core/baseEnv
 import ../core/security/context
 import ../core/security/session
 import ../core/security/cookie
 import ../core/security/csrf_token
+import ../core/logger
 import ../middleware
 
 
@@ -15,8 +13,6 @@ proc checkCsrfToken*(c:Context, p:Params):Future[Response] {.async.} =
   result = next()
   if [HttpPost, HttpPut, HttpPatch, HttpDelete].contains(c.request.httpMethod) and
   not (c.request.headers.hasKey("content-type") and c.request.headers["content-type"].contains("application/json")):
-    echo "=== checkCsrfToken ==="
-    echo p.getAll()
     try:
       if not p.hasKey("csrf_token"):
         raise newException(Exception, "csrf token is missing")
@@ -28,4 +24,5 @@ proc checkCsrfToken*(c:Context, p:Params):Future[Response] {.async.} =
         raise newException(Exception, "Invalid csrf token")
       return next()
     except:
+      echoErrorMsg(getCurrentExceptionMsg())
       return render(Http403, getCurrentExceptionMsg())

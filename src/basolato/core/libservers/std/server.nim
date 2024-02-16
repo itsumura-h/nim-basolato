@@ -19,7 +19,6 @@ import ../../resources/dd_page
 import ../../response
 import ../../route
 import ../../security/context
-# import ../../security/cookie
 import ./request
 
 
@@ -44,8 +43,7 @@ proc serveCore(params:(Routes, int)){.async.} =
       else:
         # check path match with controller routing → run middleware → run controller
         let key = $(req.httpMethod) & ":" & req.path
-        let origin = &"{HOST_ADDR}:{PORT_NUM}"
-        let context = Context.new(req, origin).await
+        let context = Context.new(req).await
         if routes.withoutParams.hasKey(key):
           # withoutParams
           let route = routes.withoutParams[key]
@@ -113,8 +111,8 @@ proc serveCore(params:(Routes, int)){.async.} =
     elif response.status == HttpCode(0):
       var headers = newHttpHeaders()
       headers["content-type"] = "text/html; charset=utf-8"
-      response = Response.new(Http404, errorPage(Http404, ""), headers)
       echoErrorMsg(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
+      response = Response.new(Http404, errorPage(Http404, ""), headers)
 
     response.headers.setDefaultHeaders()
     req.respond(response.status, response.body, response.headers.format()).await

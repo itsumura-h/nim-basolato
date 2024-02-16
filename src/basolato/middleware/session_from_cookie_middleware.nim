@@ -1,10 +1,12 @@
 import std/asyncdispatch
+import std/httpcore
 import std/options
 import std/times
-import ../core/baseEnv
 import ../core/security/context
 import ../core/security/session
 import ../core/security/cookie
+import ../core/baseEnv
+import ../core/logger
 import ../middleware
 
 
@@ -22,4 +24,5 @@ proc sessionFromCookie*(c:Context, p:Params):Future[Response] {.async.} =
     cookies.set("session_id", newSessionId, expire=timeForward(SESSION_TIME, Minutes))
     return next().setCookie(cookies)
   except:
+    echoErrorMsg(getCurrentExceptionMsg())
     return render(Http500, getCurrentExceptionMsg())

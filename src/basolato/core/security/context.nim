@@ -13,10 +13,9 @@ else:
 
 type Context* = ref object
   request: Request
-  origin:string
   session: Option[Session]
 
-proc new*(_:type Context, request:Request, origin:string):Future[Context]{.async.} =
+proc new*(_:type Context, request:Request):Future[Context]{.async.} =
   return Context(
     request:request,
     session:none(Session)
