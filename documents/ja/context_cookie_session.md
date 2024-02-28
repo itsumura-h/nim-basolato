@@ -95,7 +95,7 @@ putEnv(SESSION_DB_PATH, "/your/project/path/session.db") # db file path
 ```
 .env
 ```env
-SESSION_TIME=20160
+SESSION_TIME=120
 ```
 
 Redisセッションの時
@@ -108,7 +108,7 @@ putEnv("SESSION_DB_PATH", "localhost:6379") # Redis IP address
 
 .env
 ```env
-SESSION_TIME=20160
+SESSION_TIME=120
 ```
 
 ## Context

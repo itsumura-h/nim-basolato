@@ -147,7 +147,7 @@ LOG_DIR="/root/project/logs"
 # Session db
 # Session type, file or redis, is defined in config.nims
 SESSION_DB_PATH="/root/project/session.db" # Session file path or redis host:port. ex:"127.0.0.1:6379"
-SESSION_TIME=20160 # minutes of 2 weeks
+SESSION_TIME=120 # minutes of 2 hours
 ENABLE_ANONYMOUS_COOKIE=true # true or false
 COOKIE_DOMAINS="" # to specify multiple domains, "sample.com, sample.org"
 

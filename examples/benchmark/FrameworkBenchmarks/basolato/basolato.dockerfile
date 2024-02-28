@@ -64,7 +64,7 @@ ENV LOG_IS_FILE=false
 ENV LOG_IS_ERROR_FILE=false
 # Session db
 # Session type, file or redis, is defined in config.nims
-ENV SESSION_TIME=20160
+ENV SESSION_TIME=120
 ENV LOCALE=en
 
 

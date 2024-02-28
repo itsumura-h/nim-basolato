@@ -35,7 +35,8 @@ for f in walkDir(getCurrentDir()):
     IS_ERROR_FILE* = getEnv("LOG_IS_ERROR_FILE", $true).parseBool
     LOG_DIR* = getEnv("LOG_DIR", getCurrentDir() / "logs")
     # Session db
-    SESSION_TIME* = getEnv("SESSION_TIME", "20160").parseInt
+    SESSION_TIME* = getEnv("SESSION_TIME", "120").parseInt
+      ## default 120, minutes of 2 hours
     COOKIE_DOMAINS* = getEnv("COOKIE_DOMAINS")
     ENABLE_ANONYMOUS_COOKIE* = getEnv("ENABLE_ANONYMOUS_COOKIE", $true).parseBool
 
