@@ -38,7 +38,7 @@ proc jsBuild() =
       if execShellCmd(cmd) > 0:
         echoMsg(bgRed, "[FAILED] Build error")
 
-proc runCommand(port:int, f:bool, httpbeast:bool, httpx:bool) =
+proc runCommand(host:string, port:int, f:bool, httpbeast:bool, httpx:bool) =
   try:
     if pid > 0:
       discard execShellCmd(&"kill {pid}")
@@ -51,6 +51,7 @@ proc runCommand(port:int, f:bool, httpbeast:bool, httpx:bool) =
       --threads:off \
       -d:ssl \
       --parallelBuild:0 \
+      --putenv:HOST={host} \
       --putenv:PORT={port} \
       --spellSuggest:5 \
       main
@@ -67,10 +68,10 @@ proc runCommand(port:int, f:bool, httpbeast:bool, httpx:bool) =
     echo getCurrentExceptionMsg()
     # quit 1
 
-proc serve*(port=8000, force=false, httpbeast=false, httpx=false) =
+proc serve*(host="127.0.0.1", port=8000, force=false, httpbeast=false, httpx=false) =
   ## Run server for development with hot reload.
   jsBuild()
-  runCommand(port, force, httpbeast, httpx)
+  runCommand(host, port, force, httpbeast, httpx)
   while true:
     sleep sleepTime * 1000
     for f in walkDirRec(currentDir, {pcFile}):
@@ -99,4 +100,4 @@ proc serve*(port=8000, force=false, httpbeast=false, httpx=false) =
     if isModified:
       isModified = false
       jsBuild()
-      runCommand(port, false, httpbeast, httpx)
+      runCommand(host, port, false, httpbeast, httpx)

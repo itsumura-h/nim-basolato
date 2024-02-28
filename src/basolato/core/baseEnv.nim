@@ -8,8 +8,8 @@ const
   SESSION_TYPE* = getEnv("SESSION_TYPE", "file")
   SESSION_DB_PATH* = getEnv("SESSION_DB_PATH", "./session.db")
   DOES_USE_LIBSASS* = when existsEnv("LIBSASS"): getEnv("LIBSASS").parseBool else: false
-  HOST_ADDR* = getEnv("HOST", "0.0.0.0")
-  PORT_NUM* = getEnv("PORT", "5000").parseInt
+  HOST_ADDR* = getEnv("HOST", "127.0.0.1")
+  PORT_NUM* = getEnv("PORT", "8000").parseInt
 
 for f in walkDir(getCurrentDir()):
   if f.path.split("/")[^1] == ".env":
