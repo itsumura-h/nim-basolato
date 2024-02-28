@@ -12,7 +12,7 @@ import ../middleware
 
 
 proc createExpire():int =
-  return now().toTime().toUnix() + (60 * 30) # 60 secound * 30 min
+  return ( now().toTime().toUnix() + (60 * 30) ).int # 60 secound * 30 min
 
 proc sessionFromCookie*(c:Context, p:Params):Future[Response] {.async.} =
   try:
