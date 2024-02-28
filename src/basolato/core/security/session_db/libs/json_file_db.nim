@@ -28,12 +28,12 @@ proc new*(_:type JsonFileDb):Future[JsonFileDb] {.async.}=
 
 proc new*(_:type JsonFileDb, id:string):Future[JsonFileDb] {.async.}=
   var file:AsyncFile
+  defer: file.close()
   if not fileExists(SESSION_DB_PATH):
     let newId = genOid()
     let newRow = %*{"_id": $newId}
     file = openAsync(SESSION_DB_PATH, fmWrite)
     file.write($newRow & "\n").await
-    file.close()
     return JsonFileDb(id: $newId, row: newRow)
   else:
     file = openAsync(SESSION_DB_PATH, fmRead)
@@ -47,18 +47,17 @@ proc new*(_:type JsonFileDb, id:string):Future[JsonFileDb] {.async.}=
     let newRow = %*{"_id": id}
     file = openAsync(SESSION_DB_PATH, fmWrite)
     file.write($newRow & "\n").await
-    file.close()
     return JsonFileDb(id: $id, row: newRow)
 
 
 proc search*(_:type JsonFileDb, key, value:string):Future[JsonFileDb] {.async.} =
   var file:AsyncFile
+  defer: file.close()
   if not fileExists(SESSION_DB_PATH):
     let newId = genOid()
     let newRow = %*{"_id": $newId, key: value}
     file = openAsync(SESSION_DB_PATH, fmWrite)
     file.write($newRow & "\n").await
-    file.close()
     return JsonFileDb(id: $newId, row: newRow)
   else:
     file = openAsync(SESSION_DB_PATH, fmRead)
@@ -73,7 +72,6 @@ proc search*(_:type JsonFileDb, key, value:string):Future[JsonFileDb] {.async.} 
     let newRow = %*{"_id": $id}
     file = openAsync(SESSION_DB_PATH, fmAppend)
     file.write($newRow & "\n").await
-    file.close()
     return JsonFileDb(id: $id, row: newRow)
 
 
@@ -119,6 +117,7 @@ proc delete*(self:JsonFileDb, key:string) =
 proc destroy*(self:JsonFileDb) {.async.} =
   self.row = newJObject()
   var file = openAsync(SESSION_DB_PATH, fmRead)
+  defer: file.close()
   var content = file.readAll().await.splitLines()
   var position = 0
   for i, row in content:
@@ -129,11 +128,11 @@ proc destroy*(self:JsonFileDb) {.async.} =
   content.delete(position)
   file = openAsync(SESSION_DB_PATH, fmWrite)
   file.write(content.join("\n")).await
-  file.close()
 
 
 proc sync*(self:JsonFileDb) {.async.} =
   var file = openAsync(SESSION_DB_PATH, fmRead)
+  defer: file.close()
   var content = file.readAll().await.splitLines()
   var position = 0
   for i, row in content:
@@ -144,4 +143,3 @@ proc sync*(self:JsonFileDb) {.async.} =
   content[position] = $self.row
   file = openAsync(SESSION_DB_PATH, fmWrite)
   file.write(content.join("\n")).await
-  file.close()

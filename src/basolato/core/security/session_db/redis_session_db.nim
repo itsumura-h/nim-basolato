@@ -93,8 +93,6 @@ proc new*(_:type RedisSessionDb, sessionId=""):Future[RedisSessionDb] {.async.} 
     conn: conn,
     id:id,
   )
-  sessionDb.setStr("last_access", $getTime()).await
-  discard sessionDb.updateCsrfToken().await
   return sessionDb
 
 
