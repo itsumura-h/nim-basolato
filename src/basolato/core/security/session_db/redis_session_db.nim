@@ -87,12 +87,13 @@ proc new*(_:type RedisSessionDb, sessionId=""):Future[RedisSessionDb] {.async.} 
       sessionId
 
   let conn = openAsync(REDIS_IP, Port(REDIS_PORT)).await
-  discard conn.expire(id, SESSION_TIME * 60).await
 
   let sessionDb = RedisSessionDb(
     conn: conn,
     id:id,
   )
+  sessionDb.setStr("session_id", id).await
+  discard sessionDb.conn.expire(id, SESSION_TIME * 60).await
   return sessionDb
 
 
