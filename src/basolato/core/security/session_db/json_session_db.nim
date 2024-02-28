@@ -26,7 +26,6 @@ proc new*(_:type JsonSessionDb, sessionId=""):Future[JsonSessionDb] {.async.} =
   if not db.hasKey("session_id"):
     let sessionId = secureRandStr(256)
     db.set("session_id", %sessionId)
-    db.set("last_access", %($getTime()))
     db.sync().await
   return JsonSessionDb(db:db)
 

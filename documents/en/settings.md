@@ -5,32 +5,32 @@ Settings
 Table of Contents
 
 <!--ts-->
-* [Settings](#settings)
-   * [Introduction](#introduction)
-   * [Environment variables called at compile time (config.nims)](#environment-variables-called-at-compile-time-confignims)
-      * [HOST :string = "0.0.0.0"](#host-string--0000)
-      * [DB_SQLITE :string = "true"](#db_sqlite-string--true)
-      * [DB_POSTGRES :string = "false"](#db_postgres-string--false)
-      * [DB_MYSQL :string = "false"](#db_mysql-string--false)
-      * [DB_MARIADB :string = "false"](#db_mariadb-string--false)
-      * [SESSION_TYPE :string = "file"](#session_type-string--file)
-      * [LIBSASS :string = "false"](#libsass-string--false)
-   * [Environment variables called at runtime (.env)](#environment-variables-called-at-runtime-env)
-      * [SECRET_KEY :string](#secret_key-string)
-      * [DB_CONNECTION :string = "sqlite"](#db_connection-string--sqlite)
-      * [DB_USER :string = ""](#db_user-string--)
-      * [DB_PASSWORD :string = ""](#db_password-string--)
-      * [DB_DATABASE :string = ""](#db_database-string--)
-      * [DB_MAX_CONNECTION :int = 1](#db_max_connection-int--1)
-      * [LOG_IS_DISPLAY :bool = true](#log_is_display-bool--true)
-      * [LOG_IS_FILE :bool = true](#log_is_file-bool--true)
-      * [LOG_IS_ERROR_FILE :bool = true](#log_is_error_file-bool--true)
-      * [LOG_DIR :string = getCurrentDir() / "logs"](#log_dir-string--getcurrentdir--logs)
-      * [SESSION_DB_PATH :string = getCurrentDir() / "session.db"](#session_db_path-string--getcurrentdir--sessiondb)
-      * [SESSION_TIME :int = 20160](#session_time-int--20160)
-      * [ENABLE_ANONYMOUS_COOKIE :bool = true](#enable_anonymous_cookie-bool--true)
-      * [COOKIE_DOMAINS :string = ""](#cookie_domains-string--)
-      * [LOCALE :string = "en"](#locale-string--en)
+- [Settings](#settings)
+  - [Introduction](#introduction)
+  - [Environment variables called at compile time (config.nims)](#environment-variables-called-at-compile-time-confignims)
+    - [HOST :string = "0.0.0.0"](#host-string--0000)
+    - [DB\_SQLITE :string = "true"](#db_sqlite-string--true)
+    - [DB\_POSTGRES :string = "false"](#db_postgres-string--false)
+    - [DB\_MYSQL :string = "false"](#db_mysql-string--false)
+    - [DB\_MARIADB :string = "false"](#db_mariadb-string--false)
+    - [SESSION\_TYPE :string = "file"](#session_type-string--file)
+    - [LIBSASS :string = "false"](#libsass-string--false)
+  - [Environment variables called at runtime (.env)](#environment-variables-called-at-runtime-env)
+    - [SECRET\_KEY :string](#secret_key-string)
+    - [DB\_CONNECTION :string = "sqlite"](#db_connection-string--sqlite)
+    - [DB\_USER :string = ""](#db_user-string--)
+    - [DB\_PASSWORD :string = ""](#db_password-string--)
+    - [DB\_DATABASE :string = ""](#db_database-string--)
+    - [DB\_MAX\_CONNECTION :int = 1](#db_max_connection-int--1)
+    - [LOG\_IS\_DISPLAY :bool = true](#log_is_display-bool--true)
+    - [LOG\_IS\_FILE :bool = true](#log_is_file-bool--true)
+    - [LOG\_IS\_ERROR\_FILE :bool = true](#log_is_error_file-bool--true)
+    - [LOG\_DIR :string = getCurrentDir() / "logs"](#log_dir-string--getcurrentdir--logs)
+    - [SESSION\_DB\_PATH :string = getCurrentDir() / "session.db"](#session_db_path-string--getcurrentdir--sessiondb)
+    - [SESSION\_TIME :int = 20160](#session_time-int--20160)
+    - [SESSION\_EXPIRE\_ON\_CLOSE: bool = false](#session_expire_on_close-bool--false)
+    - [COOKIE\_DOMAINS :string = ""](#cookie_domains-string--)
+    - [LOCALE :string = "en"](#locale-string--en)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
 <!-- Added by: root, at: Fri Dec 22 21:20:33 UTC 2023 -->
@@ -123,8 +123,8 @@ Set the absolute path of the file if you use file sessions, or `host:port` if yo
 ### SESSION_TIME :int = 20160
 Set a time limit in minutes for the session to time out.
 
-### ENABLE_ANONYMOUS_COOKIE :bool = true
-Set it to `true` if you want to generate cookies to anonymous users, or `false` if you don't.
+### SESSION_EXPIRE_ON_CLOSE: bool = false
+Set `true` if you want remove session immediately expire on the browser closing.
 
 ### COOKIE_DOMAINS :string = ""
 Set the target domain for issuing cookies.
@@ -148,8 +148,7 @@ LOG_DIR="/root/project/logs"
 # Session db
 # Session type, file or redis, is defined in config.nims
 SESSION_DB_PATH="/root/project/session.db" # Session file path or redis host:port. ex:"127.0.0.1:6379"
-SESSION_TIME=20160 # minutes of 2 weeks
-ENABLE_ANONYMOUS_COOKIE=true # true or false
+SESSION_TIME=120 # minutes of 2 hours
 COOKIE_DOMAINS="" # to specify multiple domains, "sample.com, sample.org"
 
 # Other options

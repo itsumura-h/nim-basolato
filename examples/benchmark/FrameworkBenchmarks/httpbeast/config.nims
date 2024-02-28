@@ -15,6 +15,6 @@ putEnv("LOG_DIR", "/root/project/examples/benchmark/basolato/logs")
 # Security
 putEnv("SECRET_KEY", "df@mRJ-%?l4+ngtUc~V-kPY+") # 24 length
 putEnv("CSRF_TIME", "525600") # minutes of 1 year
-putEnv("SESSION_TIME", "20160") # minutes of 2 weeks
+putEnv("SESSION_TIME", "20160") # minutes of 2 hours
 putEnv("SESSION_DB_PATH", "/root/project/benchmark/basolato/session.db")
 putEnv("IS_SESSION_MEMORY", "false")
