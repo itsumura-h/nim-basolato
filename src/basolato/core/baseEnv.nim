@@ -37,8 +37,8 @@ for f in walkDir(getCurrentDir()):
     # Session db
     SESSION_TIME* = getEnv("SESSION_TIME", "120").parseInt
       ## default 120, minutes of 2 hours
+    SESSION_EXPIRE_ON_CLOSE* = getEnv("SESSION_EXPIRE_ON_CLOSE", $false).parseBool
     COOKIE_DOMAINS* = getEnv("COOKIE_DOMAINS")
-    ENABLE_ANONYMOUS_COOKIE* = getEnv("ENABLE_ANONYMOUS_COOKIE", $true).parseBool
 
     # others
     LOCALE* = getEnv("LOCALE", "en")

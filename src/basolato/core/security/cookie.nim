@@ -18,6 +18,7 @@ type
     name:string
     value:string
     expire:string
+    expireOnClose:bool
     sameSite:SameSite
     secure:bool
     httpOnly:bool
@@ -52,21 +53,21 @@ proc timeForward*(num:int, timeUnit:TimeUnit):DateTime =
   of Nanoseconds:
     return getTime().utc + initTimeInterval(nanoseconds = num)
 
-func makeCookie(key, value, expires: string, domain = "", path = "",
+func makeCookie(key, value, expires: string, expireOnClose=false, domain = "", path = "",
                  secure = false, httpOnly = false,
                  sameSite = Lax): string =
   result = ""
   result.add key & "=" & value
   if domain != "": result.add("; Domain=" & domain)
   if path != "": result.add("; Path=" & path)
-  if expires != "": result.add("; Expires=" & expires)
+  if expires != "" and not expireOnClose: result.add("; Expires=" & expires)
   if secure: result.add("; Secure")
   if httpOnly: result.add("; HttpOnly")
   if sameSite != None:
     result.add("; SameSite=" & $sameSite)
 
 func toCookieStr*(self:Cookie):string =
-  makeCookie(self.name, self.value, self.expire, self.domain, self.path,
+  makeCookie(self.name, self.value, self.expire, self.expireOnClose, self.domain, self.path,
               self.secure, self.httpOnly, self.sameSite)
 
 
@@ -76,15 +77,21 @@ proc new*(_:type Cookie, name, value:string, expire:DateTime, sameSite:SameSite=
   let expireStr = format(expire.utc, f)
   when defined(release):
     let secure = true
-  Cookie(name:name, value:value,expire:expireStr, sameSite:sameSite,
-    secure:secure, httpOnly:httpOnly, domain:domain, path:path)
+  Cookie(
+    name:name, value:value,
+    expire:expireStr, expireOnClose:SESSION_EXPIRE_ON_CLOSE,
+    sameSite:sameSite, secure:secure, httpOnly:httpOnly, domain:domain, path:path
+  )
 
-func new*(_:type Cookie, name, value:string, expire="", sameSite: SameSite=Lax,
+proc new*(_:type Cookie, name, value:string, expire="", sameSite: SameSite=Lax,
       secure=false, httpOnly=true, domain = "", path = "/"):Cookie =
   when defined(release):
     let secure = true
-  Cookie(name:name, value:value,expire:expire, sameSite:sameSite,
-    secure:secure, httpOnly:httpOnly, domain:domain, path:path)
+  Cookie(
+    name:name, value:value,
+    expire:expire, expireOnClose:SESSION_EXPIRE_ON_CLOSE,
+    sameSite:sameSite, secure:secure, httpOnly:httpOnly, domain:domain, path:path
+  )
 
 
 func new*(_:type Cookies, request:Request):Cookies =

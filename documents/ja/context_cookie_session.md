@@ -4,23 +4,20 @@
 
 目次
 <!--ts-->
-* [コンテキスト、クッキー、セッション](#コンテキストクッキーセッション)
-   * [ミドルウェア内でのチェック](#ミドルウェア内でのチェック)
-      * [CSRFトークン](#csrfトークン)
-   * [セッションDB](#セッションdb)
-   * [Context](#context)
-      * [API](#api)
-      * [サンプル](#サンプル)
-      * [匿名ユーザーへのクッキー](#匿名ユーザーへのクッキー)
-         * [匿名ユーザーが有効な時](#匿名ユーザーが有効な時)
-         * [匿名ユーザーが無効な時](#匿名ユーザーが無効な時)
-      * [複数のドメインにクッキーを作る時](#複数のドメインにクッキーを作る時)
-   * [クッキー](#クッキー)
-      * [API](#api-1)
-      * [サンプル](#サンプル-1)
-   * [セッション](#セッション)
-      * [API](#api-2)
-      * [サンプル](#サンプル-2)
+- [コンテキスト、クッキー、セッション](#コンテキストクッキーセッション)
+  - [ミドルウェア内でのチェック](#ミドルウェア内でのチェック)
+    - [CSRFトークン](#csrfトークン)
+  - [セッションDB](#セッションdb)
+  - [Context](#context)
+    - [API](#api)
+    - [サンプル](#サンプル)
+    - [複数のドメインにクッキーを作る時](#複数のドメインにクッキーを作る時)
+  - [クッキー](#クッキー)
+    - [API](#api-1)
+    - [サンプル](#サンプル-1)
+  - [セッション](#セッション)
+    - [API](#api-2)
+    - [サンプル](#サンプル-2)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
 <!-- Added by: root, at: Fri Dec 22 21:23:01 UTC 2023 -->
@@ -238,44 +235,6 @@ proc show*(self:Controller):Response =
   let flash = await context.getFlash("success")
   let user = newUserUsecase().show()
   return render(showHtml(user, flash))
-```
-
-### 匿名ユーザーへのクッキー
-`.env`の`ENABLE_ANONYMOUS_COOKIE`に`true`を設定すると、Basolatoは全てのクライアントに自動的にクッキーを発行します。
-`false`を設定しかつログイン機能を有効にしたい場合は、自作してください。
-
-#### 匿名ユーザーが有効な時
-
-.env
-```env
-ENABLE_ANONYMOUS_COOKIE=true
-```
-
-controller
-```nim
-proc signIn*(context:Context, params:Params):Future[Response] {.async.} =
-  let email = params.getStr("email")
-  let password = params.getStr("password")
-  # ..sign in check
-  await context.login()
-  return redirect("/")
-```
-
-#### 匿名ユーザーが無効な時
-
-.env
-```env
-ENABLE_ANONYMOUS_COOKIE=false
-```
-
-controller
-```nim
-proc signIn*(context:Context, params:Params):Future[Response] {.async.} =
-  let email = params.getStr("email")
-  let password = params.getStr("password")
-  # ..sign in check
-  await context.login()
-  return await redirect("/").setCookie(context)
 ```
 
 ### 複数のドメインにクッキーを作る時

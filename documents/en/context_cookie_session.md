@@ -5,23 +5,20 @@ Context, Cookie, Session
 Table of Contents
 
 <!--ts-->
-* [Context, Cookie, Session](#context-cookie-session)
-   * [Check in middleware](#check-in-middleware)
-      * [CSRF Token](#csrf-token)
-   * [Session DB](#session-db)
-   * [Context](#context)
-      * [API](#api)
-      * [Sample](#sample)
-      * [Anonymous user cookie](#anonymous-user-cookie)
-         * [anonymous user enabled](#anonymous-user-enabled)
-         * [anonymous user disabled](#anonymous-user-disabled)
-      * [How to create cookie for multiple domains](#how-to-create-cookie-for-multiple-domains)
-   * [Cookie](#cookie)
-      * [API](#api-1)
-      * [Sample](#sample-1)
-   * [Session](#session)
-      * [API](#api-2)
-      * [Sample](#sample-2)
+- [Context, Cookie, Session](#context-cookie-session)
+  - [Check in middleware](#check-in-middleware)
+    - [CSRF Token](#csrf-token)
+  - [Session DB](#session-db)
+  - [Context](#context)
+    - [API](#api)
+    - [Sample](#sample)
+    - [How to create cookie for multiple domains](#how-to-create-cookie-for-multiple-domains)
+  - [Cookie](#cookie)
+    - [API](#api-1)
+    - [Sample](#sample-1)
+  - [Session](#session)
+    - [API](#api-2)
+    - [Sample](#sample-2)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
 <!-- Added by: root, at: Fri Dec 22 21:21:35 UTC 2023 -->
@@ -236,44 +233,6 @@ proc show*(context:Context):Response =
   let flash = await context.getFlash("success")
   let user = UserUsecase.new().show()
   return render(showHtml(user, flash))
-```
-
-### Anonymous user cookie
-In `.env`, if you set `true` for `ENABLE_ANONYMOUS_COOKIE`, Basolato automatically creates cookie for every user.  
-If you set `false` and you want to create sign in function, you should create it manually in controller.
-
-#### anonymous user enabled
-
-.env
-```env
-ENABLE_ANONYMOUS_COOKIE=true
-```
-
-controller
-```nim
-proc signIn*(context:Context, params:Params):Future[Response] {.async.} =
-  let email = params.getStr("email")
-  let password = params.getStr("password")
-  # ..sign in check
-  await context.login()
-  return redirect("/")
-```
-
-#### anonymous user disabled
-
-config.nims
-```nim
-putEnv("ENABLE_ANONYMOUS_COOKIE", "false")
-```
-
-controller
-```nim
-proc signIn*(context:Context, params:Params):Future[Response] {.async.} =
-  let email = params.getStr("email")
-  let password = params.getStr("password")
-  # ..sign in check
-  await context.login()
-  return await redirect("/").setCookie(client)
 ```
 
 ### How to create cookie for multiple domains
