@@ -87,20 +87,12 @@ when DOES_USE_LIBSASS:
     const options = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     let saffix = "_" & randStr(10, options)
 
-    # var matches = newSeq[string]()
-    # for row in css.findAll(re"\.[\d\w]+"):
-    #   echo row
-    #   if not matches.contains(row):
-    #     matches.add(row)
-    # for match in matches:
-    #   css = css.replace(match, match & saffix)
-    # return Style.new(css, saffix)
     var arr = newSeq[string](css.countLines())
     let cssLines = css.splitLines()
     for i, row in cssLines.pairs:
       if row.contains(".") and not row.contains(";"):
         var rowStr = row
-        for match in row.findAll(re"\.[\d\w]+"):
+        for match in row.findAll(re"\.[\d\w\-]+"):
           rowStr = rowStr.replace(match, match & saffix)
         arr[i] = rowStr
       else:
@@ -114,19 +106,12 @@ else:
     const options = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     let saffix = "_" & randStr(10, options)
 
-    # var matches = newSeq[string]()
-    # for row in css.findAll(re"\.[\d\w]+"):
-    #   if not matches.contains(row):
-    #     matches.add(row)
-    # for match in matches:
-    #   css = css.replace(match, match & saffix)
-    # return Style.new(css, saffix)
     var arr = newSeq[string](css.countLines())
     let cssLines = css.splitLines()
     for i, row in cssLines.pairs:
       if row.contains(".") and not row.contains(";"):
         var rowStr = row
-        for match in row.findAll(re"\.[\d\w]+"):
+        for match in row.findAll(re"\.[\d\w\-]+"):
           rowStr = rowStr.replace(match, match & saffix)
         arr[i] = rowStr
       else:
