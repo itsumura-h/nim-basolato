@@ -42,9 +42,9 @@ proc impl():Future[Component] [[.async.]] =
     </div>
   '''
 
-proc {targetCaptalized}View*():Future[string] [[.async.]] =
+proc {targetCaptalized}View*():Future[Component] [[.async.]] =
   let title = ''
-  return $applicationView(title, impl().await)
+  return applicationView(title, impl().await)
 """
 
   VIEW = VIEW.multiReplace(

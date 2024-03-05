@@ -38,6 +38,6 @@ proc impl(context:Context):Future[Component]{.async.} =
     </main>
   """
 
-proc loginView*(context:Context):Future[string]{.async.} =
+proc loginView*(context:Context):Future[Component]{.async.} =
   let title = "Login"
-  return $applicationView(title, await impl(context))
+  return applicationView(title, impl(context).await)

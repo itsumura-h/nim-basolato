@@ -72,6 +72,6 @@ proc impl():Component = tmpli html"""
 </main>
 """
 
-proc withStyleView*():string =
+proc withStyleView*():Component =
   let title = ""
-  return $applicationView(title, impl())
+  return applicationView(title, impl())

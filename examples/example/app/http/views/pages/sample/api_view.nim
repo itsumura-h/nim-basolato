@@ -91,6 +91,6 @@ proc impl():Future[Component] {.async.} =
     </main>
   """
 
-proc apiView*():Future[string] {.async.} =
+proc apiView*():Future[Component] {.async.} =
   let title = ""
-  return $applicationView(title, impl().await)
+  return applicationView(title, impl().await)

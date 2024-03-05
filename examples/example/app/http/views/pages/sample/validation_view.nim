@@ -64,6 +64,6 @@ proc impl(params, errors:JsonNode):Future[Component] {.async.} =
     </main>
   """
 
-proc validationView*(params, errors:JsonNode):Future[string] {.async.} =
+proc validationView*(params, errors:JsonNode):Future[Component] {.async.} =
   let title = "Validation view"
-  return $applicationView(title, impl(params, errors).await)
+  return applicationView(title, impl(params, errors).await)

@@ -45,8 +45,8 @@ proc webSocketComponentImpl():Component =
     $(style)
   """
 
-proc webSocketComponent*():string =
-  return $applicationView("Web Socket", webSocketComponentImpl())
+proc webSocketComponent*():Component =
+  return applicationView("Web Socket", webSocketComponentImpl())
 
 
 proc impl():Component =
@@ -73,5 +73,5 @@ proc impl():Component =
     </main>
   """
 
-proc webSocketView*():string =
-  return $applicationView("Web Socket", impl())
+proc webSocketView*():Component =
+  return applicationView("Web Socket", impl())

@@ -24,6 +24,6 @@ proc impl(context:Context):Future[Component]{.async.} =
     </main>
   """
 
-proc flashView*(context:Context):Future[string]{.async.} =
+proc flashView*(context:Context):Future[Component]{.async.} =
   const title = "Flash message"
-  return $applicationView(title, await impl(context))
+  return applicationView(title, await impl(context))

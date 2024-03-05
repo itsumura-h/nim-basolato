@@ -11,6 +11,12 @@ import ./security/session
 import ./templates
 
 
+proc component*(arg:string):Component =
+  let component = Component.new()
+  component.add(arg)
+  return component
+
+
 type Response* = ref object
   status*:HttpCode
   body:string
@@ -27,7 +33,7 @@ proc setBody*(self:Response, body:string) =
 
 func render*(status:HttpCode, body:string):Response =
   let headers = newHttpHeaders(true)
-  headers["Content-Type"] = "text/html; charset=utf-8"
+  headers["Content-Type"] = "text/plain; charset=utf-8"
   return Response(
     status:status,
     body:body,
@@ -36,7 +42,7 @@ func render*(status:HttpCode, body:string):Response =
 
 proc render*(status:HttpCode, body:string, headers:HttpHeaders):Response =
   if not headers.hasKey("Content-Type"):
-    headers["Content-Type"] = "text/html; charset=utf-8"
+    headers["Content-Type"] = "text/plain; charset=utf-8"
   return Response(
     status:status,
     body:body,
@@ -45,7 +51,7 @@ proc render*(status:HttpCode, body:string, headers:HttpHeaders):Response =
 
 func render*(body:string):Response =
   let headers = newHttpHeaders(true)
-  headers["Content-Type"] = "text/html; charset=utf-8"
+  headers["Content-Type"] = "text/plain; charset=utf-8"
   return Response(
     status:Http200,
     body:body,
@@ -54,7 +60,7 @@ func render*(body:string):Response =
 
 func render*(body:string, headers:HttpHeaders):Response =
   if not headers.hasKey("Content-Type"):
-    headers["Content-Type"] = "text/html; charset=utf-8"
+    headers["Content-Type"] = "text/plain; charset=utf-8"
   return Response(
     status:Http200,
     body:body,

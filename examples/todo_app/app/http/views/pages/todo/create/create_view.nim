@@ -112,7 +112,7 @@ proc impl(viewModel:CreateViewModel):Component =
     </section>
   """
 
-proc createView*(params, errors, data:JsonNode):string =
+proc createView*(params, errors, data:JsonNode):Component =
   let title = ""
   let viewModel = CreateViewModel.new(
     params,
@@ -120,4 +120,4 @@ proc createView*(params, errors, data:JsonNode):string =
     data["statuses"].getElems,
     data["users"].getElems
   )
-  return $applicationView(title, impl(viewModel))
+  return applicationView(title, impl(viewModel))

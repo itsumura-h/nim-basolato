@@ -116,6 +116,5 @@ proc impl(name:string):Component =
     </article>
   """
 
-proc welcomeView*(name:string):string =
-  let title = "Welcome Basolato"
-  return $impl(name)
+proc welcomeView*(name:string):Component =
+  return impl(name)
