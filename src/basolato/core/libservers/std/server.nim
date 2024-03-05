@@ -71,7 +71,8 @@ proc serveCore(params:(Routes, int)){.async.} =
       let msg = getCurrentExceptionMsg()
       let status = Http500
       response = Response.new(status, errorPage(status, msg), headers)
-      echoErrorMsg(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
+      let userAgent = req.headers["User-Agent"]
+      echoErrorMsg(&"{$response.status}  {$req.httpMethod}  {req.path}  {req.hostname}  {userAgent}")
       echoErrorMsg(msg)
 
     # except:
@@ -101,17 +102,20 @@ proc serveCore(params:(Routes, int)){.async.} =
     if response.status.is4xx:
       var headers = newHttpHeaders()
       headers["content-type"] = "text/html; charset=utf-8"
-      echoErrorMsg(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
+      let userAgent = req.headers["User-Agent"]
+      echoErrorMsg(&"{$response.status}  {$req.httpMethod}  {req.path}  {req.hostname}  {userAgent}")
       response = Response.new(response.status, errorPage(response.status, response.body), headers)
     elif response.status.is5xx:
       var headers = newHttpHeaders()
       headers["content-type"] = "text/html; charset=utf-8"
-      echoErrorMsg(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
+      let userAgent = req.headers["User-Agent"]
+      echoErrorMsg(&"{$response.status}  {$req.httpMethod}  {req.path}  {req.hostname}  {userAgent}")
       response = Response.new(response.status, errorPage(response.status, response.body), headers)
     elif response.status == HttpCode(0):
       var headers = newHttpHeaders()
       headers["content-type"] = "text/html; charset=utf-8"
-      echoErrorMsg(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
+      let userAgent = req.headers["User-Agent"]
+      echoErrorMsg(&"{$Http404}  {$req.httpMethod}  {req.path}  {req.hostname}  {userAgent}")
       response = Response.new(Http404, errorPage(Http404, ""), headers)
 
     response.headers.setDefaultHeaders()
@@ -129,7 +133,6 @@ proc serveCore(params:(Routes, int)){.async.} =
       # wait 500ms for FDs to be closed
       await sleepAsync(500)
 
-  # asyncCheck server.serve(Port(port), cb, HOST_ADDR)
 
 proc serve*(seqRoutes: seq[Routes]) =
   var routes =  Routes.new()
