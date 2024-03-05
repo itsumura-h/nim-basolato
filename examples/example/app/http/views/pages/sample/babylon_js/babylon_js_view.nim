@@ -31,6 +31,6 @@ proc impl():Future[Component] {.async.} =
   </main>
   """
 
-proc babylonJsView*():Future[string] {.async.} =
+proc babylonJsView*():Future[Component] {.async.} =
   let title = ""
-  return $applicationView(title, impl().await)
+  return applicationView(title, impl().await)

@@ -2,9 +2,6 @@ import json, times, strformat, httpcore
 # framework
 import ../../../../../src/basolato/controller
 import ../../../../../src/basolato/web_socket
-# db
-from ../../../config/database import rdb
-import allographer/query_builder
 # views
 import ../views/pages/welcome_view
 import ../views/pages/welcome_scf_view
@@ -15,7 +12,8 @@ import ../views/pages/sample/api_view
 
 
 proc index*(context:Context, params:Params):Future[Response] {.async.} =
-  return render(asyncHtml("pages/sample/index.html").await)
+  let index = asyncHtml("pages/sample/index.html").await
+  return render(index)
 
 proc welcome*(context:Context, params:Params):Future[Response] {.async.} =
   let name = "Basolato " & BasolatoVersion
@@ -47,11 +45,13 @@ proc fib*(context:Context, params:Params):Future[Response] {.async.} =
 
 
 proc withStylePage*(context:Context, params:Params):Future[Response] {.async.} =
-  return render(withStyleView())
+  let view = withStyleView()
+  return render(view)
 
 
 proc babylonJsPage*(context:Context, params:Params):Future[Response] {.async.} =
-  return render(babylonJsView().await)
+  let view = babylonJsView().await
+  return render(view)
 
 
 proc customHeaders*(context:Context, params:Params):Future[Response] {.async.} =

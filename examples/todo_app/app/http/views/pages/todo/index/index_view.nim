@@ -37,7 +37,7 @@ proc impl(viewModel:IndexViewModel):Future[Component] {.async.} =
     </main>
   """
 
-proc indexView*(loginUser:JsonNode):Future[string] {.async.} =
+proc indexView*(loginUser:JsonNode):Future[Component] {.async.} =
   let title = ""
   let viewModel = IndexViewModel.new(loginUser).await
-  return $applicationView(title, impl(viewModel).await)
+  return applicationView(title, impl(viewModel).await)

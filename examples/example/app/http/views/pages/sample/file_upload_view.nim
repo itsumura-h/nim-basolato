@@ -25,6 +25,6 @@ proc impl():Future[Component] {.async.} =
     </main>
   """
 
-proc fileUploadView*():Future[string] {.async.} =
+proc fileUploadView*():Future[Component] {.async.} =
   let title = "File upload"
-  return $applicationView(title, await impl())
+  return applicationView(title, await impl())

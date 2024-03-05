@@ -4,20 +4,20 @@
 
 目次
 <!--ts-->
-* [ビュー](#ビュー)
-   * [イントロダクション](#イントロダクション)
-   * [文法](#文法)
-      * [if](#if)
-      * [for](#for)
-      * [while](#while)
-   * [コンポーネント指向](#コンポーネント指向)
-      * [CSS](#css)
-      * [SCSS](#scss)
-      * [API](#api)
-   * [ヘルパー関数](#ヘルパー関数)
-      * [Csrfトークン](#csrfトークン)
-      * [old関数](#old関数)
-   * [SCFをテンプレートエンジンとして使う](#scfをテンプレートエンジンとして使う)
+- [ビュー](#ビュー)
+  - [イントロダクション](#イントロダクション)
+  - [文法](#文法)
+    - [if](#if)
+    - [for](#for)
+    - [while](#while)
+  - [コンポーネント指向](#コンポーネント指向)
+    - [CSS](#css)
+    - [SCSS](#scss)
+    - [API](#api)
+  - [ヘルパー関数](#ヘルパー関数)
+    - [Csrfトークン](#csrfトークン)
+    - [old関数](#old関数)
+  - [SCFをテンプレートエンジンとして使う](#scfをテンプレートエンジンとして使う)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
 <!-- Added by: root, at: Fri Dec 22 21:22:56 UTC 2023 -->
@@ -131,9 +131,9 @@ proc impl():Component =
     <div class="$(style.element("background"))"></div>
   """
 
-proc withStyleView*():string =
+proc withStyleView*():Component =
   let title = "Title"
-  return $applicationView(title, impl())
+  return applicationView(title, impl())
 ```
 
 これをhtmlにコンパイルすると以下のようになります。
@@ -252,9 +252,9 @@ proc impl(params=newJObject()):Component =
     <input type="text" name="password">
   """
 
-proc signinView*(params=newJObject()):string =
+proc signinView*(params=newJObject()):Component =
   let title = "SignIn"
-  return $applicationView(title, impl(params))
+  return applicationView(title, impl(params))
 ```
 `params` にキー `email` があれば値を表示し、なければ空の文字列を表示します。
 

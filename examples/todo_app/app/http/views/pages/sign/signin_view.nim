@@ -72,6 +72,6 @@ proc impl(params, errors:JsonNode):Future[Component] {.async.} =
     </main>
     """
 
-proc signinView*(params, errors:JsonNode):Future[string] {.async.} =
+proc signinView*(params, errors:JsonNode):Future[Component] {.async.} =
   let title = "Sign In"
-  return $applicationView(title, impl(params, errors).await)
+  return applicationView(title, impl(params, errors).await)

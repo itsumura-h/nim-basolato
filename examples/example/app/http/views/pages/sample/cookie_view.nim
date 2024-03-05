@@ -47,6 +47,6 @@ proc impl(cookies:JsonNode):Future[Component] {.async.} =
     </main>
   """
 
-proc cookieView*(cookies:JsonNode):Future[string] {.async.} =
+proc cookieView*(cookies:JsonNode):Future[Component] {.async.} =
   let title = "Cookie"
-  return $applicationView(title, impl(cookies).await)
+  return applicationView(title, impl(cookies).await)
