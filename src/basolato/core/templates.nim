@@ -229,6 +229,23 @@ macro tmpl*(html: untyped): untyped =
         resStr = &"result.add({resStr})\n"
         resStr = reindent(resStr, indentLevel)
         body.add(resStr)
+        #[
+          if cond{
+            aaa
+          }
+          $else{
+            bbb
+          }
+          この時「}」と$elseの間の空白行に対応する必要がある
+          
+          if cond:
+            result.add("aaa")
+          result.add("       ")
+          else:
+          
+          となってしまう
+          resStr.strip()にすると改行も消えてしまう
+        ]#
       point = resPoint
       # resPointの1つ前が「}」の場合、indentLevelを下げる
       if html[resPoint-1] == '}':
