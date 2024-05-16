@@ -8,7 +8,7 @@ import std/httpclient
 import std/strutils
 
 
-const HOST = "http://0.0.0.0:5000"
+const HOST = "http://0.0.0.0:8000"
 
 block:
   let client = newHttpClient()
