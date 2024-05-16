@@ -1,6 +1,6 @@
 import ../../../../../../src/basolato/view
 
-proc impl():Component = tmpli html"""
+proc impl():Component = tmpl"""
 <h1>test template</h1>
 $(csrfToken())
 """

@@ -1,15 +1,11 @@
-# Edited for sanitizing
-# https://github.com/onionhammer/nim-templates
-
 import std/json
 import std/macros
-import std/parseutils
 import std/strutils
+import std/strformat
 import std/tables
 import ./security/random_string
 
-
-# ========== xmlEncode ==========
+# ==================== xmlEncode ====================
 # extract from `cgi` to be able to run for JavaScript.
 # https://nim-lang.org/docs/cgi.html#xmlEncode%2Cstring
 
@@ -32,7 +28,7 @@ proc xmlEncode*(s: string): string =
   for i in 0..len(s)-1: addXmlChar(result, s[i])
 
 
-# ========== libView ==========
+# ==================== libView ====================
 proc toString*(val:JsonNode):string =
   case val.kind
   of JString:
@@ -55,7 +51,7 @@ proc toString*(val:bool | int | float):string =
   return val.`$`.xmlEncode
 
 
-# ========== Component ==========
+# ==================== Component ====================
 type Component* = ref object
   value:string
   id:string
@@ -76,408 +72,226 @@ proc `$`*(self:Component):string =
 proc id*(self:Component):string = self.id
 
 
-# ========== annotate ==========
-# Generate tags
-macro make(names: varargs[untyped]): void =
-  result = newStmtList()
+# ==================== parse template ====================
+type BlockType = enum
+  strBlock
+  ifBlock               # $if
+  elifBlock             # $elif
+  elseBlock             # $else
+  forBlock              # $for
+  caseBlock             # $case
+  ofBlock               # $of
+  whileBlock            # $while
+  displayVariableBlock  # $()
+  nimCodeBlock          # ${}
 
-  for i in 0 .. names.len-1:
-    result.add newProc(
-        name = ident($names[i]).postfix("*"),
-        params = [
-            ident("string"),
-            newIdentDefs(
-                ident("content"),
-                ident("string")
-      )
-    ],
-        body = newStmtList(
-            parseStmt("reindent(content)")
-      )
-    )
-
-
-iterator lines(value: string): string =
-  var i = 0
-  while i < value.len:
-    var line: string
-    inc(i, value.parseUntil(line, 0x0A.char, i) + 1)
-    yield line
-
-
-proc reindent*(value: string, presetIndent = 0): string =
-  var indent = -1
-
-  # Detect indentation!
-  for ln in lines(value):
-    var read = ln.skipWhitespace()
-
-    # If the line is empty, ignore it for indentation
-    if read == ln.len: continue
-
-    indent = if indent < 0: read
-                 else: min(indent, read)
-
-  # Create a precursor indent as-needed
-  var precursor = newString(0)
-  for i in 1 .. presetIndent:
-    precursor.add(' ')
-
-  # Re-indent
-  result = newString(0)
-
-  for ln in lines(value):
-    var value = ln.substr(indent)
-
-    result.add(precursor)
-
-    if value.len > 0:
-      result.add(value)
-      result.add(0x0A.char)
-
-  return result
-
-#Define tags
-make(html, xml, glsl, js, css, rst, md, nim)
+proc identifyBlockType(str:string, point:int):BlockType =
+  if str.substr(point, point+2) == "$if":
+    return ifBlock
+  elif str.substr(point, point+4) == "$elif":
+    return elifBlock
+  elif str.substr(point, point+4) == "$else":
+    return elseBlock
+  elif str.substr(point, point+3) == "$for":
+    return forBlock
+  elif str.substr(point, point+4) == "$case":
+    return caseBlock
+  elif str.substr(point, point+2) == "$of":
+    return ofBlock
+  elif str.substr(point, point+5) == "$while":
+    return whileBlock
+  elif str.substr(point, point+1) == "$(":
+    return displayVariableBlock
+  elif str.substr(point, point+1) == "${":
+    return nimCodeBlock
+  else:
+    return strBlock
 
 
-# ========== templates ==========
-# Fields
-const identChars = {'a'..'z', 'A'..'Z', '0'..'9', '_'}
-
-
-# Procedure Declarations
-proc parseTemplate(node: NimNode, value: string) {.compiletime.}
-
-
-# Procedure Definitions
-proc substring(value: string, index: int, length = -1): string {.compiletime.} =
-  ## Returns a string at most `length` characters long, starting at `index`.
-  return if length < 0: value.substr(index)
-           elif length == 0: ""
-           else: value.substr(index, index + length-1)
-
-
-proc parseThruEol(value: string, index: int): int {.compiletime.} =
-  ## Reads until and past the end of the current line, unless
-  ## a non-whitespace character is encountered first
-  var remainder: string
-  var read = value.parseUntil(remainder, {0x0A.char}, index)
-  if remainder.skipWhitespace() == read:
-    return read + 1
-
-
-proc trimAfterEol(value: var string) {.compiletime.} =
-  ## Trims any whitespace at end after \n
-  var toTrim = 0
-  for i in countdown(value.len-1, 0):
-    # If \n, return
-    if value[i] in [' ', '\t']: inc(toTrim)
-    else: break
-
-  if toTrim > 0:
-    value = value.substring(0, value.len - toTrim)
-
-
-proc trimEol(value: var string) {.compiletime.} =
-  ## Removes everything after the last line if it contains nothing but whitespace
-  for i in countdown(value.len - 1, 0):
-    # If \n, trim and return
-    if value[i] == 0x0A.char:
-      value = value.substr(0, i)
+proc findStrBlock(str:string, point:int):(int, string) =
+  var isDoller = false
+  var blacketLevel = 0
+  var count = -1
+  for i in point..<str.len:
+    let s = str[i]
+    count += 1
+    if s == '$':
+      isDoller = true
+      break
+    elif s == '{':
+      blacketLevel += 1
+      continue
+    elif s == '}' and blacketLevel > 0:
+      blacketLevel -= 1
+      continue
+    elif s == '}' and blacketLevel == 0:
       break
 
-    # Skip change
-    if not (value[i] in [' ', '\t']): break
+  let resPoint = point + count
+  let resStr = str.substr(point, resPoint-1) # $、}を含めない
 
-    # This is the first character, and it's not whitespace
-    if i == 0:
-      value = ""
+  if isDoller:
+    return (resPoint, resStr) # $からスタート
+  else:
+    return (resPoint+1, resStr) # 「}」の次からスタート
+
+
+proc findNimVariableBlock(str:string, point:int):(int, string) =
+  let point = point + 2 # 「$(」の分進める
+  var parenthesisLevel = 0
+  var count = -1
+  for i in point..<str.len:
+    let s = str[i]
+    count += 1
+    if s == '(':
+      parenthesisLevel += 1
+      continue
+    if s == ')' and parenthesisLevel > 0:
+      parenthesisLevel -= 1
+      continue
+    if s == ')' and parenthesisLevel == 0:
       break
 
-proc detectIndent(value: string, index: int): int {.compiletime.} =
-  ## Detects how indented the line at `index` is.
-  # Seek to the beginning of the line.
-  var lastChar = index
-  for i in countdown(index, 0):
-    if value[i] == 0x0A.char:
-      # if \n, return the indentation level
-      return lastChar - i
-    elif not (value[i] in [' ', '\t']):
-      # if non-whitespace char, decrement lastChar
-      dec(lastChar)
+  let resPoint = point + count
+  let resStr = str.substr(point, resPoint-1) # 「)」を含めない
+  return (resPoint+1, resStr) # 「)」の次からスタート
 
 
-proc parseThruString(value: string, i: var int,
-        strType = '"') {.compiletime.} =
-  ## Parses until ending " or ' is reached.
-  inc(i)
-  if i < value.len-1:
-    inc(i, value.skipUntil({'\\', strType}, i))
+proc findNimBlock(str:string, point:int):(int, string) =
+  let point = point + 1 # 「$」の分進める
+  var count = -1
+  for i in point..<str.len:
+    let s = str[i]
+    count += 1
+    if s == '{':
+      break
+
+  let resPoint = point + count
+  let resStr = str.substr(point, resPoint-1) # 「{」を含めない
+  return (resPoint+1, resStr) # 「{」の次からスタート
 
 
-proc parseToClose(value: string, index: int, open = '(', close = ')',
-        opened = 0): int {.compiletime.} =
-  ## Reads until all opened braces are closed
-  ## ignoring any strings "" or ''
-  var remainder = value.substring(index)
-  var openBraces = opened
-  result = 0
+proc findNimCodeBlock(str:string, point:int):(int, string) =
+  let point = point + 2 # 「${」の分進める
+  var blacketLevel = 0
+  var count = -1
+  for i in point..<str.len:
+    let s = str[i]
+    count += 1
+    if s == '{':
+      blacketLevel += 1
+      continue
+    if s == '}' and blacketLevel > 0:
+      blacketLevel -= 1
+      continue
+    if s == '}' and blacketLevel == 0:
+      break
 
-  while result < remainder.len:
-    var c = remainder[result]
-
-    if c == open: inc(openBraces)
-    elif c == close: dec(openBraces)
-    elif c == '"': remainder.parseThruString(result)
-    elif c == '\'': remainder.parseThruString(result, '\'')
-
-    if openBraces == 0: break
-    else: inc(result)
-
-
-iterator parseStmtList(value: string, index: var int): string =
-  ## Parses unguided ${..} block
-  var read = value.parseToClose(index, open = '{', close = '}')
-  var expressions = value.substring(index + 1, read - 1).split({';', 0x0A.char})
-
-  for expression in expressions:
-    let value = expression.strip
-    if value.len > 0:
-      yield value
-
-  #Increment index & parse thru EOL
-  inc(index, read + 1)
-  inc(index, value.parseThruEol(index))
+  let resPoint = point + count
+  let resStr = str.substr(point, resPoint-1) # 「}」を含めない
+  return (resPoint+1, resStr) # 「}」の次からスタート
 
 
-iterator parseCompoundStatements(value, identifier: string,
-        index: int): string =
-  ## Parses through several statements, i.e. if {} elif {} else {}
-  ## and returns the initialization of each as an empty statement
-  ## i.e. if x == 5 { ... } becomes if x == 5: nil.
+proc reindent(str:string, indentLevel:int):string  =
+  let indent = "  ".repeat(indentLevel)
+  return indent & str
 
-  template getNextIdent(expected): void =
-    var nextIdent: string
-    discard value.parseWhile(nextIdent, {'$'} + identChars, i)
 
-    var next: string
-    var read: int
-
-    if nextIdent == "case":
-      # We have to handle case a bit differently
-      read = value.parseUntil(next, '$', i)
-      inc(i, read)
-      yield next.strip(leading = false) & "\n"
-
+macro tmpl*(html: untyped): untyped =
+  # """...""" に囲まれた「...」の部分の文字列を取得
+  var html =
+    if html.kind in nnkStrLit..nnkTripleStrLit:
+      html.strVal
     else:
-      read = value.parseUntil(next, '{', i)
+      html[1].strVal
 
-      if nextIdent in expected:
-        inc(i, read)
-        # Parse until closing }, then skip whitespace afterwards
-        read = value.parseToClose(i, open = '{', close = '}')
-        inc(i, read + 1)
-        inc(i, value.skipWhitespace(i))
-        yield next & ": nil\n"
-
-      else: break
-
-
-  var i = index
+  var body = "result = Component.new()\n"
+  var point = 0
+  var indentLevel = 0
+  var blockType = strBlock
   while true:
-    # Check if next statement would be valid, given the identifier
-    if identifier in ["if", "when"]:
-      getNextIdent([identifier, "$elif", "$else"])
 
-    elif identifier == "case":
-      getNextIdent(["case", "$of", "$elif", "$else"])
+    if point == html.len:
+      break
 
-    elif identifier == "try":
-      getNextIdent(["try", "$except", "$finally"])
+    blockType = identifyBlockType(html, point)
 
+    case blockType
+    of strBlock:
+      var (resPoint, resStr) = findStrBlock(html, point)
+      resStr = resStr.strip()
+      if resStr.len > 0:
+        resStr = newStrLitNode(resStr).repr # 複数行の文字列を改行コードを含む1行にする
+        resStr = &"result.add({resStr})\n"
+        resStr = reindent(resStr, indentLevel)
+        body.add(resStr)
+      point = resPoint
+      # resPointの1つ前が「}」の場合、indentLevelを下げる
+      if html[resPoint-1] == '}':
+        indentLevel -= 1
+    of ifBlock:
+      var (resPoint, resStr) = findNimBlock(html, point)
+      resStr = resStr.strip() & ":\n"
+      resStr = reindent(resStr, indentLevel)
+      body.add(resStr)
+      indentLevel += 1
+      point = resPoint
+    of elifBlock:
+      var (resPoint, resStr) = findNimBlock(html, point)
+      resStr = resStr.strip() & ":\n"
+      resStr = reindent(resStr, indentLevel)
+      body.add(resStr)
+      indentLevel += 1
+      point = resPoint
+    of elseBlock:
+      var (resPoint, resStr) = findNimBlock(html, point)
+      resStr = resStr.strip() & ":\n"
+      resStr = reindent(resStr, indentLevel)
+      body.add(resStr)
+      indentLevel += 1
+      point = resPoint
+    of forBlock:
+      var (resPoint, resStr) = findNimBlock(html, point)
+      resStr = resStr.strip() & ":\n"
+      resStr = reindent(resStr, indentLevel)
+      body.add(resStr)
+      indentLevel += 1
+      point = resPoint
+    of caseBlock:
+      var (resPoint, resStr) = findNimBlock(html, point)
+      resStr = resStr.strip() & ":\n"
+      resStr = reindent(resStr, indentLevel)
+      point = resPoint
+      body.add(resStr)
+    of ofBlock:
+      var (resPoint, resStr) = findNimBlock(html, point)
+      resStr = resStr.strip() & ":\n"
+      resStr = reindent(resStr, indentLevel)
+      point = resPoint
+      body.add(resStr)
+      indentLevel += 1
+    of whileBlock:
+      var (resPoint, resStr) = findNimBlock(html, point)
+      resStr = resStr.strip() & ":\n"
+      resStr = reindent(resStr, indentLevel)
+      point = resPoint
+      body.add(resStr)
+      indentLevel += 1
+    of displayVariableBlock:
+      var (resPoint, resStr) = findNimVariableBlock(html, point)
+      resStr = resStr.strip()
+      resStr = &"result.add(toString(({resStr})))"
+      resStr = reindent(resStr, indentLevel)
+      body.add(resStr & "\n")
+      point = resPoint
+    of nimCodeBlock:
+      var (resPoint, resStr) = findNimCodeBlock(html, point)
+      resStr = resStr.strip() & "\n"
+      resStr = reindent(resStr, indentLevel)
+      body.add(resStr)
+      point = resPoint
 
-proc parseComplexStmt(value, identifier: string,
-        index: var int): NimNode {.compiletime.} =
-  ## Parses if/when/try /elif /else /except /finally statements
+    if point == html.len:
+      break
 
-  # Build up complex statement string
-  var stmtString = newString(0)
-  var numStatements = 0
-  for statement in value.parseCompoundStatements(identifier, index):
-    if statement[0] == '$': stmtString.add(statement.substr(1))
-    else: stmtString.add(statement)
-    inc(numStatements)
-
-  # Parse stmt string
-  result = parseExpr(stmtString)
-
-  var resultIndex = 0
-
-  # Fast forward a bit if this is a case statement
-  if identifier == "case":
-    inc(resultIndex)
-
-  while resultIndex < numStatements:
-
-    # Detect indentation
-    let indent = detectIndent(value, index)
-
-    # Parse until an open brace `{`
-    var read = value.skipUntil('{', index)
-    inc(index, read + 1)
-
-    # Parse through EOL
-    inc(index, value.parseThruEol(index))
-
-    # Parse through { .. }
-    read = value.parseToClose(index, open = '{', close = '}', opened = 1)
-
-    # Add parsed sub-expression into body
-    var body = newStmtList()
-    var stmtString = value.substring(index, read)
-    trimAfterEol(stmtString)
-    stmtString = reindent(stmtString, indent)
-    parseTemplate(body, stmtString)
-    inc(index, read + 1)
-
-    # Insert body into result
-    var stmtIndex = len(result[resultIndex]) - 1
-    result[resultIndex][stmtIndex] = body
-
-    # Parse through EOL again & increment result index
-    inc(index, value.parseThruEol(index))
-    inc(resultIndex)
-
-
-proc parseSimpleStatement(value: string,
-        index: var int): NimNode {.compiletime.} =
-  ## Parses for/while
-
-  # Detect indentation
-  let indent = detectIndent(value, index)
-
-  # Parse until an open brace `{`
-  var splitValue: string
-  var read = value.parseUntil(splitValue, '{', index)
-  result = parseExpr(splitValue & ":nil")
-  inc(index, read + 1)
-
-  # Parse through EOL
-  inc(index, value.parseThruEol(index))
-
-  # Parse through { .. }
-  read = value.parseToClose(index, open = '{', close = '}', opened = 1)
-
-  # Add parsed sub-expression into body
-  var body = newStmtList()
-  var stmtString = value.substring(index, read)
-  trimAfterEol(stmtString)
-  stmtString = reindent(stmtString, indent)
-  parseTemplate(body, stmtString)
-  inc(index, read + 1)
-
-  # Insert body into result
-  var stmtIndex = len(result) - 1
-  result[stmtIndex] = body
-
-  # Parse through EOL again
-  inc(index, value.parseThruEol(index))
-
-
-proc parseUntilSymbol(node: NimNode, value: string,
-        index: var int): bool {.compiletime.} =
-  ## Parses a string until a $ symbol is encountered, if
-  ## two $$'s are encountered in a row, a split will happen
-  ## removing one of the $'s from the resulting output
-  var splitValue: string
-  var read = value.parseUntil(splitValue, '$', index)
-  var insertionPoint = node.len
-
-  inc(index, read + 1)
-  if index < value.len:
-
-    case value[index]
-    of '$':
-      # Check for duplicate `$`, meaning this is an escaped $
-      node.add newCall("add", ident("result"), newStrLitNode("$"))
-      inc(index)
-
-    of '(':
-      # Check for open `(`, which means parse as simple single-line expression.
-      trimEol(splitValue)
-      read = value.parseToClose(index) + 1
-      node.add newCall("add", ident("result"),
-          # newCall(bindSym"strip", parseExpr("$" & value.substring(index, read)))
-          newCall("toString", parseExpr(value.substring(index, read)))
-      )
-      inc(index, read)
-
-    of '{':
-      # Check for open `{`, which means open statement list
-      trimEol(splitValue)
-      for s in value.parseStmtList(index):
-        node.add parseExpr(s)
-
-    else:
-      # Otherwise parse while valid `identChars` and make expression w/ $
-      var identifier: string
-      read = value.parseWhile(identifier, identChars, index)
-
-      if identifier in ["for", "while"]:
-        ## for/while means open simple statement
-        trimEol(splitValue)
-        node.add value.parseSimpleStatement(index)
-
-      elif identifier in ["if", "when", "case", "try"]:
-        ## if/when/case/try means complex statement
-        trimEol(splitValue)
-        node.add value.parseComplexStmt(identifier, index)
-
-      elif identifier.len > 0:
-        ## Treat as simple variable
-        node.add newCall("add", ident("result"), newCall("$", ident(identifier)))
-        inc(index, read)
-
-    result = true
-
-  # Insert
-  if splitValue.len > 0:
-    node.insert insertionPoint, newCall("add", ident("result"),
-            newStrLitNode(splitValue))
-
-
-proc parseTemplate(node: NimNode, value: string) =
-  ## Parses through entire template, outputing valid
-  ## Nim code into the input `node` AST.
-  var index = 0
-  while index < value.len and
-        parseUntilSymbol(node, value, index): discard
-
-when not defined(js):
-  macro tmplf*(body: untyped): void =
-    result = newStmtList()
-    # result.add parseExpr("result = \"\"")
-    result.add parseExpr("result = Component.new()")
-    var value = readFile(body.strVal)
-    parseTemplate(result, reindent(value))
-
-
-macro tmpli*(body: untyped): void =
-  result = newStmtList()
-
-  result.add parseExpr("result = Component.new()")
-
-  var value = if body.kind in nnkStrLit..nnkTripleStrLit: body.strVal
-                else: body[1].strVal
-
-  parseTemplate(result, reindent(value))
-
-
-macro tmpl*(body: untyped): void =
-  result = newStmtList()
-
-  var value = if body.kind in nnkStrLit..nnkTripleStrLit: body.strVal
-                else: body[1].strVal
-
-  parseTemplate(result, reindent(value))
+  return body.parseStmt()

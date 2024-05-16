@@ -15,7 +15,7 @@ proc impl():Future[Component] {.async.} =
     </style>
   """)
 
-  tmpli html"""
+  tmpl"""
   <main>
     <article>
       <a href="/">go back</a>
@@ -24,7 +24,7 @@ proc impl():Future[Component] {.async.} =
       <canvas id="renderCanvas"></canvas>
       <script src="https://preview.babylonjs.com/babylon.js"></script>
       <script>
-        $babylonScript
+        $(babylonScript)
         window.addEventListener('DOMContentLoaded', main);
       </script>
     </article>

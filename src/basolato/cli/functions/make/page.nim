@@ -36,7 +36,7 @@ proc impl():Future[Component] [[.async.]] =
     </style>
   ''')
 
-  tmpli html'''
+  tmpl'''
     $(style)
     <div class="$(style.element("className"))">
     </div>

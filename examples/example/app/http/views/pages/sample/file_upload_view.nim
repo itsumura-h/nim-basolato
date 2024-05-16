@@ -3,7 +3,7 @@ import ../../../../../../../src/basolato/view
 import ../../layouts/application_view
 
 proc impl():Future[Component] {.async.} =
-  tmpli html"""
+  tmpl"""
     <main>
       <a href="/">go back</a>
       <form method="POST" enctype="multipart/form-data">

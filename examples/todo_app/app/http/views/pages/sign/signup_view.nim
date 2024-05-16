@@ -23,7 +23,7 @@ proc impl(params, errors:JsonNode):Future[Component] {.async.} =
     </style>
   """)
 
-  tmpli html"""
+  tmpl"""
     $(style)
     <main>
       <section class="bulma-section $(style.element("section"))">

@@ -143,7 +143,7 @@ app/http/views/pages/sample/index_view.nim
 ```nim
 import basolato/view
 
-proc indexView(name:string):string = tmpli html"""
+proc indexView(name:string):string = tmpl"""
 <h1>index</h1>
 <p>$name</p>
 """

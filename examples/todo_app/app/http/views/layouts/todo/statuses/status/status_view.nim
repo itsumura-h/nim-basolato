@@ -12,7 +12,7 @@ proc statusView*(status:StatusViewModel):Component =
     </style>
   """)
 
-  tmpli html"""
+  tmpl"""
     <div class="bulma-column">
       <div class="bulma-card">
         <div class="bulma-card-header">

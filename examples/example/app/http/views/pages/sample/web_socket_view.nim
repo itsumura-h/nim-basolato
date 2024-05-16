@@ -12,7 +12,7 @@ proc webSocketComponentImpl():Component =
     </style>
   """)
 
-  tmpli html"""
+  tmpl"""
     <script>
       let socket = new WebSocket("ws://localhost:9000/sample/ws");
 
@@ -58,7 +58,7 @@ proc impl():Component =
     </style>
   """)
 
-  tmpli html"""
+  tmpl"""
     $(style)
     <main>
       <a href="/">go back</a>

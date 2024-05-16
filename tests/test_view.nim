@@ -10,14 +10,14 @@ import ../src/basolato/view
 
 block:
   # html expression
-  proc a():Component = tmpli html"""
+  proc a():Component = tmpl"""
     <p>aaa</p>
   """ 
   check a().toString() == "<p>aaa</p>"
 
 block:
   # xml encode
-  proc a(arg:string):Component = tmpli html"""
+  proc a(arg:string):Component = tmpl"""
     <p>$(arg)</p>
   """
   let arg = "<script>alert('hello')</script>"
@@ -25,7 +25,7 @@ block:
 
 block:
   # int
-  proc a(arg:int):Component = tmpli html"""
+  proc a(arg:int):Component = tmpl"""
     <p>$(arg)</p>
   """
   let arg = 1
@@ -33,7 +33,7 @@ block:
 
 block:
   # float
-  proc a(arg:float):Component = tmpli html"""
+  proc a(arg:float):Component = tmpl"""
     <p>$(arg)</p>
   """
   let arg = 1.1
@@ -41,7 +41,7 @@ block:
 
 block:
   # bool
-  proc a(arg:bool):Component = tmpli html"""
+  proc a(arg:bool):Component = tmpl"""
     <p>$(arg)</p>
   """
   let arg = true
@@ -49,7 +49,7 @@ block:
 
 block:
   # json
-  proc a(arg:JsonNode):Component = tmpli html"""
+  proc a(arg:JsonNode):Component = tmpl"""
     <p>$(arg)</p>
   """
   let arg = %"aaa"
@@ -57,7 +57,7 @@ block:
 
 block:
   # json
-  proc a(arg:JsonNode):Component = tmpli html"""
+  proc a(arg:JsonNode):Component = tmpl"""
     <p>$(arg)</p>
   """
   let arg = %"<script>alert('hello')</script>"
@@ -65,11 +65,11 @@ block:
 
 block:
   # component
-  proc a():Component = tmpli html"""
+  proc a():Component = tmpl"""
     <p>aaa</p>
   """
 
-  proc b(arg:Component):Component = tmpli html"""
+  proc b(arg:Component):Component = tmpl"""
     <div>$(arg)</div>
   """
   let arg = a()

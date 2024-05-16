@@ -7,9 +7,12 @@
 - [ビュー](#ビュー)
   - [イントロダクション](#イントロダクション)
   - [文法](#文法)
-    - [if](#if)
-    - [for](#for)
-    - [while](#while)
+    - [変数呼び出し](#変数呼び出し)
+    - [関数呼び出し](#関数呼び出し)
+    - [テンプレート内にNimのコードを書く](#テンプレート内にnimのコードを書く)
+    - [if文](#if文)
+    - [for文](#for文)
+    - [while文](#while文)
   - [コンポーネント指向](#コンポーネント指向)
     - [CSS](#css)
     - [SCSS](#scss)
@@ -25,13 +28,14 @@
 <!--te-->
 
 ## イントロダクション
-Basolatoでは、デフォルトのテンプレートエンジンとして、[nim-templates](https://github.com/onionhammer/nim-templates)をカスタマイズしたオリジナルのものを使用しています。これは `basolato/view` をインポートすることで利用できます。
+Basolatoはオリジナルのテンプレートエンジンを持っています。これは `basolato/view` をインポートすることで利用できます。
+`tmpl`マクロは`Component`オブジェクトを返します。
 
 ```nim
 import basolato/view
 
 proc baseImpl(content:Component): Component =
-  tmpli html"""
+  tmpl"""
     <html>
       <heade>
         <title>Basolato</title>
@@ -43,7 +47,7 @@ proc baseImpl(content:Component): Component =
   """
 
 proc indexImpl(message:string): Component =
-  tmpli html"""
+  tmpl"""
     <p>$(message)</p>
   """
 
@@ -52,43 +56,85 @@ proc indexView*(message:string): string =
 ```
 
 ## 文法
-### if
+### 変数呼び出し
+`$()`を使うことで変数を呼び出すことができます
+
 ```nim
-proc indexView(arg:string):Component = tmpli html"""
-$if arg == "a"{
-  <p>A</p>
-}
-$elif arg == "b"{
-  <p>B</p>
-}
-$else{
-  <p>C</p>
-}
-"""
+proc view():Component =
+  let msg = "Hello"
+  tmpl"""
+    <p>$(msg)</p>
+  """
 ```
 
-### for
+### 関数呼び出し
+`$()`は関数も呼ぶことができます
+
 ```nim
-proc indexView(args:openarray[string]):Component = tmpli html"""
-<li>
-  $for row in args{
-    <ul>$(row)</ul>
-  }
-</li>
-"""
+proc msg():string =
+  return "Hello"
+
+proc view():Component =
+  tmpl"""
+    <p>$(msg())</p>
+  """
 ```
 
-### while
+### テンプレート内にNimのコードを書く
+`${}`の中に書いたNimのコードを書くことができます
+
 ```nim
-proc indexView(args:openarray[string]):Component = tmpli html"""
-<ul>
-  ${ var y = 0 }
-  $while y < 4 {
-    <li>$(y)</li>
-    ${ inc(y) }
-  }
-</ul>
+proc view():Component =
+  tmpl"""
+    ${ let msg = "Hello" }
+    <p>$(msg)</p>
+  """
 ```
+
+
+
+### if文
+```nim
+proc indexView(arg:string):Component =
+  tmpl"""
+    $if arg == "a"{
+      <p>A</p>
+    }
+    $elif arg == "b"{
+      <p>B</p>
+    }
+    $else{
+      <p>C</p>
+    }
+  """
+```
+
+### for文
+```nim
+proc indexView(args:openarray[string]):Component =
+  tmpl"""
+    <li>
+      $for row in args{
+        <ul>$(row)</ul>
+      }
+    </li>
+  """
+```
+
+### while文
+```nim
+proc indexView(args:openarray[string]):Component =
+  tmpl"""
+    <ul>
+      ${ var y = 0 }
+      $while y < 4 {
+        <li>$(y)</li>
+        ${ inc(y) }
+      }
+    </ul>
+  """
+```
+
 
 ## コンポーネント指向
 Basolato viewは、ReactやVueのようなコンポーネント指向のデザインを採用しています。 
@@ -126,7 +172,7 @@ proc impl():Component =
     </style>
   """)
 
-  tmpli html"""
+  tmpl"""
     $(style)
     <div class="$(style.element("background"))"></div>
   """
@@ -211,7 +257,7 @@ proc element*(self:Style, name:string):string
 import basolato/view
 
 proc index*():Component =
-  tmpli html"""
+  tmpl"""
     <form>
       $(csrfToken())
       <input type="text", name="name">
@@ -247,7 +293,7 @@ proc signin*(request:Request, params:Params):Future[Response] {.async.} =
 view
 ```nim
 proc impl(params=newJObject()):Component =
-  tmpli html"""
+  tmpl"""
     <input type="text" name="email" value="$(old(params, "email"))">
     <input type="text" name="password">
   """

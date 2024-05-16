@@ -19,7 +19,7 @@ proc impl(viewModel:IndexViewModel):Future[Component] {.async.} =
     </style>
   """)
 
-  tmpli html"""
+  tmpl"""
     $(style)
     <main>
       <header>
