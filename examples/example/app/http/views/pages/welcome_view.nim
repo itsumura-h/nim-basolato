@@ -78,13 +78,13 @@ proc impl(name:string):Component =
     </style>
   """)
 
-  tmpli html"""
+  tmpl"""
     $(style)
     <link rel="stylesheet" href="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/styles/dracula.min.css">
     <script src="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/highlight.min.js"></script>
     <article>
       <section>
-        <h1 class="$(style.element("title"))">Nim $name is successfully running!!!</h1>
+        <h1 class="$(style.element("title"))">Nim $(name) is successfully running!!!</h1>
         <div class="$(style.element("topImage"))">
           <img
             src="/basolato.svg"

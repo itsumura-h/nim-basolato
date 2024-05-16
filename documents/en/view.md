@@ -8,6 +8,9 @@ Table of Contents
 - [View](#view)
   - [Introduction](#introduction)
   - [Template syntax](#template-syntax)
+    - [call variable](#call-variable)
+    - [call function](#call-function)
+    - [Nim code in template](#nim-code-in-template)
     - [if](#if)
     - [for](#for)
     - [while](#while)
@@ -26,13 +29,14 @@ Table of Contents
 <!--te-->
 
 ## Introduction
-Basolato uses the customized version of [nim-templates](https://github.com/onionhammer/nim-templates) as a default template engin. It can be used by importing `basolato/view`.
+Basolato has original template engin. It can be used by importing `basolato/view`.
+`tmpl` macro returns `Component` object.
 
 ```nim
 import basolato/view
 
 proc baseImpl(content:Component): Component =
-  tmpli html"""
+  tmpl"""
     <html>
       <heade>
         <title>Basolato</title>
@@ -44,7 +48,7 @@ proc baseImpl(content:Component): Component =
   """
 
 proc indexImpl(message:string): Component =
-  tmpli html"""
+  tmpl"""
     <p>$(message)</p>
   """
 
@@ -53,10 +57,46 @@ proc indexView*(message:string): string =
 ```
 
 ## Template syntax
+### call variable
+`$()` can call variable.
+
+```nim
+proc view():Component =
+  let msg = "Hello"
+  tmpl"""
+    <p>$(msg)</p>
+  """
+```
+
+
+### call function
+`$()` can call function too.
+
+```nim
+proc msg():string =
+  return "Hello"
+
+proc view():Component =
+  tmpl"""
+    <p>$(msg())</p>
+  """
+```
+
+### Nim code in template
+inside `${}`, you can write Nim code.
+
+```nim
+proc view():Component =
+  tmpl"""
+    ${ let msg = "Hello" }
+    <p>$(msg)</p>
+  """
+```
+
 ### if
 ```nim
 proc indexView(arg:string):Component =
-  tmpli html"""
+  tmpl"""
     $if arg == "a"{
       <p>A</p>
     }
@@ -72,7 +112,7 @@ proc indexView(arg:string):Component =
 ### for
 ```nim
 proc indexView(args:openarray[string]):Component =
-  tmpli html"""
+  tmpl"""
     <li>
       $for row in args{
         <ul>$(row)</ul>
@@ -84,7 +124,7 @@ proc indexView(args:openarray[string]):Component =
 ### while
 ```nim
 proc indexView(args:openarray[string]):Component =
-  tmpli html"""
+  tmpl"""
     <ul>
       ${ var y = 0 }
       $while y < 4 {
@@ -129,7 +169,7 @@ proc impl():Component =
     </style>
   """
 
-  tmpli html"""
+  tmpl"""
     $(style)
     <div class="$(style.element("background"))"></div>
   """
@@ -214,7 +254,7 @@ To send POST request from `form`, you have to set `csrf token`. You can use help
 import basolato/view
 
 proc index*():Component =
-  tmpli html"""
+  tmpl"""
     <form>
       $(csrfToken())
       <input type="text", name="name">
@@ -250,7 +290,7 @@ proc signin*(request:Request, params:Params):Future[Response] {.async.} =
 view
 ```nim
 proc impl(params=newJObject()):Component =
-  tmpli html"""
+  tmpl"""
     <input type="text" name="email" value="$(old(params, "email"))">
     <input type="text" name="password">
   """

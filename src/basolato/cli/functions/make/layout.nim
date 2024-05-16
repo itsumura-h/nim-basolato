@@ -53,7 +53,7 @@ proc {targetCaptalizedProc}View*():Future[Component] [[.async.]] =
     </style>
   ''')
 
-  tmpli html'''
+  tmpl'''
     $(style)
     <div class="$(style.element("className"))">
     </div>

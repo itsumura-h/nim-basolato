@@ -9,7 +9,7 @@ proc impl(context:Context):Future[Component]{.async.} =
     }
   """)
   
-  tmpli html"""
+  tmpl"""
     <main>
       <a href="/">go back</a>
       <section>

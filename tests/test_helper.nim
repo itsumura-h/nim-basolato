@@ -10,7 +10,7 @@ import std/strformat
 import std/strutils
 import std/cgi
 
-const HOST = "http://0.0.0.0:5000"
+const HOST = "http://0.0.0.0:8000"
 
 suite("test helper"):
   test("dd"):

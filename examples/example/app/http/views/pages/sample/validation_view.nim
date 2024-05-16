@@ -13,7 +13,7 @@ proc impl(params, errors:JsonNode):Future[Component] {.async.} =
     </style>
   """)
 
-  tmpli html"""
+  tmpl"""
     $(style)
     <main>
       <a href="/">go back</a>

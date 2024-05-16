@@ -17,7 +17,7 @@ proc statusesView*(viewModel:StatusesViewModel):Component =
     </style>
   """)
 
-  tmpli html"""
+  tmpl"""
     $(style)
     <section class="bulma-section">
       <article class="bulma-columns $(style.element("columns"))">

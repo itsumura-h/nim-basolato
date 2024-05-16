@@ -14,7 +14,7 @@ proc impl():Future[Component] {.async.} =
     </style>
   """)
 
-  tmpli html"""
+  tmpl"""
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/vs2015.min.css">
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
     $(style)

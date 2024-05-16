@@ -3,7 +3,7 @@ import head_view
 
 
 proc applicationView*(title:string, body:Component):Component =
-  tmpli html"""
+  tmpl"""
     <!DOCTYPE html>
     <html lang="en">
       $(headView(title))

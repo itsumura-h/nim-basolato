@@ -2,7 +2,7 @@ import std/asyncdispatch
 import ../../../../../../../src/basolato/view
 import ../../../../models/fortune
 
-proc fortuneView*(rows:seq[Fortune]):Future[Component] {.async.} = tmpli html"""
+proc fortuneView*(rows:seq[Fortune]):Future[Component] {.async.} = tmpl"""
 <!DOCTYPE html>
 <html>
 

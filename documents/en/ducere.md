@@ -121,10 +121,10 @@ ducere build
 > Basolato uses config file '/basolato/.env'
 > Basolato uses config file '/basolato/.env'
 > Basolato uses config file '/basolato/.env'
-> Basolato based on asynchttpserver listening on 0.0.0.0:5000
-> Basolato based on asynchttpserver listening on 0.0.0.0:5000
-> Basolato based on asynchttpserver listening on 0.0.0.0:5000
-> Basolato based on asynchttpserver listening on 0.0.0.0:5000
+> Basolato based on asynchttpserver listening on 0.0.0.0:8000
+> Basolato based on asynchttpserver listening on 0.0.0.0:8000
+> Basolato based on asynchttpserver listening on 0.0.0.0:8000
+> Basolato based on asynchttpserver listening on 0.0.0.0:8000
 ```
 
 You can switch port by setting `-p` option.

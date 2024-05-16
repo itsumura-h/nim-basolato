@@ -8,7 +8,7 @@ import std/httpclient
 import std/strutils
 
 
-const HOST = "http://0.0.0.0:5000"
+const HOST = "http://0.0.0.0:8000"
 
 block:
   let client = newHttpClient()
@@ -23,6 +23,7 @@ block:
 block:
   let client = newHttpClient()
   let response = client.getContent(&"{HOST}/renderTemplate")
+  # check response.splitLines()[0] == "<h1>test template</h1><input type=\"hidden\" name=\"csrf_token\" value=\"\">"
   check response.splitLines()[0] == "<h1>test template</h1>"
 
 block:

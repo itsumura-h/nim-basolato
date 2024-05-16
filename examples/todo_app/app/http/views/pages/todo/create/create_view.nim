@@ -12,7 +12,7 @@ proc impl(viewModel:CreateViewModel):Component =
     </style>
   """)
 
-  tmpli html"""
+  tmpl"""
     $(style)
     <section class="bulma-section">
       <p>

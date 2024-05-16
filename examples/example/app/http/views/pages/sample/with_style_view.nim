@@ -16,7 +16,7 @@ proc component1():Component =
     </style>
   """)
 
-  tmpli html"""
+  tmpl"""
     $(style1)
     <div class="$(style1.element("className"))"></div>
   """
@@ -36,7 +36,7 @@ proc component2():Component =
     </style>
   """)
 
-  tmpli html"""
+  tmpl"""
     $(style2)
     <div class="$(style2.element("className"))"></div>
   """
@@ -56,12 +56,12 @@ proc component3():Component =
     </style>
   """)
 
-  tmpli html"""
+  tmpl"""
     $(style3)
     <div class="$(style3.element("className"))"></div>
   """
 
-proc impl():Component = tmpli html"""
+proc impl():Component = tmpl"""
 <main>
   <article>
     <a href="/">go back</a>

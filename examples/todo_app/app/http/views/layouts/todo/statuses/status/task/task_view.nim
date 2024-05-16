@@ -23,7 +23,7 @@ proc taskView*(viewModel:TaskViewModel):Component =
     </style>
   """)
 
-  tmpli html"""
+  tmpl"""
     $(style)
     <article class="bulma-card $(style.element("task"))">
       <div class="bulma-card-header bulma-columns $(style.element("columns"))">

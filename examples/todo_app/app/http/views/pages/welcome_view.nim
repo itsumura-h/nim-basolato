@@ -77,7 +77,7 @@ proc impl(title, name:string):Component =
     </style>
   """)
 
-  tmpli html"""
+  tmpl"""
     <!DOCTYPE html>
     <html lang="en">
     <head>

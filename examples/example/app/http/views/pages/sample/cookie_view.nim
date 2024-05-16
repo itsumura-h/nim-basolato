@@ -10,7 +10,7 @@ proc impl(cookies:JsonNode):Future[Component] {.async.} =
     }
   """)
 
-  tmpli html"""
+  tmpl"""
     <main>
       <article>
         <a href="/">go back</a>

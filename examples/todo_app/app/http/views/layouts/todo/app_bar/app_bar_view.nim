@@ -9,7 +9,7 @@ proc appBarView*(viewMode:AppBarViewModel):Future[Component] {.async.} =
     </style>
   """)
 
-  tmpli html"""
+  tmpl"""
     $(style)
     <script>
       window.addEventListener('load', ()=>{
