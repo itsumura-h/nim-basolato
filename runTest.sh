@@ -6,7 +6,7 @@ nimble -v
 # run server
 nimble install -y
 cd /root/project/tests/server
-nim c --mm:orc --threads:off -d:ssl --parallelBuild:0 --putenv:PORT=5000 main
+nim c --mm:orc --threads:off -d:ssl --parallelBuild:0 --putenv:PORT=8000 main
 nohup ./main > /dev/null 2>&1 &
 
 # run test

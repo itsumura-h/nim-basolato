@@ -7,7 +7,7 @@ import std/strformat
 import std/unittest
 import ../src/basolato/core/security/csrf_token
 
-const HOST = "http://0.0.0.0:5000"
+const HOST = "http://0.0.0.0:8000"
 let client = newHttpClient()
 
 suite("test routing"):

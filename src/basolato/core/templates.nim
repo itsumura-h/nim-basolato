@@ -210,6 +210,7 @@ macro tmpl*(html: untyped): untyped =
   var indentLevel = 0
   var blockType = strBlock
   while true:
+    echo "=".repeat(30)
 
     if point == html.len:
       break
@@ -219,10 +220,17 @@ macro tmpl*(html: untyped): untyped =
     case blockType
     of strBlock:
       var (resPoint, resStr) = findStrBlock(html, point)
-      resStr = resStr.strip()
-      if resStr.len > 0:
+      echo "=== resStr"
+      echo resStr
+      let isAllWhitespace = resStr.strip().len == 0
+      if not isAllWhitespace: # 空白文字以外が含まれているなら、改行を残し、改行より外側の空白文字を削除して追加する
+        resStr = resStr.strip(chars={' ', '\t', '\v', '\f'}) # whitespace - newline  https://nim-lang.org/docs/strutils.html#Whitespace
         resStr = newStrLitNode(resStr).repr # 複数行の文字列を改行コードを含む1行にする
+        echo "=== resStr"
+        echo resStr
         resStr = &"result.add({resStr})\n"
+        echo "=== resStr"
+        echo resStr
         resStr = reindent(resStr, indentLevel)
         body.add(resStr)
       point = resPoint
@@ -290,6 +298,9 @@ macro tmpl*(html: untyped): untyped =
       resStr = reindent(resStr, indentLevel)
       body.add(resStr)
       point = resPoint
+
+    echo ""
+    echo body
 
     if point == html.len:
       break

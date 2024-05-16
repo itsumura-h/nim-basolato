@@ -17,7 +17,7 @@ include ../src/basolato/core/security/session
 include ../src/basolato/core/security/csrf_token
 
 
-const HOST = "http://localhost:5000"
+const HOST = "http://localhost:8000"
 
 let client = newHttpClient(maxRedirects=0)
 var sessionId:string

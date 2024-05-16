@@ -119,7 +119,9 @@ block:
     """
   let res = view()
   echo res
-  check $res == "<!-- you're idiot -->active"
+  check $res == """<!-- you're idiot -->
+
+        active"""
 
 
 block:
@@ -159,7 +161,19 @@ block:
     """
   let res = view()
   echo res
-  check $res == "<ul><li>a</li><li>b</li><li>c</li><li>d</li><li>e</li></ul>"
+  check $res == """<ul>
+
+          <li>a</li>
+
+          <li>b</li>
+
+          <li>c</li>
+
+          <li>d</li>
+
+          <li>e</li>
+
+      </ul>"""
 
 
 block:
@@ -181,12 +195,16 @@ block:
             alert("hello")
           }
           f()
-        </script><script>
+        </script>
+
+        <script>
           const fn = (){
             alert("hello")
           }
           f()
-        </script><script>
+        </script>
+
+        <script>
           const fn = (){
             alert("hello")
           }
