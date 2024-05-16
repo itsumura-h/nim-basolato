@@ -224,7 +224,6 @@ macro tmpl*(html: untyped): untyped =
       # echo resStr
       let isAllWhitespace = resStr.strip().len == 0
       if not isAllWhitespace: # 空白文字以外が含まれているなら、改行を残し、改行より外側の空白文字を削除して追加する
-        resStr = resStr.strip(chars={' ', '\t', '\v', '\f'}) # whitespace - newline  https://nim-lang.org/docs/strutils.html#Whitespace
         resStr = newStrLitNode(resStr).repr # 複数行の文字列を改行コードを含む1行にする
         resStr = &"result.add({resStr})\n"
         resStr = reindent(resStr, indentLevel)
