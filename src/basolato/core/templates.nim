@@ -212,7 +212,7 @@ macro tmpl*(html: untyped): untyped =
   while true:
     # echo "=".repeat(30)
 
-    if point == html.len:
+    if point >= html.len:
       break
 
     blockType = identifyBlockType(html, point)
@@ -311,10 +311,7 @@ macro tmpl*(html: untyped): untyped =
       body.add(resStr)
       point = resPoint
 
-    # echo ""
-    # echo body
-
-    if point == html.len:
-      break
+  # echo ""
+  # echo body
 
   return body.parseStmt()
