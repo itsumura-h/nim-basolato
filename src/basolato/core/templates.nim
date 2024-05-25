@@ -85,6 +85,19 @@ type BlockType = enum
   displayVariableBlock  # $()
   nimCodeBlock          # ${}
 
+
+proc findUntilSpace(str:string, point:int):string =
+  var count = -1
+  for i in point..<str.len:
+    let s = str[i]
+    count += 1
+    if Whitespace.contains(s):
+      break
+  let resPoint = point + count
+  let resStr = str.substr(point, resPoint-1) # ' 'を含めない
+  return resStr
+
+
 proc identifyBlockType(str:string, point:int):BlockType =
   if str.substr(point, point+2) == "$if":
     return ifBlock
@@ -105,7 +118,13 @@ proc identifyBlockType(str:string, point:int):BlockType =
   elif str.substr(point, point+1) == "${":
     return nimCodeBlock
   else:
-    return strBlock
+    let hasDoller = str[point] == '$'
+    if hasDoller:
+      let invalidString = findUntilSpace(str, point)
+      let msg = "found \"" & invalidString & "\". to display varable, use $(xx) format."
+      raise newException(Exception, msg)
+    else:
+      return strBlock
 
 
 proc findStrBlock(str:string, point:int):(int, string) =
@@ -216,6 +235,7 @@ macro tmpl*(html: untyped): untyped =
       break
 
     blockType = identifyBlockType(html, point)
+    # echo "blockType: ", blockType
 
     case blockType
     of strBlock:
