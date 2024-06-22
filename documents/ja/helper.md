@@ -4,10 +4,16 @@
 
 目次
 <!--ts-->
-
+* [ヘルパー関数](#ヘルパー関数)
+   * [dd](#dd)
+      * [API](#api)
+      * [サンプル](#サンプル)
+   * [password](#password)
+      * [API](#api-1)
+      * [サンプル](#サンプル-1)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: root, at: Sat Jun 22 10:32:49 UTC 2024 -->
+<!-- Added by: root, at: Sat Jun 22 11:26:22 UTC 2024 -->
 
 <!--te-->
 

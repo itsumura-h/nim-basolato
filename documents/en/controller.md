@@ -5,10 +5,24 @@ Controller
 Table of Contents
 
 <!--ts-->
-
+* [Controller](#controller)
+   * [Introduction](#introduction)
+   * [Creating a Controller](#creating-a-controller)
+   * [How to get params](#how-to-get-params)
+      * [Request params](#request-params)
+      * [Url params](#url-params)
+      * [Query params](#query-params)
+   * [Response](#response)
+      * [Returning string](#returning-string)
+      * [Returning HTML file](#returning-html-file)
+      * [Returning template](#returning-template)
+      * [Returning JSON](#returning-json)
+      * [Response with status](#response-with-status)
+      * [Response with header](#response-with-header)
+   * [Redirect](#redirect)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: root, at: Sat Jun 22 10:31:13 UTC 2024 -->
+<!-- Added by: root, at: Sat Jun 22 11:26:32 UTC 2024 -->
 
 <!--te-->
 

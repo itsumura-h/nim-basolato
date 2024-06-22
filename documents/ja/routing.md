@@ -17,10 +17,13 @@ serve(ROUTES)
 
 目次
 <!--ts-->
-
+* [ルーティング](#ルーティング)
+   * [HTTP動詞](#http動詞)
+   * [ルーティンググループ](#ルーティンググループ)
+   * [URLパラメータ](#urlパラメータ)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: root, at: Sat Jun 22 10:32:26 UTC 2024 -->
+<!-- Added by: root, at: Sat Jun 22 11:26:18 UTC 2024 -->
 
 <!--te-->
 

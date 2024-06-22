@@ -5,10 +5,28 @@ Ducere command
 Table of Contents
 
 <!--ts-->
-
+* [Ducere command](#ducere-command)
+   * [Introduction](#introduction)
+   * [Usages](#usages)
+      * [new](#new)
+      * [serve](#serve)
+      * [build](#build)
+      * [migrate](#migrate)
+      * [migrate](#migrate-1)
+      * [make](#make)
+         * [config](#config)
+         * [key](#key)
+         * [controller](#controller)
+         * [view](#view)
+         * [migration](#migration)
+         * [model](#model)
+            * [Create child domain model in aggregate](#create-child-domain-model-in-aggregate)
+         * [value object](#value-object)
+         * [usecase](#usecase)
+   * [Bash-completion](#bash-completion)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: root, at: Sat Jun 22 10:31:53 UTC 2024 -->
+<!-- Added by: root, at: Sat Jun 22 11:26:39 UTC 2024 -->
 
 <!--te-->
 

@@ -4,10 +4,14 @@
 
 目次
 <!--ts-->
-
+* [ヘッダー](#ヘッダー)
+   * [リクエストヘッダー](#リクエストヘッダー)
+   * [レスポンスヘッダー](#レスポンスヘッダー)
+      * [Header型](#header型)
+      * [コントローラーでレスポンスにヘッダーを設定する](#コントローラーでレスポンスにヘッダーを設定する)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: root, at: Sat Jun 22 10:32:44 UTC 2024 -->
+<!-- Added by: root, at: Sat Jun 22 11:26:21 UTC 2024 -->
 
 <!--te-->
 

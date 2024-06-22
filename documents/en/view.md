@@ -5,10 +5,26 @@ View
 Table of Contents
 
 <!--ts-->
-
+* [View](#view)
+   * [Introduction](#introduction)
+   * [Template syntax](#template-syntax)
+      * [call variable](#call-variable)
+      * [call function](#call-function)
+      * [Nim code in template](#nim-code-in-template)
+      * [if](#if)
+      * [for](#for)
+      * [while](#while)
+   * [Component style design](#component-style-design)
+      * [CSS](#css)
+      * [SCSS](#scss)
+      * [API](#api)
+   * [Helper functions](#helper-functions)
+      * [Csrf Token](#csrf-token)
+      * [old helper](#old-helper)
+   * [Uses SCF as template engine](#uses-scf-as-template-engine)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: root, at: Sat Jun 22 10:31:44 UTC 2024 -->
+<!-- Added by: root, at: Sat Jun 22 11:26:37 UTC 2024 -->
 
 <!--te-->
 

@@ -5,10 +5,38 @@ Settings
 Table of Contents
 
 <!--ts-->
-
+* [Settings](#settings)
+   * [Introduction](#introduction)
+   * [Environment variables called at compile time (config.nims)](#environment-variables-called-at-compile-time-confignims)
+      * [DB_SQLITE :string = "true"](#db_sqlite-string--true)
+      * [DB_POSTGRES :string = "false"](#db_postgres-string--false)
+      * [DB_MYSQL :string = "false"](#db_mysql-string--false)
+      * [DB_MARIADB :string = "false"](#db_mariadb-string--false)
+      * [SESSION_TYPE :string = "file"](#session_type-string--file)
+      * [USE_LIBSASS :string = "false"](#use_libsass-string--false)
+   * [Environment variables called at runtime (.env)](#environment-variables-called-at-runtime-env)
+      * [SECRET_KEY :string](#secret_key-string)
+      * [DB_DATABASE :string = ""](#db_database-string--)
+      * [DB_USER :string = ""](#db_user-string--)
+      * [DB_PASSWORD :string = ""](#db_password-string--)
+      * [DB_HOST :string = "sqlite"](#db_host-string--sqlite)
+      * [DB_PORT :int = 5432](#db_port-int--5432)
+      * [DB_MAX_CONNECTION :int = 1](#db_max_connection-int--1)
+      * [SESSION_DB_PATH :string = getCurrentDir() / "session.db"](#session_db_path-string--getcurrentdir--sessiondb)
+      * [COOKIE_DOMAINS :string = ""](#cookie_domains-string--)
+   * [Settings configured in the Settings object](#settings-configured-in-the-settings-object)
+      * [HOST :string = "0.0.0.0"](#host-string--0000)
+      * [PORT :int = 8000](#port-int--8000)
+      * [LOG_TO_CONSOLE :bool = true](#log_to_console-bool--true)
+      * [LOG_TO_FILE :bool = true](#log_to_file-bool--true)
+      * [ERROR_LOG_TO_FILE :bool = true](#error_log_to_file-bool--true)
+      * [LOG_DIR :string = getCurrentDir() / "logs"](#log_dir-string--getcurrentdir--logs)
+      * [SESSION_TIME :int = 120](#session_time-int--120)
+      * [SESSION_EXPIRE_ON_CLOSE: bool = false](#session_expire_on_close-bool--false)
+      * [LOCALE :string = "en"](#locale-string--en)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: root, at: Sat Jun 22 10:30:59 UTC 2024 -->
+<!-- Added by: root, at: Sat Jun 22 11:26:30 UTC 2024 -->
 
 <!--te-->
 
