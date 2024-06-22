@@ -4,10 +4,10 @@ Static Files
 
 Table of Contents
 <!--ts-->
-* [Static Files](#static-files)
+
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: root, at: Fri Dec 22 21:21:00 UTC 2023 -->
+<!-- Added by: root, at: Sat Jun 22 10:31:22 UTC 2024 -->
 
 <!--te-->
 

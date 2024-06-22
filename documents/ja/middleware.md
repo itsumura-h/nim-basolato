@@ -4,12 +4,10 @@
 
 目次
 <!--ts-->
-* [ミドルウェア](#ミドルウェア)
-   * [API](#api)
-   * [サンプル](#サンプル)
+
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: root, at: Fri Dec 22 21:22:51 UTC 2023 -->
+<!-- Added by: root, at: Sat Jun 22 10:33:03 UTC 2024 -->
 
 <!--te-->
 

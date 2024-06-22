@@ -4,14 +4,10 @@
 
 目次
 <!--ts-->
-* [リクエスト](#リクエスト)
-   * [パラメータの取得](#パラメータの取得)
-      * [API](#api)
-   * [ファイル保存](#ファイル保存)
-      * [API](#api-1)
+
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: root, at: Fri Dec 22 21:21:49 UTC 2023 -->
+<!-- Added by: root, at: Sat Jun 22 10:32:02 UTC 2024 -->
 
 <!--te-->
 

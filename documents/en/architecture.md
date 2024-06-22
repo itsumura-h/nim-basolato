@@ -5,17 +5,10 @@ Architecture
 Table of Contents
 
 <!--ts-->
-* [Architecture](#architecture)
-   * [Introduction](#introduction)
-   * [Usecases](#usecases)
-   * [Domain model (Aggregates)](#domain-model-aggregates)
-   * [Value object](#value-object)
-   * [Entity](#entity)
-   * [Repository](#repository)
-   * [Query service](#query-service)
+
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: root, at: Fri Dec 22 21:20:38 UTC 2023 -->
+<!-- Added by: root, at: Sat Jun 22 10:31:04 UTC 2024 -->
 
 <!--te-->
 

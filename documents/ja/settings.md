@@ -4,38 +4,10 @@
 
 目次
 <!--ts-->
-- [設定](#設定)
-  - [イントロダクション](#イントロダクション)
-  - [コンパイル時に呼ばれる環境変数 (config.nims)](#コンパイル時に呼ばれる環境変数-confignims)
-    - [DB\_SQLITE :string = "true"](#db_sqlite-string--true)
-    - [DB\_POSTGRES :string = "false"](#db_postgres-string--false)
-    - [DB\_MYSQL :string = "false"](#db_mysql-string--false)
-    - [DB\_MARIADB :string = "false"](#db_mariadb-string--false)
-    - [SESSION\_TYPE :string = "file"](#session_type-string--file)
-    - [USE\_LIBSASS :string = "false"](#use_libsass-string--false)
-  - [実行時に呼ばれる環境変数 (.env)](#実行時に呼ばれる環境変数-env)
-    - [SECRET\_KEY :string](#secret_key-string)
-    - [DB\_DATABASE :string](#db_database-string)
-    - [DB\_USER :string](#db_user-string)
-    - [DB\_PASSWORD :string](#db_password-string)
-    - [DB\_HOST :string](#db_host-string)
-    - [DB\_PORT :int](#db_port-int)
-    - [DB\_MAX\_CONNECTION :int](#db_max_connection-int)
-    - [SESSION\_DB\_PATH :string](#session_db_path-string)
-    - [COOKIE\_DOMAINS :string](#cookie_domains-string)
-  - [Settingオブジェクトで設定するもの](#settingオブジェクトで設定するもの)
-    - [HOST :string = "0.0.0.0"](#host-string--0000)
-    - [PORT :int = 8000](#port-int--8000)
-    - [LOG\_TO\_CONSOLE :bool = true](#log_to_console-bool--true)
-    - [LOG\_TO\_FILE :bool = true](#log_to_file-bool--true)
-    - [ERROR\_LOG\_TO\_FILE :bool = true](#error_log_to_file-bool--true)
-    - [LOG\_DIR :string = getCurrentDir() / "logs"](#log_dir-string--getcurrentdir--logs)
-    - [SESSION\_TIME :int = 120](#session_time-int--120)
-    - [SESSION\_EXPIRE\_ON\_CLOSE: bool = false](#session_expire_on_close-bool--false)
-    - [LOCALE :string = "en"](#locale-string--en)
+
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: root, at: Fri Dec 22 21:22:04 UTC 2023 -->
+<!-- Added by: root, at: Sat Jun 22 10:32:17 UTC 2024 -->
 
 <!--te-->
 

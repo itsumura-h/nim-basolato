@@ -5,38 +5,10 @@ Settings
 Table of Contents
 
 <!--ts-->
-- [Settings](#settings)
-  - [Introduction](#introduction)
-  - [Environment variables called at compile time (config.nims)](#environment-variables-called-at-compile-time-confignims)
-    - [DB\_SQLITE :string = "true"](#db_sqlite-string--true)
-    - [DB\_POSTGRES :string = "false"](#db_postgres-string--false)
-    - [DB\_MYSQL :string = "false"](#db_mysql-string--false)
-    - [DB\_MARIADB :string = "false"](#db_mariadb-string--false)
-    - [SESSION\_TYPE :string = "file"](#session_type-string--file)
-    - [USE\_LIBSASS :string = "false"](#use_libsass-string--false)
-  - [Environment variables called at runtime (.env)](#environment-variables-called-at-runtime-env)
-    - [SECRET\_KEY :string](#secret_key-string)
-    - [DB\_DATABASE :string = ""](#db_database-string--)
-    - [DB\_USER :string = ""](#db_user-string--)
-    - [DB\_PASSWORD :string = ""](#db_password-string--)
-    - [DB\_HOST :string = "sqlite"](#db_host-string--sqlite)
-    - [DB\_PORT :int = 5432](#db_port-int--5432)
-    - [DB\_MAX\_CONNECTION :int = 1](#db_max_connection-int--1)
-    - [SESSION\_DB\_PATH :string = getCurrentDir() / "session.db"](#session_db_path-string--getcurrentdir--sessiondb)
-    - [COOKIE\_DOMAINS :string = ""](#cookie_domains-string--)
-  - [Settings configured in the Settings object](#settings-configured-in-the-settings-object)
-    - [HOST :string = "0.0.0.0"](#host-string--0000)
-    - [PORT :int = 8000](#port-int--8000)
-    - [LOG\_TO\_CONSOLE :bool = true](#log_to_console-bool--true)
-    - [LOG\_TO\_FILE :bool = true](#log_to_file-bool--true)
-    - [ERROR\_LOG\_TO\_FILE :bool = true](#error_log_to_file-bool--true)
-    - [LOG\_DIR :string = getCurrentDir() / "logs"](#log_dir-string--getcurrentdir--logs)
-    - [SESSION\_TIME :int = 120](#session_time-int--120)
-    - [SESSION\_EXPIRE\_ON\_CLOSE: bool = false](#session_expire_on_close-bool--false)
-    - [LOCALE :string = "en"](#locale-string--en)
+
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: root, at: Fri Dec 22 21:20:33 UTC 2023 -->
+<!-- Added by: root, at: Sat Jun 22 10:30:59 UTC 2024 -->
 
 <!--te-->
 

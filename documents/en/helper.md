@@ -5,16 +5,10 @@ Healper
 Table of Contents
 
 <!--ts-->
-* [Healper](#healper)
-   * [dd](#dd)
-      * [API](#api)
-      * [Example](#example)
-   * [password](#password)
-      * [API](#api-1)
-      * [Example](#example-1)
+
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: root, at: Fri Dec 22 21:21:10 UTC 2023 -->
+<!-- Added by: root, at: Sat Jun 22 10:31:31 UTC 2024 -->
 
 <!--te-->
 
