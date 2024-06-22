@@ -77,6 +77,17 @@ proc new*(
   sessionExpireOnClose:bool = false,
   locale:string = "en"
 ):Settings =
+  ## Default values
+  ## - `host:string = "127.0.0.1"`
+  ## - `port:int = 8000`
+  ## - `logToConsole:bool = true`
+  ## - `logToFile:bool = false`
+  ## - `errorLogToFile:bool = false`
+  ## - `logDir:string = "./logs"`
+  ## - `sessionTime:int = 120` default 120, minutes of 2 hours
+  ## - `sessionExpireOnClose:bool = false`
+  ## - `locale:string = "en"`
+
   LOG_TO_CONSOLE = logToConsole
   LOG_TO_FILE = logToFile
   ERROR_LOG_TO_FILE = errorLogToFile
