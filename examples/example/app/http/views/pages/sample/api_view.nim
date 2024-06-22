@@ -22,10 +22,10 @@ proc impl():Future[Component] {.async.} =
     <script>
       const request = axios.create({
         withCredentials: true,
-        baseURL: 'http://localhost:9000/api',
+        baseURL: 'http://localhost:8000/api',
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': 'http://localhost:9000'
+          'Access-Control-Allow-Origin': 'http://localhost:8000'
         }
       })
 

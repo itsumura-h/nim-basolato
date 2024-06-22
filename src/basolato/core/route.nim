@@ -7,7 +7,6 @@ import std/re
 import std/strformat
 import std/strutils
 import std/tables
-import ./baseEnv
 import ./header
 import ./logger
 import ./response

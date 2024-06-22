@@ -10,7 +10,7 @@ import std/tables
 import std/times
 import std/mimetypes
 import ../../base
-import ../../baseEnv
+import ../../settings
 import ../../error_page
 import ../../header
 import ../../logger

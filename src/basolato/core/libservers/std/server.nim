@@ -11,7 +11,7 @@ import std/tables
 import std/times
 import std/mimetypes
 import ../../base
-import ../../baseEnv
+import ../../settings
 import ../../error_page
 import ../../header
 import ../../logger
@@ -22,8 +22,10 @@ import ../../security/context
 import ./request
 
 
-proc serveCore(params:(Routes, int)){.async.} =
-  let (routes, port) = params
+type ServeCoreArg = tuple[routes:Routes, host:string, port:int]
+
+proc serveCore(arg:ServeCoreArg){.async.} =
+  let (routes, host, port) = arg
   var server = newAsyncHttpServer(true, true)
 
   proc cb(req: Request) {.async, gcsafe.} =
@@ -75,30 +77,6 @@ proc serveCore(params:(Routes, int)){.async.} =
       echoErrorMsg(&"{$response.status}  {$req.httpMethod}  {req.path}  {req.hostname}  {userAgent}")
       echoErrorMsg(msg)
 
-    # except:
-    #   var headers = newHttpHeaders()
-    #   headers["content-type"] = "text/html; charset=utf-8"
-    #   let exception = getCurrentException()
-    #   echo "exception.name: ",exception.name
-    #   if exception.name == "DD".cstring:
-    #     var msg = exception.msg
-    #     msg = msg.replace(re"Async traceback:[.\s\S]*")
-    #     response = Response.new(Http200, ddPage(msg), headers)
-    #   elif exception.name == "ErrorAuthRedirect".cstring:
-    #     headers["location"] = exception.msg
-    #     headers["set-cookie"] = "session_id=; expires=31-Dec-1999 23:59:59 GMT" # Delete session id
-    #     response = Response.new(Http302, "", headers)
-    #   elif exception.name == "ErrorRedirect".cstring:
-    #     headers["location"] = exception.msg
-    #     response = Response.new(Http302, "", headers)
-    #   elif exception.name == "ErrorHttpParse".cstring:
-    #     response = Response.new(Http501, "", headers)
-    #   else:
-    #     let status = checkHttpCode(exception)
-    #     response = Response.new(status, errorPage(status, exception.msg), headers)
-    #     echoErrorMsg(&"{$response.status}  {req.hostname}  {$req.httpMethod}  {req.path}")
-    #     echoErrorMsg(exception.msg)
-
     if response.status.is4xx:
       var headers = newHttpHeaders()
       headers["content-type"] = "text/html; charset=utf-8"
@@ -124,7 +102,7 @@ proc serveCore(params:(Routes, int)){.async.} =
     req.dealKeepAlive()
 
 
-  server.listen(Port(port), HOST_ADDR)
+  server.listen(Port(port), host)
   while true:
     if server.shouldAcceptRequest():
       await server.acceptRequest(cb)
@@ -134,12 +112,14 @@ proc serveCore(params:(Routes, int)){.async.} =
       await sleepAsync(500)
 
 
-proc serve*(seqRoutes: seq[Routes]) =
+proc serve*(seqRoutes: seq[Routes], settings:Settings) =
   var routes =  Routes.new()
   for tmpRoutes in seqRoutes:
     routes.withParams.add(tmpRoutes.withParams)
     for path, route in tmpRoutes.withoutParams:
       routes.withoutParams[path] = route
 
-  echo(&"Basolato based on asynchttpserver listening on {HOST_ADDR}:{PORT_NUM}")
-  serveCore((routes, PORT_NUM)).waitFor()
+  let host = settings.host
+  let port = settings.port
+  echo(&"Basolato based on asynchttpserver listening on {host}:{port}")
+  serveCore((routes:routes, host:host, port:port)).waitFor()

@@ -14,7 +14,7 @@ proc webSocketComponentImpl():Component =
 
   tmpl"""
     <script>
-      let socket = new WebSocket("ws://localhost:9000/sample/ws");
+      let socket = new WebSocket("ws://localhost:8000/sample/ws");
 
       const sendHandler=()=>{
         let outgoingMessage = document.getElementById("input").value;

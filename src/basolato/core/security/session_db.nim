@@ -1,6 +1,6 @@
 import os, asyncdispatch, json
 import ./session_db/session_db_interface
-import ../baseEnv
+import ../settings
 
 when SESSION_TYPE == "redis":
   import ./session_db/redis_session_db

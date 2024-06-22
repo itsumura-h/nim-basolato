@@ -6,7 +6,7 @@ import std/times
 import std/os
 import std/strformat
 import redis
-import ../../baseEnv
+import ../../settings
 import ../random_string
 import ./session_db_interface
 
