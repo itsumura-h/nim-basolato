@@ -29,26 +29,32 @@ for f in walkDir(getCurrentDir()):
   # Defined in runtime environment valiable
   let
     SECRET_KEY* = getEnv("SECRET_KEY") # Should define in environment variable
-    # Session db
-    SESSION_DB_PATH* = getEnv("SESSION_DB_PATH", "./session.db")
     # others
     COOKIE_DOMAINS* = getEnv("COOKIE_DOMAIN").split(",")
 
-  if SECRET_KEY.len == 0:
-    raise newException(Exception, "SECRET_KEY is not defined in environment variable")
+  when not defined(test):
+    if SECRET_KEY.len == 0:
+      raise newException(Exception, "SECRET_KEY is not defined in environment variable")
+
+  # Only test, set in compile time.
+  when defined(test):
+    const SESSION_DB_PATH* = getEnv("SESSION_DB_PATH", "./session.db")
+  else:
+    let SESSION_DB_PATH* = getEnv("SESSION_DB_PATH", "./session.db")
+
 
   # Defined in Settings.nim
   var
     # Logging
-    LOG_TO_CONSOLE*:bool
-    LOG_TO_FILE*:bool
-    ERROR_LOG_TO_FILE*:bool
-    LOG_DIR*:string
+    LOG_TO_CONSOLE*:bool = true
+    LOG_TO_FILE*:bool = false
+    ERROR_LOG_TO_FILE*:bool = false
+    LOG_DIR*:string = "./logs"
     # Ssession Db
-    SESSION_TIME*:int
-    SESSION_EXPIRE_ON_CLOSE*:bool
+    SESSION_TIME*:int = 120
+    SESSION_EXPIRE_ON_CLOSE*:bool = false
     # others
-    LOCALE*:string
+    LOCALE*:string = "en"
 
 
 type Settings* = object
@@ -91,7 +97,7 @@ proc new*(
   LOG_TO_CONSOLE = logToConsole
   LOG_TO_FILE = logToFile
   ERROR_LOG_TO_FILE = errorLogToFile
-  LOG_DIR = logDir
+  LOG_DIR = getCurrentDir() / logDir
   SESSION_TIME = sessionTime
   SESSION_EXPIRE_ON_CLOSE = sessionExpireOnClose
   LOCALE = locale

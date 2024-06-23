@@ -11,9 +11,9 @@ proc echoLog*(output: auto, args:varargs[string]) =
     if LOG_TO_CONSOLE:
       consoleLogger.log(lvlDebug, $output & $args)
     if LOG_TO_FILE:
-      let path = LOG_DIR & "/log.log"
-      let fileLogger = newRollingFileLogger(path, mode=fmAppend, fmtStr=verboseFmtStr)
+      let path = LOG_DIR / "log.log"
       createDir(parentDir(path))
+      let fileLogger = newRollingFileLogger(path, mode=fmAppend, fmtStr=verboseFmtStr)
       defer: fileLogger.file.close()
       fileLogger.log(lvlInfo, $output & $args)
       flushFile(fileLogger.file)
@@ -27,7 +27,7 @@ proc echoErrorMsg*(msg:string) =
       styledWriteLine(stdout, fgRed, bgDefault, msg, resetStyle)
     # file log
     if ERROR_LOG_TO_FILE:
-      let path = logDir & "/error.log"
+      let path = logDir / "error.log"
       createDir(parentDir(path))
       let fileLogger = newRollingFileLogger(path, mode=fmAppend, fmtStr=verboseFmtStr)
       defer: fileLogger.file.close()

@@ -1,16 +1,25 @@
 discard """
-  cmd: "nim c --putenv:SESSION_DB_PATH=redis:6379 $options $file"
+  cmd: "nim c -d:test --putenv:SESSION_TYPE=redis --putenv:SESSION_DB_PATH=redis:6379 $file"
 """
 
-# nim c -r --putenv:SESSION_DB_PATH=redis:6379 tests/auth/test_redis_session_db.nim
+# nim c -r -d:test --putenv:SESSION_TYPE=redis --putenv:SESSION_DB_PATH=redis:6379 auth/test_redis_session_db.nim
 
 import std/unittest
+import std/os
 import std/asyncdispatch
 import std/json
+import ../../src/basolato/settings
 import ../../src/basolato/core/security/session_db/redis_session_db
+
+
+echo "SESSION_DB_PATH: ",SESSION_DB_PATH
 
 suite("redis session db"):
   var token:string
+  setup:
+    echo "=== setup"
+    putEnv("SESSION_DB_PATH", "redis:6379")
+    echo "SESSION_DB_PATH: ",SESSION_DB_PATH
 
   test("new"):
     let session = RedisSessionDb.new().waitFor().toInterface()
@@ -19,13 +28,15 @@ suite("redis session db"):
 
   test("new with empty should regenerate id"):
     let session = RedisSessionDb.new("").waitFor().toInterface()
-    let token = session.getToken().waitFor()
-    check token.len == 256
+    let newToken = session.getToken().waitFor()
+    check newToken != token
+    check newToken.len == 256
 
   test("new with invalid id should regenerate id"):
     let session = RedisSessionDb.new("invalid").waitFor().toInterface()
-    let token = session.getToken().waitFor()
-    check token.len == 256
+    let newToken = session.getToken().waitFor()
+    check newToken != token
+    check newToken.len == 256
 
   test("setStr / getStr"):
     let session = RedisSessionDb.new(token).waitFor().toInterface()

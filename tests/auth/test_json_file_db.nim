@@ -2,17 +2,16 @@ discard """
   cmd: "nim c -r $file"
 """
 
-# nim c -r tests/auth/test_json_file_db.nim
+# nim c -r auth/test_json_file_db.nim
 
 import std/unittest
 import std/asyncdispatch
 import std/json
 import std/os
 import std/strutils
-import ../../src/basolato/core/baseEnv
+import ../../src/basolato/settings
 import ../../src/basolato/core/security/session_db/libs/json_file_db
 import ../../src/basolato/core/security/random_string
-
 
 suite("json session db"):
   test("new"):
