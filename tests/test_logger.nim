@@ -36,4 +36,4 @@ block:
   defer: close(f)
   let content = f.readAll()
   let contentArray = content.splitLines()
-  check contentArray[^2].contains("test_logger: ERROR test log error message")
+  check contentArray[^2].contains("test_logger: test log error message")

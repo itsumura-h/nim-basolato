@@ -26,13 +26,11 @@ proc echoErrorMsg*(output: auto) =
     if LOG_TO_CONSOLE:
       let output = "ERROR " & $output
       styledWriteLine(stdout, fgRed, bgDefault, output, resetStyle)
-      # consoleLogger.log(lvlError, msg)
     # file log
     if ERROR_LOG_TO_FILE:
       let path = logDir / "error.log"
       createDir(parentDir(path))
       let fileLogger = newRollingFileLogger(path, mode=fmAppend, fmtStr=verboseFmtStr)
       defer: fileLogger.file.close()
-      let output = "ERROR " & $output
       fileLogger.log(lvlError, $output)
       flushFile(fileLogger.file)
