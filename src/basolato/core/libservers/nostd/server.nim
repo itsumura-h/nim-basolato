@@ -10,7 +10,7 @@ import std/tables
 import std/times
 import std/mimetypes
 import ../../base
-import ../../baseEnv
+import ../../settings
 import ../../error_page
 import ../../header
 import ../../logger
@@ -26,7 +26,7 @@ else:
   from httpx import send, initSettings, run
 
 
-proc serve*(seqRoutes:seq[Routes], port=5000) =
+proc serve*(seqRoutes:seq[Routes], settings:Settings) =
   var routes =  Routes.new()
   for tmpRoutes in seqRoutes:
     routes.withParams.add(tmpRoutes.withParams)
@@ -131,7 +131,8 @@ proc serve*(seqRoutes:seq[Routes], port=5000) =
     # keep-alive
     req.dealKeepAlive()
 
-  
+  let HOST_ADDR = settings.host
+  let PORT_NUM = settings.port
   let settings = initSettings(port=Port(PORT_NUM), bindAddr=HOST_ADDR)
   let libStr = when defined(httpbeast): "httpbeast" elif defined(httpx): "httpx" else: ""
   echo(&"Basolato based on {libStr} listening on {HOST_ADDR}:{PORT_NUM}")

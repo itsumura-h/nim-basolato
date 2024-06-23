@@ -3,7 +3,8 @@ import std/httpcore
 import std/json
 import std/strutils
 import std/times
-import ./baseEnv
+import ./settings
+# import ./settings
 import ./logger
 import ./security/context
 import ./security/cookie
@@ -176,8 +177,9 @@ func errorRedirect*(url:string, headers:HttpHeaders):Response =
 # ========== Client ====================
 proc setCookie*(response:Response, context:Context):Future[Response] {.async.} =
   let sessionId = await context.session.getToken()
+
   if SESSION_TIME > 0 and COOKIE_DOMAINS.len > 0:
-    for domain in COOKIE_DOMAINS.split(","):
+    for domain in COOKIE_DOMAINS:
       let newDomain = domain.strip()
       let cookie = Cookie.new(
         "session_id",
@@ -187,7 +189,7 @@ proc setCookie*(response:Response, context:Context):Future[Response] {.async.} =
       ).toCookieStr()
       response.headers.add("Set-Cookie", cookie)
   elif SESSION_TIME == 0 and COOKIE_DOMAINS.len > 0:
-    for domain in COOKIE_DOMAINS.split(","):
+    for domain in COOKIE_DOMAINS:
       let newDomain = domain.strip()
       let cookie = Cookie.new(
         "session_id",

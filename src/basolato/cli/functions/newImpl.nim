@@ -14,8 +14,11 @@ proc create(dirPath:string, packageDir:string):int =
     discard execShellCmd(&"""
   cd {dirPath}
   git clone {tmplateGitUrl} tmp
+  cd tmp
+  git switch v0.16.0
+  cd ../
   """)
-    const version = "0.15"
+    const version = "0.16"
     # get from tmp/{version}
     moveDir(&"{dirpath}/tmp/{version}/app", &"{dirpath}/app")
     moveDir(&"{dirpath}/tmp/{version}/config", &"{dirpath}/config")

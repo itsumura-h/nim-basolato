@@ -11,4 +11,8 @@ let ROUTES = @[
   Route.post("/user", benchmark_controller.store),
 ]
 
-serve(ROUTES)
+let settings = Settings.new(
+  host="0.0.0.0"
+)
+
+serve(ROUTES, settings)

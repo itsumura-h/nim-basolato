@@ -58,21 +58,3 @@ after install:
   echo " / __/ / _, _/ ___ |/ /  / / /___  | |/ |/ / /_/ / _, _/ /| |  "
   echo "/_/   /_/ |_/_/  |_/_/  /_/_____/  |__/|__/\\____/_/ |_/_/ |_|  "
   echo ""
-
-let toolImage = "basolato:tool"
-
-task setupTool, "Setup tool docker image":
-  exec &"docker build -t {toolImage} -f ./docker/tool/Dockerfile ."
-
-proc generateToc(dir: string) =
-  let cwd = getCurrentDir()
-  for f in listFiles(dir):
-    if 3 < f.len:
-      let ext = f[^3..^1]
-      if ext == ".md":
-        exec &"docker run --rm -v {cwd}:/work -it {toolImage} --insert --no-backup {f}"
-
-task toc, "Generate TOC":
-  generateToc(".")
-  generateToc("./documents/en")
-  generateToc("./documents/ja")

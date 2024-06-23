@@ -4,7 +4,7 @@ import std/json
 import std/re; export re
 import std/strutils; export strutils
 import std/tables; export tables
-import ./core/baseEnv
+import ./core/settings
 import ./core/security/context; export context
 import ./core/security/csrf_token; export csrf_token
 import ./core/security/random_string
@@ -71,7 +71,7 @@ func get*(self:Style, name:string):string =
 type StyleType* = enum
   Css, Scss
 
-when DOES_USE_LIBSASS:
+when USE_LIBSASS:
   import sass
   proc styleTmpl*(typ:StyleType, body:string):Style =
     var css =

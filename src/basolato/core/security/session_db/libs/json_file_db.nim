@@ -4,7 +4,7 @@ import std/json
 import std/oids
 import std/os
 import std/strutils
-import ../../../baseEnv
+import ../../../settings
 
 
 type JsonFileDb* = ref object

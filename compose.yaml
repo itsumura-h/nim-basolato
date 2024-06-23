@@ -29,7 +29,7 @@ services:
         VERSION: 2.0.2
     tty: true
     ports:
-      - 9000:8000
+      - 8000:8000
     volumes:
       - .:/root/project
 

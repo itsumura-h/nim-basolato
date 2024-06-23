@@ -1,5 +1,6 @@
 import std/os
 import std/strutils
+import basolato/settings
 import db_connector/db_postgres
 import allographer/connection
 
@@ -21,9 +22,9 @@ let rdb* = dbopen(
   getEnv("DB_PORT").parseInt,
   maxConnections,
   getEnv("DB_TIMEOUT").parseInt,
-  getEnv("LOG_IS_DISPLAY").parseBool,
-  getEnv("LOG_IS_FILE").parseBool,
-  getEnv("LOG_DIR"),
+  LOG_TO_CONSOLE,
+  LOG_TO_FILE,
+  LOG_DIR,
 )
 
 let stdRdb* = open(getEnv("DB_HOST"), getEnv("DB_USER"), getEnv("DB_PASSWORD"), getEnv("DB_DATABASE"))

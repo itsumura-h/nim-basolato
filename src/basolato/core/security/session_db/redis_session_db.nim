@@ -2,17 +2,17 @@ import std/asyncdispatch
 import std/httpcore
 import std/json
 import std/strutils
+import std/strformat
 import std/times
 import std/os
-import std/strformat
 import redis
-import ../../baseEnv
+import ../../settings
 import ../random_string
 import ./session_db_interface
 
 
 type RedisSessionDb* = object
-  conn: AsyncRedis
+  conn:AsyncRedis
   id: string
 
 let REDIS_IP = SESSION_DB_PATH.split(":")[0]
@@ -21,32 +21,41 @@ let REDIS_PORT = SESSION_DB_PATH.split(":")[1].parseInt
 
 proc checkSessionIdValid*(_:type RedisSessionDb, sessionId=""):Future[bool] {.async.} =
   let conn = openAsync(REDIS_IP, Port(REDIS_PORT)).await
+  defer: conn.quit().await
+
   if conn.exists(sessionId).await:
     return true
   else:
     return false
 
+
 # implements RedisSessionDb, ISessionDb:
 proc getToken(self:RedisSessionDb):Future[string] {.async.} =
   return self.id
 
+
 proc setStr(self:RedisSessionDb, key:string, value: string):Future[void] {.async.} =
   discard self.conn.hSet(self.id, key, value).await
+
 
 proc setJson(self:RedisSessionDb, key:string, value: JsonNode):Future[void] {.async.} =
   discard self.conn.hSet(self.id, key, $value).await
 
+
 proc isSome(self:RedisSessionDb, key:string):Future[bool] {.async.} =
   return self.conn.hExists(self.id, key).await
+
 
 proc getStr(self:RedisSessionDb, key:string):Future[string] {.async.} =
   return self.conn.hGet(self.id, key).await
 
+
 proc getJson(self:RedisSessionDb, key:string):Future[JsonNode] {.async.} =
   return self.conn.hGet(self.id, key).await.parseJson()
 
+
 proc getRows(self:RedisSessionDb):Future[JsonNode] {.async.} =
-  let rows = await self.conn.hGetAll(self.id)
+  let rows = self.conn.hGetAll(self.id).await
   # list to JsonNode
   var str = "{"
   for i, val in rows:
@@ -65,11 +74,14 @@ proc getRows(self:RedisSessionDb):Future[JsonNode] {.async.} =
   str.add("}")
   return str.parseJson
 
+
 proc delete(self:RedisSessionDb, key:string):Future[void] {.async.} =
-  discard await self.conn.hDel(self.id, key)
+  discard self.conn.hDel(self.id, key).await
+
 
 proc destroy(self:RedisSessionDb):Future[void] {.async.} =
-  discard await self.conn.del(@[self.id])
+  discard self.conn.del(@[self.id]).await
+
 
 proc updateCsrfToken(self:RedisSessionDb):Future[string] {.async.} =
   let csrfToken = randStr(100)
@@ -87,17 +99,16 @@ proc new*(_:type RedisSessionDb, sessionId=""):Future[RedisSessionDb] {.async.} 
       sessionId
 
   let conn = openAsync(REDIS_IP, Port(REDIS_PORT)).await
-
   let sessionDb = RedisSessionDb(
-    conn: conn,
+    conn:conn,
     id:id,
   )
   sessionDb.setStr("session_id", id).await
-  discard sessionDb.conn.expire(id, SESSION_TIME * 60).await
+  discard conn.expire(id, SESSION_TIME * 60).await
   return sessionDb
 
 
-proc toInterface*(self:RedisSessionDb):ISessionDb =
+converter toInterface*(self:RedisSessionDb):ISessionDb =
   return (
     getToken: proc():Future[string] {.async.} = return self.getToken().await,
     setStr: proc(key, value: string):Future[void] {.async.} = self.setStr(key, value).await,

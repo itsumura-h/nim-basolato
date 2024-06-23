@@ -13,4 +13,9 @@ let routes = @[
   Route.get("/updates", benchmark_controller.update),
 ]
 
-serve(routes)
+let settings = Settings.new(
+  host="0.0.0.0",
+  logToConsole=true,
+)
+
+serve(routes, settings)

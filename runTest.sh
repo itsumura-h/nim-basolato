@@ -6,23 +6,24 @@ nimble -v
 # run server
 nimble install -y
 cd /root/project/tests/server
-nim c --mm:orc --threads:off -d:ssl --parallelBuild:0 --putenv:PORT=8000 main
+nim c --mm:orc --threads:off -d:ssl --parallelBuild:0 main
 nohup ./main > /dev/null 2>&1 &
 
 # run test
-cd /root/project/
-touch tests/server/session.db
-touch tests/server/db.sqlite3
-cp tests/server/.env ./
+cd /root/project/tests
+touch server/session.db
+touch server/db.sqlite3
+cp server/.env ./
 rm -fr ./testresults
-testament p "tests/test_*.nim"
-testament p "tests/*/test_*.nim"
+testament p "test_*.nim" || true # do not exit on error
+testament p "*/test_*.nim" || true # do not exit on error
 
 # delete files
 pkill main
-rm tests/server/main
-rm tests/server/db.sqlite3
-rm tests/server/session.db
-rm -fr tests/server/logs/*
+rm server/main
+rm server/db.sqlite3
+rm server/session.db
+rm -fr logs
+rm -fr server/logs
 rm .env
-find tests/ -type f ! -name "*.*" -delete 2> /dev/null
+find ./ -type f ! -name "*.*" -delete 2> /dev/null

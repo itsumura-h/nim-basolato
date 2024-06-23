@@ -77,4 +77,8 @@ let routes = @[
   .middleware(set_headers_middleware.setSecureHeaders),
 ]
 
-serve(routes)
+let settings = Settings.new(
+  host="0.0.0.0"
+)
+
+serve(routes, settings)

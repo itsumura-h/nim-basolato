@@ -11,13 +11,16 @@ import std/strutils
 import std/json
 import std/unittest
 import std/options
+import ../src/basolato/settings
 import ../src/basolato/core/security/session as a
 import ../src/basolato/core/security/session_db as b
 
 
-const HOST = "http://0.0.0.0:8000"
+const HOST = "http://127.0.0.1:8000"
 let session = Session.new().waitFor()
 let SESSION_ID = session.getToken().waitFor()
+
+discard Settings.new()
 
 suite("test response"):
   test("http header"):

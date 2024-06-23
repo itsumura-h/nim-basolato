@@ -1,12 +1,11 @@
-import
-  std/os,
-  std/osproc,
-  std/re,
-  std/strutils,
-  std/strformat,
-  std/tables,
-  std/terminal,
-  std/times
+import std/os
+import std/osproc
+import std/re
+import std/strutils
+import std/strformat
+import std/tables
+import std/terminal
+import std/times
 
 
 let
@@ -51,7 +50,6 @@ proc runCommand(port:int, f:bool, httpbeast:bool, httpx:bool) =
       --threads:off \
       -d:ssl \
       --parallelBuild:0 \
-      --putenv:PORT={port} \
       --spellSuggest:5 \
       main
     """

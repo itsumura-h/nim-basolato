@@ -47,4 +47,9 @@ let routes = @[
   .middleware(sessionFromCookie),
 ]
 
-serve(routes)
+let settings = Settings.new(
+  logToFile=true,
+  errorLogToFile=true,
+)
+
+serve(routes, settings)

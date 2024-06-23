@@ -1,8 +1,0 @@
-name,email,password,auth_id
-admin,admin@example.com,adminPassword,1
-Alice,alice@example.com,alice,2
-Bob,bob@example.com,bob,3
-Charlie,charlie@example.com,charlie,3
-Dave,dave@example.com,d,3
-Ellen,ellen@example.com,ellen,2
-Frank,frank@example.com,frank,3

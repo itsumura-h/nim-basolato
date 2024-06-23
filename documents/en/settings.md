@@ -5,152 +5,190 @@ Settings
 Table of Contents
 
 <!--ts-->
-- [Settings](#settings)
-  - [Introduction](#introduction)
-  - [Environment variables called at compile time (config.nims)](#environment-variables-called-at-compile-time-confignims)
-    - [HOST :string = "0.0.0.0"](#host-string--0000)
-    - [DB\_SQLITE :string = "true"](#db_sqlite-string--true)
-    - [DB\_POSTGRES :string = "false"](#db_postgres-string--false)
-    - [DB\_MYSQL :string = "false"](#db_mysql-string--false)
-    - [DB\_MARIADB :string = "false"](#db_mariadb-string--false)
-    - [SESSION\_TYPE :string = "file"](#session_type-string--file)
-    - [LIBSASS :string = "false"](#libsass-string--false)
-  - [Environment variables called at runtime (.env)](#environment-variables-called-at-runtime-env)
-    - [SECRET\_KEY :string](#secret_key-string)
-    - [DB\_CONNECTION :string = "sqlite"](#db_connection-string--sqlite)
-    - [DB\_USER :string = ""](#db_user-string--)
-    - [DB\_PASSWORD :string = ""](#db_password-string--)
-    - [DB\_DATABASE :string = ""](#db_database-string--)
-    - [DB\_MAX\_CONNECTION :int = 1](#db_max_connection-int--1)
-    - [LOG\_IS\_DISPLAY :bool = true](#log_is_display-bool--true)
-    - [LOG\_IS\_FILE :bool = true](#log_is_file-bool--true)
-    - [LOG\_IS\_ERROR\_FILE :bool = true](#log_is_error_file-bool--true)
-    - [LOG\_DIR :string = getCurrentDir() / "logs"](#log_dir-string--getcurrentdir--logs)
-    - [SESSION\_DB\_PATH :string = getCurrentDir() / "session.db"](#session_db_path-string--getcurrentdir--sessiondb)
-    - [SESSION\_TIME :int = 20160](#session_time-int--20160)
-    - [SESSION\_EXPIRE\_ON\_CLOSE: bool = false](#session_expire_on_close-bool--false)
-    - [COOKIE\_DOMAINS :string = ""](#cookie_domains-string--)
-    - [LOCALE :string = "en"](#locale-string--en)
+* [Settings](#settings)
+   * [Introduction](#introduction)
+   * [Environment variables called at compile time (config.nims)](#environment-variables-called-at-compile-time-confignims)
+      * [DB_SQLITE :string = "true"](#db_sqlite-string--true)
+      * [DB_POSTGRES :string = "false"](#db_postgres-string--false)
+      * [DB_MYSQL :string = "false"](#db_mysql-string--false)
+      * [DB_MARIADB :string = "false"](#db_mariadb-string--false)
+      * [SESSION_TYPE :string = "file"](#session_type-string--file)
+      * [USE_LIBSASS :string = "false"](#use_libsass-string--false)
+   * [Environment variables called at runtime (.env)](#environment-variables-called-at-runtime-env)
+      * [SECRET_KEY :string](#secret_key-string)
+      * [DB_DATABASE :string = ""](#db_database-string--)
+      * [DB_USER :string = ""](#db_user-string--)
+      * [DB_PASSWORD :string = ""](#db_password-string--)
+      * [DB_HOST :string = "sqlite"](#db_host-string--sqlite)
+      * [DB_PORT :int = 5432](#db_port-int--5432)
+      * [DB_MAX_CONNECTION :int = 1](#db_max_connection-int--1)
+      * [SESSION_DB_PATH :string = getCurrentDir() / "session.db"](#session_db_path-string--getcurrentdir--sessiondb)
+      * [COOKIE_DOMAINS :string = ""](#cookie_domains-string--)
+   * [Settings configured in the Settings object](#settings-configured-in-the-settings-object)
+      * [HOST :string = "0.0.0.0"](#host-string--0000)
+      * [PORT :int = 8000](#port-int--8000)
+      * [LOG_TO_CONSOLE :bool = true](#log_to_console-bool--true)
+      * [LOG_TO_FILE :bool = true](#log_to_file-bool--true)
+      * [ERROR_LOG_TO_FILE :bool = true](#error_log_to_file-bool--true)
+      * [LOG_DIR :string = getCurrentDir() / "logs"](#log_dir-string--getcurrentdir--logs)
+      * [SESSION_TIME :int = 120](#session_time-int--120)
+      * [SESSION_EXPIRE_ON_CLOSE: bool = false](#session_expire_on_close-bool--false)
+      * [LOCALE :string = "en"](#locale-string--en)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: root, at: Fri Dec 22 21:20:33 UTC 2023 -->
+<!-- Added by: root, at: Sat Jun 22 11:26:30 UTC 2024 -->
 
 <!--te-->
 
 ## Introduction
-Basolato settings is defined as environment variables in those of `config.nims`, `.env`, `~/.bash_rc`, `~/.bash_profile` and so on.  
-Environment variables defined in `.env` can only be called at application runtime.  
-You should set build time environments variables in `config.nims`, and environment-specific or sensitive DB connection information in `.env`.  
-Note that `.env` are not Git-managed by `.gitignore`.
+Basolato settings are defined in three ways:
+
+- Written in `config.nims`, managed by git, and called at compile time
+- Defined in `.env` during development or in server environment variables during production, not managed by git, and called at runtime
+- Recorded in an instance of `Settings.new()`, managed by git, and called at runtime
 
 ## Environment variables called at compile time (config.nims)
-To apply changes, you have to do re-compile.
-
-### HOST :string = "0.0.0.0"
-Host name of the server to be started.
+Changes require recompilation to take effect.
 
 ### DB_SQLITE :string = "true"
-Whether to connect to `Sqlite` or not.
+Whether to connect to Sqlite.
 
 ### DB_POSTGRES :string = "false"
-Whether to connect to `PostgreSQL` or not.
+Whether to connect to PostgreSQL.
 
 ### DB_MYSQL :string = "false"
-Whether to connect to `MySQL` or not.
+Whether to connect to MySQL.
 
 ### DB_MARIADB :string = "false"
-Whether to connect to `MariaDB` or not.
+Whether to connect to MariaDB.
 
 ### SESSION_TYPE :string = "file"
-Session DB type which your system uses. Options are `file` or `redis`.
+Type of session DB. Either file or redis.
 
-### LIBSASS :string = "false"
-Whether enable `libsaas` to use SASS/SCSS in view or not.
+### USE_LIBSASS :string = "false"
+Whether to enable libsaas and allow the use of SASS/SCSS in views.
 
-sample
+Sample config.nims
 ```nim
-putEnv("HOST", "0.0.0.0")
-putEnv("DB_SQLITE", $true) # "true" or "false"
+nimCopyputEnv("DB_SQLITE", $true) # "true" or "false"
 # putEnv("DB_POSTGRES", $true) # "true" or "false"
 # putEnv("DB_MYSQL", $true) # "true" or "false"
 # putEnv("DB_MARIADB", $true) # "true" or "false"
 putEnv("SESSION_TYPE", "file") # "file" or "redis"
-putEnv("LIBSASS", $false) # "true" or "false"
+putEnv("USE_LIBSASS", $false) # "true" or "false"
 ```
 
 ## Environment variables called at runtime (.env)
-To apply changes, you have to re-run application.
+Restart the application to apply changes.
 
 ### SECRET_KEY :string
-100 characters key which is used for encryption session id.
-
-### DB_CONNECTION :string = "sqlite"
-The location of the RDB to connect to, either the absolute path of the file if you are using Sqlite, or `host:port` if you are using MySQL or PostgreSQL.
-
-### DB_USER :string = ""
-The user name for connecting to the RDB.
-
-### DB_PASSWORD :string = ""
-The passsword for connecting to the RDB.
+A 100-character key used for encrypting session IDs, etc.
 
 ### DB_DATABASE :string = ""
-The db name for connecting to the RDB.
+Database name of the target RDB.
+
+### DB_USER :string = ""
+Username for connecting to the RDB.
+
+### DB_PASSWORD :string = ""
+Password for connecting to the RDB.
+
+### DB_HOST :string = "sqlite"
+Host of the target RDB. Specify the absolute file path for Sqlite, or the `host` for MySQL and PostgreSQL.
+
+### DB_PORT :int = 5432
+Location of the target RDB. Leave empty for Sqlite, specify the `port number` for MySQL and PostgreSQL.
 
 ### DB_MAX_CONNECTION :int = 1
-The number of connection pools to create when making asynchronous connections to the RDB.  
-If your application runs in multi-threaded mode, make sure that the number should be "number of possible connections / number of threads".
-
----
-
-### LOG_IS_DISPLAY :bool = true
-Set it to `true` if you want the log to be displayed on the terminal, or `false` if you don't want it.
-
-### LOG_IS_FILE :bool = true
-Set the value to `true` to output the log to a file, or `false` if you don't want to.
-
-### LOG_IS_ERROR_FILE :bool = true
-Set the value to `true` to output the error log to a file, or `false` if you don't want to.
-
-### LOG_DIR :string = getCurrentDir() / "logs"
-The absolute path of the log output destination directory.
-
----
+Number of connection pools created for asynchronous RDB connections.  
+For multi-threaded applications, set this to "maximum connections / number of threads".
 
 ### SESSION_DB_PATH :string = getCurrentDir() / "session.db"
-The location of the session DB to connect to.  
-Set the absolute path of the file if you use file sessions, or `host:port` if you use Redis.
-
-### SESSION_TIME :int = 20160
-Set a time limit in minutes for the session to time out.
-
-### SESSION_EXPIRE_ON_CLOSE: bool = false
-Set `true` if you want remove session immediately expire on the browser closing.
+Location of the session DB.
+Set the absolute file path for file sessions, or `host:port` for Redis.
 
 ### COOKIE_DOMAINS :string = ""
-Set the target domain for issuing cookies.
+Set the target domains for issuing cookies.
+
+
+Sample .env
+```sh
+# Secret
+SECRET_KEY="GRzV3jfgN8BgFhtiyoLV1aTNE6Evh9r1GLkpBpUCpioXy6ifo10fEL846MTRrd3cpOHMKsYCs1hNQDDYJ3NEOs2mEPYTemU3iGnm"
+
+# DB Connection
+DB_DATABASE="database" # sqlite file path or database name
+DB_USER="user"
+DB_PASSWORD="password"
+DB_HOST="127.0.0.1"  # host ip address
+DB_PORT=5432 # postgres default...5432, mysql default...3306
+DB_MAX_CONNECTION=95 # should be smaller than (DB max connection / running num processes)
+DB_TIMEOUT=30 # seconds
+
+# Session db
+# Session type, file or redis, is defined in config.nims
+SESSION_DB_PATH="./session.db" # Session file path or redis host:port. ex:"127.0.0.1:6379"
+
+COOKIE_DOMAINS="" # to specify multiple domains, "sample.com, sample.org"
+```
+
+## Settings configured in the Settings object
+Non-sensitive information that should be set at runtime but not in environment variables is defined in `Settings.new()`.
+
+### HOST :string = "0.0.0.0"
+Hostname of the server to start.
+
+### PORT :int = 8000
+Port number of the server to start.
+
+### LOG_TO_CONSOLE :bool = true
+Set to true to display logs in the terminal, false otherwise.
+
+### LOG_TO_FILE :bool = true
+Set to true to output logs to a file, false otherwise.
+
+### ERROR_LOG_TO_FILE :bool = true
+Set to true to output error logs to a file, false otherwise.
+
+### LOG_DIR :string = getCurrentDir() / "logs"
+Absolute path of the log output directory.
+
+### SESSION_TIME :int = 120
+Set the session timeout period in minutes.
+
+### SESSION_EXPIRE_ON_CLOSE: bool = false
+Set to true to automatically delete the session when the browser is closed.
 
 ### LOCALE :string = "en"
-Language which you want to display validation message in.
+Language for displaying validation messages.
 
-|language|LOCALE|
+|Language|Environment Variable|
 |---|---|
 |English|en|
 |Japanese|ja|
 
-sample .env
-```sh
-# Logging
-LOG_IS_DISPLAY=true # true or false
-LOG_IS_FILE=true # true or false
-LOG_IS_ERROR_FILE=true # true or false
-LOG_DIR="/root/project/logs"
+Sample code main.nim
+```nim
+import basolato
 
-# Session db
-# Session type, file or redis, is defined in config.nims
-SESSION_DB_PATH="/root/project/session.db" # Session file path or redis host:port. ex:"127.0.0.1:6379"
-SESSION_TIME=120 # minutes of 2 hours
-COOKIE_DOMAINS="" # to specify multiple domains, "sample.com, sample.org"
+let routs = @[
+  Route.get("/", example_controller.index)
+]
 
-# Other options
-LOCALE=en
+let settings = Settings.new(
+  host = "127.0.0.1",
+  port = 8000,
+  # Logging
+  logToConsole = true,
+  logToFile = false,
+  errorLogToFile = false,
+  logDir = "./logs",
+  # Session db
+  sessionTime = 120, # default 120, minutes of 2 hours
+  sessionExpireOnClose = false,
+  # other
+  locale = "en",
+)
+
+serve(routes, settings)
 ```

@@ -2,7 +2,7 @@ import std/httpcore
 import std/times
 import std/strutils
 import std/tables
-import ../baseEnv
+import ../settings
 
 when defined(httpbeast) or defined(httpx):
   import ../libservers/nostd/request

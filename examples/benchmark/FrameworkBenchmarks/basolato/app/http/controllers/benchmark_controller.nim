@@ -21,9 +21,7 @@ let getFortunePrepare = stdRdb.prepare("getFortunes", sql""" SELECT * FROM "Fort
 
 
 proc plaintext*(context:Context, params:Params):Future[Response] {.async.} =
-  let headers = newHttpHeaders()
-  headers.add("Content-Type", "text/plain; charset=UTF-8")
-  return render("Hello, World!", headers)
+  return render("Hello, World!")
 
 
 proc json*(context:Context, params:Params):Future[Response] {.async.} =
