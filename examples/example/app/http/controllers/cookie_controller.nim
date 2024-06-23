@@ -1,4 +1,8 @@
-import strutils, times, json
+import std/asyncdispatch
+import std/json
+import std/strutils
+import std/times
+import std/tables
 # framework
 import ../../../../../src/basolato/controller
 # view
@@ -6,7 +10,7 @@ import ../views/pages/sample/cookie_view
 
 
 proc index*(context:Context, params:Params):Future[Response] {.async.} =
-  let cookies = %Cookies.new(context.request).getAll()
+  let cookies = %(Cookies.new(context.request).getAll())
   return render(await cookieView(cookies))
 
 proc store*(context:Context, params:Params):Future[Response] {.async.} =

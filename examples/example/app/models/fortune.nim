@@ -1,3 +1,3 @@
-type Fortune* = object
+type Fortune* {.requiresInit.} = object
   id*:int
   message*:string
