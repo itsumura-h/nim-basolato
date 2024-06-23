@@ -9,7 +9,7 @@
 ##   ```nim
 ##   proc echoLog*(output: auto)
 ##   
-##   proc echoErrorMsg*(output:string)
+##   proc echoErrorMsg*(output: auto)
 ##   ```
 ##
 
