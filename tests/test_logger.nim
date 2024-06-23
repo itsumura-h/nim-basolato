@@ -2,6 +2,8 @@ discard """
   cmd: "nim c -r -d:test $file"
 """
 
+# nim c -r -d:test test_logger.nim
+
 import std/unittest
 import std/os
 import std/strutils
@@ -16,8 +18,6 @@ discard Settings.new(
 )
 
 block:
-  echo "LOG_DIR: ",LOG_DIR
-  echo "LOG_TO_FILE: ",LOG_TO_FILE
   echoLog("test log message")
   let logPath = &"{LOG_DIR}/log.log"
   echo logPath
@@ -25,14 +25,10 @@ block:
   let f = open(logPath)
   defer: close(f)
   let content = f.readAll()
-  echo content
   let contentArray = content.splitLines()
-  let length = contentArray.len()
-  check contentArray[length-2].contains("test_logger: test log message")
+  check contentArray[^2].contains("test_logger: test log message")
 
 block:
-  echo "LOG_DIR: ",LOG_DIR
-  echo "ERROR_LOG_TO_FILE: ",ERROR_LOG_TO_FILE
   echoErrorMsg("test log error message")
   let logPath = &"{LOG_DIR}/error.log"
   check fileExists(logPath)
@@ -40,5 +36,4 @@ block:
   defer: close(f)
   let content = f.readAll()
   let contentArray = content.splitLines()
-  let length = contentArray.len()
-  check contentArray[length-2].contains("test_logger: test log error message")
+  check contentArray[^2].contains("test_logger: ERROR test log error message")
