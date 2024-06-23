@@ -15,8 +15,8 @@ touch server/session.db
 touch server/db.sqlite3
 cp server/.env ./
 rm -fr ./testresults
-testament p "test_*.nim" || true
-testament p "*/test_*.nim" || true
+testament p "test_*.nim" || true # do not exit on error
+testament p "*/test_*.nim" || true # do not exit on error
 
 # delete files
 pkill main

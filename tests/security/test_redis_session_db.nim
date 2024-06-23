@@ -5,22 +5,13 @@ discard """
 # nim c -r -d:test --putenv:SESSION_TYPE=redis --putenv:SESSION_DB_PATH=redis:6379 auth/test_redis_session_db.nim
 
 import std/unittest
-import std/os
 import std/asyncdispatch
 import std/json
-import ../../src/basolato/settings
 import ../../src/basolato/core/security/session_db/redis_session_db
 
-
-echo "SESSION_DB_PATH: ",SESSION_DB_PATH
+var token:string
 
 suite("redis session db"):
-  var token:string
-  setup:
-    echo "=== setup"
-    putEnv("SESSION_DB_PATH", "redis:6379")
-    echo "SESSION_DB_PATH: ",SESSION_DB_PATH
-
   test("new"):
     let session = RedisSessionDb.new().waitFor().toInterface()
     token = session.getToken().waitFor()

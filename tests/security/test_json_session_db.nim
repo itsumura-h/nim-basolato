@@ -16,21 +16,18 @@ suite("json session db"):
   test("new"):
     let session = JsonSessionDb.new().waitFor().toInterface()
     token = session.getToken().waitFor()
-    echo "token:",token
     check token.len == 256
 
 
   test("new with empty should regenerate id"):
     let session = JsonSessionDb.new("").waitFor().toInterface()
     token = session.getToken().waitFor()
-    echo "token:",token
     check token.len == 256
 
   
   test("new with invalid id should regenerate id"):
     let session = JsonSessionDb.new("invalid").waitFor().toInterface()
     token = session.getToken().waitFor()
-    echo "token:",token
     check token.len == 256
 
 
