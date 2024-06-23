@@ -25,58 +25,25 @@ jobs:
     steps:
       - run: echo "no WIP"
 
-  build:
+  test-on-docker-nim:
     runs-on: ubuntu-latest
     needs: before
     strategy:
       matrix:
         nim-version:
-          - 1.6.18
-          - 2.0.2
-
+          - 1.6.12
+          - 1.6.20
+          - 2.0.0
+          - 2.0.6
     steps:
-      - uses: actions/checkout@v2
-      - name: Cache choosenim
-        id: cache-choosenim
-        uses: actions/cache@v1
-        with:
-          path: ~/.choosenim
-          key: ${{ runner.os }}-choosenim-${{ matrix.nim-version }}
-      - name: Cache nimble
-        id: cache-nimble
-        uses: actions/cache@v1
-        with:
-          path: ~/.nimble
-          key: ${{ runner.os }}-nimble-${{ matrix.nim-version }}
-      - uses: jiro4989/setup-nim-action@v1
-        with:
-          nim-version: ${{ matrix.nim-version }}
-      - name: Package Refresh
-        run: nimble refresh
-      - name: Build
-        run: nimble build -Y
-      - name: Install
-        run: nimble install -Y
-
-  test-on-docker-nim-v1:
-    runs-on: ubuntu-latest
-    needs: before
-    steps:
-    - uses: actions/checkout@v1
-    - name: Test
-      run: |
-        docker compose -f compose.test.yaml up -d
-        docker compose -f compose.test.yaml run app-ubuntu-v1 sh runTest.sh
-
-  test-on-docker-nim-v2:
-    runs-on: ubuntu-latest
-    needs: before
-    steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+    - name: Build docker image
+      run: docker compose -f compose.test.yaml build --build-arg VERSION=${{ matrix.nim-version }} app-ubuntu
     - name: Test
       run: |
         docker compose -f compose.test.yaml up -d
         docker compose -f compose.test.yaml run app-ubuntu sh runTest.sh
+
 
   # test-on-docker:
   #   runs-on: ubuntu-22.04
