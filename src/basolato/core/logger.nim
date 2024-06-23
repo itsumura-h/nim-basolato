@@ -6,30 +6,31 @@ import ./settings
 
 let consoleLogger = newConsoleLogger()
 
-proc echoLog*(output: auto, args:varargs[string]) =
+proc echoLog*(output: auto) =
   {.cast(gcsafe).}: # fix: "which is a global using GC'ed memory" in server.nim
     if LOG_TO_CONSOLE:
-      consoleLogger.log(lvlDebug, $output & $args)
+      consoleLogger.log(lvlDebug, $output)
     if LOG_TO_FILE:
       let path = LOG_DIR / "log.log"
       createDir(parentDir(path))
       let fileLogger = newRollingFileLogger(path, mode=fmAppend, fmtStr=verboseFmtStr)
       defer: fileLogger.file.close()
-      fileLogger.log(lvlInfo, $output & $args)
+      fileLogger.log(lvlDebug, $output)
       flushFile(fileLogger.file)
 
 
-proc echoErrorMsg*(msg:string) =
+proc echoErrorMsg*(output: auto) =
   {.cast(gcsafe).}: # fix: "which is a global using GC'ed memory" in server.nim
     let logDir = LOG_DIR
     # console log
     if LOG_TO_CONSOLE:
-      styledWriteLine(stdout, fgRed, bgDefault, msg, resetStyle)
+      let output = "ERROR " & $output
+      styledWriteLine(stdout, fgRed, bgDefault, output, resetStyle)
     # file log
     if ERROR_LOG_TO_FILE:
       let path = logDir / "error.log"
       createDir(parentDir(path))
       let fileLogger = newRollingFileLogger(path, mode=fmAppend, fmtStr=verboseFmtStr)
       defer: fileLogger.file.close()
-      fileLogger.log(lvlError, msg)
+      fileLogger.log(lvlError, $output)
       flushFile(fileLogger.file)
