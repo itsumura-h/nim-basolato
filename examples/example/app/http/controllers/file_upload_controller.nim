@@ -1,8 +1,11 @@
-import os
+import std/asyncdispatch
+import std/os
+import std/tables
 # framework
 import ../../../../../src/basolato/controller
 # view
 import ../views/pages/sample/file_upload_view
+
 
 proc index*(context:Context, params:Params):Future[Response] {.async.} =
   return render(await fileUploadView())
