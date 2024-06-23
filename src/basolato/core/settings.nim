@@ -27,20 +27,19 @@ for f in walkDir(getCurrentDir()):
 
 {.cast(gcsafe).}:
   # Defined in runtime environment valiable
-  let
-    SECRET_KEY* = getEnv("SECRET_KEY") # Should define in environment variable
-    # others
-    COOKIE_DOMAINS* = getEnv("COOKIE_DOMAIN").split(",")
+  when defined(test):
+    # Only test, set in compile time.
+    const
+      SECRET_KEY* = "test_secret_key"
+      SESSION_DB_PATH* = getEnv("SESSION_DB_PATH", "./session.db")
+  else:
+    let
+      SECRET_KEY* = getEnv("SECRET_KEY")
+      SESSION_DB_PATH* = getEnv("SESSION_DB_PATH", "./session.db")
+      COOKIE_DOMAINS* = getEnv("COOKIE_DOMAIN").split(",")
 
-  when not defined(test):
     if SECRET_KEY.len == 0:
       raise newException(Exception, "SECRET_KEY is not defined in environment variable")
-
-  # Only test, set in compile time.
-  when defined(test):
-    const SESSION_DB_PATH* = getEnv("SESSION_DB_PATH", "./session.db")
-  else:
-    let SESSION_DB_PATH* = getEnv("SESSION_DB_PATH", "./session.db")
 
 
   # Defined in Settings.nim
