@@ -50,25 +50,25 @@ for f in walkDir(getCurrentDir()):
     ERROR_LOG_TO_FILE*:bool = false
     LOG_DIR*:string = "./logs"
     # Ssession Db
-    SESSION_TIME*:int = 120
+    SESSION_TIME*:int = 120  # default 120, minutes of 2 hours
     SESSION_EXPIRE_ON_CLOSE*:bool = false
     # others
     LOCALE*:string = "en"
 
 
 type Settings* = object
-  host*:string = "127.0.0.1"
-  port*:int = 8000
+  host*:string
+  port*:int
   # Logging
-  logToConsole*:bool = true
-  logToFile*:bool = false
-  errorLogToFile*:bool = false
-  logDir*:string = "./logs"
+  logToConsole*:bool
+  logToFile*:bool
+  errorLogToFile*:bool
+  logDir*:string
   # Session db
-  sessionTime*:int = 120 # default 120, minutes of 2 hours
-  sessionExpireOnClose*:bool = false
+  sessionTime*:int
+  sessionExpireOnClose*:bool
   # other
-  locale*:string = "en"
+  locale*:string
 
 proc new*(
   _:type Settings,
