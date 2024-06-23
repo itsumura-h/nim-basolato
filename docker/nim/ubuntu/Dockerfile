@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 # prevent timezone dialogue
 ENV DEBIAN_FRONTEND=noninteractive
@@ -10,6 +10,7 @@ RUN apt install -y --fix-missing \
         g++ \
         xz-utils \
         ca-certificates \
+        libpcre3-dev \
         vim \
         curl \
         wget \

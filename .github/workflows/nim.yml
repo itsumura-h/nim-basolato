@@ -33,7 +33,6 @@ jobs:
         nim-version:
           - 1.6.18
           - 2.0.2
-
     steps:
       - uses: actions/checkout@v2
       - name: Cache choosenim
@@ -58,25 +57,26 @@ jobs:
       - name: Install
         run: nimble install -Y
 
-  test-on-docker-nim-v1:
-    runs-on: ubuntu-latest
-    needs: before
-    steps:
-    - uses: actions/checkout@v1
-    - name: Test
-      run: |
-        docker compose -f compose.test.yaml up -d
-        docker compose -f compose.test.yaml run app-ubuntu-v1 sh runTest.sh
 
-  test-on-docker-nim-v2:
+  test-on-docker-nim:
     runs-on: ubuntu-latest
     needs: before
+    strategy:
+      matrix:
+        nim-version:
+          - 1.6.12
+          - 1.6.20
+          - 2.0.0
+          - 2.0.4
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+    - name: Build docker image
+      run: docker compose -f compose.test.yaml build --build-arg VERSION=${{ matrix.nim-version }} app-ubuntu
     - name: Test
       run: |
         docker compose -f compose.test.yaml up -d
         docker compose -f compose.test.yaml run app-ubuntu sh runTest.sh
+
 
   # test-on-docker:
   #   runs-on: ubuntu-22.04
