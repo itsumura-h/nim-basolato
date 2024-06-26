@@ -13,12 +13,14 @@ proc urandomBytes(count: int): seq[char]  =
   finally:
     f.close()
 
+
 proc secureRandStr*(size=21):string {.gcsafe.} =
   var tmp:string
   let size = size div 2
   for row in urandomBytes(size):
     tmp.add(row)
   return tmp.toHex()
+
 
 proc randStr*(
   size: int = 21,

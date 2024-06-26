@@ -12,7 +12,9 @@ proc makeKey*():int =
   var newStr = newSeq[string]()
   for row in f.readAll().splitLines():
     if row.contains("SECRET_KEY"):
-      newStr.add(&"SECRET_KEY=\"{randStr(100)}\"")
+      let key = randStr(100)
+      echo "key: ",key
+      newStr.add(&"SECRET_KEY=\"{key}\"")
     else:
       newStr.add(row)
 

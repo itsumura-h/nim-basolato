@@ -2,6 +2,9 @@ import std/asyncdispatch
 import std/httpcore
 import std/strutils
 import std/tables
+import std/json
+import std/options
+import std/times
 import ./core/base; export base
 import ./core/route; export route
 import ./core/header; export header
@@ -9,8 +12,9 @@ import ./core/response; export response
 import ./core/security/cookie; export cookie
 import ./core/security/session
 import ./core/security/session_db
-import ./core/security/csrf_token
+import ./core/security/jwt
 import ./core/security/context; export context
+import ./core/settings
 
 when defined(httpbeast) or defined(httpx):
   import ./core/libservers/nostd/request; export request
@@ -18,72 +22,106 @@ else:
   import ./core/libservers/std/request; export request
 
 
-type MiddlewareResult* = object
-  hasError: bool
-  message: string
-
-proc new(_:type MiddlewareResult, hasError=false, message=""):MiddlewareResult =
-  return MiddlewareResult(hasError: hasError, message: message)
-
-
-func hasError*(self:MiddlewareResult):bool =
-  return self.hasError
-
-func message*(self:MiddlewareResult):string =
-  return self.message
-
 func next*(status=HttpCode(0), body="", headers:HttpHeaders=newHttpHeaders()):Response =
+  ## It returns empty Response
   return Response.new(status, body, headers)
 
-proc checkCsrfToken*(request:Request, params:Params):Future[MiddlewareResult] {.async.} =
-  result = MiddlewareResult.new()
-  if request.httpMethod == HttpPost and not (request.headers.hasKey("content-type") and request.headers["content-type"].contains("application/json")):
-    try:
-      if not params.hasKey("csrf_token"):
-        raise newException(Exception, "csrf token is missing")
-      let token = params.getStr("csrf_token")
-      let csrfToken = CsrfToken.new(token)
-      let sessionId = Cookies.new(request).get("session_id")
-      let session = Session.new(sessionId).await
-      if not csrfToken.checkCsrfValid(session).await:
-        raise newException(Exception, "Invalid csrf token")
-    except:
-      result = MiddlewareResult.new(true, getCurrentExceptionMsg())
+
+proc checkCsrfTokenForMpaHelper*(context:Context, params:Params) {.async.} =
+  ## Checking csrf token between request param and cookie is valid.
+  ## 
+  ## This middleware implements the Double Submit Cookie pattern
+  ## 
+  ## If csrf token is not valid, throw error
+  if context.request.httpMethod != HttpPost:
+    return
+  
+  if not params.hasKey("csrf_token"):
+    raise newException(CatchableError, "csrf token is missing")
+  let tokenFromParam = params.getStr("csrf_token")
+  
+  let jwtToken = Cookies.new(context.request).get("session")
+  let (jwtDecoded, jwtValid) = Jwt.decode(jwtToken, SECRET_KEY)
+  if not jwtValid:
+    raise newException(CatchableError, "Invalid jwt token")
+  let tokenFromJwt = jwtDecoded["csrf_token"].getStr()
+  
+  if tokenFromParam != tokenFromJwt:
+    raise newException(CatchableError, "Invalid csrf token")
 
 
-proc checkCsrf*(context:Context):Future[MiddlewareResult] {.async.} =
-  ## check origin header in request which is sent by same host or allowed host
-  result = MiddlewareResult.new()
-  try:
-    # check origin header
-    let request = context.request
-    if [HttpPost, HttpPut, HttpPatch, HttpDelete].contains(request.httpMethod):
-      let requestOrigin =
-        if request.headers.hasKey("origin"):
-          request.headers["origin"].toString()
-        else:
-          ""
-      if requestOrigin.len == 0:
-        raise newException(Exception, "Origin header is missing")
-      if not requestOrigin.contains(context.origin):
-        raise newException(Exception, "Invalid origin")
-    # check
-  except:
-    result = MiddlewareResult.new(true, getCurrentExceptionMsg())
+proc checkCsrfTokenForApi*(context: Context) {.async.} =
+  ## Checking csrf token between request header and cookie is valid.
+  ## 
+  ## This function is intended for use in APIs to ensure the CSRF token is valid.
+  ##
+  ## If the csrf token is not valid, an error is raised.
+  if not [HttpPost, HttpPatch, HttpPut, HttpDelete].contains(context.request.httpMethod):
+    return
+
+  let tokenFromHeader = context.request.headers["X-CSRF-TOKEN"].toString()
+  if tokenFromHeader == "":
+    raise newException(CatchableError, "csrf token is missing in request headers")
+  
+  let jwtToken = Cookies.new(context.request).get("session")
+  let (jwtDecoded, jwtValid) = Jwt.decode(jwtToken, SECRET_KEY)
+  if not jwtValid:
+    raise newException(CatchableError, "Invalid jwt token")
+  let tokenFromJwt = jwtDecoded["csrf_token"].getStr()
+  
+  if tokenFromHeader != tokenFromJwt:
+    raise newException(CatchableError, "Invalid csrf token")
 
 
-proc checkSessionId*(request:Request):Future[MiddlewareResult] {.async.} =
-  ## Check session id in cookie is valid.
-  result = MiddlewareResult.new()
-  if request.httpMethod != HttpOptions:
-    let cookie = Cookies.new(request)
-    try:
-      if not cookie.hasKey("session_id"):
-        raise newException(Exception, "Missing session id")
-      let sessionId = cookie.get("session_id")
-      if sessionId.len == 0:
-        raise newException(Exception, "Session id is empty")
-      if not SessionDb.checkSessionIdValid(sessionId).await:
-        raise newException(Exception, "Invalid session id")
-    except:
-      result = MiddlewareResult.new(true, getCurrentExceptionMsg())
+proc createExpire():int =
+  return ( now().toTime().toUnix() + (60 * 30) ).int # 60 secound * 30 min
+
+proc sessionFromCookieHelper*(c:Context, p:Params):Future[Cookies] {.async.} =
+  ## create session and set it into context
+  ## 
+  ## if session is not valid, throw error
+  var cookies = Cookies.new(c.request)
+  let sessionPayload = cookies.get("session")
+  let (sessionDecoded, isJwtValid) = Jwt.decode(sessionPayload, settings.SECRET_KEY)
+
+  if not isJwtValid:
+    raise newException(CatchableError, "Invalid jwt")
+
+  let sessionId = sessionDecoded["session_id"].getStr()
+  let isSessionIdValid = SessionDb.checkSessionIdValid(sessionId).await
+  if not isSessionIdValid:
+    raise newException(CatchableError, "Invalid session")
+
+  let sessionOpt = Session.new(sessionId).await
+  c.setSession(sessionOpt.get())
+  
+  if c.request.httpMethod == HttpGet:
+    sessionOpt.updateCsrfToken().await
+
+  let newSessionId = sessionOpt.getToken().await
+  let newPayload = %*{
+    "session_id": newSessionId,
+    "csrf_token": globalCsrfToken,
+    "iat": now().toTime().toUnix(),
+    "exp": (now() + initTimeInterval(minutes=SESSION_TIME)).toTime().toUnix(),
+  }
+  let newSession = Jwt.encode($newPayload, settings.SECRET_KEY)
+  cookies.set("session", newSession, expire=timeForward(SESSION_TIME, Minutes))
+  return cookies
+
+
+proc createNewSessionHelper*(context:Context):Future[Cookies] {.async.} =
+  var cookies = Cookies.new(context.request)
+  let session = Session.new().await
+  session.updateCsrfToken().await
+  let newExpire = createExpire()
+  session.set("csrf_expire", $newExpire).await
+  let payload = %*{
+    "session_id": session.getToken().await,
+    "csrf_token": globalCsrfToken,
+    "iat": now().toTime().toUnix(),
+    "exp": (now() + initTimeInterval(minutes=SESSION_TIME)).toTime().toUnix(),
+  }
+  let jwtToken = Jwt.encode($payload, settings.SECRET_KEY)
+  cookies.set("session", jwtToken, expire=timeForward(SESSION_TIME, Minutes))
+  return cookies

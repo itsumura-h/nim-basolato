@@ -1,3 +1,4 @@
+import std/asyncdispatch
 import std/algorithm
 import std/json
 import std/random

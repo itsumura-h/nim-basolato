@@ -3,6 +3,7 @@ import std/json
 import std/options
 import ./session_db
 import ./cookie
+import ./random_string
 when defined(httpbeast) or defined(httpx):
   import ../libservers/nostd/request
 else:
@@ -33,7 +34,7 @@ proc getToken*(self:Option[Session]):Future[string] {.async.} =
 
 proc updateCsrfToken*(self:Option[Session]) {.async.} =
   if self.isSome:
-    let csrfToken = self.get.db.updateCsrfToken().await
+    let csrfToken = randStr(100)
     globalCsrfToken = csrfToken
 
 proc set*(self:Option[Session], key, value:string) {.async.} =

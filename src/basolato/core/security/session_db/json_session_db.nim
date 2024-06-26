@@ -24,7 +24,7 @@ proc new*(_:type JsonSessionDb, sessionId=""):Future[JsonSessionDb] {.async.} =
 
   let db = JsonFileDb.search("session_id", sessionId).await
   if not db.hasKey("session_id"):
-    let sessionId = secureRandStr(256)
+    let sessionId = secureRandStr(100)
     db.set("session_id", %sessionId)
     db.sync().await
   return JsonSessionDb(db:db)
@@ -73,10 +73,10 @@ proc destroy(self:JsonSessionDb):Future[void] {.async.} =
   self.db.destroy().await
 
 
-proc updateCsrfToken(self:JsonSessionDb):Future[string] {.async.} =
-  let csrfToken = randStr(100)
-  self.setStr("csrf_token", csrfToken).await
-  return csrfToken
+# proc updateCsrfToken(self:JsonSessionDb):Future[string] {.async.} =
+#   let csrfToken = randStr(100)
+#   self.setStr("csrf_token", csrfToken).await
+#   return csrfToken
 
 
 proc toInterface*(self:JsonSessionDb):ISessionDb =
@@ -90,5 +90,4 @@ proc toInterface*(self:JsonSessionDb):ISessionDb =
     getRows: proc():Future[JsonNode] {.async.} = return self.getRows().await,
     delete: proc(key:string):Future[void] {.async.} = self.delete(key).await,
     destroy: proc():Future[void] {.async.} = self.destroy().await,
-    updateCsrfToken: proc():Future[string] {.async.} = return self.updateCsrfToken().await
   )

@@ -20,7 +20,7 @@ const BUILD_HELP* = {
   "optimize": "memory|speed"
 }.toTable()
 
-proc build*(port=5000, workers:uint=0, force=false, httpbeast=false, httpx=false, autoRestart=false, optimize="memory", args:seq[string]) =
+proc build*(workers:uint=0, force=false, httpbeast=false, httpx=false, autoRestart=false, optimize="memory", args:seq[string]) =
   ## Build for production.
   jsBuild()
   var outputFileName = "main"
@@ -53,7 +53,6 @@ proc build*(port=5000, workers:uint=0, force=false, httpbeast=false, httpx=false
     --panics:on \
     --stackTrace \
     --lineTrace \
-    --putenv:PORT={port} \
     --out:{outputFileName} \
     main.nim
   """
