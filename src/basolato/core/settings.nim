@@ -32,6 +32,7 @@ for f in walkDir(getCurrentDir()):
     const
       SECRET_KEY* = "test_secret_key"
       SESSION_DB_PATH* = getEnv("SESSION_DB_PATH", "./session.db")
+      COOKIE_DOMAINS* :seq[string]  = @[]
   else:
     let
       SECRET_KEY* = getEnv("SECRET_KEY")

@@ -83,18 +83,12 @@ proc destroy(self:RedisSessionDb):Future[void] {.async.} =
   discard self.conn.del(@[self.id]).await
 
 
-proc updateCsrfToken(self:RedisSessionDb):Future[string] {.async.} =
-  let csrfToken = randStr(100)
-  self.setStr("csrf_token", csrfToken).await
-  return csrfToken
-
-
 proc new*(_:type RedisSessionDb, sessionId=""):Future[RedisSessionDb] {.async.} =
   let id =
     if sessionId.len == 0:
-      secureRandStr(256)
+      secureRandStr(100)
     elif not RedisSessionDb.checkSessionIdValid(sessionId).await:
-      secureRandStr(256)
+      secureRandStr(100)
     else:
       sessionId
 
@@ -119,5 +113,4 @@ converter toInterface*(self:RedisSessionDb):ISessionDb =
     getRows: proc():Future[JsonNode] {.async.} = return self.getRows().await,
     delete: proc(key:string):Future[void] {.async.} = self.delete(key).await,
     destroy: proc():Future[void] {.async.} = self.destroy().await,
-    updateCsrfToken: proc():Future[string] {.async.} = return self.updateCsrfToken().await
   )

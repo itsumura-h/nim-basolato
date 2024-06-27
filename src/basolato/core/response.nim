@@ -4,7 +4,6 @@ import std/json
 import std/strutils
 import std/times
 import ./settings
-# import ./settings
 import ./logger
 import ./security/context
 import ./security/cookie

@@ -1,7 +1,7 @@
 # framework
 import basolato
 # controller
-import app/http/controllers/benchmark_controller
+import ./app/http/controllers/benchmark_controller
 
 
 let routes = @[

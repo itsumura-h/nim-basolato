@@ -1,10 +1,10 @@
 discard """
-  cmd: "nim c $file"
+  cmd: "nim c -d:test $file"
   matrix: "--putenv:SESSION_TYPE=file --putenv:SESSION_DB_PATH=./session.db; --putenv:SESSION_TYPE=redis --putenv:SESSION_DB_PATH=redis:6379"
 """
 
-# nim c -r --putenv:SESSION_TYPE=file --putenv:SESSION_DB_PATH=./session.db tests/auth/test_session.nim
-# nim c -r --putenv:SESSION_TYPE=redis --putenv:SESSION_DB_PATH=redis:6379 tests/auth/test_session.nim
+# nim c -r -d:test --putenv:SESSION_TYPE=file --putenv:SESSION_DB_PATH=./session.db ./security/test_session.nim
+# nim c -r -d:test --putenv:SESSION_TYPE=redis --putenv:SESSION_DB_PATH=redis:6379 ./security/test_session.nim
 
 import std/unittest
 import std/asyncdispatch
@@ -18,17 +18,17 @@ suite("session db"):
   test("new"):
     let session = Session.new().waitFor()
     token = session.getToken().waitFor()
-    check token.len == 256
+    check token.len == 100
 
   test("new with empty should regenerate id"):
     let session = Session.new("").waitFor()
     token = session.getToken().waitFor()
-    check token.len == 256
+    check token.len == 100
 
   test("new with invalid id should regenerate id"):
     let session = Session.new("invalid").waitFor()
     token = session.getToken().waitFor()
-    check token.len == 256
+    check token.len == 100
 
   test("set / get"):
     let session = Session.new(token).waitFor()
@@ -43,9 +43,9 @@ suite("session db"):
   test("updateCsrfToken"):
     let session = Session.new(token).waitFor()
     session.updateCsrfToken().waitFor()
-    let csrfToken = session.get("csrf_token").waitFor()
+    let csrfToken = globalCsrfToken
     session.updateCsrfToken().waitFor()
-    check session.get("csrf_token").waitFor() != csrfToken
+    check csrfToken != globalCsrfToken
 
   test("delete"):
     let session = Session.new(token).waitFor()
