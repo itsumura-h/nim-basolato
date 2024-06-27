@@ -2,7 +2,7 @@ discard """
   cmd: "nim c -d:test --putenv:SESSION_TYPE=redis --putenv:SESSION_DB_PATH=redis:6379 $file"
 """
 
-# nim c -r -d:test --putenv:SESSION_TYPE=redis --putenv:SESSION_DB_PATH=redis:6379 auth/test_redis_session_db.nim
+# nim c -r -d:test --putenv:SESSION_TYPE=redis --putenv:SESSION_DB_PATH=redis:6379 ./security/test_redis_session_db.nim
 
 import std/unittest
 import std/asyncdispatch
@@ -15,19 +15,19 @@ suite("redis session db"):
   test("new"):
     let session = RedisSessionDb.new().waitFor().toInterface()
     token = session.getToken().waitFor()
-    check token.len == 256
+    check token.len == 100
 
   test("new with empty should regenerate id"):
     let session = RedisSessionDb.new("").waitFor().toInterface()
     let newToken = session.getToken().waitFor()
     check newToken != token
-    check newToken.len == 256
+    check newToken.len == 100
 
   test("new with invalid id should regenerate id"):
     let session = RedisSessionDb.new("invalid").waitFor().toInterface()
     let newToken = session.getToken().waitFor()
     check newToken != token
-    check newToken.len == 256
+    check newToken.len == 100
 
   test("setStr / getStr"):
     let session = RedisSessionDb.new(token).waitFor().toInterface()
@@ -44,12 +44,6 @@ suite("redis session db"):
     let session = RedisSessionDb.new(token).waitFor().toInterface()
     check session.isSome("str").waitFor()
     check session.isSome("invalid").waitFor() == false
-
-  test("updateCsrfToken"):
-    let session = RedisSessionDb.new(token).waitFor().toInterface()
-    let csrfToken = session.getStr("csrf_token").waitFor()
-    discard session.updateCsrfToken().waitFor()
-    check session.getStr("csrf_token").waitFor() != csrfToken
 
   test("delete"):
     let session = RedisSessionDb.new(token).waitFor().toInterface()

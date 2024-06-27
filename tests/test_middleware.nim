@@ -1,8 +1,8 @@
 discard """
-  cmd: "nim c -r --putenv:SESSION_TYPE=file --putenv:SESSION_DB_PATH=./tests/server/session.db $file"
+  cmd: "nim c -d:test --putenv:SESSION_TYPE=file --putenv:SESSION_DB_PATH=./server/session.db $file"
 """
 
-# nim c -r --putenv:SESSION_TYPE=file --putenv:SESSION_DB_PATH=./tests/server/session.db tests/test_middleware.nim
+# nim c -r -d:test --putenv:SESSION_TYPE=file --putenv:SESSION_DB_PATH=./server/session.db test_middleware.nim
 
 import std/unittest
 import std/asyncdispatch
@@ -13,6 +13,8 @@ import std/strformat
 import std/strutils
 import std/xmltree
 import ../src/basolato/middleware
+import ../src/basolato/settings
+import ../src/basolato/core/security/jwt
 include ../src/basolato/core/security/session
 include ../src/basolato/core/security/csrf_token
 
@@ -20,13 +22,17 @@ include ../src/basolato/core/security/csrf_token
 const HOST = "http://localhost:8000"
 
 let client = newHttpClient(maxRedirects=0)
-var sessionId:string
+var jwtToken:string
+var tokenInJwt:string
 
 proc loadCsrfToken():string =
   # create session
   let response = client.get(&"{HOST}/csrf/test_routing")
   check response.code == Http200
-  sessionId = response.headers["Set-Cookie"].split(";")[0].split("=")[1]
+  jwtToken = response.headers["Set-Cookie"].split(";")[0].split("=")[1]
+  let (decoded, _) = Jwt.decode(jwtToken, SECRET_KEY)
+  tokenInJwt = decoded["csrf_token"].getStr()
+
   let html = response.body().parseHtml()
   var s = newSeq[XmlNode]()
   html.findAll("input", s)
@@ -38,7 +44,7 @@ suite("test middleware"):
   test("csrf token valid"):
     let csrfToken = loadCsrfToken()
     client.headers = newHttpHeaders({
-      "Cookie": &"session_id={sessionId}",
+      "Cookie": &"session={jwtToken}",
       "Content-Type": "application/x-www-form-urlencoded",
     })
     let params = &"csrf_token={csrfToken}"
@@ -47,8 +53,9 @@ suite("test middleware"):
 
 
   test("csrf token invalid"):
+    discard loadCsrfToken()
     client.headers = newHttpHeaders({
-      "Cookie": &"session_id={sessionId}",
+      "Cookie": &"session={jwtToken}",
       "Content-Type": "application/x-www-form-urlencoded",
     })
     let params = "csrf_token=invalid_token"
@@ -59,7 +66,7 @@ suite("test middleware"):
   test("session id invalid"):
     let invalidSessionId = "invalid_session_id"
     client.headers = newHttpHeaders({
-      "Cookie": &"session_id={invalidSessionId}",
+      "Cookie": &"session={invalidSessionId}",
       "Content-Type": "application/x-www-form-urlencoded"
     })
     let csrfToken = loadCsrfToken()
@@ -71,7 +78,7 @@ suite("test middleware"):
   test("invalid params -> success"):
     let csrfToken = loadCsrfToken()
     client.headers = newHttpHeaders({
-      "Cookie": &"session_id={sessionId}",
+      "Cookie": &"session={jwtToken}",
       "Content-Type": "application/x-www-form-urlencoded",
     })
     var params = &"csrf_token={csrfToken}&status=invalid"

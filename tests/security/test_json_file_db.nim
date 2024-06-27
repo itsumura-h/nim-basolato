@@ -1,8 +1,8 @@
 discard """
-  cmd: "nim c -r $file"
+  cmd: "nim c -d:test --putenv:SESSION_DB_PATH=./session.db $file"
 """
 
-# nim c -r auth/test_json_file_db.nim
+# nim c -r -d:test --putenv:SESSION_DB_PATH=./session.db ./security/test_json_file_db.nim
 
 import std/unittest
 import std/asyncdispatch

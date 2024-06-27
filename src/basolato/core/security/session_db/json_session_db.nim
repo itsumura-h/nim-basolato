@@ -9,8 +9,6 @@ import ./libs/json_file_db
 import ./session_db_interface
 
 
-var globalCsrfToken*:string
-
 type JsonSessionDb* = object
   db:JsonFileDb
 
@@ -23,7 +21,7 @@ proc new*(_:type JsonSessionDb, sessionId=""):Future[JsonSessionDb] {.async.} =
     createDir(SESSION_DB_PATH.parentDir())
 
   let db = JsonFileDb.search("session_id", sessionId).await
-  if not db.hasKey("session_id"):
+  if sessionId.len == 0 or not db.hasKey("session_id"):
     let sessionId = secureRandStr(100)
     db.set("session_id", %sessionId)
     db.sync().await

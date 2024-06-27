@@ -1,10 +1,10 @@
 discard """
-  cmd: "nim c $file"
+  cmd: "nim c -d:test $file"
   matrix: "--putenv:SESSION_TYPE=file --putenv:SESSION_DB_PATH=./session.db; --putenv:SESSION_TYPE=redis --putenv:SESSION_DB_PATH=redis:6379"
 """
 
-# nim c -r --putenv:SESSION_TYPE=file --putenv:SESSION_DB_PATH=./session.db tests/auth/test_session_db.nim
-# nim c -r --putenv:SESSION_TYPE=redis --putenv:SESSION_DB_PATH=redis:6379 tests/auth/test_session_db.nim
+# nim c -r -d:test --putenv:SESSION_TYPE=file --putenv:SESSION_DB_PATH=./session.db ./security/test_session_db.nim
+# nim c -r -d:test --putenv:SESSION_TYPE=redis --putenv:SESSION_DB_PATH=redis:6379 security/test_session_db.nim
 
 import std/unittest
 import std/asyncdispatch
@@ -45,13 +45,6 @@ suite("session db"):
     let session = SessionDb.new(token).waitFor()
     check session.isSome("str").waitFor()
     check session.isSome("invalid").waitFor() == false
-
-  test("updateCsrfToken"):
-    let session = SessionDb.new(token).waitFor()
-    discard session.updateCsrfToken().waitFor()
-    let csrfToken = session.getStr("csrf_token").waitFor()
-    discard session.updateCsrfToken().waitFor()
-    check session.getStr("csrf_token").waitFor() != csrfToken
 
   test("delete"):
     let session = SessionDb.new(token).waitFor()

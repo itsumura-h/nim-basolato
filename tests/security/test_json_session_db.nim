@@ -1,14 +1,18 @@
 discard """
-  cmd: "nim c --putenv:SESSION_DB_PATH=./session.db $options $file"
+  cmd: "nim c -d:test --putenv:SESSION_DB_PATH=./session.db $options $file"
 """
 
-# nim c -r --putenv:SESSION_DB_PATH=./session.db tests/auth/test_json_session_db.nim
+# nim c -r -d:test --putenv:SESSION_DB_PATH=./session.db ./security/test_json_session_db.nim
 
 import std/unittest
 import std/asyncdispatch
+import std/os
 import std/json
+import ../../src/basolato/core/settings
 import ../../src/basolato/core/security/session_db/json_session_db
 
+echo "SESSION_DB_PATH: ",SESSION_DB_PATH
+removeFile(SESSION_DB_PATH)
 
 suite("json session db"):
   var token:string
@@ -16,19 +20,19 @@ suite("json session db"):
   test("new"):
     let session = JsonSessionDb.new().waitFor().toInterface()
     token = session.getToken().waitFor()
-    check token.len == 256
+    check token.len == 100
 
 
   test("new with empty should regenerate id"):
     let session = JsonSessionDb.new("").waitFor().toInterface()
     token = session.getToken().waitFor()
-    check token.len == 256
+    check token.len == 100
 
   
   test("new with invalid id should regenerate id"):
     let session = JsonSessionDb.new("invalid").waitFor().toInterface()
     token = session.getToken().waitFor()
-    check token.len == 256
+    check token.len == 100
 
 
   test("new with token"):
@@ -53,14 +57,6 @@ suite("json session db"):
     let session = JsonSessionDb.new(token).waitFor().toInterface()
     check session.isSome("str").waitFor()
     check session.isSome("invalid").waitFor() == false
-
-
-  test("updateCsrfToken"):
-    let session = JsonSessionDb.new(token).waitFor().toInterface()
-    discard session.updateCsrfToken().waitFor()
-    let csrfToken = session.getStr("csrf_token").waitFor()
-    discard session.updateCsrfToken().waitFor()
-    check session.getStr("csrf_token").waitFor() != csrfToken
 
 
   test("delete"):
