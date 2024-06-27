@@ -71,12 +71,6 @@ proc destroy(self:JsonSessionDb):Future[void] {.async.} =
   self.db.destroy().await
 
 
-# proc updateCsrfToken(self:JsonSessionDb):Future[string] {.async.} =
-#   let csrfToken = randStr(100)
-#   self.setStr("csrf_token", csrfToken).await
-#   return csrfToken
-
-
 proc toInterface*(self:JsonSessionDb):ISessionDb =
   return (
     getToken: proc():Future[string] {.async.} = return self.getToken().await,

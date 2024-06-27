@@ -54,6 +54,3 @@ proc delete*(self:SessionDb, key:string):Future[void] {.async.} =
 
 proc destroy*(self:SessionDb):Future[void] {.async.} =
   self.impl.destroy().await
-
-# proc updateCsrfToken*(self:SessionDb):Future[string] {.async.} =
-#   return self.impl.updateCsrfToken().await

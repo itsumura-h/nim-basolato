@@ -1,10 +1,7 @@
 # framework
 import ../../src/basolato
 import ../../src/basolato/middleware/session_from_cookie_middleware
-# import ../../src/basolato/middleware/check_csrf_token_middleware
 # middleware
-# import app/http/middlewares/session_middleware
-# import app/http/middlewares/auth_middleware
 import app/http/middlewares/auth_middleware
 import app/http/middlewares/set_headers_middleware
 import app/http/middlewares/example_middleware
