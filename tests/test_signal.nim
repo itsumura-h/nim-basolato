@@ -8,17 +8,21 @@ import basolato/view
 
 suite("test signal"):
   test("crate signal"):
-    let userSignal = createSignal((isLogi:true, name: "John", email: "john@example.com"))
-    check userSignal.get().name == "John"
-    check userSignal.get().email == "john@example.com"
+    let userSignal = createSignal((isLogin:true, name: "John", email: "john@example.com"))
+    let user = userSignal.value()
+    check user.isLogin = true
+    check user.name == "John"
+    check user.email == "john@example.com"
 
   test("set signal"):
     let userSignal = createSignal((isLogin:false, name: "", email: ""))
-    check userSignal.get().isLogin == false
-    check userSignal.get().name == ""
-    check userSignal.get().email == ""
+    let user = userSignal.value()
+    check user.isLogin == false
+    check user.name == ""
+    check user.email == ""
     
-    userSignal.set((isLogin:true, name: "John", email: "john@example.com"))
-    check userSignal.get().isLogin == true
-    check userSignal.get().name == "John"
-    check userSignal.get().email == "john@example.com"
+    userSignal.value = (isLogin:true, name: "John", email: "john@example.com")
+    let user = userSignal.value()
+    check user.isLogin == true
+    check user.name == "John"
+    check user.email == "john@example.com"

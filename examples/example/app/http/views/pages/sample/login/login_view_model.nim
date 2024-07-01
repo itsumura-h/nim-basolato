@@ -7,5 +7,5 @@ type LoginViewModel* = object
 
 
 proc new*(_:type LoginViewModel):LoginViewModel =
-  let (isLogin, name) = loginUserSignal.get()
+  let (isLogin, name) = loginUserSignal.value
   return LoginViewModel(isLogin:isLogin, name:name)
