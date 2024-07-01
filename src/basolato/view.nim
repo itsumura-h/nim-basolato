@@ -117,3 +117,32 @@ else:
       else:
         arr[i] = row
     return Style.new(arr.join("\n"), saffix)
+
+
+# ==================== Signal ====================
+type Signal*[T] = ref object
+  value: T
+  nextId: int
+
+type SignalResponse*[T] = object
+  get:proc(): T
+  set:proc(newValue: T)
+
+proc get*[T](self:SignalResponse[T]):T =
+  return self.get()
+
+proc set*[T](self:SignalResponse[T], newValue: T) =
+  self.set(newValue)
+
+
+proc createSignal*[T](initialValue: T): SignalResponse[T] =
+  var signal = Signal[T](value: initialValue, nextId: 0)
+
+  proc get(): T =
+    signal.value
+
+  proc set(newValue: T) =
+    if newValue != signal.value:
+      signal.value = newValue
+
+  return SignalResponse[T](get:get, set:set)

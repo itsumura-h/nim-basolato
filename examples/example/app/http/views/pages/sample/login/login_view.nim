@@ -1,9 +1,10 @@
 import asyncdispatch
-import ../../../../../../../src/basolato/view
-import ../../layouts/application_view
+import ../../../../../../../../src/basolato/view
+import ../../../layouts/application_view
+import ./login_view_model
 
 
-proc impl(context:Context):Future[Component]{.async.} =
+proc impl(viewModel:LoginViewModel):Component =
   let style = styleTmpl(Css, """
     .className {
     }
@@ -13,11 +14,11 @@ proc impl(context:Context):Future[Component]{.async.} =
     <main>
       <a href="/">go back</a>
       <section>
-        $if context.isLogin().await{
+        $if viewModel.isLogin{
           <form method="POST" action="/sample/logout">
             <header>
               <h2>You are logged in!</h2>
-              <p>Login Name: $(context.get("name").await)</p>
+              <p>Login Name: $(viewModel.name)</p>
             </header>
             $(csrfToken())
             <button type="submit">Logout</button>
@@ -38,6 +39,6 @@ proc impl(context:Context):Future[Component]{.async.} =
     </main>
   """
 
-proc loginView*(context:Context):Future[Component]{.async.} =
+proc loginView*(viewModel:LoginViewModel):Component =
   let title = "Login"
-  return applicationView(title, impl(context).await)
+  return applicationView(title, impl(viewModel))
