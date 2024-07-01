@@ -10,5 +10,5 @@ proc new*(_:type LoginPresenter):LoginPresenter =
 
 
 proc invoke*(self:LoginPresenter, isLogin:bool, name:string):LoginViewModel =
-  loginUserSignal.set((isLogin:isLogin, name:name))
+  loginUserSignal.value = (isLogin:isLogin, name:name)
   return LoginViewModel.new()

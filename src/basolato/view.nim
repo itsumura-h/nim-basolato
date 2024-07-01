@@ -128,12 +128,11 @@ type SignalResponse*[T] = object
   get:proc(): T
   set:proc(newValue: T)
 
-proc get*[T](self:SignalResponse[T]):T =
+proc value*[T](self:SignalResponse[T]):T =
   return self.get()
 
-proc set*[T](self:SignalResponse[T], newValue: T) =
+proc `value=`*[T](self:SignalResponse[T], newValue: T) =
   self.set(newValue)
-
 
 proc createSignal*[T](initialValue: T): SignalResponse[T] =
   var signal = Signal[T](value: initialValue, nextId: 0)
