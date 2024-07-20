@@ -1,29 +1,30 @@
-import std/asyncdispatch
 import ../../../../../../../src/basolato/view
 import ../../../../models/fortune
 
-proc fortuneView*(rows:seq[Fortune]):Future[Component] {.async.} = tmpl"""
-<!DOCTYPE html>
-<html>
 
-<head>
-  <title>Fortunes</title>
-</head>
+proc fortuneView*(rows:seq[Fortune]):Component =
+  tmpl"""
+  <!DOCTYPE html>
+  <html>
 
-<body>
-  <table>
-    <tr>
-      <th>id</th>
-      <th>message</th>
-    </tr>
-    $for row in rows{
+  <head>
+    <title>Fortunes</title>
+  </head>
+
+  <body>
+    <table>
       <tr>
-        <td>$(row.id)</td>
-        <td>$(row.message)</td>
+        <th>id</th>
+        <th>message</th>
       </tr>
-    }
-  </table>
-</body>
+      $for row in rows{
+        <tr>
+          <td>$(row.id)</td>
+          <td>$(row.message)</td>
+        </tr>
+      }
+    </table>
+  </body>
 
-</html>
-"""
+  </html>
+  """

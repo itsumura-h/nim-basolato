@@ -1,29 +1,32 @@
 import std/asyncdispatch
-import std/json
 # framework
 import ../../../../../src/basolato/controller
 #view
-import ../../presenters/login_presenter
-import ../views/pages/sample/login/login_view_model
-import ../views/pages/sample/login/login_view
+import ../views/pages/login/login_page
+import ../views/layouts/app/app_layout
+import ../views/presenters/app_presenter
 
 
-proc index*(context:Context, params:Params):Future[Response] {.async.} =
-  let isLogin = context.isLogin().await
-  let name = context.get("name").await
-  let loginPresenter = LoginPresenter.new()
-  let loginViewModel = loginPresenter.invoke(isLogin, name)
-  return render(loginView(loginViewModel))
+proc index*(context:Context):Future[Response] {.async.} =
+  const title = "Login Page"
+  let appPresenter = AppPresenter.new()
+  let appLayoutModel = appPresenter.invoke(title)
 
-proc store*(context:Context, params:Params):Future[Response] {.async.} =
-  let name = params.getStr("name")
-  let password = params.getStr("password")
+  let page = loginPage().await
+  let view = appLayout(appLayoutModel, page)
+  return render(view)
+
+
+proc store*(context:Context):Future[Response] {.async.} =
+  let name = context.params.getStr("name")
+  let password = context.params.getStr("password")
   # client
-  await context.set("name", name)
-  await context.login()
+  context.set("name", name).await
+  context.login().await
   return redirect("/sample/login")
 
-proc destroy*(context:Context, params:Params):Future[Response] {.async.} =
+
+proc destroy*(context:Context):Future[Response] {.async.} =
   await context.logout()
   await context.delete("name")
   return redirect("/sample/login")

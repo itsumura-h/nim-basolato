@@ -2,9 +2,9 @@ import asyncdispatch
 import ../../../../../src/basolato/middleware
 
 
-proc checkCsrfToken*(c:Context, p:Params):Future[Response] {.async.} =
+proc checkCsrfToken*(c:Context):Future[Response] {.async.} =
   try:
-    checkCsrfTokenForMpaHelper(c, p).await
+    checkCsrfTokenForMpaHelper(c).await
     return next()
   except:
     # Define your own error handling logic here
@@ -12,9 +12,9 @@ proc checkCsrfToken*(c:Context, p:Params):Future[Response] {.async.} =
     return render(Http403, getCurrentExceptionMsg())
 
 
-proc sessionFromCookie*(c:Context, p:Params):Future[Response] {.async.} =
+proc sessionFromCookie*(c:Context):Future[Response] {.async.} =
   try:
-    let cookies = sessionFromCookieHelper(c, p).await
+    let cookies = sessionFromCookieHelper(c).await
     return next().setCookie(cookies)
   except:
     # Define your own error handling logic here

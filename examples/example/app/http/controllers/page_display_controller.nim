@@ -7,33 +7,35 @@ import std/times
 import ../../../../../src/basolato/controller
 import ../../../../../src/basolato/web_socket
 # views
-import ../views/pages/welcome_view
-import ../views/pages/welcome_scf_view
-import ../views/pages/sample/with_style_view
-import ../views/pages/sample/babylon_js/babylon_js_view
-import ../views/pages/sample/web_socket_view
-import ../views/pages/sample/api_view
+import ../views/pages/welcome/welcome_page
+import ../views/pages/with_style/with_style_page
+import ../views/pages/babylon_js/babylon_js_page
+# import ../views/pages/sample/web_socket_view
+import ../views/pages/web_socket/web_socket_page
+import ../views/pages/api_view/api_view_page
+import ../views/presenters/app_presenter
+import ../views/layouts/app/app_layout
 
 
-proc index*(context:Context, params:Params):Future[Response] {.async.} =
+
+proc index*(context:Context):Future[Response] {.async.} =
   let index = asyncHtml("pages/sample/index.html").await
   return render(index)
 
-proc welcome*(context:Context, params:Params):Future[Response] {.async.} =
-  let name = "Basolato " & BasolatoVersion
-  return render(welcomeView(name))
 
-proc welcomeScf*(context:Context, params:Params):Future[Response] {.async.} =
-  let name = "Basolato " & BasolatoVersion
-  return render(welcomeScfView(name).await)
+proc welcome*(context:Context):Future[Response] {.async.} =
+  let page = welcomePage()
+  return render(page)
+
 
 proc fibLogic(n: int): int =
   if n < 2:
     return n
   return fibLogic(n - 2) + fibLogic(n - 1)
 
-proc fib*(context:Context, params:Params):Future[Response] {.async.} =
-  let num = params.getInt("num")
+
+proc fib*(context:Context):Future[Response] {.async.} =
+  let num = context.params.getInt("num")
   var results: seq[int]
   let startTime = getTime()
   for i in 0..<num:
@@ -48,17 +50,27 @@ proc fib*(context:Context, params:Params):Future[Response] {.async.} =
   return render(data)
 
 
-proc withStylePage*(context:Context, params:Params):Future[Response] {.async.} =
-  let view = withStyleView()
+proc withStylePage*(context:Context):Future[Response] {.async.} =
+  const title = "With Style"
+  let appPresenter = AppPresenter.new()
+  let appLayoutModel = appPresenter.invoke(title)
+
+  let page = withStylePage()
+  let view = appLayout(appLayoutModel, page)
   return render(view)
 
 
-proc babylonJsPage*(context:Context, params:Params):Future[Response] {.async.} =
-  let view = babylonJsView().await
+proc babylonJsPage*(context:Context):Future[Response] {.async.} =
+  const title = "Babylon JS"
+  let appPresenter = AppPresenter.new()
+  let appLayoutModel = appPresenter.invoke(title)
+
+  let page = babylonJsPage()
+  let view = appLayout(appLayoutModel, page)
   return render(view)
 
 
-proc customHeaders*(context:Context, params:Params):Future[Response] {.async.} =
+proc customHeaders*(context:Context):Future[Response] {.async.} =
   var header = newHttpHeaders()
   header.add("Custom-Header-Key1", "Custom-Header-Val1")
   header.add("Custom-Header-Key1", "Custom-Header-Val2")
@@ -67,7 +79,7 @@ proc customHeaders*(context:Context, params:Params):Future[Response] {.async.} =
   return render("with header", header)
 
 
-proc presentDd*(context:Context, params:Params):Future[Response] {.async.} =
+proc presentDd*(context:Context):Future[Response] {.async.} =
   let a = %*{
     "key1": "value1",
     "key2": "value2",
@@ -84,30 +96,35 @@ proc presentDd*(context:Context, params:Params):Future[Response] {.async.} =
   return render("dd")
 
 
-proc errorPage*(context:Context, params:Params):Future[Response] {.async.} =
-  let id = params.getInt("id")
+proc errorPage*(context:Context):Future[Response] {.async.} =
+  let id = context.params.getInt("id")
   if id mod 2 == 1:
     # raise newException(Error400, "Displaying error page")
     return render(Http400, "Displaying error page")
   return render($id)
 
-proc errorRedirect*(context:Context, params:Params):Future[Response] {.async.} =
-  let id = params.getInt("id")
+proc errorRedirect*(context:Context):Future[Response] {.async.} =
+  let id = context.params.getInt("id")
   if id mod 2 == 1:
     # raise newException(ErrorRedirect, "/sample/login")
     return errorRedirect("/sample/login")
   return render($id)
 
 
-proc webSocketComponent*(context:Context, params:Params):Future[Response] {.async.} =
-  return render(webSocketComponent())
+proc webSocketIframePage*(context:Context):Future[Response] {.async.} =
+  let view = webSocketIframePage()
+  return render(view)
 
-proc webSocketPage*(context:Context, params:Params):Future[Response] {.async.} =
-  return render(webSocketView())
+
+proc webSocketPage*(context:Context):Future[Response] {.async.} =
+  let view = webSocketPage()
+  return render(view)
+
 
 var connections = newSeq[WebSocket]()
 
-proc webSocket*(context:Context, params:Params):Future[Response] {.async.} =
+
+proc webSocket*(context:Context):Future[Response] {.async.} =
   try:
     var ws = newWebSocket(context.request).await
     connections.add(ws)
@@ -128,5 +145,6 @@ proc webSocket*(context:Context, params:Params):Future[Response] {.async.} =
     echo "Unexpected socket error: ", getCurrentExceptionMsg()
   return render("")
 
-proc displayApiPage*(context:Context, params:Params):Future[Response] {.async.} =
-  return render(apiView().await)
+proc displayApiPage*(context:Context):Future[Response] {.async.} =
+  let view = apiViewPage()
+  return render(view)

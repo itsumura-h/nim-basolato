@@ -19,7 +19,7 @@ else:
   import ./libservers/std/request
 
 
-type Controller* = proc(c:Context, params:Params):Future[Response] {.async.}
+type Controller* = proc(context:Context):Future[Response] {.async.}
 
 type Middleware* = object
   action: Controller
@@ -204,14 +204,13 @@ proc params(request:Request, route:Route):Params =
   return params
 
 
-proc runMiddleware(req:Request, route:Route, context:Context):Future[Response] {.async.} =
+proc runMiddleware(req:Request, context:Context, route:Route):Future[Response] {.async.} =
   var
     headers = newHttpHeaders(true)
     status = HttpCode(0)
     body = ""
-  let params = req.params(route)
   for middleware in route.middlewares:
-    let res = middleware.action(context, params).await
+    let res = middleware.action(context).await
     headers = headers & res.headers
 
     if res.status.is3xx or res.status.is4xx:
@@ -224,23 +223,25 @@ proc runMiddleware(req:Request, route:Route, context:Context):Future[Response] {
   return Response.new(status=status, body=body, headers=headers)
 
 
-proc runController(req:Request, route:Route, headers: HttpHeaders, context:Context):Future[Response] {.async.} =
-  let params = req.params(route)
-  let response = route.controller(context, params).await
+proc runController(req:Request, context:Context, route:Route, headers: HttpHeaders):Future[Response] {.async.} =
+  let response = route.controller(context).await
   response.headers &= headers
   echoLog(&"{$response.status}  {$req.httpMethod}  {req.path}")
   return response
 
 
-proc createResponse*(req:Request, route:Route, httpMethod:HttpMethod, context:Context):Future[Response] {.async.} =
+proc createResponse*(req:Request, route:Route, httpMethod:HttpMethod):Future[Response] {.async.} =
   ## run middleware -> run controller
   {.cast(gcsafe).}: # fix: "which is a global using GC'ed memory" in server.nim
-    let response1 = runMiddleware(req, route, context).await
+    let params = req.params(route)
+    let context = Context.new(req, params).await
+    setContext(context)
+    let response1 = runMiddleware(req, context, route).await
     if httpMethod == HttpOptions:
       return response1
     if response1.status != HttpCode(0):
       return response1
-    let response2 = runController(req, route, response1.headers, context).await
+    let response2 = runController(req, context, route, response1.headers).await
     return response2
 
 
