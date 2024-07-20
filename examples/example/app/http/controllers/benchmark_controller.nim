@@ -16,15 +16,15 @@ from ../../../config/database import pgDb
 
 randomize()
 
-proc plaintext*(context:Context, params:Params):Future[Response] {.async.} =
+proc plaintext*(context:Context):Future[Response] {.async.} =
   let headers = newHttpHeaders()
   headers.add("Content-Type", "text/plain; charset=UTF-8")
   return render("Hello, World!", headers)
 
-proc json*(context:Context, params:Params):Future[Response] {.async.} =
+proc json*(context:Context):Future[Response] {.async.} =
   return render(%*{"message":"Hello, World!"})
 
-proc db*(context:Context, params:Params):Future[Response] {.async.} =
+proc db*(context:Context):Future[Response] {.async.} =
   let i = rand(1..10000)
   let res = pgDb.table("World").findPlain(i).await
   if res.len > 0:
@@ -35,10 +35,10 @@ proc db*(context:Context, params:Params):Future[Response] {.async.} =
   # return render(res)
 
 
-proc query*(context:Context, params:Params):Future[Response] {.async.} =
+proc query*(context:Context):Future[Response] {.async.} =
   var countNum =
     try:
-      params.getInt("queries")
+      context.params.getInt("queries")
     except:
       1
   if countNum < 1:
@@ -59,7 +59,7 @@ proc query*(context:Context, params:Params):Future[Response] {.async.} =
   return render(%response)
 
 
-proc fortune*(context:Context, params:Params):Future[Response] {.async.} =
+proc fortune*(context:Context):Future[Response] {.async.} =
   let results = pgDb.table("Fortune").orderBy("message", Asc).getPlain().await
   var rows = newSeq[Fortune]()
   for i, data in results:
@@ -73,7 +73,7 @@ proc fortune*(context:Context, params:Params):Future[Response] {.async.} =
   return render(fortuneScfView(rows).await)
 
 
-proc update*(context:Context, params:Params):Future[Response] {.async.} =
+proc update*(context:Context):Future[Response] {.async.} =
   var countNum =
     try:
       params.getInt("queries")
@@ -103,7 +103,7 @@ proc update*(context:Context, params:Params):Future[Response] {.async.} =
   return render(response)
 
 
-proc cache*(context:Context, params:Params):Future[Response] {.async.} =
+proc cache*(context:Context):Future[Response] {.async.} =
   var countNum =
     try:
       params.getInt("count")
@@ -125,6 +125,6 @@ proc cache*(context:Context, params:Params):Future[Response] {.async.} =
   return render(response)
 
 
-proc sleep*(context:Context, params:Params):Future[Response] {.async.} =
+proc sleep*(context:Context):Future[Response] {.async.} =
   sleepAsync(10000).await
   return render("hello")

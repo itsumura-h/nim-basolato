@@ -13,16 +13,21 @@ else:
 
 type Context* = ref object
   request: Request
+  params: Params
   session: Option[Session]
 
-proc new*(_:type Context, request:Request):Future[Context]{.async.} =
+proc new*(_:type Context, request:Request, params:Params):Future[Context]{.async.} =
   return Context(
     request:request,
+    params:params,
     session:none(Session)
   )
 
 proc request*(self:Context):Request =
   return self.request
+
+proc params*(self:Context):Params =
+  return self.params
 
 proc origin*(self:Context):string =
   return self.origin
@@ -122,3 +127,10 @@ proc getParams(self:Context):Future[JsonNode] {.async.} =
 
 proc getValidationResult*(self:Context):Future[tuple[params:JsonNode, errors:JsonNode]] {.async.} =
   return (self.getParams().await, self.getErrors().await)
+
+var globalContext:Context
+proc setContext*(c:Context) =
+  globalContext = c
+
+proc context*():Context =
+  return globalContext

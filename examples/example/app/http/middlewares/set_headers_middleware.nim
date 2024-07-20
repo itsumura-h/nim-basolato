@@ -2,7 +2,7 @@ import asyncdispatch, httpcore
 import ../../../../../src/basolato/middleware
 
 
-proc setCorsHeaders*(c:Context, p:Params):Future[Response] {.async.} =
+proc setCorsHeaders*(c:Context):Future[Response] {.async.} =
   if c.request.httpMethod != HttpOptions:
     return next()
 
@@ -29,7 +29,7 @@ proc setCorsHeaders*(c:Context, p:Params):Future[Response] {.async.} =
   return next(status=Http204, headers=headers)
 
 
-proc setSecureHeaders*(c:Context, p:Params):Future[Response] {.async.} =
+proc setSecureHeaders*(c:Context):Future[Response] {.async.} =
   if c.request.httpMethod != HttpOptions:
     return next()
 

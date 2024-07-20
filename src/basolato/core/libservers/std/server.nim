@@ -45,16 +45,16 @@ proc serveCore(arg:ServeCoreArg){.async.} =
       else:
         # check path match with controller routing → run middleware → run controller
         let key = $(req.httpMethod) & ":" & req.path
-        let context = Context.new(req).await
+        # let context = Context.new(req).await
         if routes.withoutParams.hasKey(key):
           # withoutParams
           let route = routes.withoutParams[key]
-          response = createResponse(req, route, req.httpMethod, context).await
+          response = createResponse(req, route, req.httpMethod).await
         else:
           # withParams
           for route in routes.withParams:
             if route.httpMethod == req.httpMethod and isMatchUrl(req.path, route.path):
-              response = createResponse(req, route, req.httpMethod, context).await
+              response = createResponse(req, route, req.httpMethod).await
               break
 
         if req.httpMethod == HttpHead:

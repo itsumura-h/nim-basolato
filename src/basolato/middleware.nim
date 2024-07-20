@@ -27,7 +27,7 @@ func next*(status=HttpCode(0), body="", headers:HttpHeaders=newHttpHeaders()):Re
   return Response.new(status, body, headers)
 
 
-proc checkCsrfTokenForMpaHelper*(context:Context, params:Params) {.async.} =
+proc checkCsrfTokenForMpaHelper*(context:Context) {.async.} =
   ## Checking csrf token between request param and cookie is valid.
   ## 
   ## This middleware implements the Double Submit Cookie pattern
@@ -36,9 +36,9 @@ proc checkCsrfTokenForMpaHelper*(context:Context, params:Params) {.async.} =
   if context.request.httpMethod != HttpPost:
     return
   
-  if not params.hasKey("csrf_token"):
+  if not context.params.hasKey("csrf_token"):
     raise newException(CatchableError, "csrf token is missing")
-  let tokenFromParam = params.getStr("csrf_token")
+  let tokenFromParam = context.params.getStr("csrf_token")
   
   let jwtToken = Cookies.new(context.request).get("session")
   let (jwtDecoded, jwtValid) = Jwt.decode(jwtToken, SECRET_KEY)
@@ -76,7 +76,7 @@ proc checkCsrfTokenForApi*(context: Context) {.async.} =
 proc createExpire():int =
   return ( now().toTime().toUnix() + (60 * 30) ).int # 60 secound * 30 min
 
-proc sessionFromCookieHelper*(c:Context, p:Params):Future[Cookies] {.async.} =
+proc sessionFromCookieHelper*(c:Context):Future[Cookies] {.async.} =
   ## create session and set it into context
   ## 
   ## if session is not valid, throw error

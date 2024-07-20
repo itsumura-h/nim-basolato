@@ -6,7 +6,6 @@ import app/http/middlewares/auth_middleware
 import app/http/middlewares/set_headers_middleware
 import app/http/middlewares/example_middleware
 # controller
-import app/http/controllers/welcome_controller
 import app/http/controllers/page_display_controller
 import app/http/controllers/cookie_controller
 import app/http/controllers/login_controller
@@ -22,8 +21,6 @@ let routes = @[
       .middleware(example_middleware.setMiddleware1),
     Route.group("/sample", @[
       Route.get("/welcome", page_display_controller.welcome)
-        .middleware(example_middleware.setMiddleware2),
-      Route.get("/welcome-scf", page_display_controller.welcomeScf)
         .middleware(example_middleware.setMiddleware2),
       Route.get("/fib/{num:int}", page_display_controller.fib),
       Route.get("/with-style", page_display_controller.withStylePage),
@@ -55,7 +52,7 @@ let routes = @[
       Route.get("/validation", validation_controller.index),
       Route.post("/validation", validation_controller.store),
 
-      Route.get("/web-socket-component", page_display_controller.webSocketComponent),
+      Route.get("/web-socket-component", page_display_controller.webSocketIframePage),
       Route.get("/web-socket", page_display_controller.webSocketPage),
       Route.get("/ws", page_display_controller.webSocket),
     ])

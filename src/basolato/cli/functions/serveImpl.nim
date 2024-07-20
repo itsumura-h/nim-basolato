@@ -31,7 +31,7 @@ setControlCHook(ctrlC)
 proc jsBuild() =
   for f in walkDirRec(currentDir, {pcFile}):
     if f.contains("_script.nim"):
-      let jsFilePath = f.split(".")[0..^2].join(".")
+      let jsFilePath = "./public/js/" & f.split("/")[^1].split(".")[0..^2].join(".")
       let cmd = &"nim js -d:nimExperimentalAsyncjsThen -d:release -o:{jsFilePath}.js {f}"
       echo cmd
       if execShellCmd(cmd) > 0:
