@@ -159,27 +159,41 @@ func new*(_:type RequestValidation, context:Context):RequestValidation =
     errors: ValidationErrors.new()
   )
 
+
 func add(self: RequestValidation, key, error:string) =
   if self.errors.hasKey(key):
     self.errors[key].add(error)
   else:
     self.errors[key] = @[error]
 
+
 func hasErrors*(self:RequestValidation):bool =
   return self.errors.len > 0
+
 
 func hasError*(self:RequestValidation, key:string):bool =
   return self.errors.hasKey(key)
 
-proc storeValidationResult*(context:Context, validation:RequestValidation) {.async.} =
-  let params = newJObject()
-  for key, param in validation.params:
-    if not param.isFile():
-      params[key] = %($param)
 
+proc storeValidationResult*(context:Context, validation:RequestValidation) {.async.} =
+  let params = context.params.getAll()
+  echo params
   let errors = %validation.errors
   await context.setFlash("params", params)
   await context.setFlash("errors", errors)
+
+
+proc storeErrors*(context:Context, errors:seq[string]) {.async.} =
+  let params = context.params.getAll()
+  await context.setFlash("params", params)
+  await context.setFlash("errors", %errors)
+
+
+proc storeError*(context:Context, error:string) {.async.} =
+  await context.setFlash("errors", %error)
+  let params = context.params.getAll()
+  await context.setFlash("params", params)
+
 
 proc hasMessage(key:string):bool =
   if not messages.hasKey(key):
@@ -187,6 +201,7 @@ proc hasMessage(key:string):bool =
     return false
   else:
     return true
+
 
 proc hasMessage(key, key2:string):bool =
   if not messages.hasKey(key) or not messages[key].hasKey(key2):

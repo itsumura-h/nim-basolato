@@ -102,7 +102,7 @@ proc getAll*(params:Params):JsonNode =
     let ext = param.ext
     let fileName = param.fileName
     let value =
-      if ext.len > 0:
+      if param.isFile():
         ""
       else:
         param.value

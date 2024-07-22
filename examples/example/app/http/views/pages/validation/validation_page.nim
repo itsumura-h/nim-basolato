@@ -4,7 +4,7 @@ import ../../../../../../../src/basolato/view
 
 proc validationPage*():Future[Component] {.async.} =
   let context = context()
-  let (params, errors) = context.getValidationResult().await
+  let (params, errors) = context.getParamsWithErrorsObject().await
   
   let style = styleTmpl(Css, """
     <style>
