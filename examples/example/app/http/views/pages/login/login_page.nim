@@ -7,7 +7,7 @@ import ../../templates/login/login_template
 
 proc loginPage*():Future[Component] {.async.} =
   let context = context()
-  let (params, errors) = context.getValidationErrors().await
+  let (params, errors) = context.getParamsWithErrorsList().await
   formParamsSignal.value = params
   formErrorsSignal.value = errors
   

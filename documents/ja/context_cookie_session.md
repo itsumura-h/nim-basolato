@@ -154,15 +154,17 @@ proc getToken*(self:Context):Future[string] {.async.} =
 ---
 セッションDBのフラッシュデータへのアクセス
 ```nim
-proc setFlash*(self:Context, key, value:string) {.async.} =
+proc setFlash*(self:Context, key, value:string) {.async.}
 
-proc setFlash*(self:Context, key:string, value:JsonNode) {.async.} =
+proc setFlash*(self:Context, key:string, value:JsonNode) {.async.}
 
-proc hasFlash*(self:Context, key:string):Future[bool] {.async.} =
+proc hasFlash*(self:Context, key:string):Future[bool] {.async.}
 
-proc getFlash*(self:Context):Future[JsonNode] {.async.} =
+proc getFlash*(self:Context):Future[JsonNode] {.async.}
 
-proc getValidationResult*(self:Context):Future[tuple[params:JsonNode, errors:JsonNode]] {.async.} =
+proc getParamsWithErrorsObject*(self:Context):Future[tuple[params:Params, errors:JsonNode]] {.async.}
+
+proc getParamsWithErrorsList*(self:Context):Future[tuple[params:Params, errors:seq[string]]] {.async.}
 ```
 
 
@@ -250,7 +252,7 @@ COOKIE_DOMAINS="nim-lang.org, github.com"
 COOKIE_DOMAINS=", nim-lang.org, github.com"
 ```
 
-**⚠ ほとんどの場合、SessionとCookiesは直接使用すべきではなく、Clientを使用するべきです。 ⚠**
+**⚠ ほとんどの場合、SessionとCookiesは直接使用すべきではなく、Contextを使用するべきです。 ⚠**
 
 ## クッキー
 

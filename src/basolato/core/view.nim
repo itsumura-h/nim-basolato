@@ -17,31 +17,31 @@ else:
   import ./libservers/std/request; export request
 
 
-proc old*(params:JsonNode, key:string, default=""):string =
-  if params.hasKey(key):
-    case params[key].kind
-    of JString:
-      return params[key].getStr
-    of JInt:
-      return $params[key].getInt
-    of JFloat:
-      return $params[key].getFloat
-    of JBool:
-      return $params[key].getBool
-    else:
-      return $params[key]
-  else:
-    return default
+# proc old*(params:JsonNode, key:string, default=""):string =
+#   if params.hasKey(key):
+#     case params[key].kind
+#     of JString:
+#       return params[key].getStr
+#     of JInt:
+#       return $params[key].getInt
+#     of JFloat:
+#       return $params[key].getFloat
+#     of JBool:
+#       return $params[key].getBool
+#     else:
+#       return $params[key]
+#   else:
+#     return default
 
 
-func old*(params:TableRef, key:string, default=""):string =
-  if params.hasKey(key):
-    return $params[key]
-  else:
-    return default
+# func old*(params:TableRef, key:string, default=""):string =
+#   if params.hasKey(key):
+#     return $params[key]
+#   else:
+#     return default
 
 
-func old*(params:Params, key:string, default=""):string =
+proc old*(params:Params, key:string, default=""):string =
   if params.hasKey(key):
     return params.getStr(key)
   else:

@@ -140,21 +140,24 @@ proc getErrors(self:Context):Future[JsonNode] {.async.} =
         return val
 
 
-proc getParams(self:Context):Future[JsonNode] {.async.} =
-  result = newJObject()
+proc getParams(self:Context):Future[Params] {.async.} =
+  result = Params.new()
   if self.session.isSome:
     let rows = self.session.get.db.getRows().await
-    for key, val in rows.pairs:
+    for key, sessionParams in rows.pairs:
       if key == "flash_params":
         await self.session.delete(key)
-        return val
+        let params = Params.new()
+        for key, jsonParam in sessionParams.pairs:
+          params[key] = jsonParam.to(Param)
+        return params
 
 
-proc getValidationResult*(self:Context):Future[tuple[params:JsonNode, errors:JsonNode]] {.async.} =
+proc getParamsWithErrorsObject*(self:Context):Future[tuple[params:Params, errors:JsonNode]] {.async.} =
   ## ```
   ## params: {
-  ##   "field1": "value1",
-  ##   "field2": "value2"
+  ##   "field1": {"value": "value1", fileName:"", ext:""},
+  ##   "field2": {"value": "value2", fileName:"", ext:""}
   ## }
   ## errors: {
   ##   "field_name1": ["error message1", "error message2],
@@ -164,11 +167,11 @@ proc getValidationResult*(self:Context):Future[tuple[params:JsonNode, errors:Jso
   return (params: self.getParams().await, errors:self.getErrors().await)
 
 
-proc getValidationErrors*(self:Context):Future[tuple[params:JsonNode, errors:seq[string]]] {.async.} =
+proc getParamsWithErrorsList*(self:Context):Future[tuple[params:Params, errors:seq[string]]] {.async.} =
   ## ```
   ## params: {
-  ##   "field1": "value1",
-  ##   "field2": "value2"
+  ##   "field1": {"value": "value1", fileName:"", ext:""},
+  ##   "field2": {"value": "value2", fileName:"", ext:""}
   ## }
   ## errors: [
   ##   "error message1",
