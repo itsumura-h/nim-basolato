@@ -10,6 +10,7 @@ import std/tables
 import ./header
 import ./logger
 import ./response
+import ./params
 import ./security/cookie
 import ./security/context
 

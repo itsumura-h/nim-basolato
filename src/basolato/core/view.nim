@@ -8,6 +8,7 @@ import ./settings
 import ./security/context; export context
 import ./security/csrf_token; export csrf_token
 import ./security/random_string
+import ./params; export params
 import ./templates; export templates
 
 when defined(httpbeast) or defined(httpx):

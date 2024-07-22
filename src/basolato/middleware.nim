@@ -9,6 +9,7 @@ import ./core/base; export base
 import ./core/route; export route
 import ./core/header; export header
 import ./core/response; export response
+import ./core/params; export params
 import ./core/security/cookie; export cookie
 import ./core/security/session
 import ./core/security/session_db

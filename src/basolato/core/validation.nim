@@ -9,7 +9,7 @@ import std/times
 
 type Validation* = object
 
-func newValidation*():Validation =
+func new*(_:type Validation):Validation =
   return Validation()
 
 

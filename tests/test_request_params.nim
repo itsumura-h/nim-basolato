@@ -1,22 +1,22 @@
 discard """
-  cmd: "nim c -r $file"
+  cmd: "nim c -d:test $file"
   matrix: "; -d:httpbeast"
 """
 
 import std/unittest
+import std/json
+import ../src/basolato/core/params
 
 when defined(htttpbeast):
-  echo "=== httpbeast"
   include ../src/basolato/core/libservers/nostd/request
 else:
-  echo "=== std"
   include ../src/basolato/core/libservers/std/request
 
 block:
   let params = Params.new()
-  params["a"] = Param(value:"a")
-  params["one"] = Param(value:"1")
-  params["upload"] = Param(value:"content", ext:"jpg", fileName: "filename")
+  params["a"] = Param.new("a")
+  params["one"] = Param.new("1")
+  params["upload"] = Param.new("content", "filename", "jpg")
   check params.getStr("a") == "a"
   check params.getStr("one") == "1"
   check params.getInt("one") == 1
