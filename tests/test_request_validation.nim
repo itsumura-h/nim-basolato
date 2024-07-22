@@ -1,21 +1,29 @@
 discard """
-  cmd: "nim c -r $file"
+  cmd: "nim c -d:test $file"
 """
 
 import std/unittest
+import std/asyncdispatch
 import std/times
-include ../src/basolato/core/libservers/std/request
-include ../src/basolato/request_validation
+import std/tables
+import std/strutils
+import std/re
+import ../src/basolato/core/libservers/std/request
+import ../src/basolato/request_validation
+import ../src/basolato/core/security/context
+import ../src/basolato/core/params
 
 
 block:
   let p = Params.new()
-  p["on"] = Param(value:"on")
-  p["yes"] = Param(value:"yes")
-  p["one"] = Param(value:"1")
-  p["true"] = Param(value:"true")
-  p["invalid"] = Param(value:"invalid")
-  let v = RequestValidation.new(p)
+  p["on"] = Param.new("on")
+  p["yes"] = Param.new("yes")
+  p["one"] = Param.new("1")
+  p["true"] = Param.new("true")
+  p["invalid"] = Param.new("invalid")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.accepted("on")
   v.accepted("yes")
   v.accepted("one")
@@ -29,10 +37,12 @@ block:
 
 block:
   let p = Params.new()
-  p["a"] = Param(value:"2020-01-02")
-  p["b"] = Param(value:"2020-01-01")
-  p["c"] = Param(value:"2020-01-03")
-  let v = RequestValidation.new(p)
+  p["a"] = Param.new("2020-01-02")
+  p["b"] = Param.new("2020-01-01")
+  p["c"] = Param.new("2020-01-03")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.after("a", "b", "yyyy-MM-dd")
   v.after("a", "2020-01-01".parse("yyyy-MM-dd"), "yyyy-MM-dd")
   check v.hasErrors == false
@@ -44,11 +54,13 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"2020-01-02")
-  p["before"] = Param(value:"2020-01-01")
-  p["after"] = Param(value:"2020-01-03")
-  p["same"] = Param(value:"2020-01-02")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("2020-01-02")
+  p["before"] = Param.new("2020-01-01")
+  p["after"] = Param.new("2020-01-03")
+  p["same"] = Param.new("2020-01-02")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.afterOrEqual("base", "before", "yyyy-MM-dd")
   v.afterOrEqual("base", "same", "yyyy-MM-dd")
   v.afterOrEqual("base", "2020-01-02".parse("yyyy-MM-dd"), "yyyy-MM-dd")
@@ -61,12 +73,14 @@ block:
 
 block:
   let p = Params.new()
-  p["small"] = Param(value:"abcdefghijklmnopqrstuvwxyz")
-  p["large"] = Param(value:"ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-  p["number"] = Param(value:"1234567890")
-  p["mark"] = Param(value:"!\"#$%&'()~=~|`{}*+<>?_@[]:;,./^-")
-  p["ja"] = Param(value:"あいうえお")
-  let v = RequestValidation.new(p)
+  p["small"] = Param.new("abcdefghijklmnopqrstuvwxyz")
+  p["large"] = Param.new("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+  p["number"] = Param.new("1234567890")
+  p["mark"] = Param.new("!\"#$%&'()~=~|`{}*+<>?_@[]:;,./^-")
+  p["ja"] = Param.new("あいうえお")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.alpha("small")
   v.alpha("large")
   v.alpha(["small", "large"])
@@ -80,10 +94,12 @@ block:
 
 block:
   let p = Params.new()
-  p["letter"] = Param(value:"abcABC012")
-  p["withDash"] = Param(value:"abcABC012-_")
-  p["ja"] = Param(value:"aA0あいうえお")
-  let v = RequestValidation.new(p)
+  p["letter"] = Param.new("abcABC012")
+  p["withDash"] = Param.new("abcABC012-_")
+  p["ja"] = Param.new("aA0あいうえお")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.alphaDash("letter")
   v.alphaDash("withDash")
   v.alphaDash(["letter", "withDash"])
@@ -95,10 +111,12 @@ block:
 
 block:
   let p = Params.new()
-  p["letter"] = Param(value:"abcABC012")
-  p["withDash"] = Param(value:"abcABC012-_")
-  p["ja"] = Param(value:"aA0あいうえお")
-  let v = RequestValidation.new(p)
+  p["letter"] = Param.new("abcABC012")
+  p["withDash"] = Param.new("abcABC012-_")
+  p["ja"] = Param.new("aA0あいうえお")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.alphaNum("letter")
   v.alphaNum(["letter"])
   check v.hasErrors == false
@@ -110,12 +128,14 @@ block:
 
 block:
   let p = Params.new()
-  p["valid"] = Param(value:"a, b, c")
-  p["dict"] = Param(value:"""{"a": "a", "b": "b"}""")
-  p["kv"] = Param(value:"a=a, b=b")
-  p["str"] = Param(value:"adaddadad")
-  p["number"] = Param(value:"1313193")
-  let v = RequestValidation.new(p)
+  p["valid"] = Param.new("a, b, c")
+  p["dict"] = Param.new("""{"a": "a", "b": "b"}""")
+  p["kv"] = Param.new("a=a, b=b")
+  p["str"] = Param.new("adaddadad")
+  p["number"] = Param.new("1313193")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.array("valid")
   v.array(["valid"])
   check v.hasErrors == false
@@ -131,10 +151,12 @@ block:
 
 block:
   let p = Params.new()
-  p["a"] = Param(value:"2020-01-02")
-  p["b"] = Param(value:"2020-01-01")
-  p["c"] = Param(value:"2020-01-03")
-  let v = RequestValidation.new(p)
+  p["a"] = Param.new("2020-01-02")
+  p["b"] = Param.new("2020-01-01")
+  p["c"] = Param.new("2020-01-03")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.before("a", "c", "yyyy-MM-dd")
   v.before("a", "2020-01-03".parse("yyyy-MM-dd"), "yyyy-MM-dd")
   check v.hasErrors == false
@@ -146,11 +168,13 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"2020-01-02")
-  p["before"] = Param(value:"2020-01-01")
-  p["after"] = Param(value:"2020-01-03")
-  p["same"] = Param(value:"2020-01-02")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("2020-01-02")
+  p["before"] = Param.new("2020-01-01")
+  p["after"] = Param.new("2020-01-03")
+  p["same"] = Param.new("2020-01-02")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.beforeOrEqual("base", "after", "yyyy-MM-dd")
   v.beforeOrEqual("base", "same", "yyyy-MM-dd")
   v.beforeOrEqual("base", "2020-01-02".parse("yyyy-MM-dd"), "yyyy-MM-dd")
@@ -164,11 +188,13 @@ block:
 
 block:
   let p = Params.new()
-  p["num"] = Param(value:"2")
-  p["str"] = Param(value:"aa")
-  p["arr"] = Param(value:"a, b")
-  p["file"] = Param(value:"a".repeat(2000), ext:"jpg")
-  let v = RequestValidation.new(p)
+  p["num"] = Param.new("2")
+  p["str"] = Param.new("aa")
+  p["arr"] = Param.new("a, b")
+  p["file"] = Param.new("a".repeat(2000), "a", "jpg")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.betweenNum("num", 1, 3)
   v.betweenNum("num", 1.1, 3.3)
   v.betweenStr("str", 1, 3)
@@ -187,9 +213,11 @@ block:
 
 block:
   let p = Params.new()
-  p["true"] = Param(value:"true")
-  p["a"] = Param(value:"a")
-  let v = RequestValidation.new(p)
+  p["true"] = Param.new("true")
+  p["a"] = Param.new("a")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.boolean("true")
   v.boolean(["true"])
   check v.hasErrors == false
@@ -199,22 +227,27 @@ block:
 
 block:
   let p = Params.new()
-  p["password"] = Param(value:"valid")
-  p["password_confirmation"] = Param(value:"valid")
-  var v = RequestValidation.new(p)
+  p["password"] = Param.new("valid")
+  p["password_confirmation"] = Param.new("valid")
+  let request = Request()
+  var context = Context.new(request, p).waitFor()
+  var v = RequestValidation.new(context)
   v.confirmed("password")
   check v.hasErrors == false
-  p["password_confirmation"] = Param(value:"invalid")
-  v = RequestValidation.new(p)
+  p["password_confirmation"] = Param.new("invalid")
+  context = Context.new(request, p).waitFor()
+  v = RequestValidation.new(context)
   v.confirmed("password")
   check v.hasErrors
   check v.errors["password_confirmation"][0] == "The password confirmation does not match."
 
 block:
   let p = Params.new()
-  p["valid"] = Param(value:"2020-01-01")
-  p["invalid"] = Param(value:"aaa")
-  let v = RequestValidation.new(p)
+  p["valid"] = Param.new("2020-01-01")
+  p["invalid"] = Param.new("aaa")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.date("valid", "yyyy-MM-dd")
   check v.hasErrors == false
   v.date("invalid", "yyyy-MM-dd")
@@ -223,11 +256,13 @@ block:
 
 block:
   let p = Params.new()
-  p["valid_date"] = Param(value:"2020-01-01")
-  p["invalid_date"] = Param(value:"a")
-  p["valid_timestamp"] = Param(value:"1577880000")
-  p["invalid_timestamp"] = Param(value:"1577980000")
-  let v = RequestValidation.new(p)
+  p["valid_date"] = Param.new("2020-01-01")
+  p["invalid_date"] = Param.new("a")
+  p["valid_timestamp"] = Param.new("1577880000")
+  p["invalid_timestamp"] = Param.new("1577980000")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.dateEquals("valid_date", "yyyy-MM-dd", "2020-01-01".parse("yyyy-MM-dd"))
   v.dateEquals("valid_timestamp", "2020-01-01".parse("yyyy-MM-dd"))
   check v.hasErrors == false
@@ -240,10 +275,12 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"a")
-  p["valid"] = Param(value:"b")
-  p["invalid"] = Param(value:"a")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("a")
+  p["valid"] = Param.new("b")
+  p["invalid"] = Param.new("a")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.different("base", "valid")
   check v.hasErrors == false
   v.different("base", "invalid")
@@ -253,9 +290,11 @@ block:
 
 block:
   let p = Params.new()
-  p["valid"] = Param(value:"11")
-  p["invalid"] = Param(value:"111")
-  let v = RequestValidation.new(p)
+  p["valid"] = Param.new("11")
+  p["invalid"] = Param.new("111")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.digits("valid", 2)
   check v.hasErrors == false
   v.digits("invalid", 2)
@@ -265,9 +304,11 @@ block:
 
 block:
   let p = Params.new()
-  p["valid"] = Param(value:"11")
-  p["invalid"] = Param(value:"111")
-  let v = RequestValidation.new(p)
+  p["valid"] = Param.new("11")
+  p["invalid"] = Param.new("111")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.digitsBetween("valid", 1, 3)
   check v.hasErrors == false
   v.digitsBetween("invalid", 4, 5)
@@ -277,9 +318,11 @@ block:
 
 block:
   let p = Params.new()
-  p["valid"] = Param(value:"a, b, c")
-  p["invalid"] = Param(value:"a, b, b")
-  let v = RequestValidation.new(p)
+  p["valid"] = Param.new("a, b, c")
+  p["invalid"] = Param.new("a, b, b")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.distinctArr("valid")
   check v.hasErrors == false
   v.distinctArr("invalid")
@@ -289,10 +332,12 @@ block:
 
 block:
   let p = Params.new()
-  p["a"] = Param(value:"domain.com")
-  p["b"] = Param(value:"[2001:0db8:bd05:01d2:288a:1fc0:0001:10ee]")
-  p["c"] = Param(value:"[2001:0db8:bd05:01d2:288a::1fc0:0001:10ee]")
-  let v = RequestValidation.new(p)
+  p["a"] = Param.new("domain.com")
+  p["b"] = Param.new("[2001:0db8:bd05:01d2:288a:1fc0:0001:10ee]")
+  p["c"] = Param.new("[2001:0db8:bd05:01d2:288a::1fc0:0001:10ee]")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.domain("a")
   v.domain("b")
   v.domain(["a", "b"])
@@ -305,9 +350,11 @@ block:
 
 block:
   let p = Params.new()
-  p["valid"] = Param(value:"email@domain.com")
-  p["invalid"] = Param(value:"Abc.@example.com")
-  let v = RequestValidation.new(p)
+  p["valid"] = Param.new("email@domain.com")
+  p["invalid"] = Param.new("Abc.@example.com")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.email("valid")
   v.email(["valid"])
   check v.hasErrors == false
@@ -318,8 +365,10 @@ block:
 
 block:
   let p = Params.new()
-  p["item"] = Param(value:"abcdefg")
-  let v = RequestValidation.new(p)
+  p["item"] = Param.new("abcdefg")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.endsWith("item", ["fg"])
   check v.hasErrors == false
   v.endsWith("item", ["gh"])
@@ -329,9 +378,11 @@ block:
 
 block:
   let p = Params.new()
-  p["valid"] = Param(value:"a", ext:"jpg")
-  p["invalid"] = Param(value:"a")
-  let v = RequestValidation.new(p)
+  p["valid"] = Param.new("a", "a", "jpg")
+  p["invalid"] = Param.new("a")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.file("valid")
   v.file(["valid"])
   check v.hasErrors == false
@@ -342,9 +393,11 @@ block:
 
 block:
   let p = Params.new()
-  p["valid"] = Param(value:"a")
-  p["invalid"] = Param(value:"")
-  let v = RequestValidation.new(p)
+  p["valid"] = Param.new("a")
+  p["invalid"] = Param.new("")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.filled("valid")
   v.filled(["valid"])
   check v.hasErrors == false
@@ -355,10 +408,12 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"2")
-  p["smaller"] = Param(value:"1")
-  p["bigger"] = Param(value:"3")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("2")
+  p["smaller"] = Param.new("1")
+  p["bigger"] = Param.new("3")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.gtNum("base", "smaller")
   check v.hasErrors == false
   v.gtNum("base", "bigger")
@@ -367,10 +422,12 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"ab", ext:"jpg")
-  p["smaller"] = Param(value:"a", ext:"jpg")
-  p["bigger"] = Param(value:"abc", ext:"jpg")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("ab", "base", "jpg")
+  p["smaller"] = Param.new("a", "smaller", "jpg")
+  p["bigger"] = Param.new("abc", "bigger", "jpg")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.gtFile("base", "smaller")
   check v.hasErrors == false
   v.gtFile("base", "bigger")
@@ -379,10 +436,12 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"ab")
-  p["smaller"] = Param(value:"a")
-  p["bigger"] = Param(value:"abc")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("ab")
+  p["smaller"] = Param.new("a")
+  p["bigger"] = Param.new("abc")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.gtStr("base", "smaller")
   check v.hasErrors == false
   v.gtStr("base", "bigger")
@@ -391,10 +450,12 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"a, b")
-  p["smaller"] = Param(value:"a")
-  p["bigger"] = Param(value:"a, b, c")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("a, b")
+  p["smaller"] = Param.new("a")
+  p["bigger"] = Param.new("a, b, c")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.gtArr("base", "smaller")
   check v.hasErrors == false
   v.gtArr("base", "bigger")
@@ -404,11 +465,13 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"2")
-  p["same"] = Param(value:"2")
-  p["smaller"] = Param(value:"1")
-  p["bigger"] = Param(value:"3")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("2")
+  p["same"] = Param.new("2")
+  p["smaller"] = Param.new("1")
+  p["bigger"] = Param.new("3")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.gteNum("base", "smaller")
   v.gteNum("base", "same")
   check v.hasErrors == false
@@ -418,11 +481,13 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"a".repeat(2*1024), ext:"jpg")
-  p["same"] = Param(value:"a".repeat(2*1024), ext:"jpg")
-  p["smaller"] = Param(value:"a".repeat(1*1024), ext:"jpg")
-  p["bigger"] = Param(value:"a".repeat(3*1024), ext:"jpg")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("a".repeat(2*1024), "base", "jpg")
+  p["same"] = Param.new("a".repeat(2*1024), "same", "jpg")
+  p["smaller"] = Param.new("a".repeat(1*1024), "smaller", "jpg")
+  p["bigger"] = Param.new("a".repeat(3*1024), "a", "jpg")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.gteFile("base", "smaller")
   v.gteFile("base", "same")
   check v.hasErrors == false
@@ -432,11 +497,13 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"ab")
-  p["same"] = Param(value:"ab")
-  p["smaller"] = Param(value:"a")
-  p["bigger"] = Param(value:"abc")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("ab")
+  p["same"] = Param.new("ab")
+  p["smaller"] = Param.new("a")
+  p["bigger"] = Param.new("abc")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.gteStr("base", "smaller")
   v.gteStr("base", "same")
   check v.hasErrors == false
@@ -446,11 +513,13 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"a, b")
-  p["same"] = Param(value:"a, b")
-  p["smaller"] = Param(value:"a")
-  p["bigger"] = Param(value:"a, b, c")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("a, b")
+  p["same"] = Param.new("a, b")
+  p["smaller"] = Param.new("a")
+  p["bigger"] = Param.new("a, b, c")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.gteArr("base", "smaller")
   v.gteArr("base", "same")
   check v.hasErrors == false
@@ -461,9 +530,11 @@ block:
 
 block:
   let p = Params.new()
-  p["valid"] = Param(ext:"jpg")
-  p["invalid"] = Param(ext:"nim")
-  let v = RequestValidation.new(p)
+  p["valid"] = Param.new("a", "valid", "jpg")
+  p["invalid"] = Param.new("a", "invalid.nim", "nim")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.image("valid")
   v.image(["valid"])
   check v.hasErrors == false
@@ -474,9 +545,11 @@ block:
 
 block:
   let p = Params.new()
-  p["valid"] = Param(value:"a")
-  p["invalid"] = Param(value:"c")
-  let v = RequestValidation.new(p)
+  p["valid"] = Param.new("a")
+  p["invalid"] = Param.new("c")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.in("valid", ["a", "b"])
   check v.hasErrors == false
   v.in("invalid", ["a", "b"])
@@ -486,10 +559,12 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"a")
-  p["valid"] = Param(value:"a, b, c")
-  p["invalid"] = Param(value:"b, c")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("a")
+  p["valid"] = Param.new("a, b, c")
+  p["invalid"] = Param.new("b, c")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.inArray("base", "valid")
   check v.hasErrors == false
   v.inArray("base", "invalid")
@@ -498,9 +573,11 @@ block:
 
 block:
   let p = Params.new()
-  p["valid"] = Param(value:"1")
-  p["invalid"] = Param(value:"a")
-  let v = RequestValidation.new(p)
+  p["valid"] = Param.new("1")
+  p["invalid"] = Param.new("a")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.integer("valid")
   v.integer(["valid"])
   check v.hasErrors == false
@@ -511,9 +588,11 @@ block:
 
 block:
   let p = Params.new()
-  p["valid"] = Param(value:"""{"key": "value"}""")
-  p["invalid"] = Param(value:"a")
-  let v = RequestValidation.new(p)
+  p["valid"] = Param.new("""{"key": "value"}""")
+  p["invalid"] = Param.new("a")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.json("valid")
   v.json(["valid"])
   check v.hasErrors == false
@@ -524,10 +603,12 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"2")
-  p["smaller"] = Param(value:"1")
-  p["bigger"] = Param(value:"3")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("2")
+  p["smaller"] = Param.new("1")
+  p["bigger"] = Param.new("3")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.ltNum("base", "bigger")
   check v.hasErrors == false
   v.ltNum("base", "smaller")
@@ -536,10 +617,12 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"a".repeat(2*1024), ext:"jpg")
-  p["smaller"] = Param(value:"a".repeat(1*1024), ext:"jpg")
-  p["bigger"] = Param(value:"a".repeat(3*1024), ext:"jpg")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("a".repeat(2*1024), "base", "jpg")
+  p["smaller"] = Param.new("a".repeat(1*1024), "smaller", "jpg")
+  p["bigger"] = Param.new("a".repeat(3*1024), "bigger", "jpg")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.ltFile("base", "bigger")
   check v.hasErrors == false
   v.ltFile("base", "smaller")
@@ -548,10 +631,12 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"ab")
-  p["smaller"] = Param(value:"a")
-  p["bigger"] = Param(value:"abc")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("ab")
+  p["smaller"] = Param.new("a")
+  p["bigger"] = Param.new("abc")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.ltStr("base", "bigger")
   check v.hasErrors == false
   v.ltStr("base", "smaller")
@@ -560,10 +645,12 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"a, b")
-  p["smaller"] = Param(value:"a")
-  p["bigger"] = Param(value:"a, b, c")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("a, b")
+  p["smaller"] = Param.new("a")
+  p["bigger"] = Param.new("a, b, c")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.ltArr("base", "bigger")
   check v.hasErrors == false
   v.ltArr("base", "smaller")
@@ -573,11 +660,13 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"2")
-  p["same"] = Param(value:"2")
-  p["smaller"] = Param(value:"1")
-  p["bigger"] = Param(value:"3")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("2")
+  p["same"] = Param.new("2")
+  p["smaller"] = Param.new("1")
+  p["bigger"] = Param.new("3")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.lteNum("base", "bigger")
   v.lteNum("base", "same")
   check v.hasErrors == false
@@ -587,11 +676,13 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"a".repeat(2*1024), ext:"jpg")
-  p["same"] = Param(value:"a".repeat(2*1024), ext:"jpg")
-  p["smaller"] = Param(value:"a".repeat(1*1024), ext:"jpg")
-  p["bigger"] = Param(value:"a".repeat(3*1024), ext:"jpg")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("a".repeat(2*1024), "base", "jpg")
+  p["same"] = Param.new("a".repeat(2*1024), "same", "jpg")
+  p["smaller"] = Param.new("a".repeat(1*1024), "smaller", "jpg")
+  p["bigger"] = Param.new("a".repeat(3*1024), "bigger", "jpg")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.lteFile("base", "bigger")
   v.lteFile("base", "same")
   check v.hasErrors == false
@@ -601,11 +692,13 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"ab")
-  p["same"] = Param(value:"ab")
-  p["smaller"] = Param(value:"a")
-  p["bigger"] = Param(value:"abc")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("ab")
+  p["same"] = Param.new("ab")
+  p["smaller"] = Param.new("a")
+  p["bigger"] = Param.new("abc")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.lteStr("base", "bigger")
   v.lteStr("base", "same")
   check v.hasErrors == false
@@ -615,11 +708,13 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"a, b")
-  p["same"] = Param(value:"a, b")
-  p["smaller"] = Param(value:"a")
-  p["bigger"] = Param(value:"a, b, c")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("a, b")
+  p["same"] = Param.new("a, b")
+  p["smaller"] = Param.new("a")
+  p["bigger"] = Param.new("a, b, c")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.lteArr("base", "bigger")
   v.lteArr("base", "same")
   check v.hasErrors == false
@@ -630,8 +725,10 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"2")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("2")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.maxNum("base", 3)
   v.maxNum("base", 2)
   check v.hasErrors == false
@@ -641,8 +738,10 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"a".repeat(2*1024), ext:"jpg")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("a".repeat(2*1024), "base", "jpg")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.maxFile("base", 3)
   v.maxFile("base", 2)
   check v.hasErrors == false
@@ -652,8 +751,10 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"ab")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("ab")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.maxStr("base", 3)
   v.maxStr("base", 2)
   check v.hasErrors == false
@@ -663,8 +764,10 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"a, b")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("a, b")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.maxArr("base", 3)
   v.maxArr("base", 2)
   check v.hasErrors == false
@@ -675,9 +778,11 @@ block:
 
 block:
   let p = Params.new()
-  p["valid"] = Param(value:"a", ext:"jpg")
-  p["invalid"] = Param(value:"a", ext:"mp4")
-  let v = RequestValidation.new(p)
+  p["valid"] = Param.new("a", "valid", "jpg")
+  p["invalid"] = Param.new("a", "invalid.mp4", "mp4")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.mimes("valid", ["jpg", "png", "gif"])
   check v.hasErrors == false
   v.mimes("invalid", ["jpg", "png", "gif"])
@@ -687,8 +792,10 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"2")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("2")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.minNum("base", 1)
   v.minNum("base", 2)
   check v.hasErrors == false
@@ -698,8 +805,10 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"a".repeat(2*1024), ext:"jpg")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("a".repeat(2*1024), "base", "jpg")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.minFile("base", 1)
   v.minFile("base", 2)
   check v.hasErrors == false
@@ -709,8 +818,10 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"ab")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("ab")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.minStr("base", 1)
   v.minStr("base", 2)
   check v.hasErrors == false
@@ -720,8 +831,10 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"a, b")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("a, b")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.minArr("base", 1)
   v.minArr("base", 2)
   check v.hasErrors == false
@@ -732,9 +845,11 @@ block:
 
 block:
   let p = Params.new()
-  p["valid"] = Param(value:"a")
-  p["invalid"] = Param(value:"b")
-  let v = RequestValidation.new(p)
+  p["valid"] = Param.new("a")
+  p["invalid"] = Param.new("b")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.notIn("valid", ["b", "c"])
   check v.hasErrors == false
   v.notIn("invalid", ["b", "c"])
@@ -744,8 +859,10 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"abc")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("abc")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.notRegex("base", re"\d")
   check v.hasErrors == false
   v.notRegex("base", re"\w")
@@ -755,9 +872,11 @@ block:
 
 block:
   let p = Params.new()
-  p["valid"] = Param(value:"-1.23")
-  p["invalid"] = Param(value:"abc")
-  let v = RequestValidation.new(p)
+  p["valid"] = Param.new("-1.23")
+  p["invalid"] = Param.new("abc")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.numeric("valid")
   v.numeric(["valid"])
   check v.hasErrors == false
@@ -769,8 +888,10 @@ block:
 
 block:
   let p = Params.new()
-  p["valid"] = Param(value:"a")
-  let v = RequestValidation.new(p)
+  p["valid"] = Param.new("a")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.present("valid")
   v.present(["valid"])
   check v.hasErrors == false
@@ -781,8 +902,10 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"abc")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("abc")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.regex("base", re"\w")
   check v.hasErrors == false
   v.regex("base", re"\d")
@@ -791,10 +914,12 @@ block:
 
 block:
   let p = Params.new()
-  p["valid"] = Param(value:"abc")
-  p["invalid1"] = Param(value:"")
-  p["invalid2"] = Param(value:"null")
-  let v = RequestValidation.new(p)
+  p["valid"] = Param.new("abc")
+  p["invalid1"] = Param.new("")
+  p["invalid2"] = Param.new("null")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.required("valid")
   check v.hasErrors == false
   v.required("invalid1")
@@ -805,11 +930,13 @@ block:
 
 block:
   let p = Params.new()
-  p["other"] = Param(value:"123")
-  p["valid"] = Param(value:"abc")
-  p["invalid1"] = Param(value:"")
-  p["invalid2"] = Param(value:"null")
-  let v = RequestValidation.new(p)
+  p["other"] = Param.new("123")
+  p["valid"] = Param.new("abc")
+  p["invalid1"] = Param.new("")
+  p["invalid2"] = Param.new("null")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.requiredIf("valid", "other", ["123"])
   v.requiredIf("valid", "other", ["abc"])
   check v.hasErrors == false
@@ -822,11 +949,13 @@ block:
 
 block:
   let p = Params.new()
-  p["other"] = Param(value:"123")
-  p["valid"] = Param(value:"abc")
-  p["invalid1"] = Param(value:"")
-  p["invalid2"] = Param(value:"null")
-  let v = RequestValidation.new(p)
+  p["other"] = Param.new("123")
+  p["valid"] = Param.new("abc")
+  p["invalid1"] = Param.new("")
+  p["invalid2"] = Param.new("null")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.requiredUnless("valid", "other", ["123"])
   v.requiredUnless("valid", "other", ["abc"])
   check v.hasErrors == false
@@ -839,11 +968,13 @@ block:
 
 block:
   let p = Params.new()
-  p["other"] = Param(value:"123")
-  p["valid"] = Param(value:"abc")
-  p["invalid1"] = Param(value:"")
-  p["invalid2"] = Param(value:"null")
-  let v = RequestValidation.new(p)
+  p["other"] = Param.new("123")
+  p["valid"] = Param.new("abc")
+  p["invalid1"] = Param.new("")
+  p["invalid2"] = Param.new("null")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.requiredWith("valid", ["a"])
   v.requiredWith("valid", ["other"])
   check v.hasErrors == false
@@ -856,12 +987,14 @@ block:
 
 block:
   let p = Params.new()
-  p["other1"] = Param(value:"123")
-  p["other2"] = Param(value:"123")
-  p["valid"] = Param(value:"abc")
-  p["invalid1"] = Param(value:"")
-  p["invalid2"] = Param(value:"null")
-  let v = RequestValidation.new(p)
+  p["other1"] = Param.new("123")
+  p["other2"] = Param.new("123")
+  p["valid"] = Param.new("abc")
+  p["invalid1"] = Param.new("")
+  p["invalid2"] = Param.new("null")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.requiredWithAll("valid", ["other1", "other2"])
   v.requiredWithAll("invalid1", ["notExists"])
   check v.hasErrors == false
@@ -874,12 +1007,14 @@ block:
 
 block:
   let p = Params.new()
-  p["other1"] = Param(value:"123")
-  p["other2"] = Param(value:"123")
-  p["valid"] = Param(value:"abc")
-  p["invalid1"] = Param(value:"")
-  p["invalid2"] = Param(value:"null")
-  let v = RequestValidation.new(p)
+  p["other1"] = Param.new("123")
+  p["other2"] = Param.new("123")
+  p["valid"] = Param.new("abc")
+  p["invalid1"] = Param.new("")
+  p["invalid2"] = Param.new("null")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.requiredWithout("valid", ["other1", "other2"])
   v.requiredWithout("valid", ["notExists"])
   check v.hasErrors == false
@@ -892,11 +1027,13 @@ block:
 
 block:
   let p = Params.new()
-  p["valid"] = Param(value:"abc")
-  p["other"] = Param(value:"123")
-  p["invalid1"] = Param(value:"")
-  p["invalid2"] = Param(value:"null")
-  let v = RequestValidation.new(p)
+  p["valid"] = Param.new("abc")
+  p["other"] = Param.new("123")
+  p["invalid1"] = Param.new("")
+  p["invalid2"] = Param.new("null")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.requiredWithoutAll("valid", ["aaa", "bbb"])
   v.requiredWithoutAll("invalid1", ["other"])
   check v.hasErrors == false
@@ -909,10 +1046,12 @@ block:
 
 block:
   let p = Params.new()
-  p["a"] = Param(value:"a")
-  p["b"] = Param(value:"a")
-  p["c"] = Param(value:"c")
-  let v = RequestValidation.new(p)
+  p["a"] = Param.new("a")
+  p["b"] = Param.new("a")
+  p["c"] = Param.new("c")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.same("a", "b")
   check v.hasErrors == false
   v.same("a", "c")
@@ -921,11 +1060,13 @@ block:
 
 block:
   let p = Params.new()
-  p["num"] = Param(value:"2")
-  p["file"] = Param(value:"a".repeat(2*1024), ext:"jpg")
-  p["str"] = Param(value:"ab")
-  p["arr"] = Param(value:"a, b")
-  let v = RequestValidation.new(p)
+  p["num"] = Param.new("2")
+  p["file"] = Param.new("a".repeat(2*1024), "file", "jpg")
+  p["str"] = Param.new("ab")
+  p["arr"] = Param.new("a, b")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.sizeNum("num", 2)
   v.sizeFile("file", 2)
   v.sizeStr("str", 2)
@@ -944,8 +1085,10 @@ block:
 
 block:
   let p = Params.new()
-  p["base"] = Param(value:"abcde")
-  let v = RequestValidation.new(p)
+  p["base"] = Param.new("abcde")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.startsWith("base", ["abc", "bcd"])
   check v.hasErrors == false
   v.startsWith("base", ["bcd", "cde"])
@@ -954,10 +1097,12 @@ block:
 
 block:
   let p = Params.new()
-  p["validtimestamp"] = Param(value:"1577804400")
-  p["invalidtimestamp"] = Param(value:"18446744073709551615")
-  p["negative"] = Param(value:"-1")
-  let v = RequestValidation.new(p)
+  p["validtimestamp"] = Param.new("1577804400")
+  p["invalidtimestamp"] = Param.new("18446744073709551615")
+  p["negative"] = Param.new("-1")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.timestamp("validtimestamp")
   check v.hasErrors == false
   v.timestamp("negative")
@@ -967,9 +1112,11 @@ block:
 
 block:
   let p = Params.new()
-  p["valid"] = Param(value:"https://google.com:8000/xxx/yyy/zzz?key=value")
-  p["invalid"] = Param(value:"fnyuaAxmoiniancywcnsnmuaic")
-  let v = RequestValidation.new(p)
+  p["valid"] = Param.new("https://google.com:8000/xxx/yyy/zzz?key=value")
+  p["invalid"] = Param.new("fnyuaAxmoiniancywcnsnmuaic")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.url("valid")
   v.url(["valid"])
   check v.hasErrors == false
@@ -979,9 +1126,11 @@ block:
 
 block:
   let p = Params.new()
-  p["valid"] = Param(value:"a0a2a2d2-0b87-4a18-83f2-2529882be2de")
-  p["invalid"] = Param(value:"iuajfassacds")
-  let v = RequestValidation.new(p)
+  p["valid"] = Param.new("a0a2a2d2-0b87-4a18-83f2-2529882be2de")
+  p["invalid"] = Param.new("iuajfassacds")
+  let request = Request()
+  let context = Context.new(request, p).waitFor()
+  let v = RequestValidation.new(context)
   v.uuid("valid")
   v.uuid(["valid"])
   check v.hasErrors == false

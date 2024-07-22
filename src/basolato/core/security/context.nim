@@ -2,6 +2,7 @@ import std/asyncdispatch
 import std/options
 import std/strutils
 import std/json
+import ../params
 import ./session
 import ./session_db
 

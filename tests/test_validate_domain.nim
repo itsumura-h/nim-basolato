@@ -3,7 +3,7 @@ discard """
 """
 
 import std/unittest
-include ../src/basolato/core/validation
+include ../src/basolato/request_validation
 
 
 const validDomains = [
@@ -44,7 +44,7 @@ const validDomains = [
 ]
 
 block:
-  let v = newValidation()
+  let v = Validation.new()
   for validDomain in validDomains:
     check v.domain(validDomain)
 
@@ -170,7 +170,7 @@ const invalidEmails = [
 ]
 
 block:
-  let v = newValidation()
+  let v = Validation.new()
   for validEmail in validEmails:
     check v.email(validEmail)
 

@@ -8,6 +8,7 @@ import core/header; export header
 import core/security/cookie; export cookie
 import core/security/session; export session
 import core/security/context; export context
+import ./core/params; export params
 import ./core/templates
 
 when defined(httpbeast) or defined(httpx):

@@ -10,12 +10,8 @@ import std/unicode
 import ./core/settings
 import ./core/logger
 import ./core/security/context
+import ./core/params
 include core/validation
-
-when defined(httpbeast) or defined(httpx):
-  import ./core/libservers/nostd/request
-else:
-  import ./core/libservers/std/request
 
 
 let baseMessages = %*{
