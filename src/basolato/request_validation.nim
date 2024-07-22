@@ -6,7 +6,6 @@ import std/tables
 import std/strformat
 import std/strutils
 import std/unicode
-# import ./core/settings
 import ./core/settings
 import ./core/logger
 import ./core/security/context
@@ -177,7 +176,6 @@ func hasError*(self:RequestValidation, key:string):bool =
 
 proc storeValidationResult*(context:Context, validation:RequestValidation) {.async.} =
   let params = context.params.getAll()
-  echo params
   let errors = %validation.errors
   await context.setFlash("params", params)
   await context.setFlash("errors", errors)
