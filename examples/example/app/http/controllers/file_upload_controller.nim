@@ -18,11 +18,13 @@ proc index*(context:Context):Future[Response] {.async.} =
   let view = appLayout(appLayoutModel, page)
   return render(view)
 
+
 proc store*(context:Context):Future[Response] {.async.} =
   if context.params.hasKey("img"):
     context.params.save("img", "./public/sample")
     context.params.save("img", "./public/sample", "image")
   return redirect("/sample/file-upload")
+
 
 proc destroy*(context:Context):Future[Response] {.async.} =
   removeDir(getCurrentDir() / "public/sample", true)

@@ -157,9 +157,9 @@ type RequestValidation* = object
 func errors*(self:RequestValidation):ValidationErrors =
   return self.errors
 
-func new*(_:type RequestValidation, params: Params):RequestValidation =
+func new*(_:type RequestValidation, context:Context):RequestValidation =
   return RequestValidation(
-    params: params,
+    params: context.params,
     errors: ValidationErrors.new()
   )
 
@@ -176,9 +176,13 @@ func hasError*(self:RequestValidation, key:string):bool =
   return self.errors.hasKey(key)
 
 proc storeValidationResult*(context:Context, validation:RequestValidation) {.async.} =
-  let data = %validation.params
+  let params = newJObject()
+  for key, param in validation.params:
+    if not param.isFile():
+      params[key] = %($param)
+
   let errors = %validation.errors
-  await context.setFlash("params", data)
+  await context.setFlash("params", params)
   await context.setFlash("errors", errors)
 
 proc hasMessage(key:string):bool =

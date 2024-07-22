@@ -106,10 +106,12 @@ import basolato/core/validation
 ```
 ## サンプル
 ```nim
-echo newValidation().email("sample@example.com")
+let validation = Validation.new()
+
+echo validation.email("sample@example.com")
 >> true
 
-echo newValidation().email("sample@example")
+echo validation.email("sample@example")
 >> false
 ```
 
@@ -119,17 +121,17 @@ import basolato/request_validation
 ```
 ### API
 ```nim
-proc newRequestValidation*(params: Params):RequestValidation =
+proc new*(_:type RequestValidation, params: Params):RequestValidation
 
-proc hasErrors*(self:RequestValidation):bool =
+proc hasErrors*(self:RequestValidation):bool
 
-proc hasError*(self:RequestValidation, key:string):bool =
+proc hasError*(self:RequestValidation, key:string):bool
 
-proc errors*(self:RequestValidation):ValidationErrors =
+proc errors*(self:RequestValidation):ValidationErrors
 
-proc add*(self:ValidationErrors, key, value:string) =
+proc add*(self:ValidationErrors, key, value:string)
 
-proc storeValidationResult*(client:Client, validation:RequestValidation) {.async.} =
+proc storeValidationResult*(context:Context, validation:RequestValidation) {.async.}
 ```
 `storeValidationResult`はリクエストパラメータとバリデーション結果のエラーメッセージをフラッシュメッセージとしてセッションに保存します。
 
@@ -145,18 +147,16 @@ JSONリクエスト
 }
 ```
 ```nim
-proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
+proc signUp*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
   v.required("email")
   v.email("email")
-  let client = await newClient(request)
   if v.hasErrors:
-    await client.storeValidationResult(v)
+    context.storeValidationResult(v).await
     return redirect("/signup")
 ```
 ```nim
-let client = await newClient(request)
-echo await client.getFlash()
+echo context.getFlash().await
 >> {
   "errors": {
     "email": ["The name field is required."]
@@ -176,14 +176,14 @@ echo await client.getFlash()
 
 初期状態
 ```nim
-let v = RequestValidation.new(params)
+let v = RequestValidation.new(context)
 v.required("name")
 v.errors["name"][0] == "The name field is required."
 ```
 
 置き換え
 ```nim
-let v = RequestValidation.new(params)
+let v = RequestValidation.new(context)
 v.required("name", attribute="User Name")
 v.errors["name"][0] == "The User Name field is required."
 ```
@@ -194,9 +194,9 @@ v.errors["name"][0] == "The User Name field is required."
 ## accepted
 そのフィールドがyes、on、1、trueであることをバリデートします。これは「サービス利用規約」同意のバリデーションに便利です。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "on"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "on"
   v.accepted("base")
   assert v.hasErrors == false
 ```
@@ -205,10 +205,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 フィールドの値が与えられた日付より後であるかバリデーションします。  
 `Datetime`型と、比較する別のフィールド名を指定することができます。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "2020-01-01"
-  assert params.getStr("target") == "2020-01-02"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "2020-01-01"
+  assert context.params.getStr("target") == "2020-01-02"
   v.after("base", "target", "yyyy-MM-dd")
   v.after("base", "2020-01-02".parse("yyyy-MM-dd"), "yyyy-MM-dd")
   assert v.hasErrors == false
@@ -217,11 +217,11 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## afterOrEqual
 フィールドが指定した日付以降であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "2020-01-01"
-  assert params.getStr("same") == "2020-01-01"
-  assert params.getStr("target") == "2020-01-02"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "2020-01-01"
+  assert context.params.getStr("same") == "2020-01-01"
+  assert context.params.getStr("target") == "2020-01-02"
   v.afterOrEqual("base", "target", "yyyy-MM-dd")
   v.afterOrEqual("base", "same", "yyyy-MM-dd")
   v.afterOrEqual("base", "2020-01-01".parse("yyyy-MM-dd"), "yyyy-MM-dd")
@@ -232,10 +232,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## alpha
 フィールドが全部アルファベット文字であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("small") == "abcdefghijklmnopqrstuvwxyz"
-  assert params.getStr("large") == "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("small") == "abcdefghijklmnopqrstuvwxyz"
+  assert context.params.getStr("large") == "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   v.alpha("small")
   v.alpha("large")
   assert v.hasErrors == false
@@ -244,9 +244,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## alphaDash
 フィールドが全部アルファベット文字と数字、ダッシュ(-)、下線(_)であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abcABC012-_"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abcABC012-_"
   v.alphaDash("base")
   assert v.hasErrors == false
 ```
@@ -254,9 +254,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## alphaNum
 フィールドが全部アルファベット文字と数字であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abcABC012"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abcABC012"
   v.alphaNum("base")
   assert v.hasErrors == false
 ```
@@ -264,9 +264,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## array
 フィールドが配列タイプであることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a, b, c"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a, b, c"
   v.array("base")
   assert v.hasErrors == false
 ```
@@ -275,10 +275,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 フィールドが指定された日付より前であることをバリデートします。  
 `after`ルールと同様に、`Datetime`型の代わりにバリデーション対象のフィールド名を指定できます。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "2020-01-02"
-  assert params.getStr("target") == "2020-01-01"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "2020-01-02"
+  assert context.params.getStr("target") == "2020-01-01"
   v.before("base", "target", "yyyy-MM-dd")
   v.before("base", "2020-01-01".parse("yyyy-MM-dd")", "yyyy-MM-dd")
   assert v.hasErrors == false
@@ -288,11 +288,11 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 フィールドが指定した日付以前であることをバリデートします。  
 `after`ルールと同様に、`Datetime`型の代わりにバリデーション対象のフィールド名を指定できます。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "2020-01-02"
-  assert params.getStr("same") == "2020-01-02"
-  assert params.getStr("target") == "2020-01-01"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "2020-01-02"
+  assert context.params.getStr("same") == "2020-01-02"
+  assert context.params.getStr("target") == "2020-01-01"
   v.beforeOrEqual("base", "target", "yyyy-MM-dd")
   v.beforeOrEqual("base", "same", "yyyy-MM-dd")
   v.beforeOrEqual("base", "2020-01-01".parse("yyyy-MM-dd")", "yyyy-MM-dd")
@@ -303,10 +303,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## betweenNum
 フィールドが指定された**最小値**と**最大値**の間の値であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getInt("int") == 2
-  assert params.getFloat("float") == 2.0
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getInt("int") == 2
+  assert context.params.getFloat("float") == 2.0
   v.betweenNum("int", 1, 3)
   v.betweenNum("float", 1.9, 2.1)
   assert v.hasErrors == false
@@ -315,9 +315,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## betweenStr
 フィールドが指定された**最小値**と**最大値**の間の文字数であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("str") == "ab"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("str") == "ab"
   v.betweenStr("str", 1, 3)
   assert v.hasErrors == false
 ```
@@ -325,9 +325,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## betweenArr
 フィールドが指定された**最小値**と**最大値**の間の長さであることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("arr") == "a, b"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("arr") == "a, b"
   v.betweenStr("arr", 1, 3)
   assert v.hasErrors == false
 ```
@@ -335,9 +335,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## betweenFile
 フィールドが指定された**最小値**と**最大値**の間のサイズであることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("file").len == 2048
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("file").len == 2048
   v.betweenFile("file", 1, 3)
   assert v.hasErrors == false
 ```
@@ -346,9 +346,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 フィールドが論理値として有効であることをバリデートします。  
 受け入れられる入力は、`y, yes, true, 1, on, n, no, false, 0, off`です。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("bool") == "true"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("bool") == "true"
   v.boolean("bool")
   assert v.hasErrors == false
 ```
@@ -356,11 +356,11 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## confirmed
 フィールドがそのフィールド名＋_confirmationフィールドと同じ値であることをバリデートします。たとえば、バリデーションするフィールドがpasswordであれば、同じ値のpassword_confirmationフィールドが入力に存在していなければなりません。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("password") == "aaa"
-  assert params.getStr("password_confirmation") == "aaa"
-  assert params.getStr("password_check") == "aaa"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("password") == "aaa"
+  assert context.params.getStr("password_confirmation") == "aaa"
+  assert context.params.getStr("password_check") == "aaa"
   v.confirmed("password")
   v.confirmed("password", saffix="_check")
   assert v.hasErrors == false
@@ -369,9 +369,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## date
 パリデーションされる値は有効で相対日付ではないことをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "2020-01-01"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "2020-01-01"
   v.date("base", "yyyy-MM-dd")
   assert v.hasErrors == false
 ```
@@ -379,10 +379,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## dateEquals
 バリデーションされる値が、指定した`Datetime`と同じことをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("date") == "2020-01-01"
-  assert params.getStr("timestamp") == "1577880000"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("date") == "2020-01-01"
+  assert context.params.getStr("timestamp") == "1577880000"
   let target = "2020-01-01".format("yyyy-MM-dd")
   v.dateEquals("base", "yyyy-MM-dd", target)
   v.dateEquals("timestamp", target)
@@ -392,10 +392,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## different
 フィールドが指定された**フィールド**と異なった値を指定されていることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a"
-  assert params.getStr("target") == "b"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a"
+  assert context.params.getStr("target") == "b"
   v.different("base", "target")
   assert v.hasErrors == false
 ```
@@ -403,9 +403,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## digits
 フィールドが**数値**で、**値**の桁数であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "10"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "10"
   v.digits("base", 2)
   assert v.hasErrors == false
 ```
@@ -413,9 +413,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## digitsBetween
 フィールドが**整数**で、桁数が**最小値**から**最大値**の間であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "10"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "10"
   v.digitsBetween("base", 1, 3)
   assert v.hasErrors == false
 ```
@@ -423,9 +423,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## distinctArr
 対象が配列の時、フィールドに重複した値がないことをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a, b, c"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a, b, c"
   v.distinctArr("base")
   assert v.hasErrors == false
 ```
@@ -433,10 +433,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## domain
 フィールドが有効な`A`または`AAAA`レコードであることをバリデーションします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("v4") == "domain.com"
-  assert params.getStr("v6") == "[2001:0db8:bd05:01d2:288a:1fc0:0001:10ee]"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("v4") == "domain.com"
+  assert context.params.getStr("v6") == "[2001:0db8:bd05:01d2:288a:1fc0:0001:10ee]"
   v.domain("v4")
   v.domain("v6")
   assert v.hasErrors == false
@@ -445,9 +445,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## email
 フィールドがメールアドレスとして正しいことをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "email@domain.com"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "email@domain.com"
   v.email("base")
   assert v.hasErrors == false
 ```
@@ -458,9 +458,9 @@ https://gist.github.com/frodo821/681869a36148b5214632166e0ad293a9
 ## endsWith
 フィールドの値が、指定された値で終わることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abcdefg"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abcdefg"
   v.email("base", ["ef", "fg"])
   assert v.hasErrors == false
 ```
@@ -468,8 +468,8 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## file
 フィールドがアップロードに成功したファイルであることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
   assert params["base"].ext == "jpg"
   v.file("base")
   assert v.hasErrors == false
@@ -478,9 +478,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## filled
 フィールドが存在する場合、空でないことをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a"
   v.filled("base")
   assert v.hasErrors == false
 ```
@@ -488,10 +488,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## gtNum
 フィールドが指定したフィールドより大きい値であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getInt("base") == 2
-  assert params.getInt("target") == 1
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getInt("base") == 2
+  assert context.params.getInt("target") == 1
   v.gtFile("base", "target")
   assert v.hasErrors == false
 ```
@@ -499,11 +499,11 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## gtFile
 フィールドが指定したフィールドより大きいサイズであることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base").len == 2048
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base").len == 2048
   assert params["base"].ext == "jpg"
-  assert params.getStr("target").len == 1024
+  assert context.params.getStr("target").len == 1024
   assert params["target"].ext == "jpg"
   v.gtFile("base", "target")
   assert v.hasErrors == false
@@ -512,10 +512,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## gtStr
 フィールドが指定したフィールドより長いことをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "ab"
-  assert params.getStr("target") == "a"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "ab"
+  assert context.params.getStr("target") == "a"
   v.gtStr("base", "target")
   assert v.hasErrors == false
 ```
@@ -523,10 +523,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## gtArr
 フィールドが指定したフィールドより長いことをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a, b"
-  assert params.getStr("target") == "a"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a, b"
+  assert context.params.getStr("target") == "a"
   v.gtArr("base", "target")
   assert v.hasErrors == false
 ```
@@ -534,11 +534,11 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## gteNum
 フィールドが指定したフィールド以上の値であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getInt("base") == 2
-  assert params.getInt("same") == 2
-  assert params.getInt("target") == 1
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getInt("base") == 2
+  assert context.params.getInt("same") == 2
+  assert context.params.getInt("target") == 1
   v.gtFile("base", "target")
   v.gtFile("base", "same")
   assert v.hasErrors == false
@@ -547,11 +547,11 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## gteFile
 フィールドが指定したフィールド以上のサイズであることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base").len == 2048
-  assert params.getStr("same").len == 2048
-  assert params.getStr("target").len == 1024
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base").len == 2048
+  assert context.params.getStr("same").len == 2048
+  assert context.params.getStr("target").len == 1024
   v.gteFile("base", "target")
   v.gteFile("base", "same")
   assert v.hasErrors == false
@@ -560,11 +560,11 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## gteStr
 フィールドが指定したフィールド以上の文字数であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "ab"
-  assert params.getStr("same") == "bc"
-  assert params.getStr("target") == "a"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "ab"
+  assert context.params.getStr("same") == "bc"
+  assert context.params.getStr("target") == "a"
   v.gteStr("base", "target")
   v.gteStr("base", "same")
   assert v.hasErrors == false
@@ -573,11 +573,11 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## gteArr
 フィールドが指定したフィールド以上の長さであることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a, b"
-  assert params.getStr("same") == "b, c"
-  assert params.getStr("target") == "a"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a, b"
+  assert context.params.getStr("same") == "b, c"
+  assert context.params.getStr("target") == "a"
   v.gteArr("base", "target")
   v.gteArr("base", "same")
   assert v.hasErrors == false
@@ -586,8 +586,8 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## image
 フィールドで指定されたファイルが画像(jpg、png、bmp、gif、svg、webp)であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
   assert params["base"].ext == "jpg"
   v.image("base")
   assert v.hasErrors == false
@@ -596,8 +596,8 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## in
 フィールドが指定したリストの中の値に含まれていることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
   assert params["base"].ext == "a"
   v.in("base", ["a", "b"])
   assert v.hasErrors == false
@@ -606,10 +606,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## inArray
 フィールドが、**他のフィールド**の値のどれかであることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a"
-  assert params.getStr("target") == "a, b, c"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a"
+  assert context.params.getStr("target") == "a, b, c"
   v.inArray("base", "target")
   assert v.hasErrors == false
 ```
@@ -617,9 +617,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## integer
 フィールドが整数値であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getInt("base") == 1
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getInt("base") == 1
   v.integer("base")
   assert v.hasErrors == false
 ```
@@ -627,9 +627,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## json
 フィールドが有効なJSON文字列であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == """{"key": "value"}"""
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == """{"key": "value"}"""
   v.json("base")
   assert v.hasErrors == false
 ```
@@ -637,10 +637,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## ltNum
 フィールドが指定したフィールドより小さい値であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getInt("base") == 1
-  assert params.getInt("target") == 2
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getInt("base") == 1
+  assert context.params.getInt("target") == 2
   v.ltNum("base", "target")
   assert v.hasErrors == false
 ```
@@ -648,10 +648,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## ltFile
 フィールドが指定したフィールドより小さいサイズことをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base").len == 1024
-  assert params.getStr("target").len == 2048
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base").len == 1024
+  assert context.params.getStr("target").len == 2048
   v.ltFile("base", "target")
   assert v.hasErrors == false
 ```
@@ -659,10 +659,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## ltStr
 フィールドが指定したフィールドより短いことをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a"
-  assert params.getStr("target") == "ab"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a"
+  assert context.params.getStr("target") == "ab"
   v.ltStr("base", "target")
   assert v.hasErrors == false
 ```
@@ -670,10 +670,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## ltArr
 フィールドが指定したフィールドより短いことをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a"
-  assert params.getStr("target") == "a, b"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a"
+  assert context.params.getStr("target") == "a, b"
   v.ltStr("base", "target")
   assert v.hasErrors == false
 ```
@@ -681,11 +681,11 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## lteNum
 フィールドが指定したフィールド以下の値であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getInt("base") == 1
-  assert params.getInt("same") == 1
-  assert params.getInt("target") == 2
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getInt("base") == 1
+  assert context.params.getInt("same") == 1
+  assert context.params.getInt("target") == 2
   v.ltNum("base", "target")
   v.ltNum("base", "same")
   assert v.hasErrors == false
@@ -694,11 +694,11 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## lteFile
 フィールドが指定したフィールド以下のサイズであることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base").len == 1024
-  assert params.getStr("same").len == 1024
-  assert params.getStr("target").len == 2048
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base").len == 1024
+  assert context.params.getStr("same").len == 1024
+  assert context.params.getStr("target").len == 2048
   v.lteFile("base", "target")
   v.lteFile("base", "same")
   assert v.hasErrors == false
@@ -707,11 +707,11 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## lteStr
 フィールドが指定したフィールド以下の文字数であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a"
-  assert params.getStr("same") == "b"
-  assert params.getStr("target") == "ab"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a"
+  assert context.params.getStr("same") == "b"
+  assert context.params.getStr("target") == "ab"
   v.lteStr("base", "target")
   v.lteStr("base", "same")
   assert v.hasErrors == false
@@ -720,11 +720,11 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## ltArr
 フィールドが指定したフィールド以下の長さであることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base").len == "a"
-  assert params.getStr("same").len == "a"
-  assert params.getStr("target").len == "a, b"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base").len == "a"
+  assert context.params.getStr("same").len == "a"
+  assert context.params.getStr("target").len == "a, b"
   v.ltStr("base", "target")
   v.ltStr("base", "same")
   assert v.hasErrors == false
@@ -733,10 +733,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## maxNum
 フィールドが最大値として指定された値以下であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getInt("base") == 2
-  assert params.getInt("small") == 1
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getInt("base") == 2
+  assert context.params.getInt("small") == 1
   v.maxNum("base", 2)
   v.maxNum("small", 2)
   assert v.hasErrors == false
@@ -745,10 +745,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## maxFile
 フィールドが最大値として指定された値以下のサイズであることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base").len == 2048
-  assert params.getStr("small").len == 1024
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base").len == 2048
+  assert context.params.getStr("small").len == 1024
   v.maxFile("base", 2)
   v.maxFile("small", 2)
   assert v.hasErrors == false
@@ -757,10 +757,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## maxStr
 フィールドが最大値として指定された値以下の文字数であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "ab"
-  assert params.getStr("small") == "a"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "ab"
+  assert context.params.getStr("small") == "a"
   v.maxStr("base", 2)
   v.maxStr("small", 2)
   assert v.hasErrors == false
@@ -769,10 +769,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## maxArr
 フィールドが最大値として指定された値以下の長さであることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a, b"
-  assert params.getStr("small") == "a"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a, b"
+  assert context.params.getStr("small") == "a"
   v.maxArr("base", 2)
   v.maxArr("small", 2)
   assert v.hasErrors == false
@@ -781,8 +781,8 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## mimes
 フィールドで指定されたファイルが拡張子のリストの中のMIMEタイプのどれかと一致することをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
   assert params["base"].ext == "jpg"
   v.mimes("base", ["jpg", "gif"])
   assert v.hasErrors == false
@@ -791,9 +791,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## minNum
 フィールドが最小値として指定された値以上であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getInt("base") == 2
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getInt("base") == 2
   v.minNum("base", 1)
   v.minNum("base", 2)
   assert v.hasErrors == false
@@ -802,9 +802,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## minFile
 フィールドが最小値として指定された値以上のサイズであることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base").len == 2048
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base").len == 2048
   v.minFile("base", 1)
   v.minFile("base", 2)
   assert v.hasErrors == false
@@ -813,9 +813,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## minStr
 フィールドが最小値として指定された値以上の文字数であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "ab"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "ab"
   v.minStr("base", 1)
   v.minStr("base", 2)
   assert v.hasErrors == false
@@ -824,9 +824,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## minArr
 フィールドが最小値として指定された値以上の長さであることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a, b"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a, b"
   v.minArr("base", 1)
   v.minArr("base", 2)
   assert v.hasErrors == false
@@ -835,9 +835,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## notIn
 フィールドが指定された値のリスト中に含まれていないことをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a"
   v.notIn("base", ["b", "c"])
   assert v.hasErrors == false
 ```
@@ -845,9 +845,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## notRegex
 フィールドが指定した正規表現と一致しないことをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abc"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abc"
   v.notRegex("base", re"\d")
   assert v.hasErrors == false
 ```
@@ -855,10 +855,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## numeric
 フィールドは数値であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getInt("base") == 1
-  assert params.getFloat("float") == -1.23
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getInt("base") == 1
+  assert context.params.getFloat("float") == -1.23
   v.numeric("base")
   v.numeric("float")
   assert v.hasErrors == false
@@ -867,9 +867,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## present
 フィールドが存在していることをバリデートしますが、存在していれば空を許します。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == ""
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == ""
   v.present("base")
   assert v.hasErrors == false
 ```
@@ -877,9 +877,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## regex
 フィールドが指定された正規表現にマッチすることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abc"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abc"
   v.regex("base", re"\w")
   assert v.hasErrors == false
 ```
@@ -891,9 +891,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 - 値が空の配列か、空の`Countable`オブジェクトである。
 - 値がパスのないアップロード済みファイルである。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abc"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abc"
   v.required("base")
   assert v.hasErrors == false
 ```
@@ -901,11 +901,11 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## requiredIf
 他のフィールドが値のどれかと一致している場合、このフィールドが存在し、かつ空でないことをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abc"
-  assert params.getStr("empty") == ""
-  assert params.getStr("other") == "123"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abc"
+  assert context.params.getStr("empty") == ""
+  assert context.params.getStr("other") == "123"
   v.requiredIf("base", "other", ["123"])
   v.requiredIf("empty", "other", ["xyz"])
   assert v.hasErrors == false
@@ -914,11 +914,11 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## requiredUnless
 他のフィールドが値のどれとも一致していない場合、このフィールドが存在し、かつ空でないことをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abc"
-  assert params.getStr("empty") == ""
-  assert params.getStr("other") == "123"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abc"
+  assert context.params.getStr("empty") == ""
+  assert context.params.getStr("other") == "123"
   v.requiredUnless("base", "other", ["123"])
   v.requiredUnless("empty", "other", ["123"])
   assert v.hasErrors == false
@@ -927,10 +927,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## requiredWith
 指定した他のフィールドが一つでも存在している場合、このフィールドが存在し、かつ空でないことをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abc"
-  assert params.getStr("other") == "123"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abc"
+  assert context.params.getStr("other") == "123"
   v.requiredWith("base", ["a"])
   v.requiredWith("base", ["other"])
   assert v.hasErrors == false
@@ -939,12 +939,12 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## requiredWithAll
 指定した他のフィールドがすべて存在している場合、このフィールドが存在し、かつ空でないことをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abc"
-  assert params.getStr("empty") == ""
-  assert params.getStr("other1") == "123"
-  assert params.getStr("other2") == "123"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abc"
+  assert context.params.getStr("empty") == ""
+  assert context.params.getStr("other1") == "123"
+  assert context.params.getStr("other2") == "123"
   v.requiredWithAll("valid", ["other1", "other2"])
   v.requiredWithAll("empty", ["notExists"])
   assert v.hasErrors == false
@@ -953,11 +953,11 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## requiredWithout
 指定した他のフィールドのどれか一つでも存在していない場合、このフィールドが存在し、かつ空でないことをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abc"
-  assert params.getStr("empty") == ""
-  assert params.getStr("other") == "123"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abc"
+  assert context.params.getStr("empty") == ""
+  assert context.params.getStr("other") == "123"
   v.requiredWithoutAll("base", ["aaa", "bbb"])
   v.requiredWithoutAll("empty", ["other"])
   assert v.hasErrors == false
@@ -966,10 +966,10 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## same
 フィールドが、指定されたフィールドと同じ値であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abc"
-  assert params.getStr("target") == "abc"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abc"
+  assert context.params.getStr("target") == "abc"
   v.same("base", "target")
   assert v.hasErrors == false
 ```
@@ -977,9 +977,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## sizeNum
 フィールドは指定された値と同じサイズであることをバリデートします。数値項目の場合、値は整数値です。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getInt("base") == 2
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getInt("base") == 2
   v.sizeNum("base", 2)
   assert v.hasErrors == false
 ```
@@ -987,9 +987,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## sizeFile
 フィールドは指定された値と同じサイズであることをバリデートします。ファイルの場合、値はキロバイトのサイズです。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base").len == 2048
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base").len == 2048
   v.sizeFile("base", 2)
   assert v.hasErrors == false
 ```
@@ -997,9 +997,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## sizeStr
 フィールドは指定された値と同じサイズであることをバリデートします。文字列の場合、値は文字長です。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "ab"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "ab"
   v.sizeStr("base", 2)
   assert v.hasErrors == false
 ```
@@ -1007,9 +1007,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## sizeArr
 フィールドは指定された値と同じサイズであることをバリデートします。配列の場合、値は配列の個数(length)です。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a, b"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a, b"
   v.sizeArr("base", 2)
   assert v.hasErrors == false
 ```
@@ -1017,9 +1017,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## startsWith
 フィールドが、指定した値のどれかで始まることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abcde"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abcde"
   v.startsWith("base", ["abc", "bcd"])
   assert v.hasErrors == false
 ```
@@ -1027,9 +1027,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## timestamp
 フィールドが、有効なタイムスタンプであることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "1577804400"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "1577804400"
   v.timestamp("base")
   assert v.hasErrors == false
 ```
@@ -1037,9 +1037,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## url
 フィールドが有効なURLであることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "https://google.com:8000/xxx/yyy/zzz?key=value"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "https://google.com:8000/xxx/yyy/zzz?key=value"
   v.url("base")
   assert v.hasErrors == false
 ```
@@ -1047,9 +1047,9 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ## uuid
 フィールドが有効な、RFC 4122（バージョン1、3、4、5）universally unique identifier (UUID)であることをバリデートします。
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a0a2a2d2-0b87-4a18-83f2-2529882be2de"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a0a2a2d2-0b87-4a18-83f2-2529882be2de"
   v.url("base")
   assert v.hasErrors == false
 ```

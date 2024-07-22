@@ -1,19 +1,18 @@
 Validation
 ===
-[back](../../README.md)
+[Back](../../README.md)
 
 Table of Contents
-
 <!--ts-->
 * [Validation](#validation)
 * [Simple Validation](#simple-validation)
-   * [Sample](#sample)
+   * [Example](#example)
 * [Request Validation](#request-validation)
       * [API](#api)
-   * [Sample](#sample-1)
-* [Error messages](#error-messages)
+   * [Example](#example-1)
+* [Error Messages](#error-messages)
    * [Locale](#locale)
-   * [Replace key name](#replace-key-name)
+   * [Replacing Request Parameter Keys](#replacing-request-parameter-keys)
 * [Rules](#rules)
    * [accepted](#accepted)
    * [after](#after)
@@ -57,10 +56,6 @@ Table of Contents
    * [ltNum](#ltnum)
    * [ltFile](#ltfile)
    * [ltStr](#ltstr)
-   * [ltArr](#ltarr)
-   * [lteNum](#ltenum)
-   * [lteFile](#ltefile)
-   * [lteStr](#ltestr)
    * [ltArr](#ltarr-1)
    * [maxNum](#maxnum)
    * [maxFile](#maxfile)
@@ -93,24 +88,26 @@ Table of Contents
    * [uuid](#uuid)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: root, at: Sat Jun 22 11:26:29 UTC 2024 -->
+<!-- Added by: root, at: Sat Jun 22 11:26:15 UTC 2024 -->
 
 <!--te-->
 
-Basolato has it's own validation function. It recieves request and check request params.  
-There are two validation type. One is used in controller that recieve request and return errors array.  
-Another is more simple. Recieve value and return `bool`.
+Basolato has its own validation feature. This feature receives a request and checks the request parameters.  
+There are two types of validation. One is used in controllers that receive a request and return an array of errors.  
+The other is simpler and receives a value and returns a `bool`.
 
 # Simple Validation
 ```
 import basolato/core/validation
 ```
-## Sample
+## Example
 ```nim
-echo newValidation().email("sample@example.com")
+let validation = Validation.new()
+
+echo validation.email("sample@example.com")
 >> true
 
-echo newValidation().email("sample@example")
+echo validation.email("sample@example")
 >> false
 ```
 
@@ -120,45 +117,42 @@ import basolato/request_validation
 ```
 ### API
 ```nim
-proc newRequestValidation*(params: Params):RequestValidation =
+proc new*(_:type RequestValidation, params: Params):RequestValidation
 
-proc hasErrors*(self:RequestValidation):bool =
+proc hasErrors*(self:RequestValidation):bool
 
-proc hasError*(self:RequestValidation, key:string):bool =
+proc hasError*(self:RequestValidation, key:string):bool
 
-proc errors*(self:RequestValidation):ValidationErrors =
+proc errors*(self:RequestValidation):ValidationErrors
 
-proc add*(self:ValidationErrors, key, value:string) =
+proc add*(self:ValidationErrors, key, value:string)
 
-proc storeValidationResult*(client:Client, validation:RequestValidation) {.async.} =
+proc storeValidationResult*(context:Context, validation:RequestValidation) {.async.}
 ```
-`storeValidationResult` stores params and validation errors to session as flash message.
+`storeValidationResult` saves the request parameters and validation error messages as flash messages in the session.
 
-## Sample
-form request
+## Example
+Form Request
 ```html
 <input type="base" name="email" value="user1@example.com">
 ```
-or json request
+JSON Request
 ```json
 {
   "email": "user1@example.com"
 }
 ```
-
 ```nim
-proc signUp*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
+proc signUp*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
   v.required("email")
   v.email("email")
-  let client = await newClient(request)
   if v.hasErrors:
-    await client.storeValidationResult(v)
+    context.storeValidationResult(v).await
     return redirect("/signup")
 ```
 ```nim
-let client = await newClient(request)
-echo await client.getFlash()
+echo context.getFlash().await
 >> {
   "errors": {
     "email": ["The name field is required."]
@@ -168,63 +162,62 @@ echo await client.getFlash()
   }
 }
 ```
-
-# Error messages
+# Error Messages
 ## Locale
-Definition of error messages is in `resources/lang/{locale}/validation.json`.  
-Default local is `en`. If you want to replace it, please define environment valiable `LOCALE`.
+Error messages are defined in `resources/lang/{locale}/validation.json`. 
+The default locale is `en`. To replace this, define the environment variable `LOCALE`.
 
-## Replace key name
-Error message has request params key name by default. You can replace it.
+## Replacing Request Parameter Keys
+By default, the error message contains the request parameter key name. This can be replaced by specifying an `attribute`.
 
-default
+Initial state
 ```nim
-let v = RequestValidation.new(params)
+let v = RequestValidation.new(context)
 v.required("name")
 v.errors["name"][0] == "The name field is required."
 ```
 
-replace
+Replacement
 ```nim
-let v = RequestValidation.new(params)
+let v = RequestValidation.new(context)
 v.required("name", attribute="User Name")
 v.errors["name"][0] == "The User Name field is required."
 ```
 
 # Rules
-See test code of [simple validation](../../tests/test_validation.nim) and [request validation](../../tests/test_request_validation.nim)
+Refer to the test codes of [simple validation](../../tests/test_validation.nim) and [request validation](../../tests/test_request_validation.nim) for more examples.
 
 ## accepted
-The field under validation must be "yes", "on", 1, or true. This is useful for validating "Terms of Service" acceptance or similar fields.
+Validates that the field is yes, on, 1, or true. This is useful for "terms of service" acceptance validation.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "on"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "on"
   v.accepted("base")
   assert v.hasErrors == false
 ```
 
 ## after
-The field under validation must be a value after a given date.  
-Instead of passing a date string to be evaluated by `format`, you may specify another field to compare against the `Datetime`
+Validates that the field's value is after the given date.  
+You can specify either a `Datetime` type or another field name to compare with.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "2020-01-01"
-  assert params.getStr("target") == "2020-01-02"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "2020-01-01"
+  assert context.params.getStr("target") == "2020-01-02"
   v.after("base", "target", "yyyy-MM-dd")
   v.after("base", "2020-01-02".parse("yyyy-MM-dd"), "yyyy-MM-dd")
   assert v.hasErrors == false
 ```
 
 ## afterOrEqual
-The field under validation must be a value after or equal to the given date.
+Validates that the field's value is after or equal to the given date.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "2020-01-01"
-  assert params.getStr("same") == "2020-01-01"
-  assert params.getStr("target") == "2020-01-02"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "2020-01-01"
+  assert context.params.getStr("same") == "2020-01-01"
+  assert context.params.getStr("target") == "2020-01-02"
   v.afterOrEqual("base", "target", "yyyy-MM-dd")
   v.afterOrEqual("base", "same", "yyyy-MM-dd")
   v.afterOrEqual("base", "2020-01-01".parse("yyyy-MM-dd"), "yyyy-MM-dd")
@@ -233,159 +226,159 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ```
 
 ## alpha
-The field under validation must be entirely alphabetic characters.
+Validates that the field contains only alphabetic characters.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("small") == "abcdefghijklmnopqrstuvwxyz"
-  assert params.getStr("large") == "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("small") == "abcdefghijklmnopqrstuvwxyz"
+  assert context.params.getStr("large") == "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   v.alpha("small")
   v.alpha("large")
   assert v.hasErrors == false
 ```
 
 ## alphaDash
-The field under validation may have alpha-numeric characters, as well as dashes and underscores.
+Validates that the field contains only alphabetic characters, numbers, dashes (-), and underscores (_).
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abcABC012-_"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abcABC012-_"
   v.alphaDash("base")
   assert v.hasErrors == false
 ```
 
 ## alphaNum
-The field under validation must be entirely alpha-numeric characters.
+Validates that the field contains only alphabetic characters and numbers.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abcABC012"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abcABC012"
   v.alphaNum("base")
   assert v.hasErrors == false
 ```
 
 ## array
-The field under validation must be a `array`.
+Validates that the field is an array.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a, b, c"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a, b, c"
   v.array("base")
   assert v.hasErrors == false
 ```
 
 ## before
-The field under validation must be a value preceding the given date.  
-In addition, like the `after` rule, the name of another field under validation may be supplied as the value of `Datetime`.
+Validates that the field's value is before the given date.  
+Similar to the `after` rule, you can specify either a `Datetime` type or another field name to compare with.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "2020-01-02"
-  assert params.getStr("target") == "2020-01-01"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "2020-01-02"
+  assert context.params.getStr("target") == "2020-01-01"
   v.before("base", "target", "yyyy-MM-dd")
-  v.before("base", "2020-01-01".parse("yyyy-MM-dd")", "yyyy-MM-dd")
+  v.before("base", "2020-01-01".parse("yyyy-MM-dd"), "yyyy-MM-dd")
   assert v.hasErrors == false
 ```
 
 ## beforeOrEqual
-The field under validation must be a value preceding or equal the given date.  
-In addition, like the `after` rule, the name of another field under validation may be supplied as the value of `Datetime`.
+Validates that the field's value is before or equal to the given date.  
+Similar to the `after` rule, you can specify either a `Datetime` type or another field name to compare with.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "2020-01-02"
-  assert params.getStr("same") == "2020-01-02"
-  assert params.getStr("target") == "2020-01-01"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "2020-01-02"
+  assert context.params.getStr("same") == "2020-01-02"
+  assert context.params.getStr("target") == "2020-01-01"
   v.beforeOrEqual("base", "target", "yyyy-MM-dd")
   v.beforeOrEqual("base", "same", "yyyy-MM-dd")
-  v.beforeOrEqual("base", "2020-01-01".parse("yyyy-MM-dd")", "yyyy-MM-dd")
-  v.beforeOrEqual("base", "2020-01-02".parse("yyyy-MM-dd")", "yyyy-MM-dd")
+  v.beforeOrEqual("base", "2020-01-01".parse("yyyy-MM-dd"), "yyyy-MM-dd")
+  v.beforeOrEqual("base", "2020-01-02".parse("yyyy-MM-dd"), "yyyy-MM-dd")
   assert v.hasErrors == false
 ```
 
 ## betweenNum
-The field under validation must be between the given min and max.
+Validates that the field's value is between the specified minimum and maximum values.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getInt("int") == 2
-  assert params.getFloat("float") == 2.0
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getInt("int") == 2
+  assert context.params.getFloat("float") == 2.0
   v.betweenNum("int", 1, 3)
   v.betweenNum("float", 1.9, 2.1)
   assert v.hasErrors == false
 ```
 
 ## betweenStr
-The field under validation must have a length between the given min and max.
+Validates that the field's value is between the specified minimum and maximum character lengths.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("str") == "ab"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("str") == "ab"
   v.betweenStr("str", 1, 3)
   assert v.hasErrors == false
 ```
 
 ## betweenArr
-The field under validation must have a length between the given min and max.
+Validates that the field's value is between the specified minimum and maximum array lengths.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("arr") == "a, b"
-  v.betweenStr("arr", 1, 3)
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("arr") == "a, b"
+  v.betweenArr("arr", 1, 3)
   assert v.hasErrors == false
 ```
 
 ## betweenFile
-The field under validation must have a size between the given min and max.
+Validates that the field's file size is between the specified minimum and maximum values.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("file").len == 2048
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("file").len == 2048
   v.betweenFile("file", 1, 3)
   assert v.hasErrors == false
 ```
 
 ## boolean
-The field under validation must be able to be cast as a boolean.  
-Accepted input are `y, yes, true, 1, on, n, no, false, 0, off`
+Validates that the field is a boolean value.  
+Acceptable input values are `y, yes, true, 1, on, n, no, false, 0, off`.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("bool") == "true"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("bool") == "true"
   v.boolean("bool")
   assert v.hasErrors == false
 ```
 
 ## confirmed
-The field under validation must have a matching field of `{field}_confirmation`. For example, if the field under validation is `password`, a matching `password_confirmation` field must be present in the input.
+Validates that the field's value is the same as the field_name_confirmation field's value. For example, if the field being validated is password, the value must match the password_confirmation field's value.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("password") == "aaa"
-  assert params.getStr("password_confirmation") == "aaa"
-  assert params.getStr("password_check") == "aaa"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("password") == "aaa"
+  assert context.params.getStr("password_confirmation") == "aaa"
+  assert context.params.getStr("password_check") == "aaa"
   v.confirmed("password")
-  v.confirmed("password", saffix="_check")
+  v.confirmed("password", suffix="_check")
   assert v.hasErrors == false
 ```
 
 ## date
-The field under validation must be a valid, non-relative `Datetime`
+Validates that the field's value is a valid date and not a relative date.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "2020-01-01"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "2020-01-01"
   v.date("base", "yyyy-MM-dd")
   assert v.hasErrors == false
 ```
 
 ## dateEquals
-The field under validation must be equal to the given `Datetime`.
+Validates that the field's value is equal to the specified `Datetime`.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("date") == "2020-01-01"
-  assert params.getStr("timestamp") == "1577880000"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("date") == "2020-01-01"
+  assert context.params.getStr("timestamp") == "1577880000"
   let target = "2020-01-01".format("yyyy-MM-dd")
   v.dateEquals("base", "yyyy-MM-dd", target)
   v.dateEquals("timestamp", target)
@@ -393,666 +386,685 @@ proc index*(request:Request, params:Params):Future[Response] {.async.} =
 ```
 
 ## different
-The field under validation must have a different value than `arge2`.
+Validates that the field's value is different from the specified field's value.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a"
-  assert params.getStr("target") == "b"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a"
+  assert context.params.getStr("target") == "b"
   v.different("base", "target")
   assert v.hasErrors == false
 ```
 
 ## digits
-The field under validation must be numeric and must have an exact length of `arge2`.
+Validates that the field is numeric and has the specified number of digits.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "10"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "10"
   v.digits("base", 2)
   assert v.hasErrors == false
 ```
 
 ## digitsBetween
-The field under validation must be numeric and must have a length between the given min and max.
+Validates that the field is numeric and has a number of digits between the specified minimum and maximum.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "10"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "10"
   v.digitsBetween("base", 1, 3)
   assert v.hasErrors == false
 ```
 
 ## distinctArr
-When validating arrays, the field under validation must not have any duplicate values.
+Validates that the field is an array and contains no duplicate values.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a, b, c"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a, b, c"
   v.distinctArr("base")
   assert v.hasErrors == false
 ```
 
 ## domain
-The field under validation must have a valid A or AAAA record.
+Validates that the field is a valid `A` or `AAAA` record.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("v4") == "domain.com"
-  assert params.getStr("v6") == "[2001:0db8:bd05:01d2:288a:1fc0:0001:10ee]"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("v4")
+
+ == "domain.com"
+  assert context.params.getStr("v6") == "[2001:0db8:bd05:01d2:288a:1fc0:0001:10ee]"
   v.domain("v4")
   v.domain("v6")
   assert v.hasErrors == false
 ```
 
 ## email
-The field under validation must be formatted as an email address.
+Validates that the field is a valid email address.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "email@domain.com"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "email@domain.com"
   v.email("base")
   assert v.hasErrors == false
 ```
 
-References this python code.  
+This implementation is based on the following Python code:  
 https://gist.github.com/frodo821/681869a36148b5214632166e0ad293a9
 
 ## endsWith
-The field under validation must end with one of the given values.
+Validates that the field's value ends with one of the specified values.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abcdefg"
-  v.email("base", ["ef", "fg"])
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abcdefg"
+  v.endsWith("base", ["ef", "fg"])
   assert v.hasErrors == false
 ```
 
 ## file
-The field under validation must be a successfully uploaded file.
+Validates that the field is a successfully uploaded file.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
   assert params["base"].ext == "jpg"
   v.file("base")
   assert v.hasErrors == false
 ```
 
 ## filled
-The field under validation must not be empty when it is present.
+Validates that the field is not empty if it is present.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a"
   v.filled("base")
   assert v.hasErrors == false
 ```
 
 ## gtNum
-The field under validation must be greater than the given field.
+Validates that the field's value is greater than the specified field's value.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getInt("base") == 2
-  assert params.getInt("target") == 1
-  v.gtFile("base", "target")
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getInt("base") == 2
+  assert context.params.getInt("target") == 1
+  v.gtNum("base", "target")
   assert v.hasErrors == false
 ```
 
 ## gtFile
-The field under validation must have a greater size than the given field.
+Validates that the field's file size is greater than the specified field's file size.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base").len == 2048
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base").len == 2048
   assert params["base"].ext == "jpg"
-  assert params.getStr("target").len == 1024
+  assert context.params.getStr("target").len == 1024
   assert params["target"].ext == "jpg"
   v.gtFile("base", "target")
   assert v.hasErrors == false
 ```
 
 ## gtStr
-The field under validation must be longer than the given field.
+Validates that the field's value is longer than the specified field's value.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "ab"
-  assert params.getStr("target") == "a"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "ab"
+  assert context.params.getStr("target") == "a"
   v.gtStr("base", "target")
   assert v.hasErrors == false
 ```
 
 ## gtArr
-The field under validation must have more items than the given field.
+Validates that the field's array length is greater than the specified field's array length.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a, b"
-  assert params.getStr("target") == "a"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a, b"
+  assert context.params.getStr("target") == "a"
   v.gtArr("base", "target")
   assert v.hasErrors == false
 ```
 
 ## gteNum
-The field under validation must be same or greater than the given field.
+Validates that the field's value is greater than or equal to the specified field's value.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getInt("base") == 2
-  assert params.getInt("same") == 2
-  assert params.getInt("target") == 1
-  v.gtFile("base", "target")
-  v.gtFile("base", "same")
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getInt("base") == 2
+  assert context.params.getInt("same") == 2
+  assert context.params.getInt("target") == 1
+  v.gteNum("base", "target")
+  v.gteNum("base", "same")
   assert v.hasErrors == false
 ```
 
 ## gteFile
-The field under validation must be have a greater or same size than the given field.
+Validates that the field's file size is greater than or equal to the specified field's file size.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base").len == 2048
-  assert params.getStr("same").len == 2048
-  assert params.getStr("target").len == 1024
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base").len == 2048
+  assert context.params.getStr("same").len == 2048
+  assert context.params.getStr("target").len == 1024
   v.gteFile("base", "target")
   v.gteFile("base", "same")
   assert v.hasErrors == false
 ```
 
 ## gteStr
-The field under validation must be have longer or same than the given field.
+Validates that the field's value is greater than or equal to the specified field's value in length.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "ab"
-  assert params.getStr("same") == "bc"
-  assert params.getStr("target") == "a"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "ab"
+  assert context.params.getStr("same") == "bc"
+  assert context.params.getStr("target") == "a"
   v.gteStr("base", "target")
   v.gteStr("base", "same")
   assert v.hasErrors == false
 ```
 
 ## gteArr
-The field under validation must have more or same items than the given field.
+Validates that the field's array length is greater than or equal to the specified field's array length.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a, b"
-  assert params.getStr("same") == "b, c"
-  assert params.getStr("target") == "a"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a, b"
+  assert context.params.getStr("same") == "b, c"
+  assert context.params.getStr("target") == "a"
   v.gteArr("base", "target")
   v.gteArr("base", "same")
   assert v.hasErrors == false
 ```
 
 ## image
-The file under validation must be an image (jpg, jpeg, png, bmp, gif, svg, or webp).
+Validates that the field is an image (jpg, png, bmp, gif, svg, webp).
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
   assert params["base"].ext == "jpg"
   v.image("base")
   assert v.hasErrors == false
 ```
 
 ## in
-The field under validation must be included in the given list of values.
+Validates that the field's value is included in the specified list.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
   assert params["base"].ext == "a"
   v.in("base", ["a", "b"])
   assert v.hasErrors == false
 ```
 
 ## inArray
-The field under validation must be in anotherfield's values.
+Validates that the field's value is one of the values in the specified field.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a"
-  assert params.getStr("target") == "a, b, c"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a"
+  assert context.params.getStr("target") == "a, b, c"
   v.inArray("base", "target")
   assert v.hasErrors == false
 ```
 
 ## integer
-The field under validation must be an integer.
+Validates that the field is an integer.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getInt("base") == 1
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getInt("base") == 1
   v.integer("base")
   assert v.hasErrors == false
 ```
 
 ## json
-The field under validation must be a valid JSON string.
+Validates that the field is a valid JSON string.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == """{"key": "value"}"""
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == """{"key": "value"}"""
   v.json("base")
   assert v.hasErrors == false
 ```
 
 ## ltNum
-The field under validation must be less than the given field.
+Validates that the field's value is less than the specified field's value.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getInt("base") == 1
-  assert params.getInt("target") == 2
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getInt("base") == 1
+  assert context.params.getInt("target") == 2
   v.ltNum("base", "target")
   assert v.hasErrors == false
 ```
 
 ## ltFile
-The field under validation must have less size than the given field.
+Validates that the field's file size is less than the specified field's file size.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base").len == 1024
-  assert params.getStr("target").len == 2048
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base").len == 1024
+  assert context.params.getStr("target").len == 2048
   v.ltFile("base", "target")
   assert v.hasErrors == false
 ```
 
 ## ltStr
-The field under validation must have less length than the given field.
+Validates that the field's value is shorter than the specified field's value.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a"
-  assert params.getStr("target") == "ab"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+ 
+
+ assert context.params.getStr("base") == "a"
+  assert context.params.getStr("target") == "ab"
   v.ltStr("base", "target")
   assert v.hasErrors == false
 ```
 
 ## ltArr
-The field under validation must have less items than the given field.
+Validates that the field's array length is shorter than the specified field's array length.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a"
-  assert params.getStr("target") == "a, b"
-  v.ltStr("base", "target")
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a"
+  assert context.params.getStr("target") == "a, b"
+  v.ltArr("base", "target")
   assert v.hasErrors == false
 ```
 
 ## lteNum
-The field under validation must be less than or same the given field.
+Validates that the field's value is less than or equal to the specified field's value.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getInt("base") == 1
-  assert params.getInt("same") == 1
-  assert params.getInt("target") == 2
-  v.ltNum("base", "target")
-  v.ltNum("base", "same")
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getInt("base") == 1
+  assert context.params.getInt("same") == 1
+  assert context.params.getInt("target") == 2
+  v.lteNum("base", "target")
+  v.lteNum("base", "same")
   assert v.hasErrors == false
 ```
 
 ## lteFile
-The field under validation must have less size than or same size the given field.
+Validates that the field's file size is less than or equal to the specified field's file size.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base").len == 1024
-  assert params.getStr("same").len == 1024
-  assert params.getStr("target").len == 2048
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base").len == 1024
+  assert context.params.getStr("same").len == 1024
+  assert context.params.getStr("target").len == 2048
   v.lteFile("base", "target")
   v.lteFile("base", "same")
   assert v.hasErrors == false
 ```
 
 ## lteStr
-The field under validation must have less length than  or same length the given field.
+Validates that the field's value is shorter than or equal to the specified field's value in length.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a"
-  assert params.getStr("same") == "b"
-  assert params.getStr("target") == "ab"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a"
+  assert context.params.getStr("same") == "b"
+  assert context.params.getStr("target") == "ab"
   v.lteStr("base", "target")
   v.lteStr("base", "same")
   assert v.hasErrors == false
 ```
 
 ## ltArr
-The field under validation must have less or same items than the given field.
+Validates that the field's array length is less than or equal to the specified field's array length.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base").len == "a"
-  assert params.getStr("same").len == "a"
-  assert params.getStr("target").len == "a, b"
-  v.ltStr("base", "target")
-  v.ltStr("base", "same")
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a"
+  assert context.params.getStr("same") == "a"
+  assert context.params.getStr("target") == "a, b"
+  v.lteArr("base", "target")
+  v.lteArr("base", "same")
   assert v.hasErrors == false
 ```
 
 ## maxNum
-The field under validation must be less than or equal to a maximum value.
+Validates that the field's value is less than or equal to the specified maximum value.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getInt("base") == 2
-  assert params.getInt("small") == 1
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getInt("base") == 2
+  assert context.params.getInt("small") == 1
   v.maxNum("base", 2)
   v.maxNum("small", 2)
   assert v.hasErrors == false
 ```
 
 ## maxFile
-The field under validation must be less size than or equal to a maximum value.
+Validates that the field's file size is less than or equal to the specified maximum value.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base").len == 2048
-  assert params.getStr("small").len == 1024
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base").len == 2048
+  assert context.params.getStr("small").len == 1024
   v.maxFile("base", 2)
   v.maxFile("small", 2)
   assert v.hasErrors == false
 ```
 
 ## maxStr
-The field under validation must be less length than or equal to a maximum value.
+Validates that the field's value is shorter than or equal to the specified maximum character length.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "ab"
-  assert params.getStr("small") == "a"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "ab"
+  assert context.params.getStr("small") == "a"
   v.maxStr("base", 2)
   v.maxStr("small", 2)
   assert v.hasErrors == false
 ```
 
 ## maxArr
-The field under validation must be less length than or equal to a maximum value.
+Validates that the field's array length is less than or equal to the specified maximum length.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a, b"
-  assert params.getStr("small") == "a"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a, b"
+  assert context.params.getStr("small") == "a"
   v.maxArr("base", 2)
   v.maxArr("small", 2)
   assert v.hasErrors == false
 ```
 
 ## mimes
-The file under validation must have a MIME type corresponding to one of the listed extensions.
+Validates that the field's file is one of the specified MIME types.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
   assert params["base"].ext == "jpg"
   v.mimes("base", ["jpg", "gif"])
   assert v.hasErrors == false
 ```
 
 ## minNum
-The field under validation must have a minimum value.
+Validates that the field's value is greater than or equal to the specified minimum value.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getInt("base") == 2
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getInt("base") == 2
   v.minNum("base", 1)
   v.minNum("base", 2)
   assert v.hasErrors == false
 ```
 
 ## minFile
-The field under validation must have a minimum value of size.
+Validates that the field's file size is greater than or equal to the specified minimum value.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base").len == 2048
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base").len == 2048
   v.minFile("base", 1)
   v.minFile("base", 2)
   assert v.hasErrors == false
 ```
 
 ## minStr
-The field under validation must have a minimum value of length.
+Validates that the field's value is longer than or equal to the specified minimum character length.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "ab"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "ab"
   v.minStr("base", 1)
   v.minStr("base", 2)
   assert v.hasErrors == false
 ```
 
 ## minArr
-The field under validation must have a minimum value of length.
+Validates that the field's array length is longer than or equal to the specified minimum length.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a, b"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a, b"
   v.minArr("base", 1)
   v.minArr("base", 2)
   assert v.hasErrors == false
 ```
 
 ## notIn
-The field under validation must not be included in the given list of values.
+Validates that the field's value is not included in the specified list.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a"
   v.notIn("base", ["b", "c"])
   assert v.hasErrors == false
 ```
 
 ## notRegex
-The field under validation must not match the given regular expression.
+Validates that the field's value does not match the specified regular expression.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abc"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abc"
   v.notRegex("base", re"\d")
   assert v.hasErrors == false
 ```
 
 ## numeric
-The field under validation must be `numeric`.
+Validates that the field is a numeric value.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getInt("base") == 1
-  assert params.getFloat("float") == -1.23
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getInt("base") == 1
+  assert context.params.getFloat("float") == -1.23
   v.numeric("base")
   v.numeric("float")
   assert v.hasErrors == false
 ```
 
 ## present
-The field under validation must be present in the input data but can be empty.
+Validates that the field is present in the input data, but allows it to be empty.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == ""
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == ""
   v.present("base")
   assert v.hasErrors == false
 ```
 
 ## regex
-The field under validation must match the given regular expression.
+Validates that the field's value matches the specified regular expression.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abc"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abc"
   v.regex("base", re"\w")
   assert v.hasErrors == false
 ```
 
 ## required
-The field under validation must be present in the input data and not empty. A field is considered "empty" if one of the following conditions are true:
+Validates that the field is present in the input data and is not empty. A field is
+
+ considered "empty" if it meets any of the following conditions:
 - The value is `null`.
 - The value is an empty string.
 - The value is an empty array or empty `Countable` object.
 - The value is an uploaded file with no path.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abc"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abc"
   v.required("base")
   assert v.hasErrors == false
 ```
 
 ## requiredIf
-The field under validation must be present and not empty if the anotherfield field is equal to any value.
+Validates that the field is present and not empty if another field is equal to any of the specified values.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abc"
-  assert params.getStr("empty") == ""
-  assert params.getStr("other") == "123"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abc"
+  assert context.params.getStr("empty") == ""
+  assert context.params.getStr("other") == "123"
   v.requiredIf("base", "other", ["123"])
   v.requiredIf("empty", "other", ["xyz"])
   assert v.hasErrors == false
 ```
 
 ## requiredUnless
-The field under validation must be present and not empty unless the anotherfield field is equal to any value.
+Validates that the field is present and not empty unless another field is equal to any of the specified values.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abc"
-  assert params.getStr("empty") == ""
-  assert params.getStr("other") == "123"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abc"
+  assert context.params.getStr("empty") == ""
+  assert context.params.getStr("other") == "123"
   v.requiredUnless("base", "other", ["123"])
   v.requiredUnless("empty", "other", ["123"])
   assert v.hasErrors == false
 ```
 
 ## requiredWith
-The field under validation must be present and not empty only if any of the other specified fields are present and not empty.
+Validates that the field is present and not empty if any of the other specified fields are present.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abc"
-  assert params.getStr("other") == "123"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abc"
+  assert context.params.getStr("other") == "123"
   v.requiredWith("base", ["a"])
   v.requiredWith("base", ["other"])
   assert v.hasErrors == false
 ```
 
 ## requiredWithAll
-The field under validation must be present and not empty only if all of the other specified fields are present and not empty.
+Validates that the field is present and not empty if all of the other specified fields are present.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abc"
-  assert params.getStr("empty") == ""
-  assert params.getStr("other1") == "123"
-  assert params.getStr("other2") == "123"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abc"
+  assert context.params.getStr("empty") == ""
+  assert context.params.getStr("other1") == "123"
+  assert context.params.getStr("other2") == "123"
   v.requiredWithAll("valid", ["other1", "other2"])
   v.requiredWithAll("empty", ["notExists"])
   assert v.hasErrors == false
 ```
 
 ## requiredWithout
-The field under validation must be present and not empty only when any of the other specified fields are empty or not present.
+Validates that the field is present and not empty if any of the other specified fields are not present.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abc"
-  assert params.getStr("empty") == ""
-  assert params.getStr("other") == "123"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abc"
+  assert context.params.getStr("empty") == ""
+  assert context.params.getStr("other") == "123"
+  v.requiredWithout("base", ["aaa", "bbb"])
+  v.requiredWithout("empty", ["other"])
+  assert v.hasErrors == false
+```
+
+## requiredWithoutAll
+Validates that the field is present and not empty if none of the other specified fields are present.
+```nim
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abc"
+  assert context.params.getStr("empty") == ""
+  assert context.params.getStr("other") == "123"
   v.requiredWithoutAll("base", ["aaa", "bbb"])
   v.requiredWithoutAll("empty", ["other"])
   assert v.hasErrors == false
 ```
 
 ## same
-The given field must match the field under validation.
+Validates that the field's value is the same as the specified field's value.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abc"
-  assert params.getStr("target") == "abc"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abc"
+  assert context.params.getStr("target") == "abc"
   v.same("base", "target")
   assert v.hasErrors == false
 ```
 
 ## sizeNum
-The field under validation must have a size matching the given value. For numeric data, value corresponds to a given integer value (the attribute must also have the numeric or integer rule).
+Validates that the field's value is the specified size. For numeric values, the value must be an integer.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getInt("base") == 2
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getInt("base") == 2
   v.sizeNum("base", 2)
   assert v.hasErrors == false
 ```
 
 ## sizeFile
-The field under validation must have a size matching the given value. For files, size corresponds to the file size in kilobytes.
+Validates that the field's file size is the specified size in kilobytes.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base").len == 2048
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base").len == 2048
   v.sizeFile("base", 2)
   assert v.hasErrors == false
 ```
 
 ## sizeStr
-The field under validation must have a size matching the given value.
+Validates that the field's value is the specified length.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "ab"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "ab"
   v.sizeStr("base", 2)
   assert v.hasErrors == false
 ```
 
 ## sizeArr
-The field under validation must have a size matching the given value.  For an array, size corresponds to the length of the array.
+Validates that the field's array length is the specified size.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a, b"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a, b"
   v.sizeArr("base", 2)
   assert v.hasErrors == false
 ```
 
 ## startsWith
-The field under validation must start with one of the given values.
+Validates that the field's value starts with one of the specified values.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "abcde"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "abcde"
   v.startsWith("base", ["abc", "bcd"])
   assert v.hasErrors == false
 ```
 
 ## timestamp
-The field under validation must be a valid timestamp.
+Validates that the field's value is a valid timestamp.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "1577804400"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "1577804400"
   v.timestamp("base")
   assert v.hasErrors == false
 ```
 
 ## url
-The field under validation must be a valid URL.
+Validates that the field's value is a valid URL.
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "https://google.com:8000/xxx/yyy/zzz?key=value"
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "https://google.com:8000/xxx/yyy/zzz?key=value"
   v.url("base")
   assert v.hasErrors == false
 ```
 
 ## uuid
-The field under validation must be a valid RFC 4122 (version 1, 3, 4, or 5) universally unique identifier (UUID).
+Validates that the field's value is a valid universally unique identifier (UUID) as specified in RFC 4122 (versions 1, 3, 4, 5).
 ```nim
-proc index*(request:Request, params:Params):Future[Response] {.async.} =
-  let v = RequestValidation.new(params)
-  assert params.getStr("base") == "a0a2a2d2-0b87-4a18-83f2-2529882be2de"
-  v.url("base")
+proc index*(context:Context, params:Params):Future[Response] {.async.} =
+  let v = RequestValidation.new(context)
+  assert context.params.getStr("base") == "a0a2a2d2-0b87-4a18-83f2-2529882be2de"
+  v.uuid("base")
   assert v.hasErrors == false
 ```

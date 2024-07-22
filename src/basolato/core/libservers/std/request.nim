@@ -70,6 +70,12 @@ func `$`*(self:Param):string =
 func ext*(self:Param):string =
   return self.ext
 
+func fileName*(self:Param):string =
+  return self.fileName
+
+func isFile*(self:Param):bool =
+  return self.fileName.len > 0
+
 func len*(self:Param):int =
   return self.value.len
 

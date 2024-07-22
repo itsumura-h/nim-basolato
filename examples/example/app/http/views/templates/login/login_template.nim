@@ -1,9 +1,21 @@
 import ../../../../../../../src/basolato/view
+import ../../signals/form_signal
 import ../../signals/login_signal
 
 
 proc loginTemplate*():Component =
+  let formParams = formParamsSignal.value()
+  let formErrors = formErrorsSignal.value()
   let loginUser = loginUserSignal.value()
+
+  let style = styleTmpl(Css, """
+    <style>
+      ul{
+        background-color: pink;
+        color: red;
+      }
+    </style>
+  """)
 
   tmpl"""
     <main>
@@ -24,12 +36,20 @@ proc loginTemplate*():Component =
             <header>
               <h2>Login</h2>
             </header>
+            $if formErrors.len > 0{
+              <ul>
+                $for error in formErrors{
+                  <li>$(error)</li>
+                }
+              </ul>
+            }
             $(csrfToken())
-            <input type="text" name="name" placeholder="name">
-            <input type="text" name="password" placeholder="password">
+            <input type="text" name="name" placeholder="name" value="$(formParams.old("name"))">
+            <input type="password" name="password" placeholder="password">
             <button type="submit">Login</button>
           </form>
         }
       </section>
     </main>
+    $(style)
   """
