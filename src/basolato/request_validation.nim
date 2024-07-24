@@ -176,7 +176,7 @@ func hasError*(self:RequestValidation, key:string):bool =
 
 proc storeValidationResult*(context:Context, validation:RequestValidation) {.async.} =
   let params = context.params.getAll()
-  let errors = %validation.errors
+  let errors = %validation.errors # {"key": {"key2": ["message"]}}
   await context.setFlash("params", params)
   await context.setFlash("errors", errors)
 
@@ -184,13 +184,13 @@ proc storeValidationResult*(context:Context, validation:RequestValidation) {.asy
 proc storeErrors*(context:Context, errors:seq[string]) {.async.} =
   let params = context.params.getAll()
   await context.setFlash("params", params)
-  await context.setFlash("errors", %errors)
+  await context.setFlash("errors", %*{"errors": errors})
 
 
 proc storeError*(context:Context, error:string) {.async.} =
-  await context.setFlash("errors", %error)
   let params = context.params.getAll()
   await context.setFlash("params", params)
+  await context.setFlash("errors", %*{"error": [error]})
 
 
 proc hasMessage(key:string):bool =
