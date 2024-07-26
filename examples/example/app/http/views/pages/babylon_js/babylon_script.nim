@@ -10,6 +10,7 @@ import std/math
 let BABYLON {.importc.}: JsObject
 
 proc main*(ev:Event) {.exportc.} =
+  console.log("=== main start")
   let canvas = document.getElementById("renderCanvas")
   let engine = jsNew BABYLON.Engine(canvas)
 
@@ -37,10 +38,10 @@ proc main*(ev:Event) {.exportc.} =
     return scene
  
   let scene = createScene(canvas, engine)
-  engine.runRenderLoop((
-    proc() =
-      scene.render()
-  ))
+  engine.runRenderLoop(
+    proc() = scene.render()
+  )
+  console.log("=== main end")
 
 window.addEventListener("DOMContentLoaded", main)
 

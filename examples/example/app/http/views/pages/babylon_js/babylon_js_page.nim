@@ -19,8 +19,8 @@ proc babylonJsPage*():Component =
       <hr>
       $(style)
       <canvas id="renderCanvas"></canvas>
-      <script src="https://preview.babylonjs.com/babylon.js"></script>
-      <script src="/js/babylon_script.js"></script>
+      <script defer src="https://preview.babylonjs.com/babylon.js"></script>
+      <script defer src="/js/babylon_script.js"></script>
     </article>
   </main>
   """
