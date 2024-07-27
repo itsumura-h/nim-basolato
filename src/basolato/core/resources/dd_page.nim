@@ -5,6 +5,7 @@
   <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
       <title>Basolato Display Valiable Page</title>
+      <script type="module" src="https://unpkg.com/@hotwired/turbo@8.0.5/dist/turbo.es2017-esm.js"></script>
       <link rel="stylesheet", href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/styles/ir-black.min.css"/>
       <script src="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/highlight.min.js"></script>
       <style>
@@ -40,6 +41,11 @@
           <p style="text-align: center;">👑Nim ${NimVersion} ⬟Basolato ${BasolatoVersion}</p>
         </footer>
       </div>
-      <script>hljs.initHighlightingOnLoad();</script>
+      <script>
+        hljs.initHighlightingOnLoad();
+        document.addEventListener('turbolinks:load', () => {
+          document.querySelectorAll('pre>code').forEach(block => hljs.highlightBlock(block));
+        });
+      </script>
     </body>
   </html>

@@ -78,6 +78,7 @@ type BlockType = enum
   ifBlock               # $if
   elifBlock             # $elif
   elseBlock             # $else
+  whenBlock             # $when
   forBlock              # $for
   caseBlock             # $case
   ofBlock               # $of
@@ -105,6 +106,8 @@ proc identifyBlockType(str:string, point:int):BlockType =
     return elifBlock
   elif str.substr(point, point+4) == "$else":
     return elseBlock
+  elif str.substr(point, point+4) == "$when":
+    return whenBlock
   elif str.substr(point, point+3) == "$for":
     return forBlock
   elif str.substr(point, point+4) == "$case":
@@ -284,6 +287,13 @@ macro tmpl*(html: untyped): untyped =
       indentLevel += 1
       point = resPoint
     of elseBlock:
+      var (resPoint, resStr) = findNimBlock(html, point)
+      resStr = resStr.strip() & ":\n"
+      resStr = reindent(resStr, indentLevel)
+      body.add(resStr)
+      indentLevel += 1
+      point = resPoint
+    of whenBlock:
       var (resPoint, resStr) = findNimBlock(html, point)
       resStr = resStr.strip() & ":\n"
       resStr = reindent(resStr, indentLevel)
