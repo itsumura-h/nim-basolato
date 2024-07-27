@@ -10,7 +10,6 @@ import std/math
 let BABYLON {.importc.}: JsObject
 
 proc babylonMain*(ev:Event) {.exportc.} =
-  console.log("=== main start")
   let canvas = document.getElementById("renderCanvas")
   let engine = jsNew BABYLON.Engine(canvas)
 
@@ -41,7 +40,6 @@ proc babylonMain*(ev:Event) {.exportc.} =
   engine.runRenderLoop(
     proc() = scene.render()
   )
-  console.log("=== main end")
 
 window.addEventListener("DOMContentLoaded", babylonMain)
 # window.addEventListener("turbo:load", babylonMain)

@@ -29,12 +29,10 @@ function HEX3Aanonymous_1140850934() {
       
     }
 
-    console.log("=== main start");
     var canvas_1140850699 = document.getElementById("renderCanvas");
     var engine_1140850727 = (new BABYLON.Engine((canvas_1140850699)));
     var scene_1140850933 = createScene_1140850728(canvas_1140850699, engine_1140850727);
     engine_1140850727.runRenderLoop((HEX3Aanonymous_1140850934));
-    console.log("=== main end");
 
   
 }
