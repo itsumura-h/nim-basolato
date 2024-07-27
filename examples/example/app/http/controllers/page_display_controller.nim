@@ -63,7 +63,7 @@ proc withStylePage*(context:Context):Future[Response] {.async.} =
 proc babylonJsPage*(context:Context):Future[Response] {.async.} =
   const title = "Babylon JS"
   let appPresenter = AppPresenter.new()
-  let appLayoutModel = appPresenter.invoke(title, true)
+  let appLayoutModel = appPresenter.invoke(title)
 
   let page = babylonJsPage()
   let view = appLayout(appLayoutModel, page)

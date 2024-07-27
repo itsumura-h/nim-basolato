@@ -3,6 +3,7 @@ when defined(release):
   import std/os
   import std/strformat
 import ./resources/original_error_page
+import ./view
 
 
 proc errorPage*(status:HttpCode, msg:string):string =
@@ -20,6 +21,6 @@ proc errorPage*(status:HttpCode, msg:string):string =
       let errorPageView = open(path, fmRead).readAll()
       return errorPageView
     except:
-      return originalErrorPage(status, msg)
+      return $originalErrorPage(status, msg)
   else:
-    return originalErrorPage(status, msg)
+    return $originalErrorPage(status, msg)

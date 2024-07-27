@@ -4,7 +4,7 @@ var excHandler = 0;
 var lastJSError = null;
 var objectID_1325400241 = [0];
 
-function main(ev_1140850698) {
+function babylonMain(ev_1140850698) {
     
 function createScene_1140850728(canvas_1140850729, engine_1140850730) {
       var result_1140850731 = null;
@@ -38,4 +38,4 @@ function HEX3Aanonymous_1140850934() {
 
   
 }
-window.addEventListener("DOMContentLoaded", main, false);
+window.addEventListener("DOMContentLoaded", babylonMain, false);
