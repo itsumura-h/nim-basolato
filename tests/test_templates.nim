@@ -1,6 +1,7 @@
 discard """
-  cmd: "nim c -r $file"
+  cmd: "nim c $file"
 """
+# nim c -r -d:test test_templates.nim
 
 import std/unittest
 include ../src/basolato/core/templates
@@ -14,6 +15,7 @@ suite("identifyBlockType"):
     var resStr = ""
     let blockType = identifyBlockType(str, point)
     echo blockType
+    check blockType == strBlock
     (point, resStr) = findStrBlock(str, point)
     echo point
     echo resStr
@@ -28,6 +30,7 @@ suite("identifyBlockType"):
     var resStr = ""
     let blockType = identifyBlockType(str, point)
     echo blockType
+    check blockType == displayVariableBlock
     (point, resStr) = findNimVariableBlock(str, point)
     echo point
     echo resStr
@@ -42,6 +45,7 @@ suite("identifyBlockType"):
     var resStr = ""
     let blockType = identifyBlockType(str, point)
     echo blockType
+    check blockType == ifBlock
     (point, resStr) = findNimBlock(str, point)
     echo point
     echo resStr
@@ -56,6 +60,7 @@ suite("identifyBlockType"):
     var resStr = ""
     let blockType = identifyBlockType(str, point)
     echo blockType
+    check blockType == elifBlock
     (point, resStr) = findNimBlock(str, point)
     echo point
     echo resStr
@@ -70,11 +75,27 @@ suite("identifyBlockType"):
     var resStr = ""
     let blockType = identifyBlockType(str, point)
     echo blockType
+    check blockType == elseBlock
     (point, resStr) = findNimBlock(str, point)
     echo point
     echo resStr
     check point == 7
     check resStr == "else "
+
+
+  test("findNimBlock when"):
+    let str = "$when defined(release){active}"
+    #                                         | next position
+    var point = 0
+    var resStr = ""
+    let blockType = identifyBlockType(str, point)
+    echo blockType
+    check blockType == whenBlock
+    (point, resStr) = findNimBlock(str, point)
+    echo point
+    echo resStr
+    check point == 23
+    check resStr == "when defined(release)"
 
 
   test("findStrBlock after if block"):
@@ -84,6 +105,7 @@ suite("identifyBlockType"):
     var resStr = ""
     let blockType = identifyBlockType(str, point)
     echo blockType
+    check blockType == strBlock
     (point, resStr) = findStrBlock(str, point)
     echo point
     echo resStr
@@ -98,6 +120,7 @@ suite("identifyBlockType"):
     var resStr = ""
     let blockType = identifyBlockType(str, point)
     echo blockType
+    check blockType == nimCodeBlock
     (point, resStr) = findNimCodeBlock(str, point)
     echo point
     echo resStr
@@ -110,7 +133,7 @@ suite("parseTemplate"):
     proc view():Component =
       tmpl"""
         ${ let isActive = true }
-        <!-- you're idiot -->
+        <!-- this is comment -->
         $if isActive {
           active
         }$else{
@@ -119,7 +142,7 @@ suite("parseTemplate"):
       """
     let res = view()
     echo res
-    check $res == """<!-- you're idiot -->
+    check $res == """<!-- this is comment -->
         
           active"""
 
