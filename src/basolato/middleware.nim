@@ -77,6 +77,7 @@ proc checkCsrfTokenForApi*(context: Context) {.async.} =
 proc createExpire():int =
   return ( now().toTime().toUnix() + (60 * 30) ).int # 60 secound * 30 min
 
+
 proc sessionFromCookieHelper*(c:Context):Future[Cookies] {.async.} =
   ## create session and set it into context
   ## 
@@ -100,14 +101,27 @@ proc sessionFromCookieHelper*(c:Context):Future[Cookies] {.async.} =
     sessionOpt.updateCsrfToken().await
 
   let newSessionId = sessionOpt.getToken().await
-  let newPayload = %*{
-    "session_id": newSessionId,
-    "csrf_token": globalCsrfToken,
-    "iat": now().toTime().toUnix(),
-    "exp": (now() + initTimeInterval(minutes=SESSION_TIME)).toTime().toUnix(),
-  }
+  let newPayload = 
+    if SESSION_TIME > 0:
+      %*{
+        "session_id": newSessionId,
+        "csrf_token": globalCsrfToken,
+        "iat": now().toTime().toUnix(),
+        "exp": timeForward(SESSION_TIME, Minutes).toTime().toUnix(),
+      }
+    else:
+      %*{
+        "session_id": newSessionId,
+        "csrf_token": globalCsrfToken,
+        "iat": now().toTime().toUnix(),
+        "exp": timeForward(1, Years).toTime().toUnix(),
+      }
+  cookies = Cookies.new(c.request)
   let newSession = Jwt.encode($newPayload, settings.SECRET_KEY)
-  cookies.set("session", newSession, expire=timeForward(SESSION_TIME, Minutes))
+  if SESSION_TIME > 0:
+    cookies.set("session", newSession, expire=timeForward(SESSION_TIME, Minutes))
+  else:
+    cookies.set("session", newSession, expire=timeForward(1, Years))
   return cookies
 
 
@@ -117,12 +131,24 @@ proc createNewSessionHelper*(context:Context):Future[Cookies] {.async.} =
   session.updateCsrfToken().await
   let newExpire = createExpire()
   session.set("csrf_expire", $newExpire).await
-  let payload = %*{
-    "session_id": session.getToken().await,
-    "csrf_token": globalCsrfToken,
-    "iat": now().toTime().toUnix(),
-    "exp": (now() + initTimeInterval(minutes=SESSION_TIME)).toTime().toUnix(),
-  }
+  let payload =
+    if SESSION_TIME > 0:
+      %*{
+        "session_id": session.getToken().await,
+        "csrf_token": globalCsrfToken,
+        "iat": now().toTime().toUnix(),
+        "exp": timeForward(SESSION_TIME, Minutes).toTime().toUnix(),
+      }
+    else:
+      %*{
+        "session_id": session.getToken().await,
+        "csrf_token": globalCsrfToken,
+        "iat": now().toTime().toUnix(),
+        "exp": timeForward(1, Years).toTime().toUnix(),
+      }
   let jwtToken = Jwt.encode($payload, settings.SECRET_KEY)
-  cookies.set("session", jwtToken, expire=timeForward(SESSION_TIME, Minutes))
+  if SESSION_TIME > 0:
+    cookies.set("session", jwtToken, expire=timeForward(SESSION_TIME, Minutes))
+  else:
+    cookies.set("session", jwtToken, expire=timeForward(1, Years))
   return cookies

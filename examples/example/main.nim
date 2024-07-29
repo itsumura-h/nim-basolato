@@ -73,7 +73,8 @@ let routes = @[
 ]
 
 let settings = Settings.new(
-  host="0.0.0.0"
+  host="0.0.0.0",
+  sessionTime = 0,
 )
 
 serve(routes, settings)

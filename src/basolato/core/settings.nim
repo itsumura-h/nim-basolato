@@ -90,7 +90,7 @@ proc new*(
   ## - `logToFile:bool = false`
   ## - `errorLogToFile:bool = false`
   ## - `logDir:string = "./logs"`
-  ## - `sessionTime:int = 120` default 120, minutes of 2 hours
+  ## - `sessionTime:int = 120` default 120, minutes of 2 hours. If 0, session will not be expired(1 year).
   ## - `sessionExpireOnClose:bool = false`
   ## - `locale:string = "en"`
 
