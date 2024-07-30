@@ -641,20 +641,23 @@ proc url(value:string):bool =
   if not protocolList.contains(protocol):
     return false
 
-  var domainStr = value.split("://")[1].split("/")[0]
-  if domainStr.contains(":"):
-    let port = domainStr.split(":")[1]
-    if not port.numeric():
+  try:
+    var domainStr = value.split("://")[1].split("/")[0]
+    if domainStr.contains(":"):
+      let port = domainStr.split(":")[1]
+      if not port.numeric():
+        return false
+      domainStr = domainStr.split(":")[0]
+    if not domain(domainStr):
       return false
-    domainStr = domainStr.split(":")[0]
-  if not domain(domainStr):
-    return false
 
-  let path = value.split("://")[1].split("/")[1..^1].join("/")
-  let reg = re"^(?:[\pL\pN\-._\~!$&\'()*+,;=:@\/?]|%[0-9A-Fa-f]{2})*$"
-  if not path.match(reg):
+    let path = value.split("://")[1].split("/")[1..^1].join("/")
+    let reg = re"^(?:[\pL\pN\-._\~!$&\'()*+,;=:@\/?]|%[0-9A-Fa-f]{2})*$"
+    if not path.match(reg):
+      return false
+    return true
+  except:
     return false
-  return true
 
 proc url*(self:Validation, value:string):bool =
   return url(value)
