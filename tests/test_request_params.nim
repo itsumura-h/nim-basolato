@@ -20,6 +20,8 @@ block:
   check params.getStr("a") == "a"
   check params.getStr("one") == "1"
   check params.getInt("one") == 1
+  check params.hasKey("a")
+  check params.hasKey("b") == false
   check params.getAll() == %*{
     "a": {"ext": "", "fileName": "", "value": "a"},
     "one": {"ext": "", "fileName": "", "value": "1"},

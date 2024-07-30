@@ -61,6 +61,10 @@ func `[]=`*(params:Params, key:string, value:Param) =
   tables.`[]=`(params, key, value)
 
 
+func hasKey*(params:Params, key:string):bool =
+  return tables.hasKey(params, key)
+
+
 func getStr*(params:Params, key:string, default=""):string =
   if params.hasKey(key):
     return params[key].value
