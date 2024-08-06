@@ -1,5 +1,7 @@
 set -eux
 
+trap finally EXIT
+
 nim -v
 nimble -v
 
@@ -16,15 +18,18 @@ touch server/session.db
 touch server/db.sqlite3
 cp server/.env ./
 rm -fr ./testresults
-testament p "test_*.nim" || true # do not exit on error
-testament p "*/test_*.nim" || true # do not exit on error
+testament p "test_*.nim"
+testament p "*/test_*.nim"
 
-# delete files
-pkill main
-rm server/main
-rm server/db.sqlite3
-rm server/session.db
-rm -fr logs
-rm -fr server/logs
-rm .env
-find ./ -type f ! -name "*.*" -delete 2> /dev/null
+function finally {
+  # delete files
+  pkill main
+  rm server/main
+  rm server/db.sqlite3
+  rm server/session.db
+  rm session.db
+  rm -fr logs
+  rm -fr server/logs
+  rm .env
+  find ./ -type f ! -name "*.*" -delete 2> /dev/null
+}
