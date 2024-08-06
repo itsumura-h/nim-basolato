@@ -2,12 +2,13 @@ discard """
   cmd: "nim c -d:test $file"
   matrix: "; -d:httpbeast"
 """
+# nim c -d:test -r test_request_params.nim
 
 import std/unittest
 import std/json
 import ../src/basolato/core/params
 
-when defined(htttpbeast):
+when defined(httpbeast):
   include ../src/basolato/core/libservers/nostd/request
 else:
   include ../src/basolato/core/libservers/std/request
