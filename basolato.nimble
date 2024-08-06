@@ -23,6 +23,10 @@ requires "redis >= 0.3.0"
 requires "sass >= 0.1.0"
 requires "nimcrypto >= 0.6.0"
 
+when NimMajor == 2:
+  requires "checksums >= 0.1.0"
+
+
 import strformat, os
 
 # task docs, "Generate API documents":

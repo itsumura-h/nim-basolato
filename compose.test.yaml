@@ -1,5 +1,5 @@
 services:
-  basolato-test-redis:
+  redis:
     image: redis:alpine
     tty: true
 

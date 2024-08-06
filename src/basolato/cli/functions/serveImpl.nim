@@ -5,15 +5,18 @@ import std/strutils
 import std/strformat
 import std/tables
 import std/terminal
-import std/times
 
+when NimMajor == 2:
+  import checksums/md5
+elif NimMajor == 1:
+  import std/md5
 
 let
   sleepTime = 2
   currentDir = getCurrentDir()
 
 var
-  files: Table[string, Time]
+  fileList: Table[string, string] # path, hash
   isModified = false
   p: Process
   pid = 0
@@ -73,25 +76,25 @@ proc serve*(port=8000, force=false, httpbeast=false, httpx=false) =
     sleep sleepTime * 1000
     for f in walkDirRec(currentDir, {pcFile}):
       if f.find(re"(\.nim|\.nims|\.html)$") > -1:
-        var modTime: Time
+        var fileHash: string
         try:
-          modTime = getFileInfo(f).lastWriteTime
+          fileHash = readFile(f).getMD5()
         except:
           # file is deleted
-          files.del(f)
+          fileList.del(f)
           isModified = true
-          break
+          continue
 
-        if not files.hasKey(f):
-          files[f] = modTime
+        if not fileList.hasKey(f):
+          fileList[f] = fileHash
           # debugEcho &"Skip {f} because of first checking"
           continue
-        if files[f] == modTime:
+        if fileList[f] == fileHash:
           # debugEcho &"Skip {f} because of the file has not modified"
           continue
         # modified
         isModified = true
-        files[f] = modTime
+        fileList = initTable[string, string]()
         break
 
     if isModified:

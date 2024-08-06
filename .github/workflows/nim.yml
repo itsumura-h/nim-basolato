@@ -42,7 +42,7 @@ jobs:
     - name: Test
       run: |
         docker compose -f compose.test.yaml up -d
-        docker compose -f compose.test.yaml run basolato-test-ubuntu sh runTest.sh
+        docker compose -f compose.test.yaml run basolato-test-ubuntu bash runTest.sh
 
 
   # test-on-docker:
