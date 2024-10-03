@@ -9,5 +9,8 @@ proc headLayout*(model:HeadLayoutModel):Component =
       <meta charset="UTF-8">
       <title>$(model.title)</title>
       <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+      <script type="module">
+        import hotwiredTurbo from "https://cdn.skypack.dev/@hotwired/turbo@7";
+      </script>
     </head>
   """

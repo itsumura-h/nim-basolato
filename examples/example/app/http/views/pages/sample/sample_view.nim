@@ -1,12 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="https://unpkg.com/mvp.css">
-  </head>
-  <body>
+import ../../../../../../../src/basolato/view
+
+proc sampleView*():Component =
+  tmpl"""
     <main>
       <article>
         <h2>Examples</h2>
@@ -28,5 +23,4 @@
         <p><a href="/sample/web-socket">web socket</a></p>
       </article>
     </main>
-  </body>
-</html>
+  """

@@ -8,6 +8,7 @@ import ../../../../../src/basolato/controller
 import ../../../../../src/basolato/web_socket
 # views
 import ../views/pages/welcome/welcome_page
+import ../views/pages/sample/sample_view
 import ../views/pages/with_style/with_style_page
 import ../views/pages/babylon_js/babylon_js_page
 # import ../views/pages/sample/web_socket_view
@@ -17,10 +18,14 @@ import ../views/presenters/app_presenter
 import ../views/layouts/app/app_layout
 
 
-
 proc index*(context:Context):Future[Response] {.async.} =
-  let index = asyncHtml("pages/sample/index.html").await
-  return render(index)
+  const title = "Sample index"
+  let appPresenter = AppPresenter.new()
+  let appLayoutModel = appPresenter.invoke(title)
+
+  let page = sampleView()
+  let view = appLayout(appLayoutModel, page)
+  return render(view)
 
 
 proc welcome*(context:Context):Future[Response] {.async.} =
@@ -80,14 +85,27 @@ proc customHeaders*(context:Context):Future[Response] {.async.} =
 
 
 proc presentDd*(context:Context):Future[Response] {.async.} =
+  const msg = """
+proc customHeaders*(context:Context):Future[Response] {.async.} =
+  var header = newHttpHeaders()
+  header.add("Custom-Header-Key1", "Custom-Header-Val1")
+  header.add("Custom-Header-Key1", "Custom-Header-Val2")
+  header.add("Custom-Header-Key2", ["val1", "val2", "val3"])
+  header.add("set-header-test", "aaaa")
+  return render("with header", header)
+"""
+
   let a = %*{
     "key1": "value1",
     "key2": "value2",
     "key3": "value3",
     "key4": "value4"
   }
+
   let b = @[1,2,3]
+
   dd(
+    msg,
     a,
     b,
     "abc",
