@@ -67,6 +67,17 @@ proc view():Component =
   """
 ```
 
+### エスケープしないで変数を表示する
+`$(msg|raw)`を使うことで、エスケープしないで変数を表示することができます。
+
+```nim
+proc view():Component =
+  let msg = "<p>Hello</p>"
+  tmpl"""
+    <div>$(msg|raw)</div>
+  """
+```
+
 ### 関数呼び出し
 `$()`は関数も呼ぶことができます
 

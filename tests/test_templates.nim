@@ -158,6 +158,17 @@ suite("parseTemplate"):
     check $res == "<p>Hello, world!</p>"
 
 
+  test("display nim variable without escape"):
+    let msg = "<p>Hello, world!</p>"
+    proc view():Component =
+      tmpl"""
+        <div>$(msg|raw)</div>
+      """
+    let res = view()
+    echo res
+    check $res == "<div><p>Hello, world!</p></div>"
+
+
   test("call nim funcion"):
     proc fn():string = return "hello func"
     proc view():Component =
