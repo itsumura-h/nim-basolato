@@ -21,6 +21,6 @@ proc errorPage*(status:HttpCode, msg:string):string =
       let errorPageView = open(path, fmRead).readAll()
       return errorPageView
     except:
-      return $originalErrorPage(status, msg)
+      return $(originalErrorPage(status, msg))
   else:
     return $originalErrorPage(status, msg)

@@ -1,51 +1,47 @@
 #? stdtmpl | standard
-#import std/strutils
 #import ../base
 #proc ddPage*(msg:string): string =
-  <html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-      <title>Basolato Display Valiable Page</title>
-      <script type="module" src="https://unpkg.com/@hotwired/turbo@8.0.5/dist/turbo.es2017-esm.js"></script>
-      <link rel="stylesheet", href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/styles/ir-black.min.css"/>
-      <script src="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/highlight.min.js"></script>
-      <style>
-        body {
-          max-height: 100vh;
-        }
-        .wrap {
-          min-height: calc(100vh - 62px);
-          position: relative;/*←相対位置*/
-          padding-bottom: 62px;/*←footerの高さ*/
-          box-sizing: border-box;/*←全て含めてmin-height:100vhに*/
-        }
-        footer {
-          width: 100%;
-          position: absolute;/*←絶対位置*/
-          bottom: 0; /*下に固定*/
-        }
-        pre {
-          /* 62px + 13(margin of pre) + 8(margin of body)*2 + 1 */
-          height: calc(100vh - 92px);
-        }
-        code {
-          height: 100%;
-          overflow: auto;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="wrap">
-        <pre><code class="nimrod">${msg.indent(2)}</code></pre>
-        <footer>
-          <hr>
-          <p style="text-align: center;">👑Nim ${NimVersion} ⬟Basolato ${BasolatoVersion}</p>
-        </footer>
+  <body>
+    <link rel="stylesheet", href="https://unpkg.com/prismjs@1.29.0/themes/prism-okaidia.min.css"/>
+
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+      }
+      
+      .wrap {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      
+      pre {
+        flex-grow: 1;
+        overflow-y: auto;
+        margin: 0;
+      }
+      
+      .footer {
+        height: 64px;
+        flex-shrink: 0;
+      }
+      
+      code {
+        display: block;
+        padding: 16px;
+        white-space: pre-wrap;
+      }
+    </style>
+
+    <div class="wrap">
+      <pre><code class="language-nim">${msg}</code></pre>
+      <div class="footer">
+        <hr>
+        <p style="text-align: center;">👑Nim ${NimVersion} ⬟Basolato ${BasolatoVersion}</p>
       </div>
-      <script>
-        hljs.initHighlightingOnLoad();
-        document.addEventListener('turbolinks:load', () => {
-          document.querySelectorAll('pre>code').forEach(block => hljs.highlightBlock(block));
-        });
-      </script>
-    </body>
-  </html>
+    </div>
+
+    <script src="https://unpkg.com/prismjs@1.29.0/components/prism-core.min.js"></script>
+    <script src="https://unpkg.com/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  </body>

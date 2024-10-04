@@ -72,10 +72,7 @@ proc serveCore(arg:ServeCoreArg){.async.} =
       var headers = newHttpHeaders()
       let msg = getCurrentExceptionMsg()
       let status = Http500
-      response = Response.new(status, errorPage(status, msg), headers)
-      let userAgent = req.headers["User-Agent"]
-      echoErrorMsg(&"{$response.status}  {$req.httpMethod}  {req.path}  {req.hostname}  {userAgent}")
-      echoErrorMsg(msg)
+      response = Response.new(status, msg, headers)
 
     if response.status.is4xx:
       var headers = newHttpHeaders()
@@ -88,6 +85,7 @@ proc serveCore(arg:ServeCoreArg){.async.} =
       headers["content-type"] = "text/html; charset=utf-8"
       let userAgent = req.headers["User-Agent"]
       echoErrorMsg(&"{$response.status}  {$req.httpMethod}  {req.path}  {req.hostname}  {userAgent}")
+      echoErrorMsg(response.body)
       response = Response.new(response.status, errorPage(response.status, response.body), headers)
     elif response.status == HttpCode(0):
       var headers = newHttpHeaders()

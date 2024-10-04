@@ -31,14 +31,13 @@ jobs:
     strategy:
       matrix:
         nim-version:
-          - 1.6.12
           - 1.6.20
-          - 2.0.0
-          - 2.0.6
+          - 2.0.10
+          - 2.2.0
     steps:
     - uses: actions/checkout@v2
     - name: Build docker image
-      run: docker compose -f compose.test.yaml build --build-arg VERSION=${{ matrix.nim-version }}
+      run: docker compose -f compose.test.yaml build --build-arg NIM_VERSION=${{ matrix.nim-version }}
     - name: Test
       run: |
         docker compose -f compose.test.yaml up -d
