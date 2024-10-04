@@ -68,6 +68,16 @@ proc view():Component =
   """
 ```
 
+### call variable without escape
+`$(msg|raw)` can display variable without escape.
+
+```nim
+proc view():Component =
+  let msg = "<p>Hello</p>"
+  tmpl"""
+    <div>$(msg|raw)</div>
+  """
+```
 
 ### call function
 `$()` can call function too.

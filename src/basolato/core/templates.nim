@@ -330,7 +330,13 @@ macro tmpl*(html: untyped): untyped =
     of displayVariableBlock:
       var (resPoint, resStr) = findNimVariableBlock(html, point)
       resStr = resStr.strip()
-      resStr = &"result.add(toString(({resStr})))"
+
+      if resStr.endsWith("|raw"):
+        let varName = resStr.split("|")[0].strip()
+        resStr = &"result.add(({varName}))"
+      else:
+        resStr = &"result.add(toString(({resStr})))"
+
       resStr = reindent(resStr, indentLevel)
       body.add(resStr & "\n")
       point = resPoint
