@@ -5,13 +5,13 @@ proc sampleView*():Component =
     <main>
       <article>
         <h2>Examples</h2>
-        <p><a href="/sample/welcome">welcome</a></p>
+        <p><a href="/sample/welcome" data-turbo="false">welcome</a></p>
         <p><a href="/sample/fib/30">fib</a></p>
         <p><a href="/sample/with-style">with style</a></p>
-        <p><a href="/sample/babylon-js">Babylon.js</a></p>
+        <p><a href="/sample/babylon-js" data-turbo="false">Babylon.js</a></p>
         <p><a href="/sample/api">API sample</a></p>
         <p><a href="/sample/custom-headers">with Custom Headers</a></p>
-        <p><a href="/sample/dd">dd</a></p>
+        <p><a href="/sample/dd" data-turbo="false">dd</a></p>
         <p><a href="/sample/error/1">error page</a></p>
         <p><a href="/sample/error-redirect/1">error redirect</a></p>
         <p><a href="/sample/error-redirect/2">error not redirect</a></p>

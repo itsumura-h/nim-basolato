@@ -121,6 +121,7 @@ proc errorPage*(context:Context):Future[Response] {.async.} =
     return render(Http400, "Displaying error page")
   return render($id)
 
+
 proc errorRedirect*(context:Context):Future[Response] {.async.} =
   let id = context.params.getInt("id")
   if id mod 2 == 1:
@@ -162,6 +163,7 @@ proc webSocket*(context:Context):Future[Response] {.async.} =
   except WebSocketError:
     echo "Unexpected socket error: ", getCurrentExceptionMsg()
   return render("")
+
 
 proc displayApiPage*(context:Context):Future[Response] {.async.} =
   let view = apiViewPage()
