@@ -6,7 +6,7 @@ services:
   basolato-test-ubuntu:
     build:
       context: .
-      dockerfile: ./docker/nim/ubuntu/Dockerfile
+      dockerfile: ./docker/nim/ubuntu/test.Dockerfile
       args:
         VERSION: 2.0.0
     tty: true
