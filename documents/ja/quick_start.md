@@ -53,7 +53,7 @@ Options:
   -h, --help                  print this cligen-erated help
   --help-syntax               advanced: prepend,plurals,..
   --version      bool  false  print version
-  -p=, --port=   int   5000   set port
+  -p=, --port=   int   8000   set port
 ```
 ```sh
 ducere serve -p=8000

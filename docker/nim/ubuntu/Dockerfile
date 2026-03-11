@@ -14,6 +14,8 @@ RUN apt install -y \
       ca-certificates \
       # for nim regex
       libpcre3-dev \
+      # for benchmark test
+      wrk \
       vim \
       curl \
       git \

@@ -64,7 +64,7 @@ Options:
   -h, --help                  print this cligen-erated help
   --help-syntax               advanced: prepend,plurals,..
   --version      bool  false  print version
-  -p=, --port=   int   5000   set port
+  -p=, --port=   int   8000   set port
   -f, --force    bool  false  set force
   --httpbeast    bool  false  set httpbeast
   --httpx        bool  false  set httpx
@@ -73,7 +73,7 @@ Options:
 ```sh
 ducere serve
 ```
-The default port is 5000. If you want to change it, specify with option `-p`
+The default port is 8000. If you want to change it, specify with option `-p`
 
 ```sh
 ducere serve -p:8000
@@ -101,7 +101,7 @@ Options:
   -h, --help                           print this cligen-erated help
   --help-syntax                        advanced: prepend,plurals,..
   --version          bool    false     print version
-  -p=, --port=       int     5000      set port
+  -p=, --port=       int     8000      set port
   -w=, --workers=    uint    0         set workers
   -f, --force        bool    false     set force
   --httpbeast        bool    false     set httpbeast
@@ -109,7 +109,7 @@ Options:
   -a, --autoRestart  bool    false     set autoRestart
   -o=, --optimize=   string  "memory"  memory|speed
 ```
-By default, it will be compiled to run 5000 port and single threadand and multiple processing.  
+By default, it will be compiled to run port 8000 with single-thread and multi-process settings.  
 When you build application, shell script file named `startServer.sh` is generated. Run this file to start server.
 
 ```sh

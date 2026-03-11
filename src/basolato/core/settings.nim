@@ -64,6 +64,7 @@ for f in walkDir(getCurrentDir()):
 type Settings* = object
   host*:string
   port*:int
+  numThreads*:int
   # Logging
   logToConsole*:bool
   logToFile*:bool
@@ -79,6 +80,7 @@ proc new*(
   _:type Settings,
   host:string = "127.0.0.1",
   port:int = 8000,
+  numThreads:int = 1,
   logToConsole:bool = true,
   logToFile:bool = false,
   errorLogToFile:bool = false,
@@ -109,6 +111,7 @@ proc new*(
   return Settings(
     host:host,
     port:port,
+    numThreads:numThreads,
     logToConsole:logToConsole,
     logToFile:logToFile,
     errorLogToFile:errorLogToFile,

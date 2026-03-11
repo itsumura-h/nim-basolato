@@ -8,7 +8,10 @@ from std/tables import toTable
 proc jsBuild() =
   for f in walkDirRec(getCurrentDir(), {pcFile}):
     if f.contains("_script.nim"):
-      let jsFilePath = f.split(".")[0..^2].join(".")
+      let parts = f.split(".")
+      if parts.len < 2:
+        continue
+      let jsFilePath = parts[0..^2].join(".")
       let cmd = &"nim js -d:nimExperimentalAsyncjsThen -d:release -o:{jsFilePath}.js {f}"
       echo cmd
       if execCmd(cmd) > 0:
@@ -33,10 +36,8 @@ proc build*(workers:uint=0, force=false, httpbeast=false, httpx=false, autoResta
     else:
       "--mm:orc -d:useMalloc"
 
-  try:
+  if args.len > 0:
     outputFileName = args[0]
-  except:
-    discard
 
   var cmd = &"""
     nim c \

@@ -59,7 +59,7 @@ Options:
   -h, --help                  print this cligen-erated help
   --help-syntax               advanced: prepend,plurals,..
   --version      bool  false  print version
-  -p=, --port=   int   5000   set port
+  -p=, --port=   int   8000   set port
   -f, --force    bool  false  set force
   --httpbeast    bool  false  set httpbeast
   --httpx        bool  false  set httpx
@@ -70,7 +70,7 @@ Options:
 ducere serve
 ```
 
-デフォルトでは5000番ポートで起動します。`-p`のオプションを付けることで起動ポートを変更できます。
+デフォルトでは8000番ポートで起動します。`-p`のオプションを付けることで起動ポートを変更できます。
 ```sh
 ducere serve -p:8000
 ```
@@ -96,7 +96,7 @@ Options:
   -h, --help                           print this cligen-erated help
   --help-syntax                        advanced: prepend,plurals,..
   --version          bool    false     print version
-  -p=, --port=       int     5000      set port
+  -p=, --port=       int     8000      set port
   -w=, --workers=    uint    0         set workers
   -f, --force        bool    false     set force
   --httpbeast        bool    false     set httpbeast
@@ -104,7 +104,7 @@ Options:
   -a, --autoRestart  bool    false     set autoRestart
   -o=, --optimize=   string  "memory"  memory|speed
 ```
-何もオプションを付けない場合、5000番ポートを使い、シングルスレッド・マルチプロセスで起動します。  
+何もオプションを付けない場合、8000番ポートを使い、シングルスレッド・マルチプロセスで起動します。  
 ビルドすると`startServer.sh`というシェルスクリプトが作られるので、これを実行することでサーバーを起動します。
 
 ```sh
@@ -122,7 +122,7 @@ ducere build
 > Basolato based on asynchttpserver listening on 0.0.0.0:8000
 ```
 
-デフォルトでは5000番ポートで起動します。`-p`のオプションを付けることで起動ポートを変更できます。
+デフォルトでは8000番ポートで起動します。`-p`のオプションを付けることで起動ポートを変更できます。
 ```sh
 ducere build -p:8000
 ```

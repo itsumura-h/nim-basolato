@@ -45,7 +45,7 @@ proc serve*(seqRoutes:seq[Routes], settings:Settings) =
         # check path match with controller routing → run middleware → run controller
         let routeMatch = routes.matchRoute(req.httpMethod, req.path)
         if not routeMatch.route.isNil:
-          response = createResponse(req, routeMatch.route, req.httpMethod, routeMatch.pathParams).waitFor
+          response = createResponse(req, routeMatch.route, req.httpMethod, routeMatch.pathParams).await
 
         if req.httpMethod == HttpHead:
           response.setBody("")
@@ -118,7 +118,7 @@ proc serve*(seqRoutes:seq[Routes], settings:Settings) =
 
   let HOST_ADDR = settings.host
   let PORT_NUM = settings.port
-  let settings = initSettings(port=Port(PORT_NUM), bindAddr=HOST_ADDR)
+  let settings = initSettings(port=Port(PORT_NUM), bindAddr=HOST_ADDR, numThreads=settings.numThreads)
   let libStr = when defined(httpbeast): "httpbeast" elif defined(httpx): "httpx" else: ""
   echo(&"Basolato based on {libStr} listening on {HOST_ADDR}:{PORT_NUM}")
   run(cd, settings)
