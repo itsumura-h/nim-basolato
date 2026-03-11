@@ -176,7 +176,7 @@ proc index(context:Context, params:Params):Future[Response] {.async.} =
   let password = params.getStr("password")
   let userId = newLoginUsecase().login(email, password)
   await context.login()
-  await context.set("id", $userId)
+  await context.session.set("id", $userId)
   return redirect("/")
 ```
 
@@ -191,14 +191,14 @@ proc index(context:Context, params:Params):Future[Response] {.async.} =
 セッションから値を取得する
 ```nim
 proc index(context:Context, params:Params):Future[Response] {.async.} =
-  let loginName = await context.get("login_name")
+  let loginName = await context.session.get("login_name")
 ```
 
 セッションに値を保存する
 ```nim
 proc index(context:Context, params:Params):Future[Response] {.async.} =
   let name = params.getStr("name")
-  await context.set("login_name", name)
+  await context.session.set("login_name", name)
   return render("auth")
 ```
 
@@ -206,21 +206,21 @@ proc index(context:Context, params:Params):Future[Response] {.async.} =
 ```nim
 proc index(context:Context, params:Params):Future[Response] {.async.} =
   var loginName:string
-  if await context.some("login_name"):
-    loginName = await context.get("login_name")
+  if await context.session.isSome("login_name"):
+    loginName = await context.session.get("login_name")
 ```
 
 セッションの1つの値を削除する
 ```nim
 proc destroy(context:Context, params:Params):Future[Response] {.async.} =
-  await context.delete("login_name")
+  await context.session.delete("login_name")
   return render("auth")
 ```
 
 クライアントに紐付いた全てのセッションデータを削除する
 ```nim
 proc destroy(context:Context, params:Params):Future[Response] {.async.} =
-  await context.destroy()
+  await context.session.destroy()
   return render("auth")
 ```
 

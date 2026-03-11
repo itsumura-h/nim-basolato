@@ -30,12 +30,12 @@ proc store*(context:Context):Future[Response] {.async.} =
   let name = context.params.getStr("name")
   let password = context.params.getStr("password")
   # client
-  context.set("name", name).await
+  context.session.set("name", name).await
   context.login().await
   return redirect("/sample/login")
 
 
 proc destroy*(context:Context):Future[Response] {.async.} =
   await context.logout()
-  await context.delete("name")
+  await context.session.delete("name")
   return redirect("/sample/login")
