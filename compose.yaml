@@ -37,7 +37,7 @@ services:
   #     context: .
   #     dockerfile: ./docker/nim/debian/Dockerfile
   #     args:
-  #       VERSION: 1.6.10
+  #       VERSION: 2.0.0
   #   tty: true
   #   ports:
   #     - 9000:8000
@@ -49,7 +49,7 @@ services:
   #     context: .
   #     dockerfile:./docker/nim/centos
   #     args:
-  #       VERSION: 1.6.8
+  #       VERSION: 2.0.0
   #   tty: true
   #   privileged: true
   #   ports:
@@ -62,7 +62,7 @@ services:
   #     context: .
   #     dockerfile: ./docker/frontend/Dockerfile
   #     args:
-  #       VERSION: 1.6.8
+  #       VERSION: 2.0.0
   #   tty: true
   #   ports:
   #     - 3000:3000

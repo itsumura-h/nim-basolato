@@ -6,10 +6,7 @@ import std/strformat
 import std/tables
 import std/terminal
 
-when NimMajor == 2:
-  import checksums/md5
-elif NimMajor == 1:
-  import std/md5
+import checksums/md5
 
 let
   sleepTime = 2

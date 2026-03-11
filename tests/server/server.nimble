@@ -11,7 +11,7 @@ backend       = "c"
 
 # Dependencies
 
-requires "nim >= 1.2.0"
+requires "nim >= 2.0.0"
 requires "basolato >= 0.4.0"
 requires "cligen >= 0.9.41"
 requires "bcrypt >= 0.2.1"
