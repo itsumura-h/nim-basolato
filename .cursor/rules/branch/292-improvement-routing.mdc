@@ -124,4 +124,5 @@ alwaysApply: false
 - 旧探索 API の `isMatchUrl` / `getUrlParams` は `request.nim` / `params.nim` から削除し、探索責務を matcher に集約した。
 - 回帰検証は `tests/test_route_matcher.nim` へ集約し、静的一致・動的一致・型不一致・query付きパス・静的優先・`HEAD`/`OPTIONS` 補完・`group()` prefix をカバーした。旧 `tests/test_url.nim` は削除した。
 - `src/basolato/core/libservers/std/request.nim` に残っていた旧 URL マッチ/URL パラメータ関連のコメント断片も整理し、削除済み API が再参照されない状態へ揃えた。
+- `src/basolato/core/view.nim` から `request` の再 export を外し、View 層へ `request.Params` が混入しない構造に修正した（`httpx` での `Params.new()` 曖昧解決エラーの根本原因を除去）。
 - 互換性検証として `std` と `httpbeast` それぞれで `tests/server/main.nim` のコンパイルを通し、両サーバーで同一 matcher API が利用可能であることを確認した。
