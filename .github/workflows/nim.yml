@@ -31,9 +31,8 @@ jobs:
     strategy:
       matrix:
         nim-version:
-          - 1.6.20
-          - 2.0.10
-          - 2.2.0
+          - 2.0.16
+          - 2.2.8
     steps:
     - uses: actions/checkout@v2
     - name: Build docker image
@@ -50,7 +49,6 @@ jobs:
   #   strategy:
   #     matrix:
   #       nim-version:
-  #         - 1.6.16
   #         - 2.0.0
 
   #   steps:

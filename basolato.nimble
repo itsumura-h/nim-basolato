@@ -13,7 +13,7 @@ skipDirs      = @["basolato/cli"]
 
 # Dependencies
 
-requires "nim >= 1.6.12"
+requires "nim >= 2.0.0"
 requires "allographer >= 0.31.0"
 requires "interface_implements >= 0.2.2"
 requires "httpbeast >= 0.4.1"
@@ -23,10 +23,7 @@ requires "cligen >= 1.5.9"
 requires "redis >= 0.3.0"
 requires "sass >= 0.1.0"
 requires "nimcrypto == 0.6.0"
-
-when NimMajor == 2:
-  requires "checksums >= 0.1.0"
-
+requires "checksums >= 0.1.0"
 
 import strformat, os
 

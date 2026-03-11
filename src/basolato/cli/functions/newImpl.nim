@@ -54,7 +54,7 @@ srcDir        = "."
 bin           = @["main"]
 backend       = "c"
 # Dependencies
-requires "nim >= {NimVersion}"
+requires "nim >= 2.0.0"
 requires "https://github.com/itsumura-h/nim-basolato >= {BasolatoVersion}"
 requires "allographer >= 0.21.0"
 requires "interface_implements >= 0.2.2"
@@ -70,10 +70,11 @@ task test, "run testament":
       f.write(nimble)
 
     let test = """
-import unittest
+import std/unittest
 
-block sampleTest:
-  check true
+suite("sample"):
+  test("sample test"):
+    check true
 """
     block:
       let f = open(&"{dirPath}/tests/test_sample.nim", fmWrite)

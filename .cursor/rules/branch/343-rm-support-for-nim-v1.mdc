@@ -1,0 +1,78 @@
+---
+description: 343-rm-support-for-nim-v1ブランチでの開発時に読み込む
+alwaysApply: false
+---
+Nim v1 サポート削除
+===
+
+このブランチで実装することは以下の通りです。
+- Basolato 本体から Nim v1 系との互換維持コードを削除し、サポート対象を Nim v2 系へ限定する。
+- `.nimble` と生成テンプレートの最低対応バージョンを Nim v2 系へ引き上げる。
+- GitHub Actions のテスト行列から Nim 1.6 系を外し、Nim v2 系だけを検証対象に整理する。
+- 今回は実装前の調査を先に固定し、削除対象と影響範囲を明文化してから作業に入る。
+
+## 進捗
+- [x] プロジェクトルール・ブランチルール雛形を確認
+- [x] 現在ブランチに対応するルールファイルを新規作成
+- [x] Nim v1 サポート箇所を実装コードと GitHub Actions から調査
+- [x] Nim v1 互換コードの削除
+- [x] `.nimble` とテンプレートの最低バージョン更新
+- [x] GitHub Actions の Nim 1 系ジョブ定義削除
+- [x] 関連ドキュメントと補助設定の整合確認
+
+## 参考資料
+- `.cursor/rules/project.mdc`
+- `.cursor/rules/branch.mdc`
+- `.github/workflows/nim.yml`
+- `basolato.nimble`
+- `src/basolato/cli/functions/serveImpl.nim`
+- `src/basolato/cli/functions/newImpl.nim`
+- `examples/example/example.nimble`
+- `examples/benchmark/web-frameworks/basolato/basolato.nimble`
+- `tests/server/server.nimble`
+- `compose.test.yaml`
+
+## 調査結果・設計まとめ
+
+### 方針
+- このブランチでは「Nim v1 でも動くように分岐しているコード」と「Nim v1 をサポート対象として示している設定」を削除対象にする。
+- 主対象は実装コードと GitHub Actions であり、Docker 補助ファイルや README の旧記述は関連確認項目として扱う。
+- 最低対応バージョンは既存の CI 行列とサンプルの現状から、少なくとも Nim `2.0.x` 以上へ統一する前提で整理する。
+
+### 実装コードで削除すべき箇所
+- `src/basolato/cli/functions/serveImpl.nim`
+  - `when NimMajor == 2: import checksums/md5`
+  - `elif NimMajor == 1: import std/md5`
+  - Nim v1 向け分岐を削除し、Nim v2 前提の import に一本化する。
+- `basolato.nimble`
+  - `requires "nim >= 1.6.12"`
+  - `when NimMajor == 2: requires "checksums >= 0.1.0"`
+  - Nim v1 を許容する下限指定と、NimMajor 条件付き依存を削除し、Nim v2 前提の依存宣言へ整理する。
+- `src/basolato/cli/functions/newImpl.nim`
+  - 生成する nimble テンプレートの `requires "nim >= {NimVersion}"` は、生成時に Nim v1 系が書き出されないよう、Nim v2 下限を前提に見直す必要がある。
+- `examples/example/example.nimble`
+  - `requires "nim >= 1.6.2"`
+- `examples/benchmark/web-frameworks/basolato/basolato.nimble`
+  - `requires "nim >= 1.6.4"`
+- `tests/server/server.nimble`
+  - `requires "nim >= 1.2.0"`
+  - これらは Nim v1 サポートを示すため、Nim v2 系へ更新対象とする。
+
+### GitHub Actions で削除すべき箇所
+- `.github/workflows/nim.yml`
+  - `matrix.nim-version` 内の `1.6.20`
+  - コメントアウトされた旧行列内の `1.6.16`
+  - Nim 1 系をサポート対象として残す記述なので削除対象とする。
+
+### 関連確認が必要な箇所
+- `compose.test.yaml`
+  - 現在は `NIM_VERSION: 2.0.0` で Nim v2 前提。Actions 側の行列整理後も齟齬がないか確認する。
+- `README.md`
+  - Docker サンプルは `ARG VERSION="2.0.0"` で Nim v2 前提になっている。サポートポリシーの説明が Nim v2 限定に揃っているか確認する。
+- `compose.yaml`
+  - コメントアウトされた旧 Docker 例に `1.6.10`, `1.6.8` が残っているため、補助資料として後続で整理候補に含める。
+- `docker/nim/alpine/Dockerfile`
+  - `ARG IMAGE_TAG="1.6.8-alpine-regular"` が残っている。
+- `docker/nim/centos/Dockerfile`
+  - `ARG VERSION="1.6.8"` が残っている。
+  - これらは GitHub Actions ではないが、Nim v1 を使う補助環境として残っているため、実装着手時に削除または v2 へ更新するか判断が必要。
