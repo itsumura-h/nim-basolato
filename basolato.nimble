@@ -14,6 +14,7 @@ skipDirs      = @["basolato/cli"]
 # Dependencies
 
 requires "nim >= 1.6.12"
+requires "allographer >= 0.31.0"
 requires "interface_implements >= 0.2.2"
 requires "httpbeast >= 0.4.1"
 requires "httpx >= 0.3.0"

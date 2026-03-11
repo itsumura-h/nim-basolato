@@ -25,12 +25,12 @@ services:
       context: .
       dockerfile: ./docker/nim/ubuntu/Dockerfile
       args:
-        NIM_VERSION: 2.2.0
+        NIM_VERSION: 2.2.8
     tty: true
     ports:
       - 8000:8000
     volumes:
-      - .:/root/project
+      - .:/application
 
   # app-debian:
   #   build:
