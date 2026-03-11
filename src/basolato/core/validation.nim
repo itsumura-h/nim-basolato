@@ -142,7 +142,10 @@ proc date(value:string):bool =
   try:
     if value[0] == '-':
       raise newException(Exception, "")
-    discard value.parseBiggestUInt.int.fromUnix
+    let u = value.parseBiggestUInt
+    if u > int.high.uint64:
+      return false
+    discard u.int.fromUnix
     return true
   except:
     return false

@@ -1,8 +1,8 @@
 discard """
-  cmd: "nim c -d:test --putenv:SESSION_TYPE=redis --putenv:SESSION_DB_PATH=redis:6379 $file"
+  cmd: "nim c -d:test --putenv:SESSION_TYPE=redis --putenv:REDIS_HOST=redis --putenv:REDIS_PORT=6379 $file"
 """
 
-# nim c -r -d:test --putenv:SESSION_TYPE=redis --putenv:SESSION_DB_PATH=redis:6379 ./security/test_redis_session_db.nim
+# nim c -r -d:test --putenv:SESSION_TYPE=redis --putenv:REDIS_HOST=redis --putenv:REDIS_PORT=6379 ./security/test_redis_session_db.nim
 
 import std/unittest
 import std/asyncdispatch
@@ -57,3 +57,13 @@ suite("redis session db"):
     session.destroy().waitFor()
     check session.isSome("str").waitFor() == false
     token = session.getToken().waitFor()
+
+  test("getRows safely builds JSON when values contain quotes and backslash"):
+    var session = RedisSessionDb.new(token).waitFor().toInterface()
+    session.setStr("key1", "val\"ue").waitFor()
+    session.setStr("key2", "a\\b").waitFor()
+    session.setJson("key3", %*{"nested": true}).waitFor()
+    let rows = session.getRows().waitFor()
+    check rows["key1"].getStr == "val\"ue"
+    check rows["key2"].getStr == "a\\b"
+    check rows["key3"]["nested"].getBool == true

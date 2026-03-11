@@ -47,7 +47,9 @@ DB_TIMEOUT=30 # secounds
 
 # Session db
 # Session type, file or redis, is defined in config.nims
-SESSION_DB_PATH="{currentDir}/session.db" # Session file path or redis host:port. ex:"127.0.0.1:6379"
+SESSION_DB_PATH="{currentDir}/session.db" # Session file path (file type only)
+REDIS_HOST="127.0.0.1"   # Redis host (when SESSION_TYPE=redis)
+REDIS_PORT="6379"        # Redis port (when SESSION_TYPE=redis)
 
 COOKIE_DOMAINS="" # to specify multiple domains, "sample.com, sample.org"
 """
@@ -68,7 +70,9 @@ DB_TIMEOUT=30 # secounds
 
 # Session db
 # Session type, file or redis, is defined in config.nims
-SESSION_DB_PATH="" # Session file path or redis host:port. ex:"127.0.0.1:6379"
+SESSION_DB_PATH="" # Session file path (file type only)
+REDIS_HOST="127.0.0.1"   # Redis host (when SESSION_TYPE=redis)
+REDIS_PORT="6379"        # Redis port (when SESSION_TYPE=redis)
 
 COOKIE_DOMAINS="" # to specify multiple domains, "sample.com, sample.org"
 """

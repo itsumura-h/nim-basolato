@@ -1,6 +1,7 @@
 discard """
   cmd: "nim c -d:test $file"
 """
+# nim c -r -d:test ./test_validation.nim
 
 import std/unittest
 import std/times

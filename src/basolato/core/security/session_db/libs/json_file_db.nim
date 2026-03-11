@@ -1,3 +1,4 @@
+## JSON ファイル永続化。search/sync/destroy は O(n)。本番・大規模では Redis を推奨。
 import std/asyncdispatch
 import std/asyncfile
 import std/json
@@ -63,7 +64,7 @@ proc search*(_:type JsonFileDb, key, value:string):Future[JsonFileDb] {.async.} 
     file = openAsync(SESSION_DB_PATH, fmRead)
     var content = file.readAll().await.splitLines()
     for i, row in content[0..^2]:
-      let jsonRow = content[i].parseJson()
+      let jsonRow = row.parseJson()
       if jsonRow.hasKey(key) and jsonRow[key].getStr() == value:
         let id = jsonRow["_id"].getStr()
         return JsonFileDb(id:id, row:jsonRow)

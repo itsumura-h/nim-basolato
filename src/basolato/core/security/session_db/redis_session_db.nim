@@ -2,7 +2,6 @@ import std/asyncdispatch
 import std/httpcore
 import std/json
 import std/strutils
-import std/strformat
 import std/times
 import std/os
 import redis
@@ -15,14 +14,15 @@ type RedisSessionDb* = object
   conn:AsyncRedis
   id: string
 
-let REDIS_IP = SESSION_DB_PATH.split(":")[0]
-let REDIS_PORT = SESSION_DB_PATH.split(":")[1].parseInt
+var checkConn: AsyncRedis = nil
 
+proc getCheckConn(): Future[AsyncRedis] {.async.} =
+  if checkConn.isNil:
+    checkConn = openAsync(REDIS_HOST, Port(REDIS_PORT)).await
+  return checkConn
 
 proc checkSessionIdValid*(_:type RedisSessionDb, sessionId=""):Future[bool] {.async.} =
-  let conn = openAsync(REDIS_IP, Port(REDIS_PORT)).await
-  defer: conn.quit().await
-
+  let conn = await getCheckConn()
   if conn.exists(sessionId).await:
     return true
   else:
@@ -56,23 +56,19 @@ proc getJson(self:RedisSessionDb, key:string):Future[JsonNode] {.async.} =
 
 proc getRows(self:RedisSessionDb):Future[JsonNode] {.async.} =
   let rows = self.conn.hGetAll(self.id).await
-  # list to JsonNode
-  var str = "{"
-  for i, val in rows:
-    if i == 0 or i mod 2 == 0:
-      str.add(&"\"{val}\":")
-    elif rows.len-1 != i:
-      if val.contains("{") or val.contains("["):
-        str.add(&"{val}, ")
-      else:
-        str.add(&"\"{val}\", ")
+  result = newJObject()
+  var i = 0
+  while i < rows.len:
+    let key = rows[i]
+    let val = rows[i+1]
+    if val.startsWith("{") or val.startsWith("["):
+      try:
+        result[key] = val.parseJson
+      except Exception:
+        result[key] = %val
     else:
-      if val.contains("{") or val.contains("["):
-        str.add(&"{val}")
-      else:
-        str.add(&"\"{val}\"")
-  str.add("}")
-  return str.parseJson
+      result[key] = %val
+    i += 2
 
 
 proc delete(self:RedisSessionDb, key:string):Future[void] {.async.} =
@@ -92,7 +88,7 @@ proc new*(_:type RedisSessionDb, sessionId=""):Future[RedisSessionDb] {.async.} 
     else:
       sessionId
 
-  let conn = openAsync(REDIS_IP, Port(REDIS_PORT)).await
+  let conn = openAsync(REDIS_HOST, Port(REDIS_PORT)).await
   let sessionDb = RedisSessionDb(
     conn:conn,
     id:id,
