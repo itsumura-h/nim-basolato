@@ -45,7 +45,7 @@ proc serve*(seqRoutes:seq[Routes], settings:Settings) =
         # check path match with controller routing → run middleware → run controller
         let routeMatch = routes.matchRoute(req.httpMethod, req.path)
         if not routeMatch.route.isNil:
-          response = createResponse(req, routeMatch.route, req.httpMethod, routeMatch.pathParams).waitFor
+          response = createResponse(req, routeMatch.route, req.httpMethod, routeMatch.pathParams).await
 
         if req.httpMethod == HttpHead:
           response.setBody("")

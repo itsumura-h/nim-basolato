@@ -76,7 +76,7 @@ proc fortune*(context:Context):Future[Response] {.async.} =
 proc update*(context:Context):Future[Response] {.async.} =
   var countNum =
     try:
-      params.getInt("queries")
+      context.params.getInt("queries")
     except:
       1
   if countNum < 1:
@@ -106,7 +106,7 @@ proc update*(context:Context):Future[Response] {.async.} =
 proc cache*(context:Context):Future[Response] {.async.} =
   var countNum =
     try:
-      params.getInt("count")
+      context.params.getInt("count")
     except:
       1
   if countNum < 1:

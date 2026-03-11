@@ -21,24 +21,24 @@ let getFirstPrepare = stdRdb.prepare("getFirst", sql""" SELECT * FROM "World" WH
 let getFortunePrepare = stdRdb.prepare("getFortunes", sql""" SELECT * FROM "Fortune" ORDER BY message ASC """, 0)
 
 
-proc plaintext*(context:Context, params:Params):Future[Response] {.async.} =
+proc plaintext*(context:Context):Future[Response] {.async.} =
   return render("Hello, World!")
 
 
-proc json*(context:Context, params:Params):Future[Response] {.async.} =
+proc json*(context:Context):Future[Response] {.async.} =
   return render(%*{"message":"Hello, World!"})
 
 
-proc db*(context:Context, params:Params):Future[Response] {.async.} =
+proc db*(context:Context):Future[Response] {.async.} =
   let i = rand(1..10000)
   let res = stdRdb.getRow(getFirstPrepare, i)
   return render(%*{"id": res[0].parseInt, "randomNumber": res[1].parseInt})
 
 
-proc query*(context:Context, params:Params):Future[Response] {.async.} =
+proc query*(context:Context):Future[Response] {.async.} =
   var countNum =
     try:
-      params.getInt("queries")
+      context.params.getInt("queries")
     except:
       1
   if countNum < 1:
@@ -58,7 +58,7 @@ proc query*(context:Context, params:Params):Future[Response] {.async.} =
   return render(%response)
 
 
-proc fortune*(context:Context, params:Params):Future[Response] {.async.} =
+proc fortune*(context:Context):Future[Response] {.async.} =
   let results = stdRdb.getAllRows(getFortunePrepare)
   var rows = results.map(
     proc(x:seq[string]):Fortune =
@@ -74,10 +74,10 @@ proc fortune*(context:Context, params:Params):Future[Response] {.async.} =
   return render(fortuneScfView(rows).await)
 
 
-proc update*(context:Context, params:Params):Future[Response] {.async.} =
+proc update*(context:Context):Future[Response] {.async.} =
   var countNum =
     try:
-      params.getInt("queries")
+      context.params.getInt("queries")
     except:
       1
   if countNum < 1:

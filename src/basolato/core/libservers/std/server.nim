@@ -25,6 +25,8 @@ type ServeCoreArg = tuple[routes:Routes, host:string, port:int]
 proc serveCore(arg:ServeCoreArg){.async.} =
   let (routes, host, port) = arg
   var server = newAsyncHttpServer(true, true)
+  let publicRoot = getCurrentDir() / "public"
+  let mimeTypes = newMimetypes()
 
   proc cb(req: Request) {.async, gcsafe.} =
     var response = Response.new(HttpCode(0), "", newHttpHeaders())
@@ -32,11 +34,13 @@ proc serveCore(arg:ServeCoreArg){.async.} =
     try:
       # static file response
       if req.path.contains("."):
-        let filepath = getCurrentDir() & "/public" & req.path
+        if req.path.contains("/.."):
+          raise newException(ErrorHttpParse, "")
+        let filepath = publicRoot & req.path
         if fileExists(filepath):
           let file = openAsync(filepath, fmRead)
           let data = file.readAll().await
-          let contentType = newMimetypes().getMimetype(req.path.split(".")[^1])
+          let contentType = mimeTypes.getMimetype(req.path.split(".")[^1])
           var headers = newHttpHeaders()
           headers["content-type"] = contentType
           response = Response.new(Http200, data, headers)
@@ -85,8 +89,6 @@ proc serveCore(arg:ServeCoreArg){.async.} =
 
     response.headers.setDefaultHeaders()
     req.respond(response.status, response.body, response.headers.format()).await
-    # keep-alive
-    req.dealKeepAlive()
 
 
   server.listen(Port(port), host)
@@ -95,8 +97,7 @@ proc serveCore(arg:ServeCoreArg){.async.} =
       await server.acceptRequest(cb)
     else:
       # too many concurrent connections, `maxFDs` exceeded
-      # wait 500ms for FDs to be closed
-      await sleepAsync(500)
+      poll()
 
 
 proc serve*(seqRoutes: seq[Routes], settings:Settings) =
