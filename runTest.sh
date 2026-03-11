@@ -21,12 +21,12 @@ nimble -v
 # run server
 nimble remove basolato -iy || true
 nimble install -y
-cd /root/project/tests/server
+cd /application/tests/server
 nim c --mm:orc --threads:off -d:ssl --parallelBuild:0 main
 nohup ./main > /dev/null 2>&1 &
 
 # run test
-cd /root/project/tests
+cd /application/tests
 touch server/session.db
 touch server/db.sqlite3
 cp server/.env ./
