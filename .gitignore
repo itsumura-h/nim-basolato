@@ -32,3 +32,4 @@ karax
 *.db.*
 *.exe
 .diff
+startServer.sh
