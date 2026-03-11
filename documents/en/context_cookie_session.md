@@ -174,7 +174,7 @@ proc index(context:Context, params:Params):Future[Response] {.async.} =
   let password = params.getStr("password")
   let userId = newLoginUsecase().login(email, password)
   await context.login()
-  await context.set("id", $userId)
+  await context.session.set("id", $userId)
   return redirect("/")
 ```
 
@@ -189,14 +189,14 @@ proc index(context:Context, params:Params):Future[Response] {.async.} =
 get from session
 ```nim
 proc index(context:Context, params:Params):Future[Response] {.async.} =
-  let loginName = await context.get("login_name")
+  let loginName = await context.session.get("login_name")
 ```
 
 set value in session
 ```nim
 proc index(context:Context, params:Params):Future[Response] {.async.} =
   let name = params.getStr("name")
-  await context.set("login_name", name)
+  await context.session.set("login_name", name)
   return render("auth")
 ```
 
@@ -204,21 +204,21 @@ check and get value in session
 ```nim
 proc index(context:Context, params:Params):Future[Response] {.async.} =
   var loginName:string
-  if await context.some("login_name"):
-    loginName = await client.get("login_name")
+  if await context.session.isSome("login_name"):
+    loginName = await context.session.get("login_name")
 ```
 
 delete one key-value pair of session
 ```nim
 proc destroy(context:Context, params:Params):Future[Response] {.async.} =
-  await context.delete("login_name")
+  await context.session.delete("login_name")
   return render("auth")
 ```
 
 destroy all session data
 ```nim
 proc destroy(context:Context, params:Params):Future[Response] {.async.} =
-  await context.destroy()
+  await context.session.destroy()
   return render("auth")
 ```
 

@@ -15,13 +15,18 @@ else:
 type Context* = ref object
   request: Request
   params: Params
-  session: Option[Session]
+  sessionOpt: Option[Session]
+
+## セッション値ストアへの低レベル操作を提供するアクセサ。
+## 利用者は `Option[Session]` を意識せず `context.session.get(...)` 等を扱える。
+type ContextSession* = object
+  sessionOpt: Option[Session]
 
 proc new*(_:type Context, request:Request, params:Params):Future[Context]{.async.} =
   return Context(
     request:request,
     params:params,
-    session:none(Session)
+    sessionOpt:none(Session)
   )
 
 
@@ -38,11 +43,43 @@ proc origin*(self:Context):string =
 
 
 proc setSession*(self:Context, session:Session) =
-  self.session = session.some()
+  self.sessionOpt = session.some()
 
 
-proc session*(self:Context):Option[Session] =
-  return self.session
+proc session*(self:Context):ContextSession =
+  return ContextSession(sessionOpt: self.sessionOpt)
+
+
+proc get*(self:ContextSession, key:string):Future[string] {.async.} =
+  return await self.sessionOpt.get(key)
+
+
+proc set*(self:ContextSession, key, value:string) {.async.} =
+  await self.sessionOpt.set(key, value)
+
+
+proc set*(self:ContextSession, key:string, value:JsonNode) {.async.} =
+  await self.sessionOpt.set(key, value)
+
+
+proc isSome*(self:ContextSession, key:string):Future[bool] {.async.} =
+  return await self.sessionOpt.isSome(key)
+
+
+proc delete*(self:ContextSession, key:string) {.async.} =
+  await self.sessionOpt.delete(key)
+
+
+proc getToken*(self:ContextSession):Future[string] {.async.} =
+  return await self.sessionOpt.getToken()
+
+
+proc updateCsrfToken*(self:ContextSession) {.async.} =
+  await self.sessionOpt.updateCsrfToken()
+
+
+proc destroy*(self:ContextSession) {.async.} =
+  await self.sessionOpt.destroy()
 
 
 proc getToken*(self:Context):Future[string]{.async.} =
@@ -54,16 +91,16 @@ proc updateCsrfToken*(self:Context) {.async.} =
 
 
 proc login*(self:Context){.async.} =
-  await self.session.set("is_login", $true)
+  await self.sessionOpt.set("is_login", $true)
 
 
 proc logout*(self:Context){.async.} =
-  await self.session.delete("is_login")
+  await self.sessionOpt.delete("is_login")
 
 
 proc isLogin*(self:Context):Future[bool]{.async.} =
-  if await self.session.isSome("is_login"):
-    return parseBool(await self.session.get("is_login"))
+  if await self.sessionOpt.isSome("is_login"):
+    return parseBool(await self.sessionOpt.get("is_login"))
   else:
     return false
 
@@ -102,17 +139,17 @@ proc destroy*(self:Context) {.async.} =
 
 proc setFlash*(self:Context, key, value:string) {.async.} =
   let key = "flash_" & key
-  await self.session.set(key, value)
+  await self.sessionOpt.set(key, value)
 
 
 proc setFlash*(self:Context, key:string, value:JsonNode) {.async.} =
   let key = "flash_" & key
-  await self.session.set(key, value)
+  await self.sessionOpt.set(key, value)
 
 
 proc hasFlash*(self:Context, key:string):Future[bool] {.async.} =
-  if self.session.isSome:
-    let rows = await self.session.get.db.getRows()
+  if self.sessionOpt.isSome:
+    let rows = await self.sessionOpt.get.db.getRows()
     let flashKey = "flash_" & key
     for k, v in rows.pairs:
       if k == flashKey:
@@ -122,32 +159,32 @@ proc hasFlash*(self:Context, key:string):Future[bool] {.async.} =
 
 proc getFlash*(self:Context):Future[JsonNode] {.async.} =
   result = newJObject()
-  if self.session.isSome:
-    let rows = await self.session.get.db.getRows()
+  if self.sessionOpt.isSome:
+    let rows = await self.sessionOpt.get.db.getRows()
     for key, val in rows.pairs:
       if key.len >= 6 and key[0..5] == "flash_":
         var newKey = key[6..^1]
         result[newKey] = val
-        await self.session.delete(key)
+        await self.sessionOpt.delete(key)
 
 
 proc getErrors(self:Context):Future[JsonNode] {.async.} =
   result = newJObject()
-  if self.session.isSome:
-    let rows = self.session.get.db.getRows().await 
+  if self.sessionOpt.isSome:
+    let rows = self.sessionOpt.get.db.getRows().await 
     for key, val in rows.pairs:
       if key == "flash_errors":
-        self.session.delete(key).await
+        self.sessionOpt.delete(key).await
         return val
 
 
 proc getParams(self:Context):Future[Params] {.async.} =
   result = Params.new()
-  if self.session.isSome:
-    let rows = self.session.get.db.getRows().await
+  if self.sessionOpt.isSome:
+    let rows = self.sessionOpt.get.db.getRows().await
     for key, sessionParams in rows.pairs:
       if key == "flash_params":
-        await self.session.delete(key)
+        await self.sessionOpt.delete(key)
         let params = Params.new()
         for key, jsonParam in sessionParams.pairs:
           params[key] = jsonParam.to(Param)

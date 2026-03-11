@@ -12,6 +12,6 @@ proc loginPage*():Future[Component] {.async.} =
   formErrorsSignal.value = errors
   
   let isLogin = context.isLogin().await
-  let name = context.get("name").await
+  let name = context.session.get("name").await
   loginUserSignal.value = (isLogin: isLogin, name: name)
   return loginTemplate()

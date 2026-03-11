@@ -61,9 +61,9 @@ jwt
 ### `context.nim`
 
 - リクエストスコープのセキュリティコンテキスト
-- `Request`、`Params`、`Option[Session]` を保持する
-- `login` `logout` `isLogin` `setFlash` `getFlash` など、コントローラーやView寄りの操作をまとめる
-- セッションそのものの実装詳細は持たず、`Session` へのファサードとして振る舞う
+- `Request`、`Params`、`Option[Session]` を内部保持する
+- `context.session` は `ContextSession` を返し、セッション値ストアへの低レベル操作（`get` `set` `isSome` `delete` `getToken` `updateCsrfToken` `destroy`）を提供する。利用者は `Option[Session]` を意識しない
+- `login` `logout` `isLogin` `setFlash` `getFlash` など、認証・フラッシュ・バリデーションエラー表示といった高レベル操作は `Context` 直下に残す
 - `globalContext` を通じたグローバル参照口も提供する
 
 ### `session.nim`

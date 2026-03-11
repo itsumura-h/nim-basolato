@@ -1,0 +1,152 @@
+---
+description: 339-access-via-sessionブランチでの開発時に読み込む
+alwaysApply: false
+---
+Context session accessor の明示化
+===
+
+このブランチで実装することは以下の通りです。
+- `context.get("user_id")` のような `Context` 直下のセッション委譲 API を、`context.session.get("user_id")` のように `session` を明示した API へ寄せる。
+- セッション取得 API の公開形を見直し、外部利用者が `Option[Session]` を意識せずに `get/set/isSome/delete/getToken/updateCsrfToken/destroy` を扱えるようにする。
+- フレームワーク本体、テスト、`examples` 配下のサンプルコードで、旧 API 依存箇所を洗い出して移行対象を管理する。
+- 今回の変更では実装前に影響範囲を固定し、`Context` に残す責務と `session` 側へ寄せる責務を明文化する。
+
+## 進捗
+- [x] プロジェクトルール・ブランチルール雛形を確認
+- [x] 現在ブランチに対応するルールファイルを新規作成
+- [x] `context.get` と関連するセッション委譲 API の使用箇所を調査
+- [x] `Context` 公開 API の変更方針を確定
+- [x] フレームワーク本体の実装変更
+- [x] テストと `examples` の呼び出し側更新
+- [x] ドキュメント更新と回帰確認
+
+## 参考資料
+- `.cursor/rules/project.mdc`
+- `.cursor/rules/branch.mdc`
+- `src/basolato/core/security/context.nim`
+- `src/basolato/core/security/session.nim`
+- `src/basolato/core/security/README.md`
+- `src/basolato/middleware/session_from_cookie_middleware.nim`
+- `src/basolato/core/response.nim`
+
+## 調査結果・設計まとめ
+
+### 現状整理
+- `Context` は `session: Option[Session]` を内部保持している。
+- `Context.session()` は `Option[Session]` を返すため、利用者が自然に想定する `context.session.get("...")` はそのままでは成立しない。
+- 代わりに `Context.get/set/isSome/delete/getToken/updateCsrfToken/destroy` が `Option[Session]` への委譲ファサードとして置かれている。
+- `login/logout/isLogin/setFlash/getFlash/getParamsWithErrors*` は、セッションのユースケースを `Context` から操作する高レベル API として残す余地がある。
+
+### 実装方針メモ
+- `context.session.get("user_id")` を成立させるには、`Context.session` の公開形を `Option[Session]` 以外へ変える必要がある。
+- 有力案は、`Context` に対して `session` をプロパティ風に公開し、その戻り値に `get/set/isSome/delete/getToken/updateCsrfToken/destroy` を備えた薄い公開 API を持たせること。
+- 旧 `Context.get/set/isSome/delete/getToken/updateCsrfToken/destroy` は、このブランチで互換維持するか削除するかを決める必要がある。少なくとも移行完了までは deprecated 扱いの互換層を検討する。
+- `login/logout/isLogin` まで `context.session.*` に寄せるかは別判断にする。まずはユーザー要求どおり、セッション値アクセス系を主対象にする。
+
+### 採用する場合の具体的な公開 API 案
+- `Context` の公開面は `request`, `params`, `session` を並列に持つ形へそろえる。
+- `context.session` は `Option[Session]` をそのまま返さず、利用者向けのセッションアクセサを返す。
+- セッションアクセサは「セッション値ストアへの低レベル操作」に責務を限定し、認証状態や flash のような高レベル操作は持たせない。
+
+想定する利用例:
+
+```nim
+let userId = context.session.get("user_id").await
+await context.session.set("user_id", "123")
+if await context.session.isSome("user_id"):
+  await context.session.delete("user_id")
+```
+
+`Context` 側の公開 API:
+
+```nim
+proc request*(self: Context): Request
+proc params*(self: Context): Params
+proc session*(self: Context): ContextSession
+```
+
+`ContextSession` の公開 API:
+
+```nim
+type ContextSession* = object
+
+proc get*(self: ContextSession, key: string): Future[string]
+proc set*(self: ContextSession, key, value: string)
+proc set*(self: ContextSession, key: string, value: JsonNode)
+proc isSome*(self: ContextSession, key: string): Future[bool]
+proc delete*(self: ContextSession, key: string)
+proc getToken*(self: ContextSession): Future[string]
+proc updateCsrfToken*(self: ContextSession)
+proc destroy*(self: ContextSession)
+```
+
+内部設計の意図:
+- `Context` は引き続き `Option[Session]` を保持してよいが、それは内部実装に閉じ込める。
+- `ContextSession` は `Option[Session]` を内包する薄いラッパー、または `Context` 経由で内部 `Option[Session]` へ委譲するビューとして実装する。
+- これにより、利用者は `Option` の存在を意識せず、未初期化時の空文字返却や no-op の挙動は現行互換で維持できる。
+
+互換レイヤの案:
+- 旧 `Context.get/set/isSome/delete/getToken/updateCsrfToken/destroy` は当面残す。
+- 旧 API の実装は `context.session.*` へ単純委譲させる。
+- ドキュメントと examples は先に `context.session.*` へ移行し、旧 API は段階的に deprecated 扱いにする。
+
+今回の変更で `Context` に残すもの:
+- `login`
+- `logout`
+- `isLogin`
+- `setFlash`
+- `hasFlash`
+- `getFlash`
+- `getParamsWithErrorsObject`
+- `getParamsWithErrorsList`
+
+残す理由:
+- これらは単なる key-value アクセスではなく、認証状態や画面遷移補助に関わる高レベル API だから。
+- `context.session.login()` のように寄せると、`session` が「値ストア」と「認証ユースケース」の両方を持ち、責務が濁る。
+
+今回の変更で移行対象にするもの:
+- `context.get(...)`
+- `context.set(...)`
+- `context.isSome(...)`
+- `context.delete(...)`
+- `context.getToken()`
+- `context.updateCsrfToken()`
+- `context.destroy()`
+
+移行対象から外すもの:
+- `context.login()`
+- `context.logout()`
+- `context.isLogin()`
+- flash 系 API
+
+### フレームワーク実装で修正候補の箇所
+- `src/basolato/core/security/context.nim`
+  - `session` 公開 API の定義変更
+  - `get/set/isSome/delete/getToken/updateCsrfToken/destroy` の扱い見直し
+  - `login/logout/isLogin/setFlash/getFlash/getParamsWithErrors*` が新 API と矛盾しないか確認
+- `src/basolato/core/security/session.nim`
+  - 現在 `Option[Session]` に生えている操作 API を、`context.session.get(...)` 形式で使える公開面へ再配置する必要がある
+- `src/basolato/middleware/session_from_cookie_middleware.nim`
+  - `c.session.updateCsrfToken()`
+  - `c.session.set("csrf_expire", ...)`
+- `src/basolato/core/response.nim`
+  - `context.session.getToken()`
+  - `context.session.destroy()`
+- `src/basolato/core/security/README.md`
+  - `Context -> Session -> SessionDb` の説明と公開 API 例を更新する必要がある
+
+### テスト・examples で呼び出し修正が必要な箇所
+- `examples/example/app/http/views/pages/login/login_page.nim`
+  - `context.get("name").await` -> `context.session.get("name").await`
+- `examples/example/app/http/controllers/login_controller.nim`
+  - `context.set("name", name).await`
+  - `context.delete("name").await`
+  - `login/logout` まで移行対象に含めるかは要判断
+- `tests/server/app/http/controllers/test_controller.nim`
+  - `context.set("key1", "value1").await`
+  - `context.set("key2", "value2").await`
+  - `login()` は対象外とするか別途判断
+
+### 今回の調査では未検出だったこと
+- `tests` と `examples` 配下で、`context.get(...)` の直接利用は `examples/example/app/http/views/pages/login/login_page.nim` のみだった。
+- `tests` と `examples` 配下で、同系列の `context.set(...)` は `examples/example/app/http/controllers/login_controller.nim` と `tests/server/app/http/controllers/test_controller.nim` に存在した。

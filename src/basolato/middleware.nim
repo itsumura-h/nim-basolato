@@ -98,9 +98,9 @@ proc sessionFromCookieHelper*(c:Context):Future[Cookies] {.async.} =
   c.setSession(sessionOpt.get())
   
   if c.request.httpMethod == HttpGet:
-    sessionOpt.updateCsrfToken().await
+    await c.session.updateCsrfToken()
 
-  let newSessionId = sessionOpt.getToken().await
+  let newSessionId = await c.session.getToken()
   let newPayload = 
     if SESSION_TIME > 0:
       %*{

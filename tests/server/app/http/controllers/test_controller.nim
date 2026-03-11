@@ -64,8 +64,8 @@ proc setCookie*(context:Context):Future[Response] {.async.} =
   return render("setCookie").setCookie(cookies)
 
 proc setAuth*(context:Context):Future[Response] {.async.} =
-  await context.set("key1", "value1")
-  await context.set("key2", "value2")
+  await context.session.set("key1", "value1")
+  await context.session.set("key2", "value2")
   return render("setAuth")
 
 proc destroyAuth*(context:Context):Future[Response] {.async.} =
