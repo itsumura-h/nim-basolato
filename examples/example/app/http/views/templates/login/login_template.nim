@@ -1,12 +1,11 @@
 import ../../../../../../../src/basolato/view
-import ../../signals/form_signal
-import ../../signals/login_signal
+import ../../presenters/login/login_page_viewmodel
 
 
-proc loginTemplate*():Component =
-  let formParams = formParamsSignal.value()
-  let formErrors = formErrorsSignal.value()
-  let loginUser = loginUserSignal.value()
+proc loginTemplate*(vm: LoginPageViewModel):Component =
+  let formParams = vm.formParams
+  let formErrors = vm.formErrors
+  let loginUser = (isLogin: vm.isLogin, name: vm.name)
 
   let style = styleTmpl(Css, """
     <style>

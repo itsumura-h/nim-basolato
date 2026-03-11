@@ -1,6 +1,16 @@
 import ../../../../../../../src/basolato/view
+import ../../presenters/sample/sample_page_viewmodel
+
+
+proc sampleTemplate*(vm: SamplePageViewModel): Component
+
 
 proc sampleView*():Component =
+  let vm = SamplePageViewModel.new()
+  return sampleTemplate(vm)
+
+
+proc sampleTemplate*(vm: SamplePageViewModel): Component =
   tmpl"""
     <main>
       <article>

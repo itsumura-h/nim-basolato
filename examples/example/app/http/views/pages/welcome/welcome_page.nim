@@ -1,10 +1,16 @@
 import ../../../../../../../src/basolato/view
-import ../../../../../../../src/basolato/core/base
+import ../../presenters/welcome/welcome_page_viewmodel
+
+
+proc welcomeTemplate*(vm: WelcomePageViewModel): Component
 
 
 proc welcomePage*():Component =
-  const title = "Basolato " & BasolatoVersion
+  let vm = WelcomePageViewModel.new()
+  return welcomeTemplate(vm)
 
+
+proc welcomeTemplate*(vm: WelcomePageViewModel): Component =
   let style = styleTmpl(Css, """
     <style>
       body {
@@ -86,7 +92,7 @@ proc welcomePage*():Component =
     <script src="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/highlight.min.js"></script>
     <article>
       <section>
-        <h1 class="$(style.element("title"))">Nim $(title) is successfully running!!!</h1>
+        <h1 class="$(style.element("title"))">Nim $(vm.title) is successfully running!!!</h1>
         <div class="$(style.element("topImage"))">
           <img
             src="/basolato.svg"

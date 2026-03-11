@@ -1,0 +1,147 @@
+---
+description: fixブランチでの開発時に読み込む
+alwaysApply: false
+---
+fixブランチルール
+===
+
+このブランチで実装することは以下の通りです。
+- `signal` ベースの View 状態共有を廃止し、リクエスト単位で閉じた Presenter/ViewModel パターンへ移行する。
+- MPA フルスタックフレームワークとしての責務分離を維持しつつ、View の入力データを明示的に受け渡す設計へ改める。
+- 認証状態、フォーム入力値、バリデーションエラーのようなリクエスト固有データがプロセス全体で共有されないようにする。
+
+## 進捗（全項目完了）
+- [x] 現行 `signal` 実装の利用箇所、責務、リクエスト境界の問題点を整理する。
+- [x] Presenter/ViewModel の責務境界を定義し、`pages` と `templates` のデータ受け渡し方針を決める。
+- [x] `login_page` / `login_template` を基準に、`signal` を使わない新しい API 形状を設計する。
+- [x] `src/basolato/core/view.nim` から `signal` を削除または非推奨化するための移行方針をまとめる。
+- [x] 既存サンプルと将来の View 実装で再利用できる Presenter/ViewModel 規約を文章化する。
+- [x] 変更後に必要となるテスト観点と回帰確認項目を洗い出す。
+
+**実装完了日時:** 2026-03-11
+
+## 参考資料
+- `.cursor/rules/project.mdc`
+- `.cursor/rules/branch.mdc`
+- `src/basolato/core/view.nim`
+- `examples/example/app/http/views/pages/login/login_page.nim`
+- `examples/example/app/http/views/templates/login/login_template.nim`
+- `examples/example/app/http/views/signals/form_signal.nim`
+- `examples/example/app/http/views/signals/login_signal.nim`
+
+## 変更サマリー
+
+### 削除ファイル数: 3 個
+- `examples/example/app/http/views/signals/form_signal.nim` - 削除
+- `examples/example/app/http/views/signals/login_signal.nim` - 削除
+- `tests/test_signal.nim` - 削除
+
+### 修正ファイル数: 11 個
+
+**View ロジック修正（9 個）:**
+- `pages/login/login_page.nim` - signal 削除、ViewModel 生成追加
+- `pages/validation/validation_page.nim` - signal 削除、ViewModel 生成追加
+- `pages/welcome/welcome_page.nim` - static ViewModel 化
+- `pages/flash/flash_page.nim` - signal 削除、ViewModel 生成追加
+- `pages/cookie/cookie_page.nim` - static ViewModel 化
+- `pages/file_upload/file_upload_page.nim` - static ViewModel 化
+- `pages/with_style/with_style_page.nim` - static ViewModel 化
+- `pages/sample/sample_view.nim` - static ViewModel 化
+- `templates/login/login_template.nim` - signal → ViewModel 引数化
+
+**新規 ViewModel ファイル（8 個）:**
+- `presenters/login/login_page_viewmodel.nim`
+- `presenters/login/login_presenter.nim`
+- `presenters/validation/validation_page_viewmodel.nim`
+- `presenters/welcome/welcome_page_viewmodel.nim`
+- `presenters/flash/flash_page_viewmodel.nim`
+- `presenters/cookie/cookie_page_viewmodel.nim`
+- `presenters/file_upload/file_upload_page_viewmodel.nim`
+- `presenters/with_style/with_style_page_viewmodel.nim`
+- `presenters/sample/sample_page_viewmodel.nim`
+
+**新規ドキュメント（4 個）:**
+- `examples/example/app/http/views/README.md` - 設計ガイド（拡張）
+- `examples/example/app/http/views/presenters/README.md` - Presenter/ViewModel パターン規約
+- `examples/example/app/http/views/signals/DEPRECATION.md` - Signal 廃止移行ガイド
+- `examples/example/app/http/views/TEST_STRATEGY.md` - テスト戦略書
+
+**フレームワークコア修正（1 個）:**
+- `src/basolato/core/view.nim` - Signal 実装を完全削除、deprecated コメント化
+
+**ブランチルール更新（1 個）:**
+- `.cursor/rules/branch/fix.mdc` - 進捗更新、実装結果記録
+
+## 調査結果・設計まとめ
+### 1. 現状認識
+- 現行の `signal` はフロントエンドの reactive primitive ではなく、サーバープロセス内で共有される可変状態になっている。
+- `signal` にフォーム値、エラー、ログインユーザー情報を格納すると、リクエスト境界を越えた状態混線や情報漏えいの設計リスクが生じる。
+- MPA のサーバーサイド描画では、View が共有状態を読むよりも、Controller/Page から Template へ表示専用データを明示的に渡すほうが自然である。
+
+### 2. 目標設計
+- `pages` は HTTP コンテキストから必要な情報を取得し、表示専用の Presenter または ViewModel を組み立てる。
+- `templates` は Presenter/ViewModel を引数として受け取り、描画に専念する。
+- 認証情報、入力値、バリデーションエラーはすべて request-local なオブジェクトに閉じ込める。
+- `signals` ディレクトリへの依存は廃止し、必要に応じて `presenters` ディレクトリへ責務を移す。
+
+### 3. 設計方針
+- Basolato の MPA では、`Page -> Presenter -> Template` を基本線とし、必要な場合のみ `Component` と `ComponentViewModel` を追加する。
+- `Template` が `Presenter` や `Context` を直接呼ばないようにし、データ取得の入口は `Page` に一本化する。
+- `Presenter` はドメインや HTTP セッションの生データをそのまま露出させず、Template が必要とする最小限の表示項目だけを持つ `ViewModel` を返す。
+- `ViewModel` は immutable に近い読み取り専用データとして扱い、Template 側で状態変更しない。
+- 引数爆発を避けるため、Template には `title, errors, userName, isLogin` のような個別引数ではなく、画面単位の単一 `ViewModel` を渡す。
+- 画面単位の `ViewModel` の中で `auth`, `form`, `flash`, `pageMeta` のような小さなサブオブジェクトに分け、1 引数のまま見通しを保つ。
+- `login_page` は `context` から得た `params`、`errors`、`isLogin`、`name` をまとめて `LoginPageViewModel` へ変換し、`loginTemplate(vm)` の形で渡す。
+- `formParams.old("name")` のような View ヘルパ依存は減らし、必要なら Presenter 側で `nameValue` のような描画専用フィールドに正規化して保持する。
+- `DTO` と `ViewModel` は責務が異なるため分離してよいが、View 設計の中心概念を増やしすぎないため、`TemplateModel` と `ViewModel` は統一する。
+- `ComponentModel` は常設せず、本当に再利用価値のある部品にだけ `ComponentViewModel` を導入する。
+
+### 4. 実施計画（完了項目）
+1. ✅ `signal` の責務を棚卸しし、どの値が request-local でどの値が表示専用かを分類する。
+2. ✅ `login` 画面を対象に、単一引数で渡せる `LoginPageViewModel` と必要最小限のサブオブジェクト構造を定義する。
+3. ✅ `pages` で Presenter を生成し、`templates` を `template(vm)` 形式へ切り替える設計案を確定する。
+4. ✅ `signals` 利用コードの削除対象と、互換性維持が必要な場合の段階的移行手順を決める。
+   - `signals/DEPRECATION.md` で移行ガイドを公開
+   - `src/basolato/core/view.nim` で `createSignal` を deprecated 化
+5. ✅ `Template` は描画専用、`Page` は入口、`Presenter` は変換責務という運用規約を `http/views/presenters` 配下の方針としてまとめる。
+   - `examples/example/app/http/views/README.md` で詳細な設計ガイドを記述
+   - `examples/example/app/http/views/presenters/README.md` で Presenter/ViewModel パターンの規約を明記
+6. ✅ `ComponentViewModel` を導入する基準と、導入しない場合の判断基準を整理して過剰設計を防ぐ。
+   - README で「本当に再利用価値のある部品にだけ ComponentViewModel を導入する」と明記
+
+### 5. テスト観点
+- 同時リクエスト時にフォーム入力値やログイン名が別リクエストへ混線しないこと。
+- バリデーションエラー表示が従来どおり機能すること。
+- ログイン済み/未ログインの分岐表示が Presenter 経由でも変わらないこと。
+- Template が共有可変状態に依存していないこと。
+
+### 6. 実装結果・設計評価メモ
+- `Page -> Template -> Presenter -> DAO -> DTO -> TemplateModel -> ComponentModel` のように層を増やしすぎると、責務分離の明確さよりも命名判断コストと認知負荷が勝ちやすい。
+- Basolato の標準方針としては、まず `Page + Presenter + ViewModel + Template` の最小構成を採用し、必要なときだけ `ComponentViewModel` を足す。 **→ 実装済み**
+- `Template` から `Presenter` を呼ぶ設計は、文脈の入口が分散しやすいため採用しない。 **→ Page から Presenter を呼ぶに統一**
+- `DTO` はドメイン/インフラ側のデータ運搬、`ViewModel` は描画専用データとして役割を分離する。 **→ 実装済み**
+- 引数数の問題は共有状態で解決せず、単一 `ViewModel` とサブオブジェクト化で解決する。 **→ 実装済み**
+
+### 7. 移行完了一覧
+以下の page を Presenter/ViewModel パターンへ移行：
+- ✅ `pages/login/login_page.nim` → `LoginPageViewModel`
+- ✅ `pages/validation/validation_page.nim` → `ValidationPageViewModel`
+- ✅ `pages/welcome/welcome_page.nim` → `WelcomePageViewModel`
+- ✅ `pages/flash/flash_page.nim` → `FlashPageViewModel`
+- ✅ `pages/cookie/cookie_page.nim` → `CookiePageViewModel`
+- ✅ `pages/file_upload/file_upload_page.nim` → `FileUploadPageViewModel`
+- ✅ `pages/with_style/with_style_page.nim` → `WithStylePageViewModel`
+- ✅ `pages/sample/sample_view.nim` → `SamplePageViewModel`
+- ℹ️ `pages/api_view/`, `pages/web_socket/`, `pages/benchmark/` は既に Presenter パターン使用中
+
+### 8. ドキュメント整備
+- ✅ `examples/example/app/http/views/README.md` - 設計ガイド（40+ 行）
+- ✅ `examples/example/app/http/views/presenters/README.md` - Presenter/ViewModel パターン規約（200+ 行）
+- ✅ `examples/example/app/http/views/signals/DEPRECATION.md` - Signal 廃止移行ガイド
+- ✅ `examples/example/app/http/views/TEST_STRATEGY.md` - テスト戦略書（150+ 行）
+
+### 9. 最終削除
+- ✅ `examples/example/app/http/views/signals/form_signal.nim` - 削除
+- ✅ `examples/example/app/http/views/signals/login_signal.nim` - 削除
+- ✅ `tests/test_signal.nim` - 削除
+- ✅ `src/basolato/core/view.nim` - Signal 実装を完全削除

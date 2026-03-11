@@ -1,9 +1,18 @@
 import std/json
 import std/tables
 import ../../../../../../../src/basolato/view
+import ../../presenters/cookie/cookie_page_viewmodel
+
+
+proc cookieTemplate*(vm: CookiePageViewModel): Component
 
 
 proc cookiePage*(cookies:JsonNode):Component =
+  let vm = CookiePageViewModel.new(cookies)
+  return cookieTemplate(vm)
+
+
+proc cookieTemplate*(vm: CookiePageViewModel): Component =
   let style = styleTmpl(Css, """
     .className {
     }
@@ -37,7 +46,7 @@ proc cookiePage*(cookies:JsonNode):Component =
         </form>
         <div>
           <ul>
-            $for key, val in cookies.pairs{
+            $for key, val in vm.cookies.pairs{
               <li>$(key)=$(val)</li>
             }
           </ul>

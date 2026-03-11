@@ -1,7 +1,16 @@
 import ../../../../../../../src/basolato/view
+import ../../presenters/file_upload/file_upload_page_viewmodel
+
+
+proc fileUploadTemplate*(vm: FileUploadPageViewModel): Component
 
 
 proc fileUploadPage*():Component =
+  let vm = FileUploadPageViewModel.new()
+  return fileUploadTemplate(vm)
+
+
+proc fileUploadTemplate*(vm: FileUploadPageViewModel): Component =
   tmpl"""
     <main>
       <a href="/">go back</a>
