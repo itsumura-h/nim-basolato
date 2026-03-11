@@ -6,7 +6,6 @@ import std/os
 import std/re
 import std/strutils
 import std/strformat
-import std/tables
 import std/times
 import std/mimetypes
 import ../../base
@@ -17,7 +16,6 @@ import ../../logger
 import ../../resources/dd_page
 import ../../response
 import ../../route
-import ../../security/context
 import ./request
 
 when defined(httpbeast):
@@ -27,11 +25,7 @@ else:
 
 
 proc serve*(seqRoutes:seq[Routes], settings:Settings) =
-  var routes =  Routes.new()
-  for tmpRoutes in seqRoutes:
-    routes.withParams.add(tmpRoutes.withParams)
-    for path, route in tmpRoutes.withoutParams:
-      routes.withoutParams[path] = route
+  let routes = Routes.merge(seqRoutes)
   
   proc cd(req:Request):Future[void] {.gcsafe, async.}=
     var response = Response.new(HttpCode(0), "", newHttpHeaders())
@@ -49,18 +43,9 @@ proc serve*(seqRoutes:seq[Routes], settings:Settings) =
           response = Response.new(Http200, data, headers)
       else:
         # check path match with controller routing → run middleware → run controller
-        let key = $(req.httpMethod) & ":" & req.path
-        let context = Context.new(req).await
-        if routes.withoutParams.hasKey(key):
-          # withoutParams
-          let route = routes.withoutParams[key]
-          response = createResponse(req, route, req.httpMethod, context).waitFor
-        else:
-          # withParams
-          for route in routes.withParams:
-            if route.httpMethod == req.httpMethod and isMatchUrl(req.path, route.path):
-              response = createResponse(req, route, req.httpMethod, context).waitFor
-              break
+        let routeMatch = routes.matchRoute(req.httpMethod, req.path)
+        if not routeMatch.route.isNil:
+          response = createResponse(req, routeMatch.route, req.httpMethod, routeMatch.pathParams).waitFor
 
         if req.httpMethod == HttpHead:
           response.setBody("")

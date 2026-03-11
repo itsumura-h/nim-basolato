@@ -12,7 +12,7 @@ import ./params; export params
 import ./templates; export templates
 
 when defined(httpbeast) or defined(httpx):
-  import ./libservers/nostd/request; export request
+  import ./libservers/nostd/request except Param, Params; export request
 else:
   import ./libservers/std/request; export request
 

@@ -1,0 +1,127 @@
+---
+description: 292-improvement-routingブランチでの開発時に読み込む
+alwaysApply: false
+---
+ルーティングアルゴリズム改善
+===
+
+このブランチで実装することは以下の通りです。
+- 現在の静的ルートは `TableRef`、動的ルートは配列線形走査という二系統の探索を見直し、ルート数増加時の探索コストを抑える。
+- パス分解と動的セグメント判定をリクエストごとに繰り返す現状を改善し、登録時に探索構造へ前処理した上で dispatch 時の仕事量を減らす。
+- `GET` から `HEAD`、非 `GET/HEAD` から `OPTIONS` を補完する既存仕様、およびルートごとのミドルウェア解決順を壊さずに高速化する。
+- MVC / MPA / API 共通基盤として、HTML 応答と JSON 応答の両方で同じルーティング基盤を維持したまま保守しやすい設計へ寄せる。
+- 今回は実装前の設計方針を固定し、比較候補・段階的移行手順・検証観点をブランチルールに明文化する。
+
+## 進捗
+- [x] プロジェクトルール・ブランチルール雛形を確認
+- [x] 現在ブランチに対応するルールファイルを新規作成
+- [x] 現行のルーティング実装と dispatch フローを調査
+- [x] 参考資料の Trie 木 / RegExp Router の要点を整理
+- [x] ルート登録時に構築する内部データ構造を確定
+- [x] `std` / `nostd` 両サーバーから共通利用できる matcher API を設計
+- [x] 既存仕様を維持した段階的移行方針を確定
+- [x] ルーティング性能・回帰確認のテスト方針を確定
+- [x] 実装
+
+## 参考資料
+- `.cursor/rules/project.mdc`
+- `.cursor/rules/branch.mdc`
+- `src/basolato/core/route.nim`
+- `src/basolato/core/params.nim`
+- `src/basolato/core/libservers/std/server.nim`
+- `src/basolato/core/libservers/nostd/server.nim`
+- `src/basolato/core/libservers/nostd/request.nim`
+- https://yusukebe.com/posts/2022/how-i-got-2k-stars/#trie%E6%9C%A8
+- https://speakerdeck.com/usualoma/ultrafast-js-router
+
+## 調査結果・設計まとめ
+
+### 現状整理
+- `src/basolato/core/route.nim` の `Routes` は `withoutParams: TableRef[string, Route]` と `withParams: seq[Route]` の二分管理になっている。
+- 静的ルートは `"{METHOD}:{PATH}"` をキーに O(1) で引ける一方、動的ルートは `withParams` を先頭から走査し、`isMatchUrl(req.path, route.path)` が当たるまで比較し続ける。
+- `src/basolato/core/libservers/std/server.nim` と `src/basolato/core/libservers/nostd/server.nim` は同じ探索ロジックをそれぞれ持っており、動的ルートの探索コストと重複ロジックが増えている。
+- `isMatchUrl()` は毎回 `split("/")` を行い、各セグメントについて `{name:type}` を都度解析している。`getUrlParams()` も同様に再度 `split("/")` とキー抽出を行っているため、マッチ判定とパラメータ抽出で同じ文字列処理を繰り返している。
+- つまり現在のボトルネックは「動的ルート数に比例する線形探索」と「dispatch 時に繰り返されるパス解析」の二点である。
+
+### 参考資料から採るべき要点
+- Hono の Trie 木方針は、ルート数が増えても探索のオーバーヘッドを小さく保ちやすく、線形走査よりスケールしやすい点を主眼にしている。
+- `UltraFast JS Router` の要点は、登録時に大きな正規表現や補助データを事前生成し、実行時の処理を極小化することにある。
+- 同資料では「探すべきハンドラが 1 つで、そこに紐づくミドルウェア集合が事前に決まる」ケースでは前計算の恩恵が大きい一方、例外的な多重マッチや曖昧なパターンでは Trie のほうが扱いやすいことも示されている。
+- Hono 自身も公開資料では `StaticRouter` / `RegExpRouter` / `TrieRouter` を使い分ける設計を採っており、万能解を 1 つに固定していない。
+
+### このブランチで採用する主方針
+- Basolato では第一段階として `Trie` ベースの matcher を主案にする。
+- 理由は、現行実装が `{name:int}` / `{name:str}` という型付き動的セグメントを持ち、将来的にワイルドカードやグループ適用ミドルウェアなどを拡張しても Trie のほうが仕様を素直に表現しやすいから。
+- もう一つの理由は、`std` / `nostd` の両サーバーで同じ matcher を共有したいので、正規表現エンジン依存の最適化より、Nim 側で制御しやすい木構造の方が保守しやすいから。
+- ただし参考資料の考え方は活かし、Trie でも「登録時前処理を厚くし、実行時計算を薄くする」方針を徹底する。
+
+### 採用しない主方針
+- 第一段階から巨大な単一正規表現に全面移行する案は採らない。
+- 理由は、Basolato の現状は「1 リクエストで 1 つの最終ルートを選ぶ」だけでなく、ルートオブジェクトに紐づくミドルウェア順序や `HEAD` / `OPTIONS` 補完、今後の拡張余地を保ったまま設計を読みやすく維持する必要があるため。
+- 正規表現の事前コンパイルは、将来的に「静的ルートのみ」「単純な動的パターンのみ」に限定したサブ最適化として再検討する。
+
+### 目標アーキテクチャ
+- `Routes` は公開 API を大きく変えず、内部的には `RouteMatcher` もしくは同等の集約オブジェクトを持つ形へ寄せる。
+- ルート登録時にパスをセグメント列へパースし、各ノードに `staticChildren`、`typedParamChild`、終端 `RouteEntry` を保持する。
+- メソッドごとに matcher を分けるか、ノード終端で `Table[HttpMethod, RouteEntry]` を持つかは比較するが、少なくとも dispatch 時に `"{METHOD}:{PATH}"` 文字列連結を前提としない構造へ寄せる。
+- `RouteEntry` には `Route` 本体に加えて「パスパラメータ名と型の定義済み配列」を持たせ、マッチ成功時に再パースなしで `Params` を生成できるようにする。
+
+### 想定データ構造
+- ノードの責務:
+  - 静的セグメントの分岐
+  - 動的セグメントの分岐
+  - 終端ルートの保持
+- 動的セグメントは最低でも以下を区別する:
+  - `int`
+  - `str`
+- 同一階層で静的セグメントを最優先し、その後に型付き動的セグメントを試す。これにより `/users/new` と `/users/{id:int}` の競合時に静的ルートが優先される。
+- `str` は「非空かつ数値専用でない」、`int` は「数字のみ」という現行 `isMatchUrl()` の意味論を維持する。
+
+### dispatch 時の流れ
+- リクエストパスは最初に一度だけ `?` を除去し、セグメント列へ分解する。
+- matcher はセグメントを先頭から辿り、静的一致を優先しつつ、必要時のみ型付き動的ノードを評価する。
+- 一致した終端ノードから `RouteEntry` とパラメータマップを返し、その後に `createResponse()` へ渡す。
+- これにより `isMatchUrl()` と `getUrlParams()` の二重処理をなくし、マッチ判定とパラメータ抽出を 1 回の走査へ統合する。
+
+### 既存仕様との整合条件
+- `Route.add()` 相当の `HEAD` / `OPTIONS` 自動追加仕様は維持する。
+- `Route.group()` による prefix 付与後も、登録時に正規化済みパスを matcher へ投入できる形にする。
+- `middleware()` が行っている順序保持は Route オブジェクト側に残し、matcher はルート選択の責務に限定する。
+- `createResponse()`、`Context` 生成、リクエストボディ由来のパラメータマージは既存責務のままとし、今回の改善対象を「パス探索とパスパラメータ抽出」に絞る。
+
+### 共通化方針
+- `std/server.nim` と `nostd/server.nim` に重複している「静的探索→動的探索」のロジックは、`route.nim` か専用 matcher モジュールに寄せる。
+- 目標は「サーバー実装は request を matcher に渡して `RouteMatch` を受け取り、response を生成するだけ」にすること。
+- これにより高速化と同時に、2 系統サーバー間の探索仕様ずれを防ぐ。
+
+### 段階的移行手順
+- 第1段階: matcher 用の内部データ構造と `match(method, path)` API を追加する。
+- 第2段階: `serve()` 時に既存の `seq[Routes]` から matcher を構築するように変更する。
+- 第3段階: `std` / `nostd` の両 server から matcher を使うように差し替える。
+- 第4段階: 旧 `withParams` 線形走査に依存するコードを削除し、不要になった `isMatchUrl()` / `getUrlParams()` の責務を整理する。
+
+### テスト・検証観点
+- 静的ルート一致
+- `int` / `str` の型付き動的ルート一致
+- 静的ルートと動的ルートの競合時優先順位
+- `HEAD` / `OPTIONS` 補完
+- `group()` 適用後の prefix 一致
+- ミドルウェア順序維持
+- `std` / `nostd` の両サーバーで同一入力に対して同じルートが選ばれること
+- ベンチマークは少なくとも「静的ルート多数」「動的ルート多数」「競合パターン混在」で比較し、現行線形走査より悪化しないことを確認する
+
+### 補足メモ
+- 参考資料の RegExp Router は魅力的だが、Basolato ではまず「読みやすく壊れにくい共通 matcher」を先に作るべき段階にある。
+- 将来的には Hono の `SmartRouter` のように、静的ルート専用 matcher と Trie matcher を使い分ける余地がある。
+- ただしこのブランチの主目的はそこまで広げず、まずは現行の線形探索を解消し、動的ルート探索の計算量と重複実装を減らすことに限定する。
+
+### 実装結果（2026-03-11）
+- `src/basolato/core/route.nim` に `RouteMatcher`（Trie）と `RouteMatch` を追加し、`Routes.matchRoute(method, path)` で静的/動的を単一 API で探索できるようにした。
+- matcher は終端に `RouteEntry`（`Route` + `paramDefs`）を保持し、dispatch 時はマッチ走査 1 回で path params を返す構成にした。
+- `Routes.merge(seqRoutes)` と `Routes.compileMatcher()` を追加し、サーバー起動時に探索構造を前計算する流れへ変更した。
+- `src/basolato/core/libservers/std/server.nim` / `src/basolato/core/libservers/nostd/server.nim` の重複探索ロジックを削除し、共通 matcher 呼び出しへ統一した。
+- `createResponse()` は matcher 由来の `pathParams` を前提にし、`getUrlParams()` へのフォールバックを廃止して二重パース経路を削除した。
+- 旧探索 API の `isMatchUrl` / `getUrlParams` は `request.nim` / `params.nim` から削除し、探索責務を matcher に集約した。
+- 回帰検証は `tests/test_route_matcher.nim` へ集約し、静的一致・動的一致・型不一致・query付きパス・静的優先・`HEAD`/`OPTIONS` 補完・`group()` prefix をカバーした。旧 `tests/test_url.nim` は削除した。
+- `src/basolato/core/libservers/std/request.nim` に残っていた旧 URL マッチ/URL パラメータ関連のコメント断片も整理し、削除済み API が再参照されない状態へ揃えた。
+- 互換性検証として `std` と `httpbeast` それぞれで `tests/server/main.nim` のコンパイルを通し、両サーバーで同一 matcher API が利用可能であることを確認した。

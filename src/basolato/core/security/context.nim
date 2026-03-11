@@ -1,4 +1,5 @@
 import std/asyncdispatch 
+import std/httpcore
 import std/options
 import std/strutils
 import std/json
@@ -7,9 +8,9 @@ import ./session
 import ./session_db
 
 when defined(httpbeast) or defined(httpx):
-  import ../libservers/nostd/request
+  from ../libservers/nostd/request import Request, headers
 else:
-  import ../libservers/std/request
+  from ../libservers/std/request import Request
 
 
 type Context* = ref object
@@ -39,7 +40,9 @@ proc params*(self:Context):Params =
 
 
 proc origin*(self:Context):string =
-  return self.request.headers.getOrDefault("Origin")
+  if self.request.headers.hasKey("Origin"):
+    return self.request.headers["Origin"]
+  return ""
 
 
 proc setSession*(self:Context, session:Session) =
