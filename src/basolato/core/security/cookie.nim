@@ -103,10 +103,13 @@ func get*(self:Cookies, name:string):string =
     return result
   let cookiesStrArr = self.request.headers["Cookie"].split("; ")
   for row in cookiesStrArr:
-    let rowArr = row.split("=")
-    if rowArr[0] == name:
-      result = rowArr[1]
-      break
+    let idx = row.find('=')
+    if idx >= 0:
+      let cookieName = row[0..idx-1].strip
+      let cookieValue = row[idx+1..^1].strip
+      if cookieName == name:
+        return cookieValue
+  return result
 
 func getAll*(self:Cookies):TableRef[string, string] =
   result = newTable[string, string]()
@@ -114,8 +117,11 @@ func getAll*(self:Cookies):TableRef[string, string] =
     return result
   let cookiesStrArr = self.request.headers["Cookie"].split("; ")
   for row in cookiesStrArr:
-    let rowArr = row.split("=")
-    result[rowArr[0]] = rowArr[1]
+    let idx = row.find('=')
+    if idx >= 0:
+      let cookieName = row[0..idx-1].strip
+      let cookieValue = row[idx+1..^1].strip
+      result[cookieName] = cookieValue
 
 func hasKey*(self:Cookies, name:string):bool =
   if self.get(name).len > 0:

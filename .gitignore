@@ -31,3 +31,4 @@ karax
 *.db
 *.db.*
 *.exe
+.diff

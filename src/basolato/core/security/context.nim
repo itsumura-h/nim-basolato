@@ -34,7 +34,7 @@ proc params*(self:Context):Params =
 
 
 proc origin*(self:Context):string =
-  return self.origin
+  return self.request.headers.getOrDefault("Origin")
 
 
 proc setSession*(self:Context, session:Session) =
@@ -113,8 +113,9 @@ proc setFlash*(self:Context, key:string, value:JsonNode) {.async.} =
 proc hasFlash*(self:Context, key:string):Future[bool] {.async.} =
   if self.session.isSome:
     let rows = await self.session.get.db.getRows()
+    let flashKey = "flash_" & key
     for k, v in rows.pairs:
-      if k.contains("flash_" & key):
+      if k == flashKey:
         return true
   return false
 
@@ -124,7 +125,7 @@ proc getFlash*(self:Context):Future[JsonNode] {.async.} =
   if self.session.isSome:
     let rows = await self.session.get.db.getRows()
     for key, val in rows.pairs:
-      if key.contains("flash_"):
+      if key.len >= 6 and key[0..5] == "flash_":
         var newKey = key[6..^1]
         result[newKey] = val
         await self.session.delete(key)

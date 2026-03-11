@@ -79,12 +79,14 @@ jwt
 - `ISessionDb` を内部に保持し、呼び出し側に保存先の違いを意識させない
 - `SESSION_TYPE` に応じて JSON ファイル実装か Redis 実装を切り替える
 - `checkSessionIdValid` により既存セッションIDの妥当性確認も吸収する
+- 実装型は `new` で生成した直後にのみ `toInterface` に渡し、コピーしない
 
 ### `session_db/session_db_interface.nim`
 
 - セッションストア実装の共通インターフェース定義
 - `getToken` `setStr` `setJson` `getRows` `destroy` などの必須操作を tuple で表現する
 - 上位レイヤはこの契約にだけ依存する
+- `toInterface` は実装オブジェクトをクロージャで捕捉するため、**JsonSessionDb / RedisSessionDb をコピーしないこと**（コピー先から呼んでも元の実装を参照し続ける）
 
 ### `session_db/json_session_db.nim`
 
@@ -92,6 +94,7 @@ jwt
 - `JsonFileDb` を内部に持ち、行単位の JSON レコードとしてセッションを永続化する
 - セッションIDが空、または無効な場合は新規IDを発行する
 - ローカル開発や軽量構成向けの実装である
+- **注意:** search / sync / destroy は O(n) のため、本番・大規模では Redis 実装を推奨する
 
 ### `session_db/redis_session_db.nim`
 
@@ -104,8 +107,9 @@ jwt
 ### `session_db/libs/json_file_db.nim`
 
 - JSON ファイル永続化の低レベルユーティリティ
-- ファイル読書き、行検索、同期、削除を担当する
+- ファイル読書き、行検索、同期、削除を担当する（いずれも O(n)）
 - `JsonSessionDb` 専用の内部ストレージ部品であり、上位レイヤが直接依存する層ではない
+- 本番・大規模利用時は Redis 実装を推奨する
 
 ### `cookie.nim`
 

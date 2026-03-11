@@ -34,7 +34,7 @@ proc getToken*(self:Option[Session]):Future[string] {.async.} =
 
 proc updateCsrfToken*(self:Option[Session]) {.async.} =
   if self.isSome:
-    let csrfToken = randStr(100)
+    let csrfToken = secureRandStr(100)
     globalCsrfToken = csrfToken
 
 proc set*(self:Option[Session], key, value:string) {.async.} =

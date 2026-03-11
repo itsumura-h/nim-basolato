@@ -1,7 +1,9 @@
 import std/asyncdispatch
 import std/options
 import std/strformat
+import std/strutils
 import ./session
+import ./random_string
 
 
 type CsrfToken* = object
@@ -17,11 +19,22 @@ proc checkCsrfValid*(self:CsrfToken, session:Option[Session]):Future[bool] {.asy
   if not session.isSome:
     return false
   let csrfToken = session.get("csrf_token").await
-  return self.token == csrfToken
+  return secureCompare(self.token, csrfToken)
 
 proc csrfToken*():CsrfToken =
   ## used in view
   return CsrfToken.new(globalCsrfToken)
 
+func escapeHtmlAttr(s: string): string =
+  result = newStringOfCap(s.len)
+  for c in s:
+    case c
+    of '"': result.add("&quot;")
+    of '<': result.add("&lt;")
+    of '>': result.add("&gt;")
+    of '&': result.add("&amp;")
+    else: result.add(c)
+
 proc toString*(self:CsrfToken):string =
-  return &"""<input type="hidden" name="csrf_token" value="{self.token}">"""
+  let escaped = escapeHtmlAttr(self.token)
+  return &"""<input type="hidden" name="csrf_token" value="{escaped}">"""

@@ -3,9 +3,10 @@ import std/base64
 import std/strutils
 import nimcrypto; export hmacSizeBlock
 import ../logger
+import ./random_string
 
 
-type JwtAlgorism* = enum
+type JwtAlgorithm* = enum
   es128 = "ES128",
   es192 = "ES192",
   es256 = "ES256",
@@ -42,7 +43,7 @@ proc base64UrlDecode(input:string):string =
 
 type Jwt* = object
 
-proc encode*(_: type Jwt, payload: string, secretKey: string, algorithm: JwtAlgorism = JwtAlgorism.hs256): string =
+proc encode*(_: type Jwt, payload: string, secretKey: string, algorithm: JwtAlgorithm = JwtAlgorithm.hs256): string =
   let header = %*{
     "alg": $algorithm,
     "typ": "JWT"
@@ -86,7 +87,10 @@ proc decode*(_: type Jwt, token: string, secretKey: string): (JsonNode, bool) =
 
   # Verify the algorithm
   let alg = headerJson["alg"].getStr
-  var algorithm: JwtAlgorism
+  if alg == "none" or alg == "None" or alg == "NONE":
+    echoErrorMsg("JWT alg 'none' is explicitly rejected.")
+    return (newJObject(), false)
+  var algorithm: JwtAlgorithm
 
   case alg:
   of "HS256": algorithm = hs256
@@ -111,7 +115,7 @@ proc decode*(_: type Jwt, token: string, secretKey: string): (JsonNode, bool) =
   else:
     expectedSignature = ""
 
-  if expectedSignature != signature64:
+  if not secureCompare(expectedSignature, signature64):
     return (newJObject(), false)
 
   return (payloadJson, true)

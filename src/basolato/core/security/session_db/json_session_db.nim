@@ -1,3 +1,4 @@
+## JSON ファイルベースのセッションストア。search/sync/destroy は O(n) のため本番・大規模では Redis を推奨。
 import std/asyncdispatch
 import std/json
 import std/os
