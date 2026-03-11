@@ -11,4 +11,4 @@ services:
         NIM_VERSION: 2.0.0
     tty: true
     volumes:
-      - .:/root/project
+      - .:/application

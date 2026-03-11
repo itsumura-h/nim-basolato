@@ -1,0 +1,174 @@
+---
+alwaysApply: true
+---
+プロジェクトルール
+===
+
+## 0. 規範表現（RFC 2119）と Lint方針
+
+このドキュメントの規範キーワードは以下の意味で扱う：
+- **MUST**: 必須。違反は設計レビューをブロックする
+- **SHOULD**: 強い推奨。例外時は理由を記録する
+- **MAY**: 任意。採用時は一貫性を優先する
+- **MUST NOT**: 禁止。原則として採用しない
+
+Lint可能化のため、規範ルールは **Rule ID** を持つ。
+- 形式: `NFW-<DOMAIN>-<NNN>`
+- 併記: `[ID][LEVEL][CHECK]`
+  - LEVEL: MUST / SHOULD / MAY / MUST NOT
+  - CHECK:
+    - `manual`: レビューで確認する
+    - `grep`: 文字列パターンで検出する
+    - `config`: 設定ファイルで検査する
+    - `test`: テストで担保する
+
+本ドキュメントの本文と個別の補助資料が矛盾した場合、**このファイルを優先**する。
+
+### 0.1 ルール一覧（要約）
+
+| ID | LEVEL | CHECK | 要件（要約） |
+|---|---|---|---|
+| NFW-GOAL-001 | MUST | manual | Nim製フルスタックWebフレームワークとして設計する |
+| NFW-ARCH-001 | MUST | manual | Laravel/Rails系MVCを中核アーキテクチャにする |
+| NFW-ARCH-002 | MUST | manual | MPAを標準UI形態とし、Hotwire相当を公式採用する |
+| NFW-ARCH-003 | MUST | manual | 同一アプリケーションをAPIサーバーとしても運用可能にする |
+| NFW-HTTP-001 | MUST | test | ルーティングからコントローラー実行までの間にミドルウェアを挿入可能にする |
+| NFW-HTTP-002 | MUST | test | 認証・認可・監査・CSRF等をミドルウェアとして分離可能にする |
+| NFW-DX-001 | SHOULD | manual | Rails/Laravel利用者が理解しやすい命名と責務分割を優先する |
+| NFW-DX-002 | SHOULD | manual | 規約優先だが、明示的設定で上書き可能にする |
+| NFW-VIEW-001 | MUST | manual | HTML応答とJSON応答を同一ルーティング基盤で扱えるようにする |
+| NFW-STRUCT-001 | MUST | manual | `examples/example/app` 相当の責務分割を標準構成として扱う |
+| NFW-STRUCT-002 | SHOULD | manual | `app` 直下の補助レイヤは責務を越境させずに連携する |
+| NFW-SEC-001 | MUST | manual | 安全性をデフォルトにし、危険な挙動は opt-in に限定する |
+
+## 1. 目的・スコープ
+
+このプロジェクトは、**Nim言語で構築するフルスタックWebフレームワーク**を定義対象とする。
+
+[NFW-GOAL-001][MUST][manual]
+達成目標は以下の 3 点とする。
+- サーバーサイドHTMLを中核とする高生産性なWebアプリケーション開発を可能にする
+- JSON/REST系APIサーバーとしても同一基盤で運用できるようにする
+- 小規模開発から中規模以上の業務アプリケーションまで、責務分離された構造で拡張できるようにする
+
+## 2. プロダクト原則
+
+[NFW-ARCH-001][MUST][manual]
+アプリケーション構造は **MVC（Model / View / Controller）** を基本とする。
+
+[NFW-DX-001][SHOULD][manual]
+概念モデル、命名、責務分割は Laravel や Rails に慣れた開発者が直感的に理解できることを優先する。
+
+[NFW-DX-002][SHOULD][manual]
+設計思想は **Convention over Configuration** を基本とする。ただし、拡張点は明示的設定で上書き可能にする。
+
+[NFW-SEC-001][MUST][manual]
+セキュリティ関連機能は安全側をデフォルトとし、無効化は明示操作がない限り認めない。
+
+## 3. アーキテクチャ方針
+
+[NFW-ARCH-002][MUST][manual]
+フロントエンドの標準形態は **Multi Page Application（MPA）** とする。
+
+[NFW-ARCH-002][MUST][manual]
+MPA の体験向上手段として **Hotwire 相当の仕組み** を公式採用対象に含める。ページ全体再描画に依存せず、部分更新・遷移最適化・フォーム送信最適化を扱えることを目標とする。
+
+[NFW-ARCH-003][MUST][manual]
+同一フレームワークは、HTML中心のWebアプリケーションに加えて **APIサーバー** としても動作できなければならない。
+
+[NFW-VIEW-001][MUST][manual]
+HTMLレスポンス系とJSONレスポンス系は、別製品ではなく同一のルーティング・リクエスト処理・認証基盤の上で共存できるように設計する。
+
+## 4. アプリケーションレイヤ責務
+
+[NFW-ARCH-001][MUST][manual]
+各レイヤの責務を以下のように固定する。
+- Model: 永続化、ドメインルール、バリデーション対象データの表現
+- View: HTML生成、テンプレート、UIレスポンス表現
+- Controller: リクエスト受理、ユースケース起動、レスポンス選択
+
+[NFW-DX-001][SHOULD][manual]
+Controller にビジネスロジックを過度に集中させず、再利用可能なサービス層またはドメイン層へ分離できる構造を許容する。
+
+[NFW-STRUCT-001][MUST][manual]
+標準的なアプリケーション構造は `examples/example/app` 配下の責務分割を基準に定義する。
+
+[NFW-STRUCT-002][SHOULD][manual]
+`app` 直下の主要要素の役割は以下とする。
+- `models`: Entity、Value Object、Domain Service、Repository Interface を含むドメイン層
+- `usecases`: モデル、リポジトリ、クエリサービスを組み合わせてユースケースを実行するアプリケーション層
+- `data_stores/repositories`: Aggregate 単位の永続化と復元を担当する書き込み寄りのデータアクセス層
+- `data_stores/queries`: 複数集約横断の参照、外部API、NoSQL を含む読み取り寄りのクエリサービス層
+- `http/controllers`: リクエスト受理、入力検証、ユースケース起動、例外処理、レスポンス選択を担うHTTP入口
+- `http/middlewares`: ルーティング後からコントローラー前後に適用される横断関心の処理層
+- `http/views`: HTMLレスポンスを構成する表示層
+- `di_container.nim`: Repository や Query Service などの依存解決を集約するDI定義
+- `errors.nim`: ドメインおよびアプリケーション共通で扱う例外型の定義
+
+[NFW-STRUCT-001][MUST][manual]
+`http/views` 配下の役割は以下のように分離する。
+- `layouts`: 複数ページで共有する外枠、head、共通レイアウト部品
+- `pages`: ルートまたは画面単位の固有コンテンツ
+- `components`: ページやレイアウトから再利用される部分ビュー
+- `templates`: 差し込み可能なテンプレート断片や再利用テンプレート
+- `presenters`: View に渡す表示用データ整形とプレゼンテーション境界の吸収
+- `signals`: Hotwire相当の部分更新やフォーム状態通知に関わる表示イベント表現
+
+[NFW-STRUCT-002][SHOULD][manual]
+依存方向は原則として `controller -> usecase -> model / query / repository` とし、View は Controller または Presenter から必要な表示データだけを受け取る。
+
+## 5. ルーティングとミドルウェア
+
+[NFW-HTTP-001][MUST][test]
+HTTP処理パイプラインには、**ルーティング解決後かつコントローラー実行前** に任意個数のミドルウェアを挿入できなければならない。
+
+[NFW-HTTP-002][MUST][test]
+少なくとも以下の関心事は、コントローラー本体ではなくミドルウェアとして差し込める設計を前提とする。
+- 認証
+- 認可
+- セッション検査
+- CSRF保護
+- 監査ログ
+- レート制限
+
+[NFW-HTTP-001][MUST][manual]
+ミドルウェアは、前処理・後処理・短絡応答を扱えるチェーン構造を持つべきである。
+
+[NFW-HTTP-002][MUST][manual]
+ルート単位、コントローラー単位、グループ単位でミドルウェア適用範囲を切り替えられることを設計要件とする。
+
+## 6. レスポンス戦略
+
+[NFW-VIEW-001][MUST][manual]
+同一エンドポイント群で、用途に応じて HTML・JSON・リダイレクト・ストリーミング等のレスポンス方式を選択できる設計を優先する。
+
+[NFW-ARCH-003][MUST][manual]
+APIモードは補助機能ではなく一級機能とし、認証、エラーフォーマット、シリアライズ方針を独立して拡張できるようにする。
+
+## 7. 開発者体験
+
+[NFW-DX-001][SHOULD][manual]
+CLI、ジェネレーター、ディレクトリ規約、初期設定は「最初の1アプリが迷わず作れる」ことを基準に設計する。
+
+[NFW-DX-002][SHOULD][manual]
+初期設定は最小限に抑え、アプリケーション作成直後から MVC、テンプレート、ルーティング、ミドルウェア、API エンドポイントが一貫した方法で追加できるようにする。
+
+## 8. 非目標
+
+[NFW-GOAL-001][MUST NOT][manual]
+この段階では、以下をプロジェクトの主要目標に含めない。
+- SPA専用フレームワーク化
+- フロントエンド単体ビルドツールの最適化を主目的にすること
+- マイクロサービス前提の分散基盤を先に設計すること
+
+## 9. 実装前提の制約
+
+[NFW-GOAL-001][MUST][manual]
+実装はこのルールに従って進めるが、**設計ドキュメントの段階では過剰に詳細な内部実装へ踏み込まない**。
+
+[NFW-GOAL-001][MUST][manual]
+新機能の提案や設計判断は、以下の優先順位で評価する。
+1. MVC と MPA/Hotwire の整合性を損なわないか
+2. APIサーバーとしての利用可能性を損なわないか
+3. ミドルウェアによる横断関心の分離を保てるか
+4. Nim らしい実装容易性と保守性を確保できるか
