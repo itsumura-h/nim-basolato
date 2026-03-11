@@ -6,8 +6,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update
 RUN apt upgrade -y
 RUN apt install -y \
-      # for build Nim
-      gcc \
+      # for build Nim and make
+      build-essential \
       # for unzip tar.xz
       xz-utils \
       # for https

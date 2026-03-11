@@ -32,11 +32,15 @@ for f in walkDir(getCurrentDir()):
     const
       SECRET_KEY* = "test_secret_key"
       SESSION_DB_PATH* = getEnv("SESSION_DB_PATH", "./session.db")
+      REDIS_HOST* = getEnv("REDIS_HOST", "127.0.0.1")
+      REDIS_PORT* = getEnv("REDIS_PORT", "6379").parseInt
       COOKIE_DOMAINS* :seq[string]  = @[]
   else:
     let
       SECRET_KEY* = getEnv("SECRET_KEY")
       SESSION_DB_PATH* = getEnv("SESSION_DB_PATH", "./session.db")
+      REDIS_HOST* = getEnv("REDIS_HOST", "127.0.0.1")
+      REDIS_PORT* = getEnv("REDIS_PORT", "6379").parseInt
       COOKIE_DOMAINS* = getEnv("COOKIE_DOMAIN").split(",")
 
     if SECRET_KEY.len == 0:
