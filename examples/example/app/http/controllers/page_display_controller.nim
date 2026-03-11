@@ -10,7 +10,6 @@ import ../../../../../src/basolato/web_socket
 import ../views/pages/welcome/welcome_page
 import ../views/pages/sample/sample_view
 import ../views/pages/with_style/with_style_page
-import ../views/pages/babylon_js/babylon_js_page
 # import ../views/pages/sample/web_socket_view
 import ../views/pages/web_socket/web_socket_page
 import ../views/pages/api_view/api_view_page
@@ -61,16 +60,6 @@ proc withStylePage*(context:Context):Future[Response] {.async.} =
   let appLayoutModel = appPresenter.invoke(title)
 
   let page = withStylePage()
-  let view = appLayout(appLayoutModel, page)
-  return render(view)
-
-
-proc babylonJsPage*(context:Context):Future[Response] {.async.} =
-  const title = "Babylon JS"
-  let appPresenter = AppPresenter.new()
-  let appLayoutModel = appPresenter.invoke(title)
-
-  let page = babylonJsPage()
   let view = appLayout(appLayoutModel, page)
   return render(view)
 
