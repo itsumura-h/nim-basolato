@@ -215,7 +215,8 @@ proc findNimCodeBlock(str:string, point:int):(int, string) =
 
 
 proc reindent(str:string, indentLevel:int):string  =
-  let indent = "  ".repeat(indentLevel)
+  let safeIndentLevel = if indentLevel < 0: 0 else: indentLevel
+  let indent = "  ".repeat(safeIndentLevel)
   return indent & str
 
 
@@ -271,7 +272,7 @@ macro tmpl*(html: untyped): untyped =
       point = resPoint
       # resPointの1つ前が「}」の場合、indentLevelを下げる
       if html[resPoint-1] == '}':
-        indentLevel -= 1
+        indentLevel = max(indentLevel - 1, 0)
     of ifBlock:
       var (resPoint, resStr) = findNimBlock(html, point)
       resStr = resStr.strip() & ":\n"

@@ -11,12 +11,6 @@ import ./security/random_string
 import ./params; export params
 import ./templates; export templates
 
-when defined(httpbeast) or defined(httpx):
-  import ./libservers/nostd/request; export request
-else:
-  import ./libservers/std/request; export request
-
-
 # proc old*(params:JsonNode, key:string, default=""):string =
 #   if params.hasKey(key):
 #     case params[key].kind

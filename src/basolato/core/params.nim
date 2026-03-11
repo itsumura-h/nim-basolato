@@ -1,5 +1,6 @@
 import std/asyncnet
 import std/cgi
+import std/httpcore
 import std/json
 import std/net
 import std/options
@@ -12,9 +13,9 @@ import std/tables
 import std/uri
 
 when defined(httpbeast) or defined(httpx):
-  import ./libservers/nostd/request
+  from ./libservers/nostd/request import Request, url, headers, body
 else:
-  import ./libservers/std/request
+  from ./libservers/std/request import Request
 
 
 type Param* = ref object
@@ -111,18 +112,6 @@ proc getAll*(params:Params):JsonNode =
       else:
         param.value
     result[key] = %*{"ext": ext, "fileName": fileName, "value": value}
-
-
-func getUrlParams*(requestPath, routePath:string):Params =
-  result = Params.new()
-  if routePath.contains("{"):
-    let requestPath = requestPath.split("/")[1..^1]
-    let routePath = routePath.split("/")[1..^1]
-    for i in 0..<routePath.len:
-      if routePath[i].contains("{"):
-        let keyInUrl = routePath[i][1..^1].split(":")
-        let key = keyInUrl[0]
-        result[key] = Param(value:requestPath[i].split(":")[0])
 
 
 func getQueryParams*(request:Request):Params =
@@ -314,48 +303,3 @@ proc save*(params:Params, key, dir, newFileName:string) =
     defer: f.close()
     f.write(param.value)
 
-
-when isMainModule:
-  block:
-    let requestPath = "/name/john/id/1"
-    let routePath = "/name/{name:str}/id/{id:int}"
-    let params = getUrlParams(requestPath, routePath)
-    assert params.getStr("name") == "john"
-    assert params.getInt("id") == 1
-
-  block:
-    var requestPath = "/name/john/id/1"
-    var routePath = "/name/{name:str}/id/{id:int}"
-    assert isMatchUrl(requestPath, routePath) == true
-
-    requestPath = "/name"
-    routePath = "/{id:int}"
-    assert isMatchUrl(requestPath, routePath) == false
-
-    requestPath = "/1"
-    routePath = "/{name:str}"
-    assert isMatchUrl(requestPath, routePath) == false
-
-    requestPath = "/1"
-    routePath = "/{id:int}"
-    assert isMatchUrl(requestPath, routePath) == true
-
-    requestPath = "/john"
-    routePath = "/{name:str}"
-    assert isMatchUrl(requestPath, routePath) == true
-
-    requestPath = "/"
-    routePath = "/{id:int}"
-    assert isMatchUrl(requestPath, routePath) == false
-
-    requestPath = "/1/asd"
-    routePath = "/{id:int}"
-    assert isMatchUrl(requestPath, routePath) == false
-
-    requestPath = "/1/1"
-    routePath = "/{id:int}"
-    assert isMatchUrl(requestPath, routePath) == false
-
-    requestPath = "/john/1"
-    routePath = "/{name:str}"
-    assert isMatchUrl(requestPath, routePath) == false

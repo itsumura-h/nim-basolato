@@ -23,7 +23,6 @@ let routes = @[
         .middleware(example_middleware.setMiddleware2),
       Route.get("/fib/{num:int}", page_display_controller.fib),
       Route.get("/with-style", page_display_controller.withStylePage),
-      Route.get("/babylon-js", page_display_controller.babylonJsPage),
       Route.get("/api", page_display_controller.displayApiPage),
 
       Route.get("/custom-headers", page_display_controller.customHeaders),

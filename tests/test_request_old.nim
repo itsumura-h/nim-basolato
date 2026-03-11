@@ -6,11 +6,6 @@ discard """
 import std/unittest
 import ../src/basolato/view
 
-when defined(httpbeast):
-  include ../src/basolato/core/libservers/nostd/request
-else:
-  include ../src/basolato/core/libservers/std/request
-
 block:
   let p = Params.new()
   p["a"] = Param.new("a")

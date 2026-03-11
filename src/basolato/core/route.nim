@@ -15,9 +15,9 @@ import ./security/cookie
 import ./security/context
 
 when defined(httpbeast) or defined(httpx):
-  import ./libservers/nostd/request
+  from ./libservers/nostd/request import Request, path, httpMethod, headers, body
 else:
-  import ./libservers/std/request
+  from ./libservers/std/request import Request, path, httpMethod
 
 
 type Controller* = proc(context:Context):Future[Response] {.async.}
@@ -66,15 +66,243 @@ func path*(self:Route):string =
 
 # ==================================================
 
+type RouteParamType = enum
+  RouteParamInt
+  RouteParamStr
+
+type RouteParamDef = object
+  name: string
+  typ: RouteParamType
+
+type RouteEntry = ref object
+  route: Route
+  paramDefs: seq[RouteParamDef]
+
+type RouteMatcherNode = ref object
+  staticChildren: TableRef[string, RouteMatcherNode]
+  intChild: RouteMatcherNode
+  strChild: RouteMatcherNode
+  entries: TableRef[HttpMethod, RouteEntry]
+
+type RouteMatcher = ref object
+  root: RouteMatcherNode
+
+type RouteMatch* = object
+  route*: Route
+  pathParams*: Params
+
 type Routes* = ref object
   withParams*: seq[Route]
   withoutParams*: TableRef[string, Route]
+  matcher: RouteMatcher
+  matcherReady: bool
+
+func newRouteMatcherNode(): RouteMatcherNode =
+  return RouteMatcherNode(
+    staticChildren: newTable[string, RouteMatcherNode](),
+    entries: newTable[HttpMethod, RouteEntry](),
+  )
+
+func newRouteMatcher(): RouteMatcher =
+  return RouteMatcher(root: newRouteMatcherNode())
 
 func new*(_:type Routes):Routes =
   return Routes(
     withParams: newSeq[Route](),
     withoutParams: newTable[string, Route](),
+    matcher: newRouteMatcher(),
+    matcherReady: false,
   )
+
+func isNumericSegment(segment:string):bool =
+  if segment.len == 0:
+    return false
+  for c in segment:
+    if not c.isDigit:
+      return false
+  return true
+
+func isStringSegment(segment:string):bool =
+  return segment.len > 0 and not segment.isNumericSegment()
+
+func splitPathSegments(path:string):seq[string] =
+  let pathWithoutQuery = path.split("?")[0]
+  if pathWithoutQuery.len == 0 or pathWithoutQuery == "/":
+    return @[]
+
+  var normalizedPath = pathWithoutQuery
+  if normalizedPath[0] == '/':
+    normalizedPath = normalizedPath[1..^1]
+  if normalizedPath.len == 0:
+    return @[]
+
+  return normalizedPath.split("/")
+
+func parseParamSegment(
+  segment:string,
+  name:var string,
+  typ:var RouteParamType
+):bool =
+  if segment.len < 5:
+    return false
+  if not segment.startsWith("{") or not segment.endsWith("}"):
+    return false
+
+  let body = segment[1..^2]
+  let separatorPos = body.rfind(':')
+  if separatorPos <= 0 or separatorPos >= body.len - 1:
+    return false
+
+  name = body[0..<separatorPos]
+  let routeParamType = body[separatorPos + 1..^1]
+  if name.len == 0:
+    return false
+
+  case routeParamType
+  of "int":
+    typ = RouteParamInt
+    return true
+  of "str":
+    typ = RouteParamStr
+    return true
+  else:
+    return false
+
+proc addMatcherEntry(
+  matcher:RouteMatcher,
+  httpMethod:HttpMethod,
+  path:string,
+  route:Route,
+  overwrite:bool
+) =
+  var node = matcher.root
+  var paramDefs = newSeq[RouteParamDef]()
+  let segments = splitPathSegments(path)
+
+  for segment in segments:
+    var paramName = ""
+    var paramType = RouteParamInt
+    if parseParamSegment(segment, paramName, paramType):
+      case paramType
+      of RouteParamInt:
+        if node.intChild.isNil:
+          node.intChild = newRouteMatcherNode()
+        node = node.intChild
+      of RouteParamStr:
+        if node.strChild.isNil:
+          node.strChild = newRouteMatcherNode()
+        node = node.strChild
+      paramDefs.add(RouteParamDef(name: paramName, typ: paramType))
+    else:
+      if not node.staticChildren.hasKey(segment):
+        node.staticChildren[segment] = newRouteMatcherNode()
+      node = node.staticChildren[segment]
+
+  if overwrite or not node.entries.hasKey(httpMethod):
+    node.entries[httpMethod] = RouteEntry(route: route, paramDefs: paramDefs)
+
+proc parseMethodAndPath(
+  key:string,
+  httpMethod:var HttpMethod,
+  path:var string
+):bool =
+  let separatorPos = key.find(":")
+  if separatorPos <= 0 or separatorPos >= key.len - 1:
+    return false
+
+  let methodName = key[0..<separatorPos]
+  path = key[separatorPos + 1..^1]
+  try:
+    httpMethod = parseEnum[HttpMethod](methodName)
+  except ValueError:
+    return false
+  return true
+
+proc matchNode(
+  node:RouteMatcherNode,
+  httpMethod:HttpMethod,
+  segments:seq[string],
+  index:int,
+  capturedValues:var seq[string],
+  routeEntry:var RouteEntry
+):bool =
+  if index == segments.len:
+    if node.entries.hasKey(httpMethod):
+      routeEntry = node.entries[httpMethod]
+      return true
+    return false
+
+  let segment = segments[index]
+
+  if node.staticChildren.hasKey(segment):
+    let staticNode = node.staticChildren[segment]
+    if matchNode(staticNode, httpMethod, segments, index + 1, capturedValues, routeEntry):
+      return true
+
+  if not node.intChild.isNil and segment.isNumericSegment():
+    capturedValues.add(segment)
+    if matchNode(node.intChild, httpMethod, segments, index + 1, capturedValues, routeEntry):
+      return true
+    capturedValues.setLen(capturedValues.len - 1)
+
+  if not node.strChild.isNil and segment.isStringSegment():
+    capturedValues.add(segment)
+    if matchNode(node.strChild, httpMethod, segments, index + 1, capturedValues, routeEntry):
+      return true
+    capturedValues.setLen(capturedValues.len - 1)
+
+  return false
+
+proc match(
+  matcher:RouteMatcher,
+  httpMethod:HttpMethod,
+  path:string
+):RouteMatch =
+  if matcher.isNil:
+    return RouteMatch(route: nil, pathParams: nil)
+
+  var routeEntry: RouteEntry
+  var capturedValues = newSeq[string]()
+  let segments = splitPathSegments(path)
+  if not matchNode(matcher.root, httpMethod, segments, 0, capturedValues, routeEntry):
+    return RouteMatch(route: nil, pathParams: nil)
+
+  var pathParams: Params = nil
+  if routeEntry.paramDefs.len > 0:
+    pathParams = Params.new()
+    for i, paramDef in routeEntry.paramDefs:
+      if i < capturedValues.len:
+        pathParams[paramDef.name] = Param.new(capturedValues[i])
+
+  return RouteMatch(route: routeEntry.route, pathParams: pathParams)
+
+proc compileMatcher*(self:Routes) =
+  let matcher = newRouteMatcher()
+  for key, route in self.withoutParams.pairs:
+    var httpMethod = HttpGet
+    var path = ""
+    if parseMethodAndPath(key, httpMethod, path):
+      matcher.addMatcherEntry(httpMethod, path, route, overwrite=true)
+
+  for route in self.withParams:
+    matcher.addMatcherEntry(route.httpMethod, route.path, route, overwrite=false)
+
+  self.matcher = matcher
+  self.matcherReady = true
+
+proc matchRoute*(self:Routes, httpMethod:HttpMethod, path:string):RouteMatch =
+  if not self.matcherReady or self.matcher.isNil:
+    self.compileMatcher()
+  return self.matcher.match(httpMethod, path)
+
+proc merge*(_:type Routes, seqRoutes:seq[Routes]):Routes =
+  let routes = Routes.new()
+  for tmpRoutes in seqRoutes:
+    routes.withParams.add(tmpRoutes.withParams)
+    for path, route in tmpRoutes.withoutParams.pairs:
+      routes.withoutParams[path] = route
+  routes.compileMatcher()
+  return routes
 
 func add(
   httpMethod: HttpMethod,
@@ -95,6 +323,7 @@ func add(
     elif httpMethod == HttpGet:
       routes.withoutParams[ $(HttpHead) & ":" & path ] = route
     routes.withoutParams[ $httpMethod & ":" & path ] = route
+  routes.matcherReady = false
   return routes
 
 func get*(
@@ -170,6 +399,7 @@ func group*(_:type Route, path:string, seqRoutes:seq[Routes]):Routes =
     for route in tmpRoutes.withParams:
       route.path = path & route.path
       routes.withParams.add(route)
+  routes.matcherReady = false
   return routes
 
 
@@ -187,12 +417,11 @@ func middleware*(self:Routes, middleware: Controller):Routes =
   return self
 
 
-proc params(request:Request, route:Route):Params =
-  let url = request.path
-  let path = route.path
+proc params(request:Request, pathParams:Params=nil):Params =
   let params = Params.new()
-  for k, v in getUrlParams(url, path).pairs:
-    params[k] = v
+  if not pathParams.isNil:
+    for k, v in pathParams.pairs:
+      params[k] = v
   for k, v in getQueryParams(request).pairs:
     params[k] = v
 
@@ -231,10 +460,15 @@ proc runController(req:Request, context:Context, route:Route, headers: HttpHeade
   return response
 
 
-proc createResponse*(req:Request, route:Route, httpMethod:HttpMethod):Future[Response] {.async.} =
+proc createResponse*(
+  req:Request,
+  route:Route,
+  httpMethod:HttpMethod,
+  pathParams:Params=nil
+):Future[Response] {.async.} =
   ## run middleware -> run controller
   {.cast(gcsafe).}: # fix: "which is a global using GC'ed memory" in server.nim
-    let params = req.params(route)
+    let params = req.params(pathParams)
     let context = Context.new(req, params).await
     setContext(context)
     let response1 = runMiddleware(req, context, route).await

@@ -1,5 +1,5 @@
 import std/asyncdispatch
-import std/httpcore
+import std/httpcore; export httpcore
 import std/strutils
 import std/tables
 import std/json

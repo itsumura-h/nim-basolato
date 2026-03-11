@@ -14,53 +14,79 @@ proc apiViewTemplate*():Component =
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/vs2015.min.css">
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
     $(style)
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
-      const request = axios.create({
-        withCredentials: true,
-        baseURL: 'http://localhost:8000/api',
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': 'http://localhost:8000'
+      // fetchベースでAPI呼び出しを行うテンプレートです
+      const baseURL = 'http://localhost:8000/api'
+      const baseHeaders = {
+        'Access-Control-Allow-Origin': 'http://localhost:8000'
+      }
+
+      const setResult = (resp) => {
+        const el = document.getElementById('result')
+        el.innerHTML = JSON.stringify(resp, null, '  ')
+        hljs.highlightElement(el)
+      }
+
+      const apiRequest = async (method, path, body) => {
+        const headers = {
+          ...baseHeaders
         }
-      })
+        const options = {
+          method,
+          headers,
+          credentials: 'include'
+        }
+        if (body !== undefined) {
+          headers['Content-Type'] = 'application/json'
+          options.body = JSON.stringify(body)
+        }
 
-      const setResult=(resp)=>{
-        const el = document.getElementById('result');
-        el.innerHTML = JSON.stringify(resp, null, "  ");
-        hljs.highlightElement(el);
+        const response = await fetch(baseURL + path, options)
+        const contentType = response.headers.get('Content-Type') || ''
+        let payload
+        if (contentType.includes('application/json')) {
+          payload = await response.json()
+        } else {
+          payload = await response.text()
+        }
+
+        return {
+          status: response.status,
+          ok: response.ok,
+          headers: {
+            'content-type': contentType
+          },
+          body: payload
+        }
       }
 
-      const getRequest=async()=>{
-        const resp = await request.get('/sample')
+      const readParam = () => {
+        const raw = document.getElementById('param').value
+        return JSON.parse(raw)
+      }
+
+      const getRequest = async () => {
+        const resp = await apiRequest('GET', '/sample')
         setResult(resp)
       }
 
-      const postRequest=async()=>{
-        let param = document.getElementById('param').value
-        param = JSON.parse(param)
-        const resp = await request.post('/sample', param)
+      const postRequest = async () => {
+        const resp = await apiRequest('POST', '/sample', readParam())
         setResult(resp)
       }
 
-      const patchRequest=async()=>{
-        let param = document.getElementById('param').value
-        param = JSON.parse(param)
-        const resp = await request.patch('/sample', param)
+      const patchRequest = async () => {
+        const resp = await apiRequest('PATCH', '/sample', readParam())
         setResult(resp)
       }
 
-      const putRequest=async()=>{
-        let param = document.getElementById('param').value
-        param = JSON.parse(param)
-        const resp = await request.put('/sample', param)
+      const putRequest = async () => {
+        const resp = await apiRequest('PUT', '/sample', readParam())
         setResult(resp)
       }
 
-      const deleteRequest=async()=>{
-        let param = document.getElementById('param').value
-        param = JSON.parse(param)
-        const resp = await request.delete('/sample', param)
+      const deleteRequest = async () => {
+        const resp = await apiRequest('DELETE', '/sample', readParam())
         setResult(resp)
       }
     </script>

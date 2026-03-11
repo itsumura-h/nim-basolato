@@ -66,31 +66,6 @@ proc dealKeepAlive*(req:Request) =
   ):
     req.forget()
 
-func isNumeric(str:string):bool =
-  result = true
-  for c in str:
-    if not c.isDigit:
-      return false
-
-func isMatchUrl*(requestPath, routePath:string):bool =
-  let requestPath = requestPath.split("?")[0].split("/")[1..^1]
-  let routePath = routePath.split("/")[1..^1]
-  if requestPath.len != routePath.len:
-    return false
-  for i in 0..<requestPath.len:
-    if not routePath[i].contains("{") and routePath[i] != requestPath[i]:
-      return false
-    if routePath[i].contains("{"):
-      if requestPath[i].len == 0:
-        return false
-      let typ = routePath[i][1..^2].split(":")[1]
-      if typ == "str" and requestPath[i].isNumeric:
-        return false
-      if typ == "int" and not requestPath[i].isNumeric:
-        return false
-  return true
-
-
 type Param* = ref object
   fileName*:string
   ext:string
@@ -158,17 +133,6 @@ proc getAll*(params:Params):JsonNode =
       else:
         param.value
     result[key] = %*{"ext": ext, "fileName": fileName, "value": value}
-
-func getUrlParams*(requestPath, routePath:string):Params =
-  result = Params.new()
-  if routePath.contains("{"):
-    let requestPath = requestPath.split("/")[1..^1]
-    let routePath = routePath.split("/")[1..^1]
-    for i in 0..<routePath.len:
-      if routePath[i].contains("{"):
-        let keyInUrl = routePath[i][1..^1].split(":")
-        let key = keyInUrl[0]
-        result[key] = Param(value:requestPath[i].split(":")[0])
 
 func getQueryParams*(request:Request):Params =
   result = Params.new()
