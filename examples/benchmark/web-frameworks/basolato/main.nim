@@ -16,7 +16,6 @@ let routes = @[
 let settings = Settings.new(
   host="0.0.0.0",
   logToConsole=false,
-  numThreads=getEnv("NUM_THREADS", "1").parseInt
 )
 
 serve(routes, settings)
