@@ -4,19 +4,12 @@ import std/tables
 # framework
 import ../../../../../src/basolato/controller
 # view
-import ../views/presenters/app_presenter
-import ../views/layouts/app/app_layout
 import ../views/pages/file_upload/file_upload_page
 
 
-proc index*(context:Context):Future[Response] {.async.} =
-  let page = fileUploadPage()
-
-  const title = "File upload view"
-  let appPresenter = AppPresenter.new()
-  let appLayoutModel = appPresenter.invoke(title)
-  let view = appLayout(appLayoutModel, page)
-  return render(view)
+proc fileUploadPage*(context:Context):Future[Response] {.async.} =
+  let page = fileUploadPageView(context).await
+  return render(page)
 
 
 proc store*(context:Context):Future[Response] {.async.} =

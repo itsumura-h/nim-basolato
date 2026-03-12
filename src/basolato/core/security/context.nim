@@ -17,6 +17,7 @@ type Context* = ref object
   request: Request
   params: Params
   sessionOpt: Option[Session]
+  csrfToken: string
 
 ## セッション値ストアへの低レベル操作を提供するアクセサ。
 ## 利用者は `Option[Session]` を意識せず `context.session.get(...)` 等を扱える。
@@ -27,7 +28,8 @@ proc new*(_:type Context, request:Request, params:Params):Future[Context]{.async
   return Context(
     request:request,
     params:params,
-    sessionOpt:none(Session)
+    sessionOpt:none(Session),
+    csrfToken: ""
   )
 
 
@@ -43,6 +45,14 @@ proc origin*(self:Context):string =
   if self.request.headers.hasKey("Origin"):
     return self.request.headers["Origin"]
   return ""
+
+
+proc setCsrfToken*(self:Context, token:string) =
+  self.csrfToken = token
+
+
+proc getCsrfToken*(self:Context):string =
+  return self.csrfToken
 
 
 proc setSession*(self:Context, session:Session) =

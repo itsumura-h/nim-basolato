@@ -6,142 +6,156 @@ fixブランチルール
 ===
 
 このブランチで実装することは以下の通りです。
-- `signal` ベースの View 状態共有を廃止し、リクエスト単位で閉じた Presenter/ViewModel パターンへ移行する。
-- MPA フルスタックフレームワークとしての責務分離を維持しつつ、View の入力データを明示的に受け渡す設計へ改める。
-- 認証状態、フォーム入力値、バリデーションエラーのようなリクエスト固有データがプロセス全体で共有されないようにする。
+- `signal` と `context()` のようなプロセス全体で共有される可変状態を廃止し、リクエスト単位で閉じた設計へ移行する。
+- View 層は `Page -> Presenter -> Template` を基本線とし、共有状態ではなく明示的な `ViewModel` を受け渡す。
+- `Context` へのアクセスも request-local に限定し、Template や Presenter がグローバル取得に依存しない構造へ改める。
 
-## 進捗（全項目完了）
-- [x] 現行 `signal` 実装の利用箇所、責務、リクエスト境界の問題点を整理する。
-- [x] Presenter/ViewModel の責務境界を定義し、`pages` と `templates` のデータ受け渡し方針を決める。
-- [x] `login_page` / `login_template` を基準に、`signal` を使わない新しい API 形状を設計する。
-- [x] `src/basolato/core/view.nim` から `signal` を削除または非推奨化するための移行方針をまとめる。
-- [x] 既存サンプルと将来の View 実装で再利用できる Presenter/ViewModel 規約を文章化する。
-- [x] 変更後に必要となるテスト観点と回帰確認項目を洗い出す。
+## 進捗
+- [x] `signal` と `globalContext` の共有状態が発生する箇所を洗い出す。
+- [x] `context()` のグローバル取得 API を置き換える request-local な受け渡し方針を決める。
+- [x] `Page -> Presenter -> Template` の責務境界を `Context` を含めて再定義する。
+- [x] `login_page` を基準に、`context()` 非依存の View API を設計する。
+- [ ] `Context` を必要とする処理と、`ViewModel` に落とし込むべき処理を分類する。
+- [ ] 将来の実装で再発しないよう、View 層と Context 利用の規約を文章化する。
+- [ ] 回帰確認と並行リクエスト時の安全性テスト観点を整理する。
 
-**実装完了日時:** 2026-03-11
+### 第1段階実装：Context グローバル参照の廃止
+1. **LoginPageViewModel に csrfToken フィールドを追加** ✅
+2. **Context に request-local な csrfToken フィールドを追加** ✅
+3. **middleware で context.setCsrfToken() を呼び出すように修正** ✅
+
+### 第2段階実装：View層の設計パターン統一
+1. **Page: context を引数として受け取る形式に統一** ✅
+   - login_page
+   - welcome_page
+   - cookie_page
+   - flash_page
+   - file_upload_page
+   - validation_page
+   - sample_view
+   - with_style_page
+   - web_socket_page (webSocketIframePageComponent, webSocketPageComponent)
+   - api_view_page
+
+2. **Presenter パターンの確立** ✅
+   - LoginPresenter: context から値を抽出、ViewModel を生成
+   - WelcomePagePresenter: 新規作成
+   - CookiePagePresenter: 新規作成
+   - その他は既存の ViewModel.new() パターンを保持
+
+3. **Template の純粋化** ✅
+   - `csrfToken()` グローバル呼び出しを廃止
+   - ViewModel から値を取得して描画
+   - escapeHtmlAttr を export して使用可能に
+
+4. **ViewModel の充実** ✅
+   - csrfToken フィールドを各ページの ViewModel に追加
+   - 描画に必要なすべての値を含む
+
+### 実装結果と評価
+- ✅ **Request-local な設計への移行**: グローバル context/signal への依存を大幅削減
+- ✅ **明示的な依存管理**: Page → Presenter → ViewModel → Template の一方向フロー
+- ✅ **テスト可能性の向上**: 各層が独立した入力を受け取る
+- ✅ **並行リクエスト安全性**: ViewModel 経由の値受け渡しにより、リクエスト間の混線リスク低下
 
 ## 参考資料
 - `.cursor/rules/project.mdc`
 - `.cursor/rules/branch.mdc`
+- `src/basolato/core/security/context.nim`
+- `src/basolato/core/route.nim`
 - `src/basolato/core/view.nim`
 - `examples/example/app/http/views/pages/login/login_page.nim`
 - `examples/example/app/http/views/templates/login/login_template.nim`
-- `examples/example/app/http/views/signals/form_signal.nim`
-- `examples/example/app/http/views/signals/login_signal.nim`
-
-## 変更サマリー
-
-### 削除ファイル数: 3 個
-- `examples/example/app/http/views/signals/form_signal.nim` - 削除
-- `examples/example/app/http/views/signals/login_signal.nim` - 削除
-- `tests/test_signal.nim` - 削除
-
-### 修正ファイル数: 11 個
-
-**View ロジック修正（9 個）:**
-- `pages/login/login_page.nim` - signal 削除、ViewModel 生成追加
-- `pages/validation/validation_page.nim` - signal 削除、ViewModel 生成追加
-- `pages/welcome/welcome_page.nim` - static ViewModel 化
-- `pages/flash/flash_page.nim` - signal 削除、ViewModel 生成追加
-- `pages/cookie/cookie_page.nim` - static ViewModel 化
-- `pages/file_upload/file_upload_page.nim` - static ViewModel 化
-- `pages/with_style/with_style_page.nim` - static ViewModel 化
-- `pages/sample/sample_view.nim` - static ViewModel 化
-- `templates/login/login_template.nim` - signal → ViewModel 引数化
-
-**新規 ViewModel ファイル（8 個）:**
-- `presenters/login/login_page_viewmodel.nim`
-- `presenters/login/login_presenter.nim`
-- `presenters/validation/validation_page_viewmodel.nim`
-- `presenters/welcome/welcome_page_viewmodel.nim`
-- `presenters/flash/flash_page_viewmodel.nim`
-- `presenters/cookie/cookie_page_viewmodel.nim`
-- `presenters/file_upload/file_upload_page_viewmodel.nim`
-- `presenters/with_style/with_style_page_viewmodel.nim`
-- `presenters/sample/sample_page_viewmodel.nim`
-
-**新規ドキュメント（4 個）:**
-- `examples/example/app/http/views/README.md` - 設計ガイド（拡張）
-- `examples/example/app/http/views/presenters/README.md` - Presenter/ViewModel パターン規約
-- `examples/example/app/http/views/signals/DEPRECATION.md` - Signal 廃止移行ガイド
-- `examples/example/app/http/views/TEST_STRATEGY.md` - テスト戦略書
-
-**フレームワークコア修正（1 個）:**
-- `src/basolato/core/view.nim` - Signal 実装を完全削除、deprecated コメント化
-
-**ブランチルール更新（1 個）:**
-- `.cursor/rules/branch/fix.mdc` - 進捗更新、実装結果記録
+- `examples/example/app/http/views/presenters/app_presenter.nim`
 
 ## 調査結果・設計まとめ
-### 1. 現状認識
-- 現行の `signal` はフロントエンドの reactive primitive ではなく、サーバープロセス内で共有される可変状態になっている。
-- `signal` にフォーム値、エラー、ログインユーザー情報を格納すると、リクエスト境界を越えた状態混線や情報漏えいの設計リスクが生じる。
-- MPA のサーバーサイド描画では、View が共有状態を読むよりも、Controller/Page から Template へ表示専用データを明示的に渡すほうが自然である。
+### 1. 問題認識
+- `signal` はモジュールレベルで共有される可変状態であり、フォーム値やログイン情報のような request-local データを保持するには不適切である。
+- `Context` も `globalContext` と `context()` によりグローバル参照になっており、`signal` と同種のリクエスト境界破壊を持つ。
+- `createResponse` の中で `setContext(context)` してから async 処理が進むため、並行リクエスト時に別リクエストの `Context` を参照する余地がある。
+- したがって、`signal` だけを Presenter/ViewModel に置き換えても、`context()` のグローバル取得が残る限り設計上の根本問題は解消しない。
 
-### 2. 目標設計
-- `pages` は HTTP コンテキストから必要な情報を取得し、表示専用の Presenter または ViewModel を組み立てる。
-- `templates` は Presenter/ViewModel を引数として受け取り、描画に専念する。
-- 認証情報、入力値、バリデーションエラーはすべて request-local なオブジェクトに閉じ込める。
-- `signals` ディレクトリへの依存は廃止し、必要に応じて `presenters` ディレクトリへ責務を移す。
+### 2. 方針
+- `Context` はグローバルに保存せず、Controller から Page、必要なら Presenter まで明示的に受け渡す。
+- `Template` は `Context` を読まない。描画に必要な値は Presenter が `ViewModel` に変換して渡す。
+- `Page` は request-local な `Context` を受け取る入口として扱い、`Context` から値を読み、Presenter を呼び出し、`template(vm)` を返す。
+- `Presenter` は `Context` そのものを下流へ漏らさず、View に必要な最小限の値だけを `ViewModel` に写す。
+- `signal` の代替は共有状態ではなく単一 `ViewModel` であり、引数爆発は `ViewModel` のサブオブジェクト化で抑える。
 
-### 3. 設計方針
-- Basolato の MPA では、`Page -> Presenter -> Template` を基本線とし、必要な場合のみ `Component` と `ComponentViewModel` を追加する。
-- `Template` が `Presenter` や `Context` を直接呼ばないようにし、データ取得の入口は `Page` に一本化する。
-- `Presenter` はドメインや HTTP セッションの生データをそのまま露出させず、Template が必要とする最小限の表示項目だけを持つ `ViewModel` を返す。
-- `ViewModel` は immutable に近い読み取り専用データとして扱い、Template 側で状態変更しない。
-- 引数爆発を避けるため、Template には `title, errors, userName, isLogin` のような個別引数ではなく、画面単位の単一 `ViewModel` を渡す。
-- 画面単位の `ViewModel` の中で `auth`, `form`, `flash`, `pageMeta` のような小さなサブオブジェクトに分け、1 引数のまま見通しを保つ。
-- `login_page` は `context` から得た `params`、`errors`、`isLogin`、`name` をまとめて `LoginPageViewModel` へ変換し、`loginTemplate(vm)` の形で渡す。
-- `formParams.old("name")` のような View ヘルパ依存は減らし、必要なら Presenter 側で `nameValue` のような描画専用フィールドに正規化して保持する。
-- `DTO` と `ViewModel` は責務が異なるため分離してよいが、View 設計の中心概念を増やしすぎないため、`TemplateModel` と `ViewModel` は統一する。
-- `ComponentModel` は常設せず、本当に再利用価値のある部品にだけ `ComponentViewModel` を導入する。
+### 3. 設計原則
+- Basolato の MPA では `Page -> Presenter -> Template` を標準形とする。
+- `Template` は純粋描画に専念し、`context()` や `Presenter` 呼び出しを内部で行わない。
+- `Presenter` は request-local な入力から immutable に近い `ViewModel` を生成する。
+- `ViewModel` は画面単位で 1 つ渡し、その中を `auth`, `form`, `flash`, `pageMeta` などの小さな構造へ分ける。
+- `ComponentViewModel` は再利用価値が十分にある部品にだけ導入し、常設しない。
+- `DTO` はドメイン/インフラの運搬用、`ViewModel` は描画専用とし、役割を混ぜない。
 
-### 4. 実施計画（完了項目）
-1. ✅ `signal` の責務を棚卸しし、どの値が request-local でどの値が表示専用かを分類する。
-2. ✅ `login` 画面を対象に、単一引数で渡せる `LoginPageViewModel` と必要最小限のサブオブジェクト構造を定義する。
-3. ✅ `pages` で Presenter を生成し、`templates` を `template(vm)` 形式へ切り替える設計案を確定する。
-4. ✅ `signals` 利用コードの削除対象と、互換性維持が必要な場合の段階的移行手順を決める。
-   - `signals/DEPRECATION.md` で移行ガイドを公開
-   - `src/basolato/core/view.nim` で `createSignal` を deprecated 化
-5. ✅ `Template` は描画専用、`Page` は入口、`Presenter` は変換責務という運用規約を `http/views/presenters` 配下の方針としてまとめる。
-   - `examples/example/app/http/views/README.md` で詳細な設計ガイドを記述
-   - `examples/example/app/http/views/presenters/README.md` で Presenter/ViewModel パターンの規約を明記
-6. ✅ `ComponentViewModel` を導入する基準と、導入しない場合の判断基準を整理して過剰設計を防ぐ。
-   - README で「本当に再利用価値のある部品にだけ ComponentViewModel を導入する」と明記
+### 4. Context 改善方針
+- `src/basolato/core/security/context.nim` の `globalContext`、`setContext`、`context()` は廃止または非推奨化する。
+- `Page` の API は `proc loginPage*(context: Context): Future[Component]` のように、必要な request-local 依存を明示的に受け取る形へ寄せる。
+- `Controller` またはルーティング側で生成済みの `Context` を Page 呼び出しへそのまま渡す。
+- 既存コードで `context()` に依存している箇所は、Page/Presenter の引数へ移し替える。
+- Template や Component に `Context` を直接渡すのは避け、必要な情報だけを `ViewModel` に変換する。
 
-### 5. テスト観点
-- 同時リクエスト時にフォーム入力値やログイン名が別リクエストへ混線しないこと。
-- バリデーションエラー表示が従来どおり機能すること。
-- ログイン済み/未ログインの分岐表示が Presenter 経由でも変わらないこと。
-- Template が共有可変状態に依存していないこと。
+### 5. login 画面での目標形
+- `login_page` は `Context` を引数で受け取る。
+- `login_page` 内で `params`、`errors`、`isLogin`、`name` を取得する。
+- 取得した値を `LoginPagePresenter` または `LoginPageViewModel.new(...)` に渡す。
+- `login_template(vm)` は `vm` だけを引数に受け、`context()` や `signal` に触れない。
 
-### 6. 実装結果・設計評価メモ
-- `Page -> Template -> Presenter -> DAO -> DTO -> TemplateModel -> ComponentModel` のように層を増やしすぎると、責務分離の明確さよりも命名判断コストと認知負荷が勝ちやすい。
-- Basolato の標準方針としては、まず `Page + Presenter + ViewModel + Template` の最小構成を採用し、必要なときだけ `ComponentViewModel` を足す。 **→ 実装済み**
-- `Template` から `Presenter` を呼ぶ設計は、文脈の入口が分散しやすいため採用しない。 **→ Page から Presenter を呼ぶに統一**
-- `DTO` はドメイン/インフラ側のデータ運搬、`ViewModel` は描画専用データとして役割を分離する。 **→ 実装済み**
-- 引数数の問題は共有状態で解決せず、単一 `ViewModel` とサブオブジェクト化で解決する。 **→ 実装済み**
+### 6. 実施計画
+1. `globalContext` と `context()` の利用箇所を洗い出し、request-local 化の対象を一覧化する。
+2. `Page` の標準 API を `page(context: Context)` 形式に寄せるか、Controller 側で必要情報だけを渡すかを決める。
+3. `login` 画面を基準に、`signal` と `context()` の両方に依存しない最小実装パターンを設計する。
+4. `Template` が共有状態と `Context` に依存しないことを規約として明文化する。
+5. `Context` をどの層まで渡してよいかの境界を定義する。
+6. 段階的移行のため、非推奨 API と移行手順を整理する。
 
-### 7. 移行完了一覧
-以下の page を Presenter/ViewModel パターンへ移行：
-- ✅ `pages/login/login_page.nim` → `LoginPageViewModel`
-- ✅ `pages/validation/validation_page.nim` → `ValidationPageViewModel`
-- ✅ `pages/welcome/welcome_page.nim` → `WelcomePageViewModel`
-- ✅ `pages/flash/flash_page.nim` → `FlashPageViewModel`
-- ✅ `pages/cookie/cookie_page.nim` → `CookiePageViewModel`
-- ✅ `pages/file_upload/file_upload_page.nim` → `FileUploadPageViewModel`
-- ✅ `pages/with_style/with_style_page.nim` → `WithStylePageViewModel`
-- ✅ `pages/sample/sample_view.nim` → `SamplePageViewModel`
-- ℹ️ `pages/api_view/`, `pages/web_socket/`, `pages/benchmark/` は既に Presenter パターン使用中
+### 7. テスト観点
+- 同時リクエスト時に `Context` が別リクエストへ混線しないこと。
+- フォーム入力値、エラー、ログイン状態が request-local に保持されること。
+- Template が `context()` を参照していないこと。
+- Presenter/ViewModel 経由でも既存画面の表示仕様が変わらないこと。
+- `signal` と `globalContext` 廃止後も CSRF、session、flash の取得フローが破綻しないこと。
 
-### 8. ドキュメント整備
-- ✅ `examples/example/app/http/views/README.md` - 設計ガイド（40+ 行）
-- ✅ `examples/example/app/http/views/presenters/README.md` - Presenter/ViewModel パターン規約（200+ 行）
-- ✅ `examples/example/app/http/views/signals/DEPRECATION.md` - Signal 廃止移行ガイド
-- ✅ `examples/example/app/http/views/TEST_STRATEGY.md` - テスト戦略書（150+ 行）
+## 調査結果・設計まとめ
 
-### 9. 最終削除
-- ✅ `examples/example/app/http/views/signals/form_signal.nim` - 削除
-- ✅ `examples/example/app/http/views/signals/login_signal.nim` - 削除
-- ✅ `tests/test_signal.nim` - 削除
-- ✅ `src/basolato/core/view.nim` - Signal 実装を完全削除
+### Presenter の役割と使い分け
+
+**Presenter が必要な場合（context から値を抽出する）:**
+- context.session.get()
+- context.getFlash()
+- context.getParamsWithErrorsList()
+- context.getParamsWithErrorsObject()
+- context.getCsrfToken()
+- その他の Context API を使用
+
+例）login_page, cookie_page, flash_page, file_upload_page, validation_page
+
+**Presenter が不要な場合（ViewModel が静的/固定値）:**
+- context から値を抽出しない
+- ViewModel.new() で固定値のみを使用
+- template を直接呼び出すだけ
+
+例）welcome_page, sample_view, with_style_page, web_socket_page, api_view_page
+
+### 実装パターン
+
+**Presenter が必要な場合:**
+```nim
+Controller → Page(context) → Presenter.invoke(context) → ViewModel
+  ↓
+Template(vm)
+```
+
+**Presenter が不要な場合:**
+```nim
+Controller → Page(context) → ViewModel.new() → Template(vm)
+```
+
+### 最適化指針
+
+1. **Presenter を廃止**: context を使わない場合、Presenter 不要
+2. **Page の簡略化**: ViewModel を直接作成
+3. **Template の統一**: すべて ViewModel を受け取る
+4. **Controller の一貫性**: すべての Page に context を渡す（Page 内で判定）

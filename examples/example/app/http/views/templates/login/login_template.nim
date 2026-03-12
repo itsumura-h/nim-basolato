@@ -6,6 +6,7 @@ proc loginTemplate*(vm: LoginPageViewModel):Component =
   let formParams = vm.formParams
   let formErrors = vm.formErrors
   let loginUser = (isLogin: vm.isLogin, name: vm.name)
+  let csrfTokenStr = vm.csrfToken
 
   let style = styleTmpl(Css, """
     <style>
@@ -26,7 +27,7 @@ proc loginTemplate*(vm: LoginPageViewModel):Component =
               <h2>You are logged in!</h2>
               <p>Login Name: $(loginUser.name)</p>
             </header>
-            $(csrfToken())
+            <input type="hidden" name="csrf_token" value="$(escapeHtmlAttr(csrfTokenStr))">
             <button type="submit">Logout</button>
           </form>
         }
@@ -42,7 +43,7 @@ proc loginTemplate*(vm: LoginPageViewModel):Component =
                 }
               </ul>
             }
-            $(csrfToken())
+            <input type="hidden" name="csrf_token" value="$(escapeHtmlAttr(csrfTokenStr))">
             <input type="text" name="name" placeholder="name" value="$(formParams.old("name"))">
             <input type="password" name="password" placeholder="password">
             <button type="submit">Login</button>

@@ -1,26 +1,13 @@
+import std/asyncdispatch
 import ../../../../../../../src/basolato/view
-import ../../components/with_style/with_style_component1
-import ../../components/with_style/with_style_component2
-import ../../components/with_style/with_style_component3
-import ../../presenters/with_style/with_style_page_viewmodel
+import ../../layouts/app/app_layout
+import ../../presenters/app_presenter
+import ../../templates/with_style/with_style_template
 
 
-proc withStyleTemplate*(vm: WithStylePageViewModel): Component
-
-
-proc withStylePage*():Component =
-  let vm = WithStylePageViewModel.new()
-  return withStyleTemplate(vm)
-
-
-proc withStyleTemplate*(vm: WithStylePageViewModel): Component =
-  tmpl"""
-    <main>
-      <article>
-        <a href="/">go back</a>
-        $(withStyleComponent1())
-        $(withStyleComponent2())
-        $(withStyleComponent3())
-      </article>
-    </main>
-  """
+proc withStylePageView*(context: Context):Future[Component] {.async.} =
+  const title = "With Style"
+  let appPresenter = AppPresenter.new()
+  let appLayoutModel = appPresenter.invoke(title)
+  let page = withStyleTemplate()
+  return appLayout(appLayoutModel, page)

@@ -25,7 +25,7 @@ proc csrfToken*():CsrfToken =
   ## used in view
   return CsrfToken.new(globalCsrfToken)
 
-func escapeHtmlAttr(s: string): string =
+func escapeHtmlAttr*(s: string): string =
   result = newStringOfCap(s.len)
   for c in s:
     case c

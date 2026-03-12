@@ -37,6 +37,9 @@ Lint可能化のため、規範ルールは **Rule ID** を持つ。
 | NFW-DX-001 | SHOULD | manual | Rails/Laravel利用者が理解しやすい命名と責務分割を優先する |
 | NFW-DX-002 | SHOULD | manual | 規約優先だが、明示的設定で上書き可能にする |
 | NFW-VIEW-001 | MUST | manual | HTML応答とJSON応答を同一ルーティング基盤で扱えるようにする |
+| NFW-VIEW-002 | MUST | manual | ViewはPageからTemplateへ明示的な表示データを受け渡す |
+| NFW-VIEW-003 | MUST | manual | Templateは共有可変状態やグローバルContextに依存しない |
+| NFW-VIEW-004 | SHOULD | manual | Presenter/ViewModelで引数爆発を避けつつ描画責務を分離する |
 | NFW-STRUCT-001 | MUST | manual | `examples/example/app` 相当の責務分割を標準構成として扱う |
 | NFW-STRUCT-002 | SHOULD | manual | `app` 直下の補助レイヤは責務を越境させずに連携する |
 | NFW-SEC-001 | MUST | manual | 安全性をデフォルトにし、危険な挙動は opt-in に限定する |
@@ -108,14 +111,37 @@ Controller にビジネスロジックを過度に集中させず、再利用可
 [NFW-STRUCT-001][MUST][manual]
 `http/views` 配下の役割は以下のように分離する。
 - `layouts`: 複数ページで共有する外枠、head、共通レイアウト部品
-- `pages`: ルートまたは画面単位の固有コンテンツ
+- `pages`: ルートまたは画面単位の固有コンテンツ。request-local な文脈を受け取り、Presenter を呼び出して Template へ渡す入口
 - `components`: ページやレイアウトから再利用される部分ビュー
-- `templates`: 差し込み可能なテンプレート断片や再利用テンプレート
-- `presenters`: View に渡す表示用データ整形とプレゼンテーション境界の吸収
-- `signals`: Hotwire相当の部分更新やフォーム状態通知に関わる表示イベント表現
+- `templates`: 差し込み可能なテンプレート断片や再利用テンプレート。描画に専念し、共有状態の読み出しを持たない
+- `presenters`: request-local な入力や問い合わせ結果を描画専用の ViewModel へ整形し、プレゼンテーション境界を吸収する
+- `signals`: Hotwire相当の部分更新やクライアント向けイベント表現を必要とする場合のみ扱う補助概念。サーバー描画の request-local データ保持手段としては採用しない
 
 [NFW-STRUCT-002][SHOULD][manual]
 依存方向は原則として `controller -> usecase -> model / query / repository` とし、View は Controller または Presenter から必要な表示データだけを受け取る。
+
+### 4.1 Viewアーキテクチャ
+
+[NFW-VIEW-002][MUST][manual]
+MPA の View は原則として `Page -> Presenter -> Template` の流れで構成する。
+
+[NFW-VIEW-002][MUST][manual]
+`Page` は request-local な文脈を受け取る入口であり、認証状態、flash、csrf、フォーム入力値などの取得を担い、必要に応じて Presenter を呼び出す。
+
+[NFW-VIEW-004][SHOULD][manual]
+`Presenter` はドメイン層や HTTP 文脈から取得した値を、Template がそのまま描画できる ViewModel へ変換する責務を持つ。
+
+[NFW-VIEW-004][SHOULD][manual]
+Template への引数は個別値の列挙より、画面単位の単一 ViewModel を優先し、必要に応じて `auth`、`form`、`flash`、`pageMeta` などのサブオブジェクトへ分割する。
+
+[NFW-VIEW-003][MUST][manual]
+`Template` は HTML 描画に専念し、共有可変状態、プロセスグローバル状態、グローバル `Context` 取得 API に依存してはならない。
+
+[NFW-VIEW-003][MUST][manual]
+CSRF トークン、認証状態、フォーム再入力値などの request-local な値は、Page または Presenter で解決し、Template へ明示的に受け渡す。
+
+[NFW-VIEW-004][SHOULD][manual]
+`Component` は純粋描画を優先し、再利用価値が十分にある場合にのみ専用の ComponentViewModel を持つ。
 
 ## 5. ルーティングとミドルウェア
 

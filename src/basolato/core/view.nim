@@ -6,7 +6,7 @@ import std/strutils; export strutils
 import std/tables; export tables
 import ./settings
 import ./security/context; export context
-import ./security/csrf_token; export csrf_token
+import ./security/csrf_token; export csrf_token, escapeHtmlAttr
 import ./security/random_string
 import ./params; export params
 import ./templates; export templates

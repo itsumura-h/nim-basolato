@@ -36,6 +36,7 @@ proc updateCsrfToken*(self:Option[Session]) {.async.} =
   if self.isSome:
     let csrfToken = secureRandStr(100)
     globalCsrfToken = csrfToken
+    await self.get.db.setStr("csrf_token", csrfToken)
 
 proc set*(self:Option[Session], key, value:string) {.async.} =
   if self.isSome:
