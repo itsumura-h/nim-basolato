@@ -1,4 +1,3 @@
-import ../../../../../../../src/basolato/view
 import ../../../../../../../src/basolato/core/base
 
 
