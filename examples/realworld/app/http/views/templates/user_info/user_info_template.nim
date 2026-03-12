@@ -1,0 +1,34 @@
+import std/asyncdispatch
+import basolato/view
+import ./user_info_template_model
+import ../../../../presenters/user_info/user_info_presenter
+
+proc userInfoTemplate*():Future[Component] {.async.} =
+  let presenter = UserInfoPresenter.new()
+  let model = presenter.invoke().await
+
+  tmpl"""
+    <div class="user-info">
+      <div class="container">
+        <div class="row">
+          <div class="col-xs-12 col-md-10 offset-md-1">
+            <img src="$(model.image)" class="user-img" />
+            <h4>$(model.name)</h4>
+            <p>
+              $(model.bio)
+            </p>
+            <button class="btn btn-sm btn-outline-secondary action-btn">
+              <i class="ion-plus-round"></i>
+              &nbsp; Follow $(model.name)
+            </button>
+            $if model.isSameUser{
+              <a href="/settings" class="btn btn-sm btn-outline-secondary action-btn">
+                <i class="ion-gear-a"></i>
+                &nbsp; Edit Profile Settings
+              </a>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  """
