@@ -1,22 +1,17 @@
+import std/asyncdispatch
 import basolato/view
-import ../../../../presenters/feed/tag_feed_presenter
 import ../../components/feed_article/feed_article_component
 import ../../components/paginator/paginator_component
 import ./feed_template_model
 
 
-proc tagFeedTemplate*():Future[Component] {.async.} =
-  let context = context()
-  let tagName = context.params.getStr("tag")
-
-  let presenter = TagFeedPresenter.new()
-  let model = presenter.invoke().await
-
+proc tagFeedTemplate*(context: Context): Future[Component] {.async.} =
+  let model = await FeedTemplateModel.new(context)
   tmpl"""
     <div class="feed-toggle">
       <ul class="nav nav-pills outline-active">
         <li class="nav-item">
-          <a class="nav-link active" href="">$(tagName)</a>
+          <a class="nav-link active" href="">$(model.tagName)</a>
         </li>
         $if model.isLogin{
           <li class="nav-item">

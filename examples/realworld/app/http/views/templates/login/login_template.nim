@@ -3,9 +3,7 @@ import basolato/view
 import ./login_template_model
 
 
-proc loginTemplate*():Future[Component] {.async.} =
-  let model = LoginTemplateModel.new().await
-
+proc loginTemplate*(model: LoginTemplateModel): Component =
   tmpl"""
     <div class="auth-page">
       <div class="container page">
@@ -23,7 +21,7 @@ proc loginTemplate*():Future[Component] {.async.} =
             </ul>
 
             <form method="post" action="/login">
-              $(csrfToken())
+              $(model.csrfToken)
               <fieldset class="form-group">
                 <input
                   class="form-control form-control-lg"
@@ -49,3 +47,8 @@ proc loginTemplate*():Future[Component] {.async.} =
       </div>
     </div>
   """
+
+
+proc loginTemplate*(context: Context): Future[Component] {.async.} =
+  let model = await LoginTemplateModel.new(context)
+  return loginTemplate(model)

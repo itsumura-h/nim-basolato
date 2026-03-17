@@ -5,41 +5,42 @@ import ../../templates/feed/global_feed_template
 import ../../templates/feed/your_feed_template
 import ../../templates/feed/tag_feed_template
 import ../../templates/popular_tags/popular_tags_template
-import ../../templates/feed/feed_template_model
 
 
-proc impl(): Future[Component] {.async.} =
-  let context = context()
+proc homePageView*(context: Context): Future[Component] {.async.} =
   let feedTemplate =
     if context.request.url.path == "/":
-      globalFeedTemplate().await
+      await globalFeedTemplate(context)
     elif context.request.url.path == "/your-feed":
-      yourFeedTemplate().await
+      await yourFeedTemplate(context)
     else:
-      tagFeedTemplate().await
+      await tagFeedTemplate(context)
 
-  tmpl"""
-    <div class="home-page">
-      <div class="banner">
-        <div class="container">
-          <h1 class="logo-font">conduit</h1>
-          <p>A place to share your knowledge.</p>
-        </div>
-      </div>
+  let popularTagsSection = await popularTagsTemplate(context)
 
-      <div class="container page">
-        <div class="row">
-          <div class="col-md-9">
-            $(feedTemplate)
-          </div>
-
-          <div class="col-md-3">
-            $(popularTagsTemplate().await)
+  let page = block:
+    tmpl"""
+      <div class="home-page">
+        <div class="banner">
+          <div class="container">
+            <h1 class="logo-font">conduit</h1>
+            <p>A place to share your knowledge.</p>
           </div>
         </div>
-      </div>
-    </div>
-  """
 
-proc homePage*(): Future[Component] {.async.} =
-  return appLayout("Home", impl().await).await
+        <div class="container page">
+          <div class="row">
+            <div class="col-md-9">
+              $(feedTemplate)
+            </div>
+
+            <div class="col-md-3">
+              $(popularTagsSection)
+            </div>
+          </div>
+        </div>
+      </div>
+    """
+    result
+
+  return await appLayout(context, "Home", page)

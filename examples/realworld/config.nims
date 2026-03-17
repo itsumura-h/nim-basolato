@@ -9,3 +9,6 @@ putEnv("SESSION_DB_PATH", "./session.db") # Session file path or redis host:port
 putEnv("LIBSASS", $false) # "true" or "false"
 
 switch("threads", "off")
+
+# basolato を /application/src から相対パスで解決（config のある realworld から ../../src）
+switch("path", "../../src")

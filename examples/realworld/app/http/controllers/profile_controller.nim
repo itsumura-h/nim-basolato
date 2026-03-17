@@ -7,12 +7,12 @@ import ../../usecases/follow_usecase
 
 
 proc show*(context:Context):Future[Response] {.async.} =
-  let view = profilePage().await
+  let view = profilePageView(context).await
   return render(view)
 
 
 proc favoriteShow*(context:Context):Future[Response] {.async.} =
-  let view = profilePage().await
+  let view = profilePageView(context).await
   return render(view)
 
 

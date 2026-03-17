@@ -1,13 +1,9 @@
 import std/asyncdispatch
 import basolato/view
 import ./setting_template_model
-import ../../../../presenters/setting/setting_presenter
 
 
-proc settingTemplate*():Future[Component] {.async.} =
-  let presenter = SettingPresenter.new()
-  let model = presenter.invoke().await
-
+proc settingTemplate*(model: SettingTemplateModel): Component =
   tmpl"""
     <div class="settings-page">
       <div class="container page">
@@ -22,7 +18,7 @@ proc settingTemplate*():Future[Component] {.async.} =
             </ul>
 
             <form method="post" action="/settings">
-              $(csrfToken())
+              $(model.csrfToken)
               <fieldset>
                 <fieldset class="form-group">
                   <input
@@ -72,7 +68,7 @@ proc settingTemplate*():Future[Component] {.async.} =
             </form>
             <hr />
             <form method="post" action="/logout">
-              $(csrfToken())
+              $(model.csrfToken)
               <button class="btn btn-outline-danger">Or click here to logout.</button>
             </form>
           </div>
@@ -80,3 +76,8 @@ proc settingTemplate*():Future[Component] {.async.} =
       </div>
     </div>
   """
+
+
+proc settingTemplate*(context: Context): Future[Component] {.async.} =
+  let model = await SettingTemplateModel.new(context)
+  return settingTemplate(model)

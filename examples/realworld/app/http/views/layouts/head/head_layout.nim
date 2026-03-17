@@ -1,9 +1,7 @@
 import basolato/view
 import ./head_layout_model
 
-proc headLayout*(title:string):Component =
-  let model = HeadLayoutModel.new(title)
-  
+proc headLayout*(model: HeadLayoutModel): Component =
   tmpl"""
     <head>
       <meta charset="utf-8" />

@@ -1,11 +1,20 @@
-import basolato/view
 import std/asyncdispatch
+import basolato/view
 
 type LoginTemplateModel* = object
-  errors*:seq[string]
-  email*:string
+  errors*: seq[string]
+  email*: string
+  csrfToken*: string
 
-proc new*(_:type LoginTemplateModel):Future[LoginTemplateModel] {.async.} =
-  let context = context()
+proc new*(
+  _: type LoginTemplateModel,
+  context: Context
+): Future[LoginTemplateModel] {.async.} =
   let (params, errors) = context.getParamsWithErrorsList().await
-  return LoginTemplateModel(errors: errors, email: params.old("email"))
+  let email = params.old("email")
+  let csrfToken = context.csrfToken().toString()
+  return LoginTemplateModel(
+    errors: errors,
+    email: email,
+    csrfToken: csrfToken
+  )

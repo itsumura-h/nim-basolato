@@ -5,5 +5,5 @@ import ../views/pages/article/article_page
 
 
 proc show*(context:Context):Future[Response] {.async.} =
-  let page = articlePage().await
+  let page = articlePageView(context).await
   return render(page)

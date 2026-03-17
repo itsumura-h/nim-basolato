@@ -9,7 +9,7 @@ import ../../usecases/register_usecase
 
 
 proc signInPage*(context:Context):Future[Response] {.async.} =
-  let page = loginPage().await
+  let page = loginPageView(context).await
   return render(page)
 
 
@@ -41,7 +41,7 @@ proc signIn*(context:Context):Future[Response] {.async.} =
 
 
 proc signUpPage*(context:Context):Future[Response] {.async.} =
-  let page = registerPage().await
+  let page = registerPageView(context).await
   return render(page)
 
 

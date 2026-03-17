@@ -15,8 +15,8 @@ fixブランチルール
 - [x] `context()` のグローバル取得 API を置き換える request-local な受け渡し方針を決める。
 - [x] `Page -> Presenter -> Template` の責務境界を `Context` を含めて再定義する。
 - [x] `login_page` を基準に、`context()` 非依存の View API を設計する。
-- [ ] `Context` を必要とする処理と、`ViewModel` に落とし込むべき処理を分類する。
-- [ ] 将来の実装で再発しないよう、View 層と Context 利用の規約を文章化する。
+- [x] `Context` を必要とする処理と、`ViewModel` に落とし込むべき処理を分類する。
+- [x] 将来の実装で再発しないよう、View 層と Context 利用の規約を文章化する。
 - [ ] 回帰確認と並行リクエスト時の安全性テスト観点を整理する。
 
 ### 第1段階実装：Context グローバル参照の廃止
@@ -159,3 +159,9 @@ Controller → Page(context) → ViewModel.new() → Template(vm)
 2. **Page の簡略化**: ViewModel を直接作成
 3. **Template の統一**: すべて ViewModel を受け取る
 4. **Controller の一貫性**: すべての Page に context を渡す（Page 内で判定）
+
+### 追加で文書化した規約
+- `project.mdc` に MPA + Hotwire 前提の read/write 分離を追加し、write-side は `aggregate / vo / repository / usecase`、read-side は `dao / dto / presenter / template model / template / component` を正規構成として定義した。
+- `Page` は composition、`Template` は再描画単位、`Component` は pure UI という責務境界を規範化した。
+- `DAO` は template 単位で一括取得するものとし、`Component` や template 内 loop からの取得を禁止した。
+- `DTO` は primitive only、`TemplateModel` は pure な描画モデルとし、`Context` や I/O を持ち込まない方針を明文化した。

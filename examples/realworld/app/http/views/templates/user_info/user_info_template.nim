@@ -1,12 +1,9 @@
 import std/asyncdispatch
 import basolato/view
 import ./user_info_template_model
-import ../../../../presenters/user_info/user_info_presenter
 
-proc userInfoTemplate*():Future[Component] {.async.} =
-  let presenter = UserInfoPresenter.new()
-  let model = presenter.invoke().await
 
+proc userInfoTemplate*(model: UserInfoTemplateModel): Component =
   tmpl"""
     <div class="user-info">
       <div class="container">
@@ -32,3 +29,8 @@ proc userInfoTemplate*():Future[Component] {.async.} =
       </div>
     </div>
   """
+
+
+proc userInfoTemplate*(context: Context): Future[Component] {.async.} =
+  let model = await UserInfoTemplateModel.new(context)
+  return userInfoTemplate(model)

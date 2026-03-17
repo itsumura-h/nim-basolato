@@ -14,7 +14,7 @@ proc formView*(viewModel:FormViewModel):Component =
         hx-swap-oob="true"
       }
     >
-      $(csrfToken())
+      $context.csrfToken()
       <fieldset>
         <fieldset class="form-group">
           <input class="form-control" type="text" placeholder="URL of profile picture" value="$(viewModel.user.image)" name="image_url">

@@ -26,7 +26,7 @@ proc impl(viewModel:EditorViewModel):Component =
 
               hx-target="#app-body"
             >
-              $(csrfToken())
+              $context.csrfToken()
               <fieldset class="form-group">
                 <input type="text" name="title" class="form-control form-control-lg" placeholder="Post Title"
                   $if viewModel.article.isSome(){

@@ -11,8 +11,7 @@ type NavbarLayoutModel*  = object
   userName*:string
   image*:string
 
-proc new*(_:type NavbarLayoutModel):Future[NavbarLayoutModel] {.async.} =
-  let context = context()
+proc new*(_:type NavbarLayoutModel, context:Context):Future[NavbarLayoutModel] {.async.} =
   let isLogin = context.isLogin().await
   let loginUserId = context.get("user_id").await
 

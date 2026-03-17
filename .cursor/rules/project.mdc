@@ -32,6 +32,7 @@ Lint可能化のため、規範ルールは **Rule ID** を持つ。
 | NFW-ARCH-001 | MUST | manual | Laravel/Rails系MVCを中核アーキテクチャにする |
 | NFW-ARCH-002 | MUST | manual | MPAを標準UI形態とし、Hotwire相当を公式採用する |
 | NFW-ARCH-003 | MUST | manual | 同一アプリケーションをAPIサーバーとしても運用可能にする |
+| NFW-ARCH-004 | MUST | manual | write-sideはドメイン中心、read-sideはtemplate中心で責務分離する |
 | NFW-HTTP-001 | MUST | test | ルーティングからコントローラー実行までの間にミドルウェアを挿入可能にする |
 | NFW-HTTP-002 | MUST | test | 認証・認可・監査・CSRF等をミドルウェアとして分離可能にする |
 | NFW-DX-001 | SHOULD | manual | Rails/Laravel利用者が理解しやすい命名と責務分割を優先する |
@@ -39,9 +40,16 @@ Lint可能化のため、規範ルールは **Rule ID** を持つ。
 | NFW-VIEW-001 | MUST | manual | HTML応答とJSON応答を同一ルーティング基盤で扱えるようにする |
 | NFW-VIEW-002 | MUST | manual | ViewはPageからTemplateへ明示的な表示データを受け渡す |
 | NFW-VIEW-003 | MUST | manual | Templateは共有可変状態やグローバルContextに依存しない |
-| NFW-VIEW-004 | SHOULD | manual | Presenter/ViewModelで引数爆発を避けつつ描画責務を分離する |
+| NFW-VIEW-004 | SHOULD | manual | template modelで引数爆発を避けつつ描画責務を分離する |
+| NFW-VIEW-005 | MUST | manual | TemplateをHotwire再描画単位、Pageをcomposition単位として扱う |
+| NFW-VIEW-006 | MUST | manual | Componentはpure UIに限定し、取得処理やContext依存を持ち込まない |
+| NFW-VIEW-007 | SHOULD | manual | template modelはコンストラクタにcontextを渡し、構築ロジックはtemplate model自身が持つ。貧血症を避ける。 |
+| NFW-VIEW-008 | MUST | manual | Templateの引数はcontextのみ。データ取得の単位はTemplate。template modelはcontextとDAOで自己構築する。 |
 | NFW-STRUCT-001 | MUST | manual | `examples/example/app` 相当の責務分割を標準構成として扱う |
 | NFW-STRUCT-002 | SHOULD | manual | `app` 直下の補助レイヤは責務を越境させずに連携する |
+| NFW-STRUCT-003 | SHOULD | manual | `infra` を参照/更新のデータアクセス境界として採用する |
+| NFW-DATA-001 | MUST | manual | DAOはtemplate単位で設計し、N+1を避けるため一括取得を担う |
+| NFW-DATA-002 | MUST | manual | read-side DTOはprimitive only。template modelはcontextを受け取り必要なDAOを呼びDTOと合わせて自己構築する。 |
 | NFW-SEC-001 | MUST | manual | 安全性をデフォルトにし、危険な挙動は opt-in に限定する |
 
 ## 1. 目的・スコープ
@@ -74,13 +82,22 @@ Lint可能化のため、規範ルールは **Rule ID** を持つ。
 フロントエンドの標準形態は **Multi Page Application（MPA）** とする。
 
 [NFW-ARCH-002][MUST][manual]
-MPA の体験向上手段として **Hotwire 相当の仕組み** を公式採用対象に含める。ページ全体再描画に依存せず、部分更新・遷移最適化・フォーム送信最適化を扱えることを目標とする。
+MPA の体験向上手段として **Hotwire 相当の仕組み** を公式採用対象に含める。参照系は常に `GET` アクセスを起点に取得し、ページ全体再描画に加えて、部分更新・遷移最適化・フォーム送信最適化を扱えることを目標とする。
+
+[NFW-ARCH-002][MUST NOT][manual]
+参照系UIを Astro の island architecture のようなクライアント側島コンポーネントの部分 hydrate で組み立てる標準設計は採用しない。URI ごとのサーバー描画を基本とし、部分更新は Hotwire 系の HTTP 応答として扱う。
 
 [NFW-ARCH-003][MUST][manual]
 同一フレームワークは、HTML中心のWebアプリケーションに加えて **APIサーバー** としても動作できなければならない。
 
 [NFW-VIEW-001][MUST][manual]
 HTMLレスポンス系とJSONレスポンス系は、別製品ではなく同一のルーティング・リクエスト処理・認証基盤の上で共存できるように設計する。
+
+[NFW-ARCH-004][MUST][manual]
+MPA + Hotwire を前提とする標準アーキテクチャでは、**write-side は domain 中心、read-side は template 中心**で設計する。
+
+[NFW-ARCH-004][MUST][manual]
+write-side は `aggregate`、`value object`、`repository`、`usecase/command` を中心に業務整合性を守り、read-side は `dao`、`dto`、`template model`、`template`、`component` を中心に描画都合で組み立てる。
 
 ## 4. アプリケーションレイヤ責務
 
@@ -108,40 +125,105 @@ Controller にビジネスロジックを過度に集中させず、再利用可
 - `di_container.nim`: Repository や Query Service などの依存解決を集約するDI定義
 - `errors.nim`: ドメインおよびアプリケーション共通で扱う例外型の定義
 
+[NFW-STRUCT-003][SHOULD][manual]
+新しい標準構成では `data_stores` より `infra` を優先し、参照系と更新系の境界をディレクトリ名で明示する。
+
+[NFW-STRUCT-003][SHOULD][manual]
+推奨構成は以下とする。
+- `infra/dao`: 参照専用のDBアクセス、join、batch、aggregation、DTO生成
+- `infra/repositories`: 更新専用の永続化とAggregate復元
+- `domain/aggregates`: 更新系専用の集約
+- `domain/vo`: 更新系専用のValue Object
+- `models/dto`: 参照系専用のraw data
+- `models/template_models`: Template と 1:1 で対応する template model
+- `models/component_models`: Component と 1:1 で対応する component model
+- `http/views/pages`: head、header、footer を含むフル HTML のcomposition
+- `http/views/templates`: Hotwire再描画単位のUI
+- `http/views/components`: Template配下のpure UI
+
 [NFW-STRUCT-001][MUST][manual]
 `http/views` 配下の役割は以下のように分離する。
 - `layouts`: 複数ページで共有する外枠、head、共通レイアウト部品
-- `pages`: ルートまたは画面単位の固有コンテンツ。request-local な文脈を受け取り、Presenter を呼び出して Template へ渡す入口
+- `pages`: ルートまたは画面単位の固有コンテンツ。request-local な文脈（context）を受け取り、Template(context) を呼び出し、head・header・footer を含むフル HTML を構築する入口
 - `components`: ページやレイアウトから再利用される部分ビュー
-- `templates`: 差し込み可能なテンプレート断片や再利用テンプレート。描画に専念し、共有状態の読み出しを持たない
-- `presenters`: request-local な入力や問い合わせ結果を描画専用の ViewModel へ整形し、プレゼンテーション境界を吸収する
+- `templates`: URI 単位の body コンテンツや差し込み可能なテンプレート断片を表す。引数は context のみ。描画に専念し、共有状態の読み出しを持たない
 - `signals`: Hotwire相当の部分更新やクライアント向けイベント表現を必要とする場合のみ扱う補助概念。サーバー描画の request-local データ保持手段としては採用しない
 
 [NFW-STRUCT-002][SHOULD][manual]
-依存方向は原則として `controller -> usecase -> model / query / repository` とし、View は Controller または Presenter から必要な表示データだけを受け取る。
+依存方向は原則として `controller -> usecase -> model / query / repository` とし、View は Controller から context を受け取り、Template(context) で template model が自己構築する。
+
+[NFW-ARCH-004][MUST][manual]
+write-side の依存方向は原則として `controller -> usecase -> aggregate / vo -> repository` とし、read-side の依存方向は原則として `controller -> page -> template(context)`、template 内で `template model.new(context)` が必要な DAO を呼んで自己を組み立てる。
 
 ### 4.1 Viewアーキテクチャ
 
 [NFW-VIEW-002][MUST][manual]
-MPA の View は原則として `Page -> Presenter -> Template` の流れで構成する。
+MPA の View は原則として `Page -> Template` の流れで構成する。Template の引数は context のみとする。
 
 [NFW-VIEW-002][MUST][manual]
-`Page` は request-local な文脈を受け取る入口であり、認証状態、flash、csrf、フォーム入力値などの取得を担い、必要に応じて Presenter を呼び出す。
+`Page` は request-local な文脈（context）を受け取る入口であり、Template(context) を呼び出して body を取得し、レイアウトと組み合わせてフル HTML を組み立てる。
+
+[NFW-VIEW-002][MUST][manual]
+参照系の Page は controller から呼び出される View の entrypoint とし、`GET` で取得した request-local な文脈を起点に、head、header、footer を含むフル HTML を組み立てなければならない。
 
 [NFW-VIEW-004][SHOULD][manual]
-`Presenter` はドメイン層や HTTP 文脈から取得した値を、Template がそのまま描画できる ViewModel へ変換する責務を持つ。
+Template 単位の read-side 組み立て責務は template model が持つ。template model は context と必要な DAO の結果から自己を組み立てる。
 
 [NFW-VIEW-004][SHOULD][manual]
-Template への引数は個別値の列挙より、画面単位の単一 ViewModel を優先し、必要に応じて `auth`、`form`、`flash`、`pageMeta` などのサブオブジェクトへ分割する。
+Template への引数は個別値の列挙より、Template は context のみを受け取り、内部で template model を構築して描画する。template model 内では必要に応じて `auth`、`form`、`flash`、`pageMeta` などのサブオブジェクトへ分割する。
+
+[NFW-VIEW-005][MUST][manual]
+`Page` はレイアウト適用と head、header、footer などの共通コンポーネントの組み立て、および子 Template の配置を担当する composition 層とし、DAO の実装や業務ロジックを持ち込んではならない。
+
+[NFW-VIEW-005][MUST][manual]
+`Template` は Hotwire の Turbo Frame / Turbo Stream を含む再描画単位として扱い、URI 単位の body コンテンツの描画、ループ、条件分岐、Component 呼び出しを担当する。
+
+[NFW-VIEW-005][MUST NOT][manual]
+`Template` を Astro の island architecture のような部分 hydrate の島境界として扱ってはならない。部分更新はあくまでサーバーが返す HTML 断片の差し替えとして表現する。
+
+[NFW-VIEW-005][MUST][manual]
+`Template` の entrypoint と pure render 関数は分離を推奨し、entrypoint で template model を context から構築し、render 側は `template model` だけを受け取る構造を優先する。
 
 [NFW-VIEW-003][MUST][manual]
 `Template` は HTML 描画に専念し、共有可変状態、プロセスグローバル状態、グローバル `Context` 取得 API に依存してはならない。
 
 [NFW-VIEW-003][MUST][manual]
-CSRF トークン、認証状態、フォーム再入力値などの request-local な値は、Page または Presenter で解決し、Template へ明示的に受け渡す。
+CSRF トークン、認証状態、フォーム再入力値などの request-local な値は、template model のコンストラクタで context から解決し、model のフィールドとして Template へ渡す。
+
+[NFW-VIEW-008][MUST][manual]
+Template はデータ取得の単位である。Template が受け取る引数は context のみとする。template model はコンストラクタで context を受け取り、必要な DAO を呼び DTO を受け取り、context と合わせて自身および component model を組み立てる。
 
 [NFW-VIEW-004][SHOULD][manual]
-`Component` は純粋描画を優先し、再利用価値が十分にある場合にのみ専用の ComponentViewModel を持つ。
+`Component` は純粋描画を優先し、再利用価値が十分にある場合にのみ専用の component model を持つ。
+
+[NFW-VIEW-006][MUST][manual]
+`Component` は Template より小さい粒度の pure UI とし、DBアクセス、request-local `Context` 依存、取得ロジックを持ち込んではならない。
+
+[NFW-VIEW-006][MUST][manual]
+Template から Component を呼ぶ場合は、`template model` 配下に `component model` を持たせ、Component は props を受けて描画するだけに留める。
+
+[NFW-VIEW-007][SHOULD][manual]
+`template model` にはコンストラクタに `Context` を渡し、template model を構築するロジックは template model 自身が持つ。Context から必要な値（csrf、認証状態、flash、params 等）を取り出して自身のフィールドを組み立てる責務を template model に集約し、ドメインモデル貧血症（振る舞いのないデータの入れ物だけになること）にならないようにする。
+
+### 4.2 Read/Write 分離とデータ取得方針
+
+[NFW-ARCH-004][MUST][manual]
+更新系では read-side の DTO や template model を使わず、業務整合性が必要な処理は `aggregate` と `value object` を経由して `repository` に永続化する。
+
+[NFW-DATA-001][MUST][manual]
+`DAO` は参照専用とし、DBクエリ、join、batch、aggregation、および DTO 生成を担当する。
+
+[NFW-DATA-001][MUST][manual]
+DAO の設計単位は table 単位や component 単位ではなく、Template または fragment 単位を基本とする。`Template` 内のループや `Component` 内から DAO を呼び出してはならない。
+
+[NFW-DATA-001][MUST][manual]
+N+1 回避の原則として、取得境界は Template 単位に固定し、template model が DAO から取得した DTO 群から `seq[component model]` を組み立てる。
+
+[NFW-DATA-002][MUST][manual]
+read-side の `DTO` は primitive 型のみを保持し、domain の VO や aggregate を含めてはならない。
+
+[NFW-DATA-002][MUST][manual]
+`template model` は Template と 1:1 で対応する。context を受け取り、必要な DAO を呼び DTO を受け取り、context と合わせて自身および component model を組み立てる。
 
 ## 5. ルーティングとミドルウェア
 

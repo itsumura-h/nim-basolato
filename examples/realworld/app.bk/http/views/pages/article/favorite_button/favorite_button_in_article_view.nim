@@ -9,7 +9,7 @@ proc favoriteButtonInArticleView*(viewModel: FavoriteButtonInArticleViewModel): 
       hx-swap="outerHTML"
       class="favorite-button"
     >
-      $(csrfToken())
+      $context.csrfToken()
       <button class="btn btn-outline-primary btn-sm pull-xs-right $if viewModel.isFavorited{active}">
         <i class="ion-heart"></i>
         $if viewModel.isFavorited{

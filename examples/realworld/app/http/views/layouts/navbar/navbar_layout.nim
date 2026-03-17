@@ -1,10 +1,7 @@
-import std/asyncdispatch
 import basolato/view
 import ./navbar_layout_model
 
-
-proc navbarLayout*():Future[Component] {.async.} =
-  let model = NavbarLayoutModel.new().await
+proc navbarLayout*(model: NavbarLayoutModel): Component =
   tmpl"""
     <nav class="navbar navbar-light">
       <div class="container">

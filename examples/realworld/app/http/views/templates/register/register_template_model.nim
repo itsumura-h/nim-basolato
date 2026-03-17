@@ -3,13 +3,16 @@ import basolato/view
 
 type RegisterTemplateModel* = object
   errors*: seq[string]
-  name*:string
-  email*:string
+  name*: string
+  email*: string
+  csrfToken*: string
 
-
-proc new*(_:type RegisterTemplateModel):Future[RegisterTemplateModel] {.async.} =
-  let context = context()
+proc new*(
+  _: type RegisterTemplateModel,
+  context: Context
+): Future[RegisterTemplateModel] {.async.} =
   let (params, errors) = context.getParamsWithErrorsList().await
   let name = params.old("name")
   let email = params.old("email")
-  return RegisterTemplateModel(errors: errors, name: name, email: email)
+  let csrfToken = context.csrfToken().toString()
+  return RegisterTemplateModel(errors: errors, name: name, email: email, csrfToken: csrfToken)

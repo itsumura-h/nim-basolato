@@ -20,7 +20,7 @@ proc impl(viewModel:SettingViewModel):Component =
 
             <hr />
             <form hx-post="/island/logout" method="post">
-              $(csrfToken())
+              $context.csrfToken()
               <button type="submit" class="btn btn-outline-danger">
                 Or click here to logout.
               </button>

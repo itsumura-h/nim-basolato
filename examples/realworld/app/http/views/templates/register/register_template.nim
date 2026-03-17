@@ -3,9 +3,7 @@ import basolato/view
 import ./register_template_model
 
 
-proc registerTemplate*():Future[Component] {.async.} =
-  let model = RegisterTemplateModel.new().await
-  
+proc registerTemplate*(model: RegisterTemplateModel): Component =
   tmpl"""
     <div class="auth-page">
       <div class="container page">
@@ -23,7 +21,7 @@ proc registerTemplate*():Future[Component] {.async.} =
               </ul>
 
             <form method="post" action="/register">
-              $(csrfToken())
+              $(model.csrfToken)
               <fieldset class="form-group">
                 <input
                   class="form-control form-control-lg"
@@ -57,3 +55,8 @@ proc registerTemplate*():Future[Component] {.async.} =
       </div>
     </div>
   """
+
+
+proc registerTemplate*(context: Context): Future[Component] {.async.} =
+  let model = await RegisterTemplateModel.new(context)
+  return registerTemplate(model)

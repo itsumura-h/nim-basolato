@@ -14,7 +14,7 @@ proc favoriteButtonView*(viewModel: FavoriteButtonViewModel): Component =
         hx-swap="outerHTML"
       }
     >
-      $(csrfToken())
+      $context.csrfToken()
       <button class="btn btn-outline-primary btn-sm pull-xs-right $if viewModel.isFavorited{active}">
         <i class="ion-heart"></i>
         $(viewModel.count)

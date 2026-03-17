@@ -1,17 +1,17 @@
 import std/asyncdispatch
 import basolato/view
+import ./app_layout_model
 import ../head/head_layout
 import ../navbar/navbar_layout
 import ../footer/footer_layout
 
-
-proc appLayout*(title:string, body:Component):Future[Component] {.async.} =
+proc appLayout*(appLayoutModel: AppLayoutModel, body: Component): Component =
   tmpl"""
     <!DOCTYPE html>
     <html lang="en">
-    $( headLayout(title) )
+    $( headLayout(appLayoutModel.headLayoutModel) )
     <body>
-      $( navbarLayout().await )
+      $( navbarLayout(appLayoutModel.navbarLayoutModel) )
       <div id="app-body">
         $(body)
       </div>
@@ -19,3 +19,8 @@ proc appLayout*(title:string, body:Component):Future[Component] {.async.} =
     </body>
     </html>
   """
+
+
+proc appLayout*(context: Context, title: string, body: Component): Future[Component] {.async.} =
+  let model = await AppLayoutModel.new(context, title)
+  return appLayout(model, body)

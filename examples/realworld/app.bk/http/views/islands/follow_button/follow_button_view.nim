@@ -7,7 +7,7 @@ proc followButtonView*(viewModel:FollowButtonViewModel):Component =
       hx-post="/island/users/$(viewModel.userId)/follow"
       hx-swap="outerHTML"
     >
-      $(csrfToken())
+      $context.csrfToken()
       <button
         class="btn btn-sm btn-outline-secondary follow-button action-btn"
         type="submit"

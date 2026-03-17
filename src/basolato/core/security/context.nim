@@ -5,6 +5,7 @@ import std/strutils
 import std/json
 import ../params
 import ./session
+import ./csrf_token
 import ./session_db
 
 when defined(httpbeast) or defined(httpx):
@@ -17,7 +18,7 @@ type Context* = ref object
   request: Request
   params: Params
   sessionOpt: Option[Session]
-  csrfToken: string
+  csrfToken: CsrfToken
 
 ## セッション値ストアへの低レベル操作を提供するアクセサ。
 ## 利用者は `Option[Session]` を意識せず `context.session.get(...)` 等を扱える。
@@ -29,7 +30,7 @@ proc new*(_:type Context, request:Request, params:Params):Future[Context]{.async
     request:request,
     params:params,
     sessionOpt:none(Session),
-    csrfToken: ""
+    csrfToken: CsrfToken.new()
   )
 
 
@@ -48,15 +49,25 @@ proc origin*(self:Context):string =
 
 
 proc setCsrfToken*(self:Context, token:string) =
-  self.csrfToken = token
+  self.csrfToken = CsrfToken.new(token)
 
 
 proc getCsrfToken*(self:Context):string =
-  return self.csrfToken
+  return self.csrfToken.getToken()
 
 
-proc setSession*(self:Context, session:Session) =
+proc csrfToken*(self: Context): string =
+  return self.csrfToken.toString()
+
+
+proc setSession*(self:Context, session:Session) {.async.} =
   self.sessionOpt = session.some()
+  ## セッションに保存されている CSRF トークンを Context に取り込む
+  if await self.sessionOpt.isSome("csrf_token"):
+    let token = await self.sessionOpt.get("csrf_token")
+    self.csrfToken = CsrfToken.new(token)
+  else:
+    self.csrfToken = CsrfToken.new()
 
 
 proc session*(self:Context):ContextSession =

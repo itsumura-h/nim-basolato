@@ -8,7 +8,7 @@ import ../../usecases/update_setting_usecase
 
 
 proc settingPage*(context:Context):Future[Response] {.async.} =
-  let page = settingPage().await
+  let page = settingPageView(context).await
   return render(page)
 
 

@@ -25,7 +25,7 @@ proc impl(viewModel:SignUpViewModel):Component =
             <div id="sign-up-form-messages"></div>
 
             <form method="POST" hx-post="/island/sign-up" hx-target="#app-body">
-              $(csrfToken())
+              $context.csrfToken()
               <fieldset class="form-group">
                 <input id="sign-up-username" class="form-control form-control-lg" type="text" name="username" placeholder="Username" value="$(viewModel.oldName)">
               </fieldset>

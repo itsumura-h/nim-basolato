@@ -17,7 +17,7 @@ proc deleteButtonView*(viewModel:DeleteButtonViewModel):Component =
       hx-target="#app-body"
       class="$(style.element("form_inline"))"
     >
-      $(csrfToken())
+      $context.csrfToken()
       <button class="btn btn-outline-danger btn-sm delete-button"
         hx-confirm="Are you sure you wish to delete the article?"
       >

@@ -1,14 +1,12 @@
+import std/asyncdispatch
 import basolato/view
-import ../../../../presenters/feed/your_feed_presenter
 import ../../components/feed_article/feed_article_component
 import ../../components/paginator/paginator_component
 import ./feed_template_model
 
 
-proc yourFeedTemplate*():Future[Component] {.async.} =
-  let presenter = YourFeedPresenter.new()
-  let model = presenter.invoke().await
-
+proc yourFeedTemplate*(context: Context): Future[Component] {.async.} =
+  let model = await FeedTemplateModel.new(context)
   tmpl"""
     <div class="feed-toggle">
       <ul class="nav nav-pills outline-active">

@@ -1,40 +1,20 @@
 import std/asyncdispatch
 import basolato/view
-import ../../../../presenters/user_article_list/user_article_list_presenter
-import ../../../../presenters/user_article_list/user_favorite_article_list_presenter
 import ../../components/feed_article/feed_article_component
 import ../../components/paginator/paginator_component
+import ./user_article_list_template_model
 
 
-type PageType = enum
-  myArticle,
-  favorite
-
-
-proc userArticleListTemplate*():Future[Component] {.async.} =
-  let context = context()
-  let pageType =
-    if context.request.url.path.split("/")[^1] == "favorite":
-      PageType.favorite
-    else:
-      PageType.myArticle
-
-  let model =
-    if pageType == PageType.myArticle:
-      let presenter = UserArticleListPresenter.new()
-      presenter.invoke().await
-    else:
-      let presenter = UserFavoriteArticleListPresenter.new()
-      presenter.invoke().await
-
+proc userArticleListTemplate*(context: Context): Future[Component] {.async.} =
+  let model = await UserArticleListTemplateModel.new(context)
   tmpl"""
     <div class="articles-toggle">
       <ul class="nav nav-pills outline-active">
         <li class="nav-item">
-          <a class="nav-link $if pageType == PageType.myArticle{active}" href="/profile/$(model.userId)">My Articles</a>
+          <a class="nav-link $if not model.isFavorite{active}" href="/profile/$(model.userId)">My Articles</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link $if pageType == PageType.favorite{active}" href="/profile/$(model.userId)/favorite">Favorited Articles</a>
+          <a class="nav-link $if model.isFavorite{active}" href="/profile/$(model.userId)/favorite">Favorited Articles</a>
         </li>
       </ul>
     </div>

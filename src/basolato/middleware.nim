@@ -95,7 +95,7 @@ proc sessionFromCookieHelper*(c:Context):Future[Cookies] {.async.} =
     raise newException(CatchableError, "Invalid session")
 
   let sessionOpt = Session.new(sessionId).await
-  c.setSession(sessionOpt.get())
+  await c.setSession(sessionOpt.get())
   
   if c.request.httpMethod == HttpGet:
     await c.session.updateCsrfToken()
@@ -131,7 +131,7 @@ proc createNewSessionHelper*(context:Context):Future[Cookies] {.async.} =
   var cookies = Cookies.new(context.request)
   let session = Session.new().await
   # セッションを context にセットしてからアップデート
-  context.setSession(session.get())
+  await context.setSession(session.get())
   await context.session.updateCsrfToken()
   context.setCsrfToken(globalCsrfToken)
   echo "DEBUG middleware: Created new session with CSRF token: ", globalCsrfToken.len, " bytes"

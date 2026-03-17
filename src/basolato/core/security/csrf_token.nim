@@ -21,10 +21,6 @@ proc checkCsrfValid*(self:CsrfToken, session:Option[Session]):Future[bool] {.asy
   let csrfToken = session.get("csrf_token").await
   return secureCompare(self.token, csrfToken)
 
-proc csrfToken*():CsrfToken =
-  ## used in view
-  return CsrfToken.new(globalCsrfToken)
-
 func escapeHtmlAttr*(s: string): string =
   result = newStringOfCap(s.len)
   for c in s:
