@@ -10,11 +10,12 @@ type SettingTemplateModel* = object
   name*: string
   bio*: string
   email*: string
-  csrfToken*: string
+  csrfToken*: CsrfToken
 
 
 proc new*(_: type SettingTemplateModel, context: Context): Future[SettingTemplateModel] {.async.} =
-  let (params, errors) = context.getParamsWithErrorsList().await
+  let params = context.getParams().await
+  let errors = context.getErrors().await
   let csrfToken = context.csrfToken()
   if errors.len > 0:
     return SettingTemplateModel(

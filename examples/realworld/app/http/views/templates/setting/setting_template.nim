@@ -18,7 +18,7 @@ proc settingTemplate*(model: SettingTemplateModel): Component =
             </ul>
 
             <form method="post" action="/settings">
-              $(model.csrfToken|raw)
+              $(model.csrfToken)
               <fieldset>
                 <fieldset class="form-group">
                   <input
@@ -68,7 +68,7 @@ proc settingTemplate*(model: SettingTemplateModel): Component =
             </form>
             <hr />
             <form method="post" action="/logout">
-              $(model.csrfToken|raw)
+              $(model.csrfToken)
               <button class="btn btn-outline-danger">Or click here to logout.</button>
             </form>
           </div>

@@ -34,3 +34,4 @@ func escapeHtmlAttr*(s: string): string =
 proc toString*(self:CsrfToken):string =
   let escaped = escapeHtmlAttr(self.token)
   return &"""<input type="hidden" name="csrf_token" value="{escaped}">"""
+  # return &"""<input type="hidden" name="csrf_token" value="{self.token}">"""

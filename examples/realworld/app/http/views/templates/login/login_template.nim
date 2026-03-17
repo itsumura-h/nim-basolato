@@ -3,7 +3,9 @@ import basolato/view
 import ./login_template_model
 
 
-proc loginTemplate*(model: LoginTemplateModel): Component =
+proc loginTemplate*(context: Context): Future[Component] {.async.} =
+  let model = LoginTemplateModel.new(context).await
+  echo "csrfToken2: ", model.csrfToken
   tmpl"""
     <div class="auth-page">
       <div class="container page">
@@ -47,8 +49,3 @@ proc loginTemplate*(model: LoginTemplateModel): Component =
       </div>
     </div>
   """
-
-
-proc loginTemplate*(context: Context): Future[Component] {.async.} =
-  let model = await LoginTemplateModel.new(context)
-  return loginTemplate(model)
