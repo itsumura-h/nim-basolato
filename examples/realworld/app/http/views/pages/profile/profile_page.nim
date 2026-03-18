@@ -1,6 +1,7 @@
 import std/asyncdispatch
 import basolato/view
 import ../../layouts/app/app_layout
+import ../../layouts/app/app_layout_model
 import ../../templates/user_info/user_info_template
 import ../../templates/user_article_list/user_article_list_template
 
@@ -22,4 +23,5 @@ proc profilePageView*(context: Context): Future[Component] {.async.} =
       </div>
     """
     result
-  return await appLayout(context, "Profile", body)
+  let appLayoutModel = AppLayoutModel.new(context, "Profile", body).await
+  return appLayout(appLayoutModel)

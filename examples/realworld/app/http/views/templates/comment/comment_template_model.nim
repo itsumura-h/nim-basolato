@@ -15,8 +15,8 @@ type CommentTemplateModel* = object
   isLogin*:bool
   loginUserImage*:string
 
-proc new*(_:type CommentTemplateModel):Future[CommentTemplateModel] {.async.} =
-  let context = context()
+
+proc new*(_:type CommentTemplateModel, context: Context): Future[CommentTemplateModel] {.async.} =
   let isLogin = context.isLogin().await
   let loginUserId = context.get("user_id").await
   let articleId = context.params.getStr("articleId")

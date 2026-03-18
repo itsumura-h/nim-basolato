@@ -1,10 +1,8 @@
-import std/asyncdispatch
 import basolato/view
 import ./article_template_model
 
 
-proc articleTemplate*(context: Context): Future[Component] {.async.} =
-  let model = await ArticleTemplateModel.new(context)
+proc articleTemplate*(model: ArticleTemplateModel): Component =
   tmpl"""
     <div class="container">
       <h1>$(model.article.title)</h1>

@@ -1,12 +1,10 @@
-import std/asyncdispatch
 import basolato/view
 import ../../components/feed_article/feed_article_component
 import ../../components/paginator/paginator_component
-import ./feed_template_model
+import ./tag_feed_template_model
 
 
-proc tagFeedTemplate*(context: Context): Future[Component] {.async.} =
-  let model = await FeedTemplateModel.new(context)
+proc tagFeedTemplate*(model: TagFeedTemplateModel): Component =
   tmpl"""
     <div class="feed-toggle">
       <ul class="nav nav-pills outline-active">

@@ -1,12 +1,9 @@
-import std/asyncdispatch
 import basolato/view
 import ../../components/comment/comment_component
 import ./comment_template_model
 
 
-proc commentTemplate*():Future[Component] {.async.} =
-  let model = CommentTemplateModel.new().await
-
+proc commentTemplate*(model: CommentTemplateModel): Component =
   tmpl"""
     <div class="row">
       <div class="col-xs-12 col-md-8 offset-md-2">

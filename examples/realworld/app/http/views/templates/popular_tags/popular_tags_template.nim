@@ -1,10 +1,8 @@
-import std/asyncdispatch
 import basolato/view
 import ./popular_tags_template_model
 
 
-proc popularTagsTemplate*(context: Context): Future[Component] {.async.} =
-  let model = await PopularTagsTemplateModel.new(context)
+proc popularTagsTemplate*(model: PopularTagsTemplateModel): Component =
   tmpl"""
     <div class="sidebar">
       <p>Popular Tags</p>

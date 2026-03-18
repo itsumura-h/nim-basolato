@@ -1,11 +1,8 @@
-import std/asyncdispatch
 import basolato/view
 import ./login_template_model
 
 
-proc loginTemplate*(context: Context): Future[Component] {.async.} =
-  let model = LoginTemplateModel.new(context).await
-  echo "csrfToken2: ", model.csrfToken
+proc loginTemplate*(model: LoginTemplateModel): Component =
   tmpl"""
     <div class="auth-page">
       <div class="container page">
