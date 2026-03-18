@@ -5,163 +5,85 @@ alwaysApply: false
 fixブランチルール
 ===
 
-このブランチで実装することは以下の通りです。
-- `signal` と `context()` のようなプロセス全体で共有される可変状態を廃止し、リクエスト単位で閉じた設計へ移行する。
-- View 層は `Page -> Presenter -> Template` を基本線とし、共有状態ではなく明示的な `ViewModel` を受け渡す。
-- `Context` へのアクセスも request-local に限定し、Template や Presenter がグローバル取得に依存しない構造へ改める。
+このブランチで実装・整理することは以下の通りです。
+- RealWorld の機能要件と `examples/realworld` の現状実装との差分を洗い出し、未実装機能を明文化する
+- 画面だけ存在する機能と、永続化処理まで未実装の機能を区別して記録する
 
 ## 進捗
-- [x] `signal` と `globalContext` の共有状態が発生する箇所を洗い出す。
-- [x] `context()` のグローバル取得 API を置き換える request-local な受け渡し方針を決める。
-- [x] `Page -> Presenter -> Template` の責務境界を `Context` を含めて再定義する。
-- [x] `login_page` を基準に、`context()` 非依存の View API を設計する。
-- [x] `Context` を必要とする処理と、`ViewModel` に落とし込むべき処理を分類する。
-- [x] 将来の実装で再発しないよう、View 層と Context 利用の規約を文章化する。
-- [ ] 回帰確認と並行リクエスト時の安全性テスト観点を整理する。
-
-### 第1段階実装：Context グローバル参照の廃止
-1. **LoginPageViewModel に csrfToken フィールドを追加** ✅
-2. **Context に request-local な csrfToken フィールドを追加** ✅
-3. **middleware で context.setCsrfToken() を呼び出すように修正** ✅
-
-### 第2段階実装：View層の設計パターン統一
-1. **Page: context を引数として受け取る形式に統一** ✅
-   - login_page
-   - welcome_page
-   - cookie_page
-   - flash_page
-   - file_upload_page
-   - validation_page
-   - sample_view
-   - with_style_page
-   - web_socket_page (webSocketIframePageComponent, webSocketPageComponent)
-   - api_view_page
-
-2. **Presenter パターンの確立** ✅
-   - LoginPresenter: context から値を抽出、ViewModel を生成
-   - WelcomePagePresenter: 新規作成
-   - CookiePagePresenter: 新規作成
-   - その他は既存の ViewModel.new() パターンを保持
-
-3. **Template の純粋化** ✅
-   - `csrfToken()` グローバル呼び出しを廃止
-   - ViewModel から値を取得して描画
-   - escapeHtmlAttr を export して使用可能に
-
-4. **ViewModel の充実** ✅
-   - csrfToken フィールドを各ページの ViewModel に追加
-   - 描画に必要なすべての値を含む
-
-### 実装結果と評価
-- ✅ **Request-local な設計への移行**: グローバル context/signal への依存を大幅削減
-- ✅ **明示的な依存管理**: Page → Presenter → ViewModel → Template の一方向フロー
-- ✅ **テスト可能性の向上**: 各層が独立した入力を受け取る
-- ✅ **並行リクエスト安全性**: ViewModel 経由の値受け渡しにより、リクエスト間の混線リスク低下
+- [x] RealWorld の機能要件の確認
+- [x] `examples/realworld` のルーティング、controller、usecase、view、DAO の確認
+- [x] 欠けている機能・未実装機能の一覧化
+- [ ] 一覧をもとに、実装優先度の高い順にタスクを分割する
 
 ## 参考資料
-- `.cursor/rules/project.mdc`
-- `.cursor/rules/branch.mdc`
-- `src/basolato/core/security/context.nim`
-- `src/basolato/core/route.nim`
-- `src/basolato/core/view.nim`
-- `examples/example/app/http/views/pages/login/login_page.nim`
-- `examples/example/app/http/views/templates/login/login_template.nim`
-- `examples/example/app/http/views/presenters/app_presenter.nim`
+- RealWorld Backend Endpoints: https://realworld-docs.netlify.app/specifications/backend/endpoints/
+  - RESTful API 前提の仕様書だが、このブランチでは MPA + `GET` / `POST` のみで機能を実現する際の要件整理資料として読む
+- `examples/realworld/main.nim`
+- `examples/realworld/app/http/controllers/`
+- `examples/realworld/app/usecases/`
+- `examples/realworld/app/http/views/`
 
 ## 調査結果・設計まとめ
-### 1. 問題認識
-- `signal` はモジュールレベルで共有される可変状態であり、フォーム値やログイン情報のような request-local データを保持するには不適切である。
-- `Context` も `globalContext` と `context()` によりグローバル参照になっており、`signal` と同種のリクエスト境界破壊を持つ。
-- `createResponse` の中で `setContext(context)` してから async 処理が進むため、並行リクエスト時に別リクエストの `Context` を参照する余地がある。
-- したがって、`signal` だけを Presenter/ViewModel に置き換えても、`context()` のグローバル取得が残る限り設計上の根本問題は解消しない。
+2026-03-18 時点で、`examples/realworld` は RealWorld の **MPA 画面の一部** は持っているが、アプリケーション全体としては未実装機能が多く残っている。
 
-### 2. 方針
-- `Context` はグローバルに保存せず、Controller から Page、必要なら Presenter まで明示的に受け渡す。
-- `Template` は `Context` を読まない。描画に必要な値は Presenter が `ViewModel` に変換して渡す。
-- `Page` は request-local な `Context` を受け取る入口として扱い、`Context` から値を読み、Presenter を呼び出し、`template(vm)` を返す。
-- `Presenter` は `Context` そのものを下流へ漏らさず、View に必要な最小限の値だけを `ViewModel` に写す。
-- `signal` の代替は共有状態ではなく単一 `ViewModel` であり、引数爆発は `ViewModel` のサブオブジェクト化で抑える。
+このブランチでは、RealWorld Backend Endpoints をそのまま REST route として再現するのではなく、**RealWorld が要求している機能を MPA で `GET` / `POST` のみを使って満たす** 前提で実装方針を整理する。
 
-### 3. 設計原則
-- Basolato の MPA では `Page -> Presenter -> Template` を標準形とする。
-- `Template` は純粋描画に専念し、`context()` や `Presenter` 呼び出しを内部で行わない。
-- `Presenter` は request-local な入力から immutable に近い `ViewModel` を生成する。
-- `ViewModel` は画面単位で 1 つ渡し、その中を `auth`, `form`, `flash`, `pageMeta` などの小さな構造へ分ける。
-- `ComponentViewModel` は再利用価値が十分にある部品にだけ導入し、常設しない。
-- `DTO` はドメイン/インフラの運搬用、`ViewModel` は描画専用とし、役割を混ぜない。
+- 画面表示は `GET`
+- 作成・更新・削除・状態変更はすべて `POST`
+- 削除や解除系も `POST` の専用 URL で表現する
+- JSON API の response 互換ではなく、画面遷移・再描画・redirect を中心に設計する
 
-### 4. Context 改善方針
-- `src/basolato/core/security/context.nim` の `globalContext`、`setContext`、`context()` は廃止または非推奨化する。
-- `Page` の API は `proc loginPage*(context: Context): Future[Component]` のように、必要な request-local 依存を明示的に受け取る形へ寄せる。
-- `Controller` またはルーティング側で生成済みの `Context` を Page 呼び出しへそのまま渡す。
-- 既存コードで `context()` に依存している箇所は、Page/Presenter の引数へ移し替える。
-- Template や Component に `Context` を直接渡すのは避け、必要な情報だけを `ViewModel` に変換する。
+### 1. 画面や読取だけ一部あるが、仕様達成には足りていない機能
+以下は MPA として近いものがあるが、機能としては未達。
 
-### 5. login 画面での目標形
-- `login_page` は `Context` を引数で受け取る。
-- `login_page` 内で `params`、`errors`、`isLogin`、`name` を取得する。
-- 取得した値を `LoginPagePresenter` または `LoginPageViewModel.new(...)` に渡す。
-- `login_template(vm)` は `vm` だけを引数に受け、`context()` や `signal` に触れない。
+- ログイン
+  - `GET /login`, `POST /login` はある
+- ユーザー登録
+  - `GET /register`, `POST /register` はある
+- ユーザー設定更新
+  - `GET /settings`, `POST /settings` はある
+- プロフィール表示
+  - RealWorld の体験は `username` / `slug` ベースだが、現状は `userId` / `articleId` ベース
+  - MPA としてもプロフィール URL と記事 URL の意味が RealWorld 標準とずれている
+- 記事一覧
+  - `/`, `/your-feed`, `/tag/{tag}`、`/profile/{userId}`、`/profile/{userId}/favorite` の画面表示はある
+  - 一覧取得条件や識別子設計は RealWorld 標準と差がある
+- フォロー中記事フィード
+  - `/your-feed` の画面はある
+- 記事詳細
+  - `GET /article/{articleId:str}` はある
+- コメント一覧表示
+  - 記事詳細画面でコメント読取はしている
+- タグ一覧表示
+  - ホーム画面で人気タグを表示している
 
-### 6. 実施計画
-1. `globalContext` と `context()` の利用箇所を洗い出し、request-local 化の対象を一覧化する。
-2. `Page` の標準 API を `page(context: Context)` 形式に寄せるか、Controller 側で必要情報だけを渡すかを決める。
-3. `login` 画面を基準に、`signal` と `context()` の両方に依存しない最小実装パターンを設計する。
-4. `Template` が共有状態と `Context` に依存しないことを規約として明文化する。
-5. `Context` をどの層まで渡してよいかの境界を定義する。
-6. 段階的移行のため、非推奨 API と移行手順を整理する。
+### 2. UI はあるが、操作処理が未実装または空実装のもの
+- フォロー処理
+  - `POST /profile/{userId:str}/follow` はあるが、`app/usecases/follow_usecase.nim` の `invoke` が `discard` のままで実処理なし
+- アンフォロー処理
+  - MPA では `POST /profile/{userId}/unfollow` のような専用 route が必要だが、ルートも usecase も存在しない
+- お気に入り追加 / 解除
+  - 記事一覧・記事詳細に Favorite ボタン表示はあるが、`POST` で favorite / unfavorite を行う route / controller / usecase がない
+- 記事作成 / 編集 / 削除
+  - UI 上に New Article / Edit Article / Delete Article の導線やボタンはあるが、対応する画面 route と `POST` 処理がない
+  - 少なくとも `GET /editor`, `POST /editor`, `GET /editor/{articleId}` または `GET /editor/{slug}`, `POST /editor/{articleId}/update`, `POST /article/{articleId}/delete` 相当が必要
+- コメント投稿 / 削除
+  - コメント入力フォームや削除アイコン相当の UI はあるが、対応する `POST` route / controller / usecase がない
+  - 少なくとも `POST /article/{articleId}/comments`, `POST /article/{articleId}/comments/{commentId}/delete` 相当が必要
 
-### 7. テスト観点
-- 同時リクエスト時に `Context` が別リクエストへ混線しないこと。
-- フォーム入力値、エラー、ログイン状態が request-local に保持されること。
-- Template が `context()` を参照していないこと。
-- Presenter/ViewModel 経由でも既存画面の表示仕様が変わらないこと。
-- `signal` と `globalContext` 廃止後も CSRF、session、flash の取得フローが破綻しないこと。
+### 3. 実装上の補足
+- 現在の route 設計は `GET` / `POST` 中心なので、この方針自体は MPA と整合している
+- 一方で、更新・削除・解除に相当する `POST` 専用 route の粒度がまだ不足している
+- ナビゲーションに `/editor` や `/users/...` へのリンクがあるが、現行 route 定義と一致していない箇所があるため、画面導線にも未接続部分が残っている
 
-## 調査結果・設計まとめ
-
-### Presenter の役割と使い分け
-
-**Presenter が必要な場合（context から値を抽出する）:**
-- context.session.get()
-- context.getFlash()
-- context.getParamsWithErrorsList()
-- context.getParamsWithErrorsObject()
-- context.getCsrfToken()
-- その他の Context API を使用
-
-例）login_page, cookie_page, flash_page, file_upload_page, validation_page
-
-**Presenter が不要な場合（ViewModel が静的/固定値）:**
-- context から値を抽出しない
-- ViewModel.new() で固定値のみを使用
-- template を直接呼び出すだけ
-
-例）welcome_page, sample_view, with_style_page, web_socket_page, api_view_page
-
-### 実装パターン
-
-**Presenter が必要な場合:**
-```nim
-Controller → Page(context) → Presenter.invoke(context) → ViewModel
-  ↓
-Template(vm)
-```
-
-**Presenter が不要な場合:**
-```nim
-Controller → Page(context) → ViewModel.new() → Template(vm)
-```
-
-### 最適化指針
-
-1. **Presenter を廃止**: context を使わない場合、Presenter 不要
-2. **Page の簡略化**: ViewModel を直接作成
-3. **Template の統一**: すべて ViewModel を受け取る
-4. **Controller の一貫性**: すべての Page に context を渡す（Page 内で判定）
-
-### 追加で文書化した規約
-- `project.mdc` に MPA + Hotwire 前提の read/write 分離を追加し、write-side は `aggregate / vo / repository / usecase`、read-side は `dao / dto / presenter / template model / template / component` を正規構成として定義した。
-- `Page` は composition、`Template` は再描画単位、`Component` は pure UI という責務境界を規範化した。
-- `DAO` は template 単位で一括取得するものとし、`Component` や template 内 loop からの取得を禁止した。
-- `DTO` は primitive only、`TemplateModel` は pure な描画モデルとし、`Context` や I/O を持ち込まない方針を明文化した。
+### 4. fixブランチで次に分解すべき実装タスク候補
+- `username` / `slug` ベースの識別子設計に寄せるか、現行 `id` ベース設計で互換層を設けるかを決める
+- まずは MPA の read 機能不足を埋める
+  - username / slug ベースの表示導線整理
+  - 一覧取得条件の整理
+  - 記事詳細とタグ表示の不足情報補完
+- 次に write 機能を実装する
+  - `POST` ベースで follow / unfollow を実装する
+  - `GET` + `POST` で article の作成 / 編集 / 削除を実装する
+  - `POST` で comment の追加 / 削除を実装する
+  - `POST` で favorite / unfavorite を実装する
