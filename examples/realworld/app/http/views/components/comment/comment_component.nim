@@ -18,9 +18,12 @@ proc commentComponent*(model: CommentComponentModel):Component =
         <a href="/profile/$(model.authorId)" class="comment-author">$(model.authorName)</a>
         <span class="date-posted">$(model.createdAt)</span>
         $if model.isAuthor{
-          <span class="mod-options">
-            <i class="ion-trash-a"></i>
-          </span>
+          <form action="/article/$(model.articleId)/comments/$(model.commentId)/delete" method="post" class="mod-options">
+            $(model.csrfToken)
+            <button type="submit" class="btn btn-link p-0 text-danger">
+              <i class="ion-trash-a"></i>
+            </button>
+          </form>
         }
       </div>
     </div>

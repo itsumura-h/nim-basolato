@@ -9,6 +9,7 @@ import ../../../models/dto/comment/comment_dto
 
 
 type CommentDb = object
+  id: CommentTable.id
   body: CommentTable.body
   articleId: CommentTable.articleId
   createdAt: CommentTable.createdAt
@@ -27,6 +28,7 @@ method getCommentListByArticleId*(self: CommentDao, articleId: string): Future[s
   let comments =
     rdb
     .select(
+      "comment.id as id",
       "comment.article_id as articleId",
       "comment.body",
       "comment.author_id as authorId",
@@ -45,6 +47,7 @@ method getCommentListByArticleId*(self: CommentDao, articleId: string): Future[s
   let commentDtoList = comments.map(
     proc(comment: CommentDb): CommentDto =
       return CommentDto.new(
+        id = comment.id,
         authorId = comment.authorId,
         authorName = comment.authorName,
         authorImage = comment.authorImage,

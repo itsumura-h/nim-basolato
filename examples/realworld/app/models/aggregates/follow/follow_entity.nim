@@ -1,7 +1,11 @@
 import ../../vo/user_id
 
 type Follow* = object
-  userId*:UserId
+  userId*: UserId
+  followerId*: UserId
 
-proc new*(userId:UserId):Follow =
-  return Follow(userId: userId)
+proc new*(_: type Follow, userId: UserId, followerId: UserId): Follow =
+  return Follow(
+    userId: userId,
+    followerId: followerId,
+  )

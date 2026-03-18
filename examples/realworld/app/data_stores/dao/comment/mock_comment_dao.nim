@@ -12,6 +12,7 @@ proc new*(_:type MockCommentDao): MockCommentDao =
 method getCommentListByArticleId*(self: MockCommentDao, articleId: string): Future[seq[CommentDto]] {.async.} =
   let commentList = @[
     CommentDto.new(
+      id = 1,
       authorId = "1",
       authorName = "authorName1",
       authorImage = "http://i.imgur.com/Qr71crq.jpg",
@@ -19,6 +20,7 @@ method getCommentListByArticleId*(self: MockCommentDao, articleId: string): Futu
       createdAt = "2021-01-01".parse("yyyy-MM-dd"),
     ),
     CommentDto.new(
+      id = 2,
       authorId = "2",
       authorName = "authorName2",
       authorImage = "http://i.imgur.com/Qr71crq.jpg",

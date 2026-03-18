@@ -3,6 +3,18 @@ import ./consts
 import ./models/aggregates/user/user_repository_interface
 import ./data_stores/repositories/user/user_repository
 import ./data_stores/repositories/user/mock_user_repository
+import ./models/aggregates/follow/follow_repository_interface
+import ./data_stores/repositories/follow/follow_repository
+import ./data_stores/repositories/follow/mock_follow_repository
+import ./models/aggregates/favorite/favorite_repository_interface
+import ./data_stores/repositories/favorite/favorite_repository
+import ./data_stores/repositories/favorite/mock_favorite_repository
+import ./models/aggregates/article/article_repository_interface
+import ./data_stores/repositories/article/article_repository
+import ./data_stores/repositories/article/mock_article_repository
+import ./models/aggregates/comment/comment_repository_interface
+import ./data_stores/repositories/comment/comment_repository
+import ./data_stores/repositories/comment/mock_comment_repository
 
 # ==================== read ====================
 import ./models/dto/user/user_dao_interface
@@ -63,6 +75,10 @@ import ./data_stores/dao/article_list/user_favorite_article_count/mock_user_favo
 type DiContainer* = object
 # ==================== write ====================
   userRepository*: IUserRepository
+  followRepository*: IFollowRepository
+  favoriteRepository*: IFavoriteRepository
+  articleRepository*: IArticleRepository
+  commentRepository*: ICommentRepository
 # ==================== read ====================
   userDao*: IUserDao
   globalFeedArticleListDao*: IGlobalFeedArticleListDao
@@ -84,6 +100,10 @@ proc new(_:type DiContainer):DiContainer =
     return DiContainer(
       # ==================== write ====================
       userRepository: MockUserRepository.new(),
+      followRepository: MockFollowRepository.new(),
+      favoriteRepository: MockFavoriteRepository.new(),
+      articleRepository: MockArticleRepository.new(),
+      commentRepository: MockCommentRepository.new(),
       # ==================== read ====================
       userDao: MockUserDao.new(),
       globalFeedArticleListDao: MockGlobalFeedArticleListDao.new(),
@@ -104,6 +124,10 @@ proc new(_:type DiContainer):DiContainer =
     return DiContainer(
       # ==================== write ====================
       userRepository: UserRepository.new(),
+      followRepository: FollowRepository.new(),
+      favoriteRepository: FavoriteRepository.new(),
+      articleRepository: ArticleRepository.new(),
+      commentRepository: CommentRepository.new(),
       # ==================== read ====================
       userDao: UserDao.new(),
       globalFeedArticleListDao: GlobalFeedArticleListDao.new(),

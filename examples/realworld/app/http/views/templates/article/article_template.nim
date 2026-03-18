@@ -13,22 +13,31 @@ proc articleTemplate*(model: ArticleTemplateModel): Component =
           <a href="/profile/$(model.author.id)" class="author">$(model.author.name)</a>
           <span class="date">$(model.article.updatedAt)</span>
         </div>
-        <button class="btn btn-sm btn-outline-secondary">
-          <i class="ion-plus-round"></i>
-          &nbsp; Follow $(model.author.name) <span class="counter">($(model.author.followerCount))</span>
-        </button>
-        &nbsp;&nbsp;
-        <button class="btn btn-sm btn-outline-primary">
-          <i class="ion-heart"></i>
-          &nbsp; Favorite Post <span class="counter">($(model.article.favoriteCount))</span>
-        </button>
-        $if model.isAuthor{
+        <form action="/profile/$(model.author.id)/follow" method="post" style="display:inline">
+          $(model.csrfToken)
           <button class="btn btn-sm btn-outline-secondary">
+            <i class="ion-plus-round"></i>
+            &nbsp; Follow $(model.author.name) <span class="counter">($(model.author.followerCount))</span>
+          </button>
+        </form>
+        &nbsp;&nbsp;
+        <form action="/article/$(model.articleId)/favorite" method="post" style="display:inline">
+          $(model.csrfToken)
+          <button class="btn btn-sm btn-outline-primary">
+            <i class="ion-heart"></i>
+            &nbsp; Favorite Post <span class="counter">($(model.article.favoriteCount))</span>
+          </button>
+        </form>
+        $if model.isAuthor{
+          <a class="btn btn-sm btn-outline-secondary" href="/editor/$(model.articleId)">
             <i class="ion-edit"></i> Edit Article
-          </button>
-          <button class="btn btn-sm btn-outline-danger">
-            <i class="ion-trash-a"></i> Delete Article
-          </button>
+          </a>
+          <form action="/article/$(model.articleId)/delete" method="post" style="display:inline">
+            $(model.csrfToken)
+            <button class="btn btn-sm btn-outline-danger">
+              <i class="ion-trash-a"></i> Delete Article
+            </button>
+          </form>
         }
       </div>
     </div>
@@ -61,22 +70,31 @@ proc articleTemplate*(model: ArticleTemplateModel): Component =
           <span class="date">$(model.article.updatedAt)</span>
         </div>
 
-        <button class="btn btn-sm btn-outline-secondary">
-          <i class="ion-plus-round"></i>
-          &nbsp; Follow $(model.author.name)
-        </button>
-        &nbsp;
-        <button class="btn btn-sm btn-outline-primary">
-          <i class="ion-heart"></i>
-          &nbsp; Favorite Article <span class="counter">($(model.article.favoriteCount))</span>
-        </button>
-        $if model.isAuthor{
+        <form action="/profile/$(model.author.id)/follow" method="post" style="display:inline">
+          $(model.csrfToken)
           <button class="btn btn-sm btn-outline-secondary">
+            <i class="ion-plus-round"></i>
+            &nbsp; Follow $(model.author.name)
+          </button>
+        </form>
+        &nbsp;
+        <form action="/article/$(model.articleId)/favorite" method="post" style="display:inline">
+          $(model.csrfToken)
+          <button class="btn btn-sm btn-outline-primary">
+            <i class="ion-heart"></i>
+            &nbsp; Favorite Article <span class="counter">($(model.article.favoriteCount))</span>
+          </button>
+        </form>
+        $if model.isAuthor{
+          <a class="btn btn-sm btn-outline-secondary" href="/editor/$(model.articleId)">
             <i class="ion-edit"></i> Edit Article
-          </button>
-          <button class="btn btn-sm btn-outline-danger">
-            <i class="ion-trash-a"></i> Delete Article
-          </button>
+          </a>
+          <form action="/article/$(model.articleId)/delete" method="post" style="display:inline">
+            $(model.csrfToken)
+            <button class="btn btn-sm btn-outline-danger">
+              <i class="ion-trash-a"></i> Delete Article
+            </button>
+          </form>
         }
       </div>
     </div>

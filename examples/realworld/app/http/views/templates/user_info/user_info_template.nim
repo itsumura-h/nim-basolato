@@ -14,10 +14,13 @@ proc userInfoTemplate*(model: UserInfoTemplateModel): Component =
             <p>
               $(model.bio)
             </p>
-            <button class="btn btn-sm btn-outline-secondary action-btn">
-              <i class="ion-plus-round"></i>
-              &nbsp; Follow $(model.name)
-            </button>
+            <form action="/profile/$(model.id)/follow" method="post" style="display:inline">
+              $(model.csrfToken)
+              <button class="btn btn-sm btn-outline-secondary action-btn">
+                <i class="ion-plus-round"></i>
+                &nbsp; Follow $(model.name)
+              </button>
+            </form>
             $if model.isSameUser{
               <a href="/settings" class="btn btn-sm btn-outline-secondary action-btn">
                 <i class="ion-gear-a"></i>

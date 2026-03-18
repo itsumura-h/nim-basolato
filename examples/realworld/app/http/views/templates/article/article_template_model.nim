@@ -23,10 +23,12 @@ type Article* = object
   tagList*:seq[string]
 
 type ArticleTemplateModel* = object
+  articleId*: string
   author*:Author
   article*:Article
   isAuthor*:bool
   isLogin*:bool
+  csrfToken*: CsrfToken
 
 
 proc new*(_: type ArticleTemplateModel, context: Context): Future[ArticleTemplateModel] {.async.} =
@@ -35,6 +37,7 @@ proc new*(_: type ArticleTemplateModel, context: Context): Future[ArticleTemplat
   let authorDto = di.userDao.getUserById(articleDetailDto.authorId).await
   let isLogin = context.isLogin().await
   let loginUserId = context.get("user_id").await
+  let csrfToken = context.csrfToken()
 
   let author = Author(
     id: articleDetailDto.authorId,
@@ -54,8 +57,10 @@ proc new*(_: type ArticleTemplateModel, context: Context): Future[ArticleTemplat
   let isAuthor = loginUserId == articleDetailDto.authorId
 
   return ArticleTemplateModel(
+    articleId: articleId,
     author: author,
     article: article,
     isAuthor: isAuthor,
     isLogin: isLogin,
+    csrfToken: csrfToken,
   )

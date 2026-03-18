@@ -12,6 +12,7 @@ import ./app/http/controllers/setting_controller
 import ./app/http/controllers/home_controller
 import ./app/http/controllers/article_controller
 import ./app/http/controllers/profile_controller
+import ./app/http/controllers/editor_controller
 
 
 let routes = @[
@@ -30,10 +31,24 @@ let routes = @[
       Route.get("/tag/{tag:str}", home_controller.homePage),
 
       Route.get("/article/{articleId:str}", article_controller.show),
+      Route.get("/editor", editor_controller.createPage).middleware(auth_middleware.loginRequired),
+      Route.get("/editor/{articleId:str}", editor_controller.updatePage).middleware(auth_middleware.loginRequired),
+      Route.post("/editor", editor_controller.create).middleware(auth_middleware.loginRequired),
+      Route.post("/editor/{articleId:str}", editor_controller.update).middleware(auth_middleware.loginRequired),
+      Route.post("/article/{articleId:str}/favorite", article_controller.favorite).middleware(auth_middleware.loginRequired),
+      Route.post("/article/{articleId:str}/unfavorite", article_controller.favorite).middleware(auth_middleware.loginRequired),
+      Route.post("/article/{articleId:str}/comments", article_controller.createComment).middleware(auth_middleware.loginRequired),
+      Route.post("/article/{articleId:str}/comments/{commentId:str}/delete", article_controller.deleteComment).middleware(auth_middleware.loginRequired),
+      Route.post("/article/{articleId:str}/delete", article_controller.delete).middleware(auth_middleware.loginRequired),
 
       Route.get("/profile/{userId:str}", profile_controller.show),
       Route.get("/profile/{userId:str}/favorite", profile_controller.favoriteShow),
       Route.post("/profile/{userId:str}/follow", profile_controller.follow).middleware(auth_middleware.loginRequired),
+      Route.post("/profile/{userId:str}/unfollow", profile_controller.follow).middleware(auth_middleware.loginRequired),
+      Route.get("/users/{userId:str}", profile_controller.show),
+      Route.get("/users/{userId:str}/favorite", profile_controller.favoriteShow),
+      Route.post("/users/{userId:str}/follow", profile_controller.follow).middleware(auth_middleware.loginRequired),
+      Route.post("/users/{userId:str}/unfollow", profile_controller.follow).middleware(auth_middleware.loginRequired),
     ])
     .middleware(session_middleware.sessionFromCookie)
     .middleware(session_middleware.checkCsrfToken),

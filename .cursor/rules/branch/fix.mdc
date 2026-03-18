@@ -13,7 +13,8 @@ fixブランチルール
 - [x] RealWorld の機能要件の確認
 - [x] `examples/realworld` のルーティング、controller、usecase、view、DAO の確認
 - [x] 欠けている機能・未実装機能の一覧化
-- [ ] 一覧をもとに、実装優先度の高い順にタスクを分割する
+- [x] 一覧をもとに、実装優先度の高い順にタスクを分割する
+- [ ] 実装後の linter / 動作確認
 
 ## 参考資料
 - RealWorld Backend Endpoints: https://realworld-docs.netlify.app/specifications/backend/endpoints/
@@ -87,3 +88,9 @@ fixブランチルール
   - `GET` + `POST` で article の作成 / 編集 / 削除を実装する
   - `POST` で comment の追加 / 削除を実装する
   - `POST` で favorite / unfavorite を実装する
+
+### 実装メモ
+- `follow` / `favorite` / `article` / `comment` の write-side repository と usecase を追加した
+- `/editor` の新規作成・編集画面を追加した
+- `profile` / `article` / `comment` の送信導線を POST フォーム化した
+- `GET /users/...` の互換ルートを追加し、既存ナビゲーションとの差分を吸収した
