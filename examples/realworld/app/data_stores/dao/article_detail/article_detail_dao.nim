@@ -24,7 +24,7 @@ proc new*(_:type ArticleDetailDao): ArticleDetailDao =
   return ArticleDetailDao()
 
 
-method getArticleById*(self: ArticleDetailDao, articleId: string): Future[ArticleDetailDto] {.async.} =
+method getArticleById*(self: ArticleDetailDao, articleId: string, loginUserId: Option[string] = none(string)): Future[ArticleDetailDto] {.async.} =
   let articleDeatilDb = 
     rdb
     .select(
@@ -53,6 +53,18 @@ method getArticleById*(self: ArticleDetailDao, articleId: string): Future[Articl
     .count()
     .await
 
+  let isFavorited =
+    if loginUserId.isSome():
+      let favoriteOpt = rdb
+        .table("user_article_map")
+        .where("article_id", "=", articleId)
+        .where("user_id", "=", loginUserId.get())
+        .first()
+        .await
+      favoriteOpt.isSome()
+    else:
+      false
+
   return ArticleDetailDto.new(
     id = articleId,
     title = articleDeatil.title,
@@ -61,4 +73,5 @@ method getArticleById*(self: ArticleDetailDao, articleId: string): Future[Articl
     updatedAt = articleDeatil.updatedAt.parse("yyyy-MM-dd HH:mm:ss'.'ffffff"),
     authorId = articleDeatil.authorId,
     favoriteCount = favoriteCount,
+    isFavorited = isFavorited,
   )

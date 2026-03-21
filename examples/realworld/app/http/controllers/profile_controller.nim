@@ -14,7 +14,7 @@ proc favoriteShow*(context:Context):Future[Response] {.async.} =
   return render(view)
 
 
-proc follow*(context:Context):Future[Response] {.async.} =
+proc followFromProfile*(context:Context):Future[Response] {.async.} =
   let userId = context.params.getStr("userId")
   let loginUserId = context.get("user_id").await
 

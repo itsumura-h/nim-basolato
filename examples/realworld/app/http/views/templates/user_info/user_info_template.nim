@@ -14,18 +14,24 @@ proc userInfoTemplate*(model: UserInfoTemplateModel): Component =
             <p>
               $(model.bio)
             </p>
-            <form action="/profile/$(model.id)/follow" method="post" style="display:inline">
-              $(model.csrfToken)
-              <button class="btn btn-sm btn-outline-secondary action-btn">
-                <i class="ion-plus-round"></i>
-                &nbsp; Follow $(model.name)
-              </button>
-            </form>
             $if model.isSameUser{
               <a href="/settings" class="btn btn-sm btn-outline-secondary action-btn">
                 <i class="ion-gear-a"></i>
                 &nbsp; Edit Profile Settings
               </a>
+            }$else{
+              <form action="/profile/$(model.id)/follow" method="post" style="display:inline">
+                $(model.csrfToken)
+                <button class="btn btn-sm btn-outline-secondary action-btn $if model.isFollowed{active}">
+                  $if model.isFollowed{
+                    <i class="ion-minus-round"></i>
+                    &nbsp; Unfollow $(model.name)
+                  }$else{
+                    <i class="ion-plus-round"></i>
+                    &nbsp; Follow $(model.name)
+                  }
+                </button>
+              </form>
             }
           </div>
         </div>

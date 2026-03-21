@@ -1,4 +1,5 @@
 import std/asyncdispatch
+import std/options
 import std/times
 import basolato/view
 import markdown
@@ -14,6 +15,7 @@ type Author* = object
   image*:string
   name*:string
   followerCount*:int
+  isFollowed*: bool
 
 type Article* = object
   title*:string
@@ -21,6 +23,7 @@ type Article* = object
   favoriteCount*:int
   updatedAt*:string
   tagList*:seq[string]
+  isFavorited*: bool
 
 type ArticleTemplateModel* = object
   articleId*: string
@@ -33,17 +36,22 @@ type ArticleTemplateModel* = object
 
 proc new*(_: type ArticleTemplateModel, context: Context): Future[ArticleTemplateModel] {.async.} =
   let articleId = context.params.getStr("articleId")
-  let articleDetailDto = di.articleDetailDao.getArticleById(articleId).await
-  let authorDto = di.userDao.getUserById(articleDetailDto.authorId).await
   let isLogin = context.isLogin().await
-  let loginUserId = context.get("user_id").await
+  let loginUserId =
+    if isLogin:
+      context.get("user_id").await.some()
+    else:
+      none(string)
   let csrfToken = context.csrfToken()
+  let articleDetailDto = di.articleDetailDao.getArticleById(articleId, loginUserId).await
+  let authorDto = di.userDao.getUserById(articleDetailDto.authorId, loginUserId).await
 
   let author = Author(
     id: articleDetailDto.authorId,
     image: authorDto.image,
     name: authorDto.name,
     followerCount: authorDto.followerCount,
+    isFollowed: authorDto.isFollowed,
   )
 
   let article = Article(
@@ -52,9 +60,10 @@ proc new*(_: type ArticleTemplateModel, context: Context): Future[ArticleTemplat
     favoriteCount: articleDetailDto.favoriteCount,
     updatedAt: articleDetailDto.updatedAt.format("yyyy MMM d"),
     tagList: @[],
+    isFavorited: articleDetailDto.isFavorited,
   )
 
-  let isAuthor = loginUserId == articleDetailDto.authorId
+  let isAuthor = loginUserId.isSome() and loginUserId.get() == articleDetailDto.authorId
 
   return ArticleTemplateModel(
     articleId: articleId,

@@ -4,6 +4,7 @@ import basolato/controller
 import basolato/request_validation
 import ../views/pages/article/article_page
 import ../../usecases/favorite_usecase
+import ../../usecases/follow_usecase
 import ../../usecases/create_comment_usecase
 import ../../usecases/delete_comment_usecase
 import ../../usecases/delete_article_usecase
@@ -18,6 +19,14 @@ proc favorite*(context:Context):Future[Response] {.async.} =
   let articleId = context.params.getStr("articleId")
   let loginUserId = context.get("user_id").await
   await FavoriteUsecase.new().invoke(articleId, loginUserId)
+  return redirect("/article/" & articleId)
+
+
+proc followFromArticle*(context:Context):Future[Response] {.async.} =
+  let articleId = context.params.getStr("articleId")
+  let userId = context.params.getStr("userId")
+  let loginUserId = context.get("user_id").await
+  await FollowUsecase.new().invoke(loginUserId, userId)
   return redirect("/article/" & articleId)
 
 

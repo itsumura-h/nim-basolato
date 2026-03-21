@@ -1,7 +1,7 @@
 import std/asyncdispatch
+import std/options
 import ../../../models/dto/user/user_dao_interface
 import ../../../models/dto/user/user_dto
-import ../../../models/vo/user_id
 
 
 type MockUserDao* = object of IUserDao
@@ -9,13 +9,14 @@ type MockUserDao* = object of IUserDao
 proc new*(_:type MockUserDao):MockUserDao =
   return  MockUserDao()
 
-method invoke*(self:MockUserDao, userId:UserId):Future[UserDto] {.async.} =
+method getUserById*(self:MockUserDao, userId:string, loginUserId: Option[string] = none(string)):Future[UserDto] {.async.} =
   let dto = UserDto.new(
-    id = userId.value,
+    id = userId,
     name = "user 1",
     email = "user1@example.com",
     bio = "user 1, bio",
     image = "https://via.placeholder.com/640x480.png/000000?text=user_1",
-    followerCount = 0
+    followerCount = 0,
+    isFollowed = loginUserId.isSome(),
   )
   return dto

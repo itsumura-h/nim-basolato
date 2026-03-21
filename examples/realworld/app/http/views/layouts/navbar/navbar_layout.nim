@@ -59,7 +59,7 @@ proc navbarLayout*(model: NavbarLayoutModel): Component =
             <li class="nav-item">
               <a
                 class="nav-link active"
-                href="/users/$(model.userId)"
+                href="/profile/$(model.userId)"
               >
                 <img src="$(model.image)" class="user-pic" />
                 $(model.userName)

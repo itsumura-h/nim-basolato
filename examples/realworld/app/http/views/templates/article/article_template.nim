@@ -13,19 +13,30 @@ proc articleTemplate*(model: ArticleTemplateModel): Component =
           <a href="/profile/$(model.author.id)" class="author">$(model.author.name)</a>
           <span class="date">$(model.article.updatedAt)</span>
         </div>
-        <form action="/profile/$(model.author.id)/follow" method="post" style="display:inline">
+        <form action="/article/$(model.articleId)/follow/$(model.author.id)" method="post" style="display:inline">
           $(model.csrfToken)
-          <button class="btn btn-sm btn-outline-secondary">
-            <i class="ion-plus-round"></i>
-            &nbsp; Follow $(model.author.name) <span class="counter">($(model.author.followerCount))</span>
+          <button class="btn btn-sm btn-outline-secondary $if model.author.isFollowed{active}">
+            $if model.author.isFollowed{
+              <i class="ion-minus-round"></i>
+              &nbsp; Unfollow $(model.author.name)
+            }$else{
+              <i class="ion-plus-round"></i>
+              &nbsp; Follow $(model.author.name)
+            }
+            <span class="counter">($(model.author.followerCount))</span>
           </button>
         </form>
         &nbsp;&nbsp;
         <form action="/article/$(model.articleId)/favorite" method="post" style="display:inline">
           $(model.csrfToken)
-          <button class="btn btn-sm btn-outline-primary">
+          <button class="btn btn-sm btn-outline-primary $if model.article.isFavorited{active}">
             <i class="ion-heart"></i>
-            &nbsp; Favorite Post <span class="counter">($(model.article.favoriteCount))</span>
+            $if model.article.isFavorited{
+              &nbsp; Unfavorite Post
+            }$else{
+              &nbsp; Favorite Post
+            }
+            <span class="counter">($(model.article.favoriteCount))</span>
           </button>
         </form>
         $if model.isAuthor{
@@ -70,19 +81,29 @@ proc articleTemplate*(model: ArticleTemplateModel): Component =
           <span class="date">$(model.article.updatedAt)</span>
         </div>
 
-        <form action="/profile/$(model.author.id)/follow" method="post" style="display:inline">
+        <form action="/article/$(model.articleId)/follow/$(model.author.id)" method="post" style="display:inline">
           $(model.csrfToken)
-          <button class="btn btn-sm btn-outline-secondary">
-            <i class="ion-plus-round"></i>
-            &nbsp; Follow $(model.author.name)
+          <button class="btn btn-sm btn-outline-secondary $if model.author.isFollowed{active}">
+            $if model.author.isFollowed{
+              <i class="ion-minus-round"></i>
+              &nbsp; Unfollow $(model.author.name)
+            }$else{
+              <i class="ion-plus-round"></i>
+              &nbsp; Follow $(model.author.name)
+            }
           </button>
         </form>
         &nbsp;
         <form action="/article/$(model.articleId)/favorite" method="post" style="display:inline">
           $(model.csrfToken)
-          <button class="btn btn-sm btn-outline-primary">
+          <button class="btn btn-sm btn-outline-primary $if model.article.isFavorited{active}">
             <i class="ion-heart"></i>
-            &nbsp; Favorite Article <span class="counter">($(model.article.favoriteCount))</span>
+            $if model.article.isFavorited{
+              &nbsp; Unfavorite Article
+            }$else{
+              &nbsp; Favorite Article
+            }
+            <span class="counter">($(model.article.favoriteCount))</span>
           </button>
         </form>
         $if model.isAuthor{

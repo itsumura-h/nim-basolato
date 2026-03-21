@@ -5,8 +5,9 @@ type UserDto* = object
   bio*:string
   image*:string
   followerCount*:int
+  isFollowed*: bool
 
-proc new*(_:type UserDto, id, name, email, bio, image: string, followerCount:int): UserDto =
+proc new*(_:type UserDto, id, name, email, bio, image: string, followerCount:int, isFollowed: bool = false): UserDto =
   return UserDto(
     id:id,
     name: name,
@@ -14,5 +15,6 @@ proc new*(_:type UserDto, id, name, email, bio, image: string, followerCount:int
     bio: bio,
     image: image,
     followerCount: followerCount,
+    isFollowed: isFollowed,
   )
   

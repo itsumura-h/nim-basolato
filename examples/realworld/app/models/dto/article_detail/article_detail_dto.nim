@@ -9,6 +9,7 @@ type ArticleDetailDto* = object
   updatedAt*:DateTime
   authorId*:string
   favoriteCount*:int
+  isFavorited*: bool
 
 proc new*(_:type ArticleDetailDto,
   id:string,
@@ -17,7 +18,8 @@ proc new*(_:type ArticleDetailDto,
   createdAt:DateTime,
   updatedAt:DateTime,
   authorId:string,
-  favoriteCount:int
+  favoriteCount:int,
+  isFavorited: bool = false
 ): ArticleDetailDto =
   return ArticleDetailDto(
     id: id,
@@ -27,4 +29,5 @@ proc new*(_:type ArticleDetailDto,
     updatedAt: updatedAt,
     authorId: authorId,
     favoriteCount: favoriteCount,
+    isFavorited: isFavorited,
   )
