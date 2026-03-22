@@ -5,92 +5,60 @@ alwaysApply: false
 fixブランチルール
 ===
 
-このブランチで実装・整理することは以下の通りです。
-- RealWorld の機能要件と `examples/realworld` の現状実装との差分を洗い出し、未実装機能を明文化する
-- 画面だけ存在する機能と、永続化処理まで未実装の機能を区別して記録する
-
-## 進捗
-- [x] RealWorld の機能要件の確認
-- [x] `examples/realworld` のルーティング、controller、usecase、view、DAO の確認
-- [x] 欠けている機能・未実装機能の一覧化
-- [x] 一覧をもとに、実装優先度の高い順にタスクを分割する
-- [ ] 実装後の linter / 動作確認
-
-## 参考資料
-- RealWorld Backend Endpoints: https://realworld-docs.netlify.app/specifications/backend/endpoints/
-  - RESTful API 前提の仕様書だが、このブランチでは MPA + `GET` / `POST` のみで機能を実現する際の要件整理資料として読む
-- `examples/realworld/main.nim`
-- `examples/realworld/app/http/controllers/`
-- `examples/realworld/app/usecases/`
-- `examples/realworld/app/http/views/`
-
 ## 調査結果・設計まとめ
-2026-03-18 時点で、`examples/realworld` は RealWorld の **MPA 画面の一部** は持っているが、アプリケーション全体としては未実装機能が多く残っている。
 
-このブランチでは、RealWorld Backend Endpoints をそのまま REST route として再現するのではなく、**RealWorld が要求している機能を MPA で `GET` / `POST` のみを使って満たす** 前提で実装方針を整理する。
+### article follow / favorite を Turbo Stream 化する方針
+- 対象は `examples/realworld/app/http/views/templates/article/article_template.nim` の follow button と favorite button とする
+- 現状は `POST` 後に `/article/{articleId}` へ redirect しており、記事詳細ページ全体を再描画している
+- これを Hotwire の **Turbo Streams** に置き換え、ページ全体ではなく action block 単位で差し替える
 
-- 画面表示は `GET`
-- 作成・更新・削除・状態変更はすべて `POST`
-- 削除や解除系も `POST` の専用 URL で表現する
-- JSON API の response 互換ではなく、画面遷移・再描画・redirect を中心に設計する
+### 採用する Hotwire 機能
+- 採用機能は **Turbo Streams** とする
+- 理由:
+  - article 詳細には follow / favorite が上部と下部に 2 か所ずつ存在する
+  - 1 回の `POST` で複数箇所を同時に更新したい
+  - Turbo Frame は単一領域更新には向くが、このケースは複数領域を同時更新できる Turbo Streams のほうが適切
 
-### 1. 画面や読取だけ一部あるが、仕様達成には足りていない機能
-以下は MPA として近いものがあるが、機能としては未達。
+### 再描画単位
+- 差し替え対象は button 単体ではなく、button と counter と active 状態を含む **action block 全体** とする
+- 各差し替え対象に安定した DOM id を付与する
+- 例:
+  - `article-follow-action-banner-{articleId}`
+  - `article-follow-action-footer-{articleId}`
+  - `article-favorite-action-banner-{articleId}`
+  - `article-favorite-action-footer-{articleId}`
+- Turbo Stream の action は `replace` を基本とする
 
-- ログイン
-  - `GET /login`, `POST /login` はある
-- ユーザー登録
-  - `GET /register`, `POST /register` はある
-- ユーザー設定更新
-  - `GET /settings`, `POST /settings` はある
-- プロフィール表示
-  - RealWorld の体験は `username` / `slug` ベースだが、現状は `userId` / `articleId` ベース
-  - MPA としてもプロフィール URL と記事 URL の意味が RealWorld 標準とずれている
-- 記事一覧
-  - `/`, `/your-feed`, `/tag/{tag}`、`/profile/{userId}`、`/profile/{userId}/favorite` の画面表示はある
-  - 一覧取得条件や識別子設計は RealWorld 標準と差がある
-- フォロー中記事フィード
-  - `/your-feed` の画面はある
-- 記事詳細
-  - `GET /article/{articleId:str}` はある
-- コメント一覧表示
-  - 記事詳細画面でコメント読取はしている
-- タグ一覧表示
-  - ホーム画面で人気タグを表示している
+### View の責務分割
+- `article_template` に follow / favorite の詳細な分岐を直接持たせ続けず、再描画対象を小さな template か pure component に切り出す
+- 上部・下部で UI の意味は同じなので、render 重複を避けるため shared render を用意する
+- project rule に従い、component に DB access や Context 依存を持ち込まない
+- 必要な状態は article template model 配下の値として解決してから view に渡す
 
-### 2. UI はあるが、操作処理が未実装または空実装のもの
-- フォロー処理
-  - `POST /profile/{userId:str}/follow` はあるが、`app/usecases/follow_usecase.nim` の `invoke` が `discard` のままで実処理なし
-- アンフォロー処理
-  - MPA では `POST /profile/{userId}/unfollow` のような専用 route が必要だが、ルートも usecase も存在しない
-- お気に入り追加 / 解除
-  - 記事一覧・記事詳細に Favorite ボタン表示はあるが、`POST` で favorite / unfavorite を行う route / controller / usecase がない
-- 記事作成 / 編集 / 削除
-  - UI 上に New Article / Edit Article / Delete Article の導線やボタンはあるが、対応する画面 route と `POST` 処理がない
-  - 少なくとも `GET /editor`, `POST /editor`, `GET /editor/{articleId}` または `GET /editor/{slug}`, `POST /editor/{articleId}/update`, `POST /article/{articleId}/delete` 相当が必要
-- コメント投稿 / 削除
-  - コメント入力フォームや削除アイコン相当の UI はあるが、対応する `POST` route / controller / usecase がない
-  - 少なくとも `POST /article/{articleId}/comments`, `POST /article/{articleId}/comments/{commentId}/delete` 相当が必要
+### Controller / Response 方針
+- `article_controller.nim` の `favorite` と `followFromArticle` は redirect を返さず Turbo Stream response を返す
+- 処理順は以下とする
+  1. usecase で follow / favorite の状態を更新する
+  2. article template model を再構築して最新状態を取得する
+  3. Turbo Stream template を描画して返す
+- response の content type は `text/vnd.turbo-stream.html` とする
+- response には少なくとも以下の置換を含める
+  - banner 側 follow block
+  - footer 側 follow block
+  - banner 側 favorite block
+  - footer 側 favorite block
+- 実装簡略化のため、follow 実行時も favorite block を含めて全 block を返してよい
+- favorite 実行時も follow block を含めて全 block を返してよい
 
-### 3. 実装上の補足
-- 現在の route 設計は `GET` / `POST` 中心なので、この方針自体は MPA と整合している
-- 一方で、更新・削除・解除に相当する `POST` 専用 route の粒度がまだ不足している
-- ナビゲーションに `/editor` や `/users/...` へのリンクがあるが、現行 route 定義と一致していない箇所があるため、画面導線にも未接続部分が残っている
+### Form / Client 側の前提
+- 既存の `<form method="post">` は維持する
+- `@hotwired/turbo` は既に head で読み込まれている前提で、独自 JavaScript は追加しない
+- CSRF token の埋め込み方式も維持する
 
-### 4. fixブランチで次に分解すべき実装タスク候補
-- `username` / `slug` ベースの識別子設計に寄せるか、現行 `id` ベース設計で互換層を設けるかを決める
-- まずは MPA の read 機能不足を埋める
-  - username / slug ベースの表示導線整理
-  - 一覧取得条件の整理
-  - 記事詳細とタグ表示の不足情報補完
-- 次に write 機能を実装する
-  - `POST` ベースで follow / unfollow を実装する
-  - `GET` + `POST` で article の作成 / 編集 / 削除を実装する
-  - `POST` で comment の追加 / 削除を実装する
-  - `POST` で favorite / unfavorite を実装する
+### フォールバック
+- 非 Turbo request や通常 HTML request に対しては従来どおり redirect にフォールバックできるようにしておく余地はある
+- ただし fix ブランチでは、まず Turbo request を正として article detail 上の部分更新を成立させることを優先する
 
-### 実装メモ
-- `follow` / `favorite` / `article` / `comment` の write-side repository と usecase を追加した
-- `/editor` の新規作成・編集画面を追加した
-- `profile` / `article` / `comment` の送信導線を POST フォーム化した
-- `GET /users/...` の互換ルートを追加し、既存ナビゲーションとの差分を吸収した
+### 横展開
+- この方式は comment 作成 / 削除など、article detail 内の他の部分更新にも横展開できる
+- そのため Turbo Stream response の render 方式は、今後共通化しやすい構成を意識する
