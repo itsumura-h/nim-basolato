@@ -70,7 +70,7 @@ method getArticleById*(self: ArticleDetailDao, articleId: string, loginUserId: O
     title = articleDeatil.title,
     content = articleDeatil.body,
     createdAt = articleDeatil.createdAt.parse("yyyy-MM-dd HH:mm:ss"),
-    updatedAt = articleDeatil.updatedAt.parse("yyyy-MM-dd HH:mm:ss'.'ffffff"),
+    updatedAt = articleDeatil.updatedAt.parse("yyyy-MM-dd HH:mm:ss"),
     authorId = articleDeatil.authorId,
     favoriteCount = favoriteCount,
     isFavorited = isFavorited,

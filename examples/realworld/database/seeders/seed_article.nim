@@ -12,19 +12,10 @@ import ../schema
 
 randomize()
 
-type Article = object
-  id: ArticleTable.id
-  title: ArticleTable.title
-  description: ArticleTable.description
-  body: ArticleTable.body
-  author_id: ArticleTable.author_id
-  created_at: ArticleTable.created_at
-
-
 proc article*(rdb:PostgresConnections) {.async.} =
   let users = rdb.table("user").get().orm(UserTable).await
 
-  var articles:seq[Article]
+  var articles:seq[ArticleTable]
   for i in 1..30:
     let title = Title.new( randomText(5) )
     let id = ArticleId.new()
@@ -49,13 +40,14 @@ echo(fib(30))
 
 {randomText(500)}
 """
-    let article = Article(
+    let article = ArticleTable(
       id: id.value,
       title: title.value,
       description: randomText(30),
       body: body,
       author_id: users[rand(0..<users.len)].id,
-      created_at: now().utc().format("yyyy-MM-dd hh:mm:ss")
+      created_at: now().utc().format("yyyy-MM-dd hh:mm:ss"),
+      updated_at: now().utc().format("yyyy-MM-dd hh:mm:ss")
     )
     articles.add(article)
   

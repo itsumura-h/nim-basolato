@@ -3,19 +3,21 @@ import ./article_action_component_model
 
 proc articleFollowAction*(model: ArticleActionComponentModel, position: string): Component =
   tmpl"""
-    <form action="/article/$(model.articleId)/follow/$(model.authorId)" method="post" style="display:inline">
-      $(model.csrfToken)
-      <button class="btn btn-sm btn-outline-secondary $if model.isFollowed{active}">
-        $if model.isFollowed{
-          <i class="ion-minus-round"></i>
-          &nbsp; Unfollow $(model.authorName)
-        }$else{
-          <i class="ion-plus-round"></i>
-          &nbsp; Follow $(model.authorName)
-        }
-        <span class="counter">($(model.followerCount))</span>
-      </button>
-    </form>
+    $if not model.isAuthor{
+      <form action="/article/$(model.articleId)/follow/$(model.authorId)" method="post" style="display:inline">
+        $(model.csrfToken)
+        <button class="btn btn-sm btn-outline-secondary $if model.isFollowed{active}">
+          $if model.isFollowed{
+            <i class="ion-minus-round"></i>
+            &nbsp; Unfollow $(model.authorName)
+          }$else{
+            <i class="ion-plus-round"></i>
+            &nbsp; Follow $(model.authorName)
+          }
+          <span class="counter">($(model.followerCount))</span>
+        </button>
+      </form>
+    }
   """
 
 proc articleFavoriteAction*(model: ArticleActionComponentModel, position: string): Component =
@@ -27,7 +29,7 @@ proc articleFavoriteAction*(model: ArticleActionComponentModel, position: string
   tmpl"""
     <form action="/article/$(model.articleId)/favorite" method="post" style="display:inline">
       $(model.csrfToken)
-      <button class="btn btn-sm btn-outline-primary $if model.isFavorited{active}">
+      <button class="btn btn-sm btn-outline-primary $if model.isFavorited{active}" $if model.isAuthor{disabled}>
         <i class="ion-heart"></i>
         &nbsp; $(buttonText)
         <span class="counter">($(model.favoriteCount))</span>

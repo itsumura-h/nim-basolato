@@ -28,10 +28,12 @@ proc articleTemplate*(model: ArticleTemplateModel): Component =
           <a href="/profile/$(model.author.id)" class="author">$(model.author.name)</a>
           <span class="date">$(model.article.updatedAt)</span>
         </div>
-        <span id="article-follow-action-banner-$(model.articleId)">
-          $(articleFollowAction(actionModel, "banner"))
-        </span>
-        &nbsp;&nbsp;
+        $if not model.isAuthor{
+          <span id="article-follow-action-banner-$(model.articleId)">
+            $(articleFollowAction(actionModel, "banner"))
+          </span>
+          &nbsp;&nbsp;
+        }
         <span id="article-favorite-action-banner-$(model.articleId)">
           $(articleFavoriteAction(actionModel, "banner"))
         </span>
@@ -67,10 +69,12 @@ proc articleTemplate*(model: ArticleTemplateModel): Component =
           <span class="date">$(model.article.updatedAt)</span>
         </div>
 
-        <span id="article-follow-action-footer-$(model.articleId)">
-          $(articleFollowAction(actionModel, "footer"))
-        </span>
-        &nbsp;
+        $if not model.isAuthor{
+          <span id="article-follow-action-footer-$(model.articleId)">
+            $(articleFollowAction(actionModel, "footer"))
+          </span>
+          &nbsp;
+        }
         <span id="article-favorite-action-footer-$(model.articleId)">
           $(articleFavoriteAction(actionModel, "footer"))
         </span>
