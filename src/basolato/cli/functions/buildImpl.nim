@@ -49,7 +49,7 @@ proc build*(workers:uint=0, force=false, httpbeast=false, httpx=false, autoResta
     -d:danger \
     -d:release \
     --parallelBuild:0 \
-    --passC:"-flto"\
+    --passC:"-flto" \
     --passL:"-flto" \
     --panics:on \
     --stackTrace \
