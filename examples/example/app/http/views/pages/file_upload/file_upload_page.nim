@@ -1,25 +1,17 @@
+import std/asyncdispatch
 import ../../../../../../../src/basolato/view
+import ../../layouts/app/app_layout
+import ../../presenters/app_presenter
+import ../../presenters/file_upload/file_upload_page_viewmodel
+import ../../templates/file_upload/file_upload_template
 
 
-proc fileUploadPage*():Component =
-  tmpl"""
-    <main>
-      <a href="/">go back</a>
-      <form method="POST" enctype="multipart/form-data">
-        $(csrfToken())
-        <p>
-          <span>image file named [test.jpg]</span>
-          <input type="file" name="img">
-        </p>
-        <button type="submit">upload</button>
-      </form>
-      <form method="POST" action="/sample/file-upload/delete">
-        $(csrfToken())
-        <button type="submit">delete</button>
-      </form>
-      <div>
-        <img src="/sample/test.jpg">
-        <img src="/sample/image.jpg">
-      </div>
-    </main>
-  """
+proc fileUploadPageView*(context: Context):Future[Component] {.async.} =
+  const title = "File Upload"
+  let appPresenter = AppPresenter.new()
+  let appLayoutModel = appPresenter.invoke(title)
+
+  let csrfToken = context.getCsrfToken()
+  let vm = FileUploadPageViewModel.new(csrfToken)
+  let page = fileUploadTemplate(vm)
+  return appLayout(appLayoutModel, page)

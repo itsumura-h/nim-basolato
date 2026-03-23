@@ -14,7 +14,7 @@ proc renderHtml*(context:Context):Future[Response] {.async.} =
   return render(html("pages/test.html"))
 
 proc renderTemplate*(context:Context):Future[Response] {.async.} =
-  return render(testView())
+  return render(testView(context))
 
 proc renderJson*(context:Context):Future[Response] {.async.} =
   return render(%*{"key": "test"})
@@ -95,4 +95,4 @@ proc deleteAction*(context:Context):Future[Response] {.async.} =
 
 # csrf token
 proc getCsrf*(context:Context):Future[Response] {.async.} =
-  return render(testView())
+  return render(testView(context))

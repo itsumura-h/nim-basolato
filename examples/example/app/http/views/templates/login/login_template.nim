@@ -1,12 +1,12 @@
 import ../../../../../../../src/basolato/view
-import ../../signals/form_signal
-import ../../signals/login_signal
+import ../../presenters/login/login_page_viewmodel
 
 
-proc loginTemplate*():Component =
-  let formParams = formParamsSignal.value()
-  let formErrors = formErrorsSignal.value()
-  let loginUser = loginUserSignal.value()
+proc loginTemplate*(vm: LoginPageViewModel):Component =
+  let formParams = vm.formParams
+  let formErrors = vm.formErrors
+  let loginUser = (isLogin: vm.isLogin, name: vm.name)
+  let csrfTokenStr = vm.csrfToken
 
   let style = styleTmpl(Css, """
     <style>
@@ -27,7 +27,7 @@ proc loginTemplate*():Component =
               <h2>You are logged in!</h2>
               <p>Login Name: $(loginUser.name)</p>
             </header>
-            $(csrfToken())
+            <input type="hidden" name="csrf_token" value="$(escapeHtmlAttr(csrfTokenStr))">
             <button type="submit">Logout</button>
           </form>
         }
@@ -43,7 +43,7 @@ proc loginTemplate*():Component =
                 }
               </ul>
             }
-            $(csrfToken())
+            <input type="hidden" name="csrf_token" value="$(escapeHtmlAttr(csrfTokenStr))">
             <input type="text" name="name" placeholder="name" value="$(formParams.old("name"))">
             <input type="password" name="password" placeholder="password">
             <button type="submit">Login</button>

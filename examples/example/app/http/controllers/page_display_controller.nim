@@ -13,22 +13,15 @@ import ../views/pages/with_style/with_style_page
 # import ../views/pages/sample/web_socket_view
 import ../views/pages/web_socket/web_socket_page
 import ../views/pages/api_view/api_view_page
-import ../views/presenters/app_presenter
-import ../views/layouts/app/app_layout
 
 
-proc index*(context:Context):Future[Response] {.async.} =
-  const title = "Sample index"
-  let appPresenter = AppPresenter.new()
-  let appLayoutModel = appPresenter.invoke(title)
-
-  let page = sampleView()
-  let view = appLayout(appLayoutModel, page)
-  return render(view)
+proc samplePage*(context:Context):Future[Response] {.async.} =
+  let page = samplePageView(context).await
+  return render(page)
 
 
-proc welcome*(context:Context):Future[Response] {.async.} =
-  let page = welcomePage()
+proc welcomePage*(context:Context):Future[Response] {.async.} =
+  let page = welcomePageView(context).await
   return render(page)
 
 
@@ -55,13 +48,8 @@ proc fib*(context:Context):Future[Response] {.async.} =
 
 
 proc withStylePage*(context:Context):Future[Response] {.async.} =
-  const title = "With Style"
-  let appPresenter = AppPresenter.new()
-  let appLayoutModel = appPresenter.invoke(title)
-
-  let page = withStylePage()
-  let view = appLayout(appLayoutModel, page)
-  return render(view)
+  let page = withStylePageView(context).await
+  return render(page)
 
 
 proc customHeaders*(context:Context):Future[Response] {.async.} =
@@ -120,12 +108,12 @@ proc errorRedirect*(context:Context):Future[Response] {.async.} =
 
 
 proc webSocketIframePage*(context:Context):Future[Response] {.async.} =
-  let view = webSocketIframePage()
+  let view = webSocketIframePageView(context).await
   return render(view)
 
 
 proc webSocketPage*(context:Context):Future[Response] {.async.} =
-  let view = webSocketPage()
+  let view = webSocketPageView(context).await
   return render(view)
 
 
@@ -155,5 +143,5 @@ proc webSocket*(context:Context):Future[Response] {.async.} =
 
 
 proc displayApiPage*(context:Context):Future[Response] {.async.} =
-  let view = apiViewPage()
+  let view = apiViewPageView(context).await
   return render(view)

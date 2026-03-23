@@ -1,0 +1,2 @@
+[
+{"name":"./tests/test_create_user.nim c","category":"pattern","target":"c","action":"run","result":"reSuccess","expected":"","given":"","machine":"64db855359fd","commit":"c1e08442638","branch":"dev"}]

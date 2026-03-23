@@ -16,10 +16,10 @@ import app/http/controllers/api_controller
 
 let routes = @[
   Route.group("", @[
-    Route.get("/", page_display_controller.index)
+    Route.get("/", page_display_controller.samplePage)
       .middleware(example_middleware.setMiddleware1),
     Route.group("/sample", @[
-      Route.get("/welcome", page_display_controller.welcome)
+      Route.get("/welcome", page_display_controller.welcomePage)
         .middleware(example_middleware.setMiddleware2),
       Route.get("/fib/{num:int}", page_display_controller.fib),
       Route.get("/with-style", page_display_controller.withStylePage),
@@ -30,24 +30,24 @@ let routes = @[
       Route.get("/error/{id:int}", page_display_controller.errorPage),
       Route.get("/error-redirect/{id:int}", page_display_controller.errorRedirect),
 
-      Route.get("/cookie", cookie_controller.index),
+      Route.get("/cookie", cookie_controller.cookiePage),
       Route.post("/cookie", cookie_controller.store),
       Route.post("/cookie/update", cookie_controller.update),
       Route.post("/cookie/delete", cookie_controller.delete),
       Route.post("/cookie/destroy", cookie_controller.destroy),
 
-      Route.get("/login", login_controller.index),
+      Route.get("/login", login_controller.loginPage),
       Route.post("/login", login_controller.store),
       Route.post("/logout", login_controller.destroy),
 
-      Route.get("/flash", flash_controller.index),
+      Route.get("/flash", flash_controller.flashPage),
       Route.post("/flash", flash_controller.store),
 
-      Route.get("/file-upload", file_upload_controller.index),
+      Route.get("/file-upload", file_upload_controller.fileUploadPage),
       Route.post("/file-upload", file_upload_controller.store),
       Route.post("/file-upload/delete", file_upload_controller.destroy),
 
-      Route.get("/validation", validation_controller.index),
+      Route.get("/validation", validation_controller.validationPage),
       Route.post("/validation", validation_controller.store),
 
       Route.get("/web-socket-component", page_display_controller.webSocketIframePage),

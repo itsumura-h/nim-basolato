@@ -95,10 +95,12 @@ proc sessionFromCookieHelper*(c:Context):Future[Cookies] {.async.} =
     raise newException(CatchableError, "Invalid session")
 
   let sessionOpt = Session.new(sessionId).await
-  c.setSession(sessionOpt.get())
+  await c.setSession(sessionOpt.get())
   
   if c.request.httpMethod == HttpGet:
     await c.session.updateCsrfToken()
+  
+  c.setCsrfToken(globalCsrfToken)
 
   let newSessionId = await c.session.getToken()
   let newPayload = 
@@ -128,20 +130,24 @@ proc sessionFromCookieHelper*(c:Context):Future[Cookies] {.async.} =
 proc createNewSessionHelper*(context:Context):Future[Cookies] {.async.} =
   var cookies = Cookies.new(context.request)
   let session = Session.new().await
-  session.updateCsrfToken().await
+  # セッションを context にセットしてからアップデート
+  await context.setSession(session.get())
+  await context.session.updateCsrfToken()
+  context.setCsrfToken(globalCsrfToken)
+  echo "DEBUG middleware: Created new session with CSRF token: ", globalCsrfToken.len, " bytes"
   let newExpire = createExpire()
-  session.set("csrf_expire", $newExpire).await
+  await context.session.set("csrf_expire", $newExpire)
   let payload =
     if SESSION_TIME > 0:
       %*{
-        "session_id": session.getToken().await,
+        "session_id": await context.session.getToken(),
         "csrf_token": globalCsrfToken,
         "iat": now().toTime().toUnix(),
         "exp": timeForward(SESSION_TIME, Minutes).toTime().toUnix(),
       }
     else:
       %*{
-        "session_id": session.getToken().await,
+        "session_id": await context.session.getToken(),
         "csrf_token": globalCsrfToken,
         "iat": now().toTime().toUnix(),
         "exp": timeForward(1, Years).toTime().toUnix(),

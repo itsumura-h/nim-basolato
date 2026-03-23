@@ -5,6 +5,7 @@ import std/strutils
 import std/json
 import ../params
 import ./session
+import ./csrf_token
 import ./session_db
 
 when defined(httpbeast) or defined(httpx):
@@ -17,6 +18,10 @@ type Context* = ref object
   request: Request
   params: Params
   sessionOpt: Option[Session]
+  csrfToken: CsrfToken
+  ## flash に保存された入力・エラーの読み出し結果をキャッシュする
+  flashParamsCache: Option[Params]
+  flashErrorsCache: Option[JsonNode]
 
 ## セッション値ストアへの低レベル操作を提供するアクセサ。
 ## 利用者は `Option[Session]` を意識せず `context.session.get(...)` 等を扱える。
@@ -27,7 +32,10 @@ proc new*(_:type Context, request:Request, params:Params):Future[Context]{.async
   return Context(
     request:request,
     params:params,
-    sessionOpt:none(Session)
+    sessionOpt:none(Session),
+    csrfToken: CsrfToken.new(),
+    flashParamsCache: none(Params),
+    flashErrorsCache: none(JsonNode)
   )
 
 
@@ -45,8 +53,26 @@ proc origin*(self:Context):string =
   return ""
 
 
-proc setSession*(self:Context, session:Session) =
+proc setCsrfToken*(self:Context, token:string) =
+  self.csrfToken = CsrfToken.new(token)
+
+
+proc getCsrfToken*(self:Context):string =
+  return self.csrfToken.getToken()
+
+
+proc csrfToken*(self: Context): CsrfToken =
+  return self.csrfToken
+
+
+proc setSession*(self:Context, session:Session) {.async.} =
   self.sessionOpt = session.some()
+  ## セッションに保存されている CSRF トークンを Context に取り込む
+  if await self.sessionOpt.isSome("csrf_token"):
+    let token = await self.sessionOpt.get("csrf_token")
+    self.csrfToken = CsrfToken.new(token)
+  else:
+    self.csrfToken = CsrfToken.new()
 
 
 proc session*(self:Context):ContextSession =
@@ -171,17 +197,35 @@ proc getFlash*(self:Context):Future[JsonNode] {.async.} =
         await self.sessionOpt.delete(key)
 
 
-proc getErrors(self:Context):Future[JsonNode] {.async.} =
+proc getErrorsObject*(self:Context):Future[JsonNode] {.async.} =
+  if self.flashErrorsCache.isSome:
+    return self.flashErrorsCache.get()
+
   result = newJObject()
   if self.sessionOpt.isSome:
-    let rows = self.sessionOpt.get.db.getRows().await 
+    let rows = self.sessionOpt.get.db.getRows().await
     for key, val in rows.pairs:
       if key == "flash_errors":
         self.sessionOpt.delete(key).await
+        self.flashErrorsCache = some(val)
         return val
 
+  self.flashErrorsCache = some(result)
 
-proc getParams(self:Context):Future[Params] {.async.} =
+
+proc getErrors*(self:Context):Future[seq[string]] {.async.} =
+  var flatErrors: seq[string]
+  let sessionErrors = await self.getErrorsObject()
+  for _, messages in sessionErrors.pairs:
+    for message in messages:
+      flatErrors.add(message.getStr)
+  return flatErrors
+
+
+proc getParams*(self:Context):Future[Params] {.async.} =
+  if self.flashParamsCache.isSome:
+    return self.flashParamsCache.get()
+
   result = Params.new()
   if self.sessionOpt.isSome:
     let rows = self.sessionOpt.get.db.getRows().await
@@ -191,7 +235,10 @@ proc getParams(self:Context):Future[Params] {.async.} =
         let params = Params.new()
         for key, jsonParam in sessionParams.pairs:
           params[key] = jsonParam.to(Param)
+        self.flashParamsCache = some(params)
         return params
+
+  self.flashParamsCache = some(result)
 
 
 proc getParamsWithErrorsObject*(self:Context):Future[tuple[params:Params, errors:JsonNode]] {.async.} =
@@ -205,7 +252,9 @@ proc getParamsWithErrorsObject*(self:Context):Future[tuple[params:Params, errors
   ##   "field_name2": ["error message1", "error message2],
   ## }
   ## ```
-  return (params: self.getParams().await, errors:self.getErrors().await)
+  let params = await self.getParams()
+  let errors = await self.getErrorsObject()
+  return (params: params, errors:errors)
 
 
 proc getParamsWithErrorsList*(self:Context):Future[tuple[params:Params, errors:seq[string]]] {.async.} =
@@ -219,12 +268,9 @@ proc getParamsWithErrorsList*(self:Context):Future[tuple[params:Params, errors:s
   ##   "error message2",
   ## ]
   ## ```
-  let sessionErrors = self.getErrors().await
-  var errors:seq[string]
-  for key, messages in sessionErrors.pairs:
-    for message in messages:
-      errors.add(message.getStr)
-  return (params: self.getParams().await, errors:errors)
+  let params = await self.getParams()
+  let errors = await self.getErrors()
+  return (params: params, errors:errors)
 
 
 # ==================== Global Context ====================

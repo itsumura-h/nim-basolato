@@ -139,6 +139,79 @@ proc render*(status:HttpCode, body:JsonNode, headers:HttpHeaders):Response =
     headers: headers
   )
 
+# ========== Turbo Stream ====================
+func renderTurboStream*(body:string):Response =
+  let headers = newHttpHeaders(true)
+  headers["Content-Type"] = "text/vnd.turbo-stream.html; charset=utf-8"
+  return Response(
+    status:Http200,
+    body:body,
+    headers: headers
+  )
+
+func renderTurboStream*(body:string, headers:HttpHeaders):Response =
+  if not headers.hasKey("Content-Type"):
+    headers["Content-Type"] = "text/vnd.turbo-stream.html; charset=utf-8"
+  return Response(
+    status:Http200,
+    body:body,
+    headers: headers
+  )
+
+func renderTurboStream*(status:HttpCode, body:string):Response =
+  let headers = newHttpHeaders(true)
+  headers["Content-Type"] = "text/vnd.turbo-stream.html; charset=utf-8"
+  return Response(
+    status:status,
+    body:body,
+    headers: headers
+  )
+
+proc renderTurboStream*(status:HttpCode, body:string, headers:HttpHeaders):Response =
+  if not headers.hasKey("Content-Type"):
+    headers["Content-Type"] = "text/vnd.turbo-stream.html; charset=utf-8"
+  return Response(
+    status:status,
+    body:body,
+    headers: headers
+  )
+
+func renderTurboStream*(body:Component):Response =
+  let headers = newHttpHeaders(true)
+  headers["Content-Type"] = "text/vnd.turbo-stream.html; charset=utf-8"
+  return Response(
+    status:Http200,
+    body: $body,
+    headers: headers
+  )
+
+proc renderTurboStream*(body:Component, headers:HttpHeaders):Response =
+  if not headers.hasKey("Content-Type"):
+    headers["Content-Type"] = "text/vnd.turbo-stream.html; charset=utf-8"
+  return Response(
+    status:Http200,
+    body: $body,
+    headers: headers
+  )
+
+func renderTurboStream*(status:HttpCode, body:Component):Response =
+  let headers = newHttpHeaders(true)
+  headers["Content-Type"] = "text/vnd.turbo-stream.html; charset=utf-8"
+  return Response(
+    status:status,
+    body: $body,
+    headers: headers
+  )
+
+proc renderTurboStream*(status:HttpCode, body:Component, headers:HttpHeaders):Response =
+  if not headers.hasKey("Content-Type"):
+    headers["Content-Type"] = "text/vnd.turbo-stream.html; charset=utf-8"
+  return Response(
+    status:status,
+    body: $body,
+    headers: headers
+  )
+
 func redirect*(url:string):Response =
   let headers = newHttpHeaders(true)
   headers["Location"] = url

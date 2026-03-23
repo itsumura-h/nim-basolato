@@ -1,0 +1,46 @@
+---
+description: fixブランチでの開発時に読み込む
+alwaysApply: false
+---
+fixブランチルール
+===
+
+このブランチで実装することは以下の通りです。
+- `asynchttpserver` と `httpx` と `httpbeast` の `Request` 型差異を吸収するため、basolatoフレームワーク独自の `Request` 型を導入する。
+- basolato独自 `Request` 型の定義は `asynchttpserver.Request` と同一形状を基準にする。
+- 各HTTPバックエンドから basolato独自 `Request` 型へ値を詰め替える変換レイヤを用意し、上位レイヤは共通 `Request` のみを扱う構成に整理する。
+- 調査・設計結果に基づき、実装・検証までをこのブランチで完了させる。
+
+## 進捗
+- [x] 課題を整理し、ブランチの目的を明文化する
+- [x] `asynchttpserver.Request` の全フィールドと意味を確認する
+- [x] `httpx` 側から取得可能な対応値を棚卸しする
+- [x] `httpbeast` 側から取得可能な対応値を棚卸しする
+- [x] basolato独自 `Request` 型の定義場所と公開範囲を決める
+- [x] `asynchttpserver` から独自 `Request` への変換方針を決める
+- [x] `httpx` から独自 `Request` への変換方針を決める
+- [x] `httpbeast` から独自 `Request` への変換方針を決める
+- [x] 既存のルーティング・コントローラー・ミドルウェアへの影響範囲を整理する
+- [x] 不足情報や非互換項目があれば `調査結果・設計まとめ` に追記する
+
+## 参考資料
+- Nim標準ライブラリ `asynchttpserver` の `Request` 定義
+- 利用中の `httpx` 側 `Request` 相当型の定義とアクセスAPI
+- 利用中の `httpbeast` 側 `Request` 相当型の定義とアクセスAPI
+- basolato内のルーター、ミドルウェア、コントローラー呼び出し経路
+- https://nim-lang.org/docs/asynchttpserver.html
+- https://github.com/ringabout/httpx
+- https://github.com/dom96/httpbeast
+
+## 調査結果・設計まとめ
+- 現状の課題は、HTTPサーバー実装ごとに `Request` 型が異なるため、フレームワーク上位層でバックエンド依存が漏れている可能性がある点である。
+- 解決方針は、basolato内部で利用する共通 `Request` 型を1つ定義し、各バックエンドは境界でその型へ変換してから後続処理へ渡す構成に統一することとする。
+- 共通 `Request` 型の形状は `asynchttpserver.Request` を正とし、既存コードとの親和性と移行コスト低減を優先する。
+- `httpx` および `httpbeast` に存在しない情報が `asynchttpserver.Request` に含まれる場合は、まず「欠損をどう埋めるか」を調査し、埋められない場合は互換対象の最小集合を明記したうえで設計を補正する。
+- 変換処理はHTTPバックエンド層に閉じ込め、controller / middleware / routing 以降では basolato独自 `Request` 以外を参照しない状態を目標とする。
+- このブランチでは、実装中に判明した非互換や代替表現を本節へ継続的に反映し、設計の一次情報として保守する。
+- `asynchttpserver.Request` の確認結果: `client(AsyncSocket)`, `reqMethod(HttpMethod)`, `headers(HttpHeaders)`, `protocol(tuple[orig,major,minor])`, `url(Uri)`, `hostname(string)`, `body(string)`。
+- `httpx/httpbeast` の棚卸し結果: `httpMethod()`, `path()`, `headers()`, `body()`, `ip()`, `client(SocketHandle)` を取得可能。`protocol` は直接取得できないため `HTTP/1.1` を補完値として採用した。
+- 実装方針を確定し、`src/basolato/core/libservers/request.nim` に共通 `Request` 型を新設。`std/request.nim` と `nostd/request.nim` に `RawRequest -> Request` の `toRequest` 変換を実装した。
+- サーバー境界でのみ生リクエストを扱い、`createResponse` 以降へは共通 `Request` を渡すよう `std/server.nim` と `nostd/server.nim` を更新した。
+- 既知の補正事項: `httpx/httpbeast` 側で `protocol` の実値を取得できないため、keep-alive判定に使う `protocol` は補完値依存となる。`Connection` ヘッダの評価は生リクエスト側 (`dealKeepAlive(RawRequest)`) で継続する。

@@ -5,13 +5,13 @@ trap finally EXIT
 function finally {
   # delete files
   pkill main
-  rm server/main
-  rm server/db.sqlite3
-  rm server/session.db
-  rm session.db
-  rm -fr logs
-  rm -fr server/logs
-  rm .env
+  rm server/main || true
+  rm server/db.sqlite3 || true
+  rm server/session.db || true
+  rm session.db || true
+  rm -fr logs || true
+  rm -fr server/logs || true
+  rm .env || true
   find ./ -type f ! -name "*.*" -delete 2> /dev/null
 }
 

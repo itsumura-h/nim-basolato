@@ -6,21 +6,12 @@ import std/times
 # framework
 import ../../../../../src/basolato/controller
 # view
-import ../views/presenters/app_presenter
-import ../views/layouts/app/app_layout
 import ../views/pages/cookie/cookie_page
 
 
-proc index*(context:Context):Future[Response] {.async.} =
-  const title = "Cookie"
-  let appPresenter = AppPresenter.new()
-  let appLayoutModel = appPresenter.invoke(title)
-
-  let cookies = %(Cookies.new(context.request).getAll())
-  let page = cookiePage(cookies)
-
-  let view = appLayout(appLayoutModel, page)
-  return render(view)
+proc cookiePage*(context:Context):Future[Response] {.async.} =
+  let page = cookiePageView(context).await
+  return render(page)
 
 
 proc store*(context:Context):Future[Response] {.async.} =

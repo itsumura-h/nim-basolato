@@ -4,18 +4,11 @@ import ../../../../../src/basolato/controller
 import ../../../../../src/basolato/request_validation
 #view
 import ../views/pages/login/login_page
-import ../views/layouts/app/app_layout
-import ../views/presenters/app_presenter
 
 
-proc index*(context:Context):Future[Response] {.async.} =
-  const title = "Login Page"
-  let appPresenter = AppPresenter.new()
-  let appLayoutModel = appPresenter.invoke(title)
-
-  let page = loginPage().await
-  let view = appLayout(appLayoutModel, page)
-  return render(view)
+proc loginPage*(context:Context):Future[Response] {.async.} =
+  let page = loginPageView(context).await
+  return render(page)
 
 
 proc store*(context:Context):Future[Response] {.async.} =

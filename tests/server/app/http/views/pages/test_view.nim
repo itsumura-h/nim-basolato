@@ -1,7 +1,7 @@
 import ../../../../../../src/basolato/view
 
-proc testView*():Component =
+proc testView*(context: Context):Component =
   tmpl"""
     <h1>test template</h1>
-    $(csrfToken())
+    $(context.csrfToken())
   """

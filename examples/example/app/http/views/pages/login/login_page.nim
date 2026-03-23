@@ -1,17 +1,17 @@
 import std/asyncdispatch
 import ../../../../../../../src/basolato/view
-import ../../signals/login_signal
-import ../../signals/form_signal
+import ../../layouts/app/app_layout
+import ../../presenters/app_presenter
+import ../../presenters/login/login_presenter
 import ../../templates/login/login_template
 
 
-proc loginPage*():Future[Component] {.async.} =
-  let context = context()
-  let (params, errors) = context.getParamsWithErrorsList().await
-  formParamsSignal.value = params
-  formErrorsSignal.value = errors
-  
-  let isLogin = context.isLogin().await
-  let name = context.session.get("name").await
-  loginUserSignal.value = (isLogin: isLogin, name: name)
-  return loginTemplate()
+proc loginPageView*(context: Context):Future[Component] {.async.} =
+  const title = "Login Page"
+  let appPresenter = AppPresenter.new()
+  let appLayoutModel = appPresenter.invoke(title)
+
+  let presenter = LoginPresenter.new()
+  let vm = presenter.invoke(context).await
+  let page = loginTemplate(vm)
+  return appLayout(appLayoutModel, page)

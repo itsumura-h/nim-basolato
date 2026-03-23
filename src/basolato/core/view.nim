@@ -6,7 +6,7 @@ import std/strutils; export strutils
 import std/tables; export tables
 import ./settings
 import ./security/context; export context
-import ./security/csrf_token; export csrf_token
+import ./security/csrf_token; export csrf_token, escapeHtmlAttr
 import ./security/random_string
 import ./params; export params
 import ./templates; export templates
@@ -114,29 +114,7 @@ else:
     return Style.new(arr.join("\n"), saffix)
 
 
-# ==================== Signal ====================
-type Signal*[T] = ref object
-  value: T
-  nextId: int
-
-type SignalResponse*[T] = object
-  get:proc(): T
-  set:proc(newValue: T)
-
-proc value*[T](self:SignalResponse[T]):T =
-  return self.get()
-
-proc `value=`*[T](self:SignalResponse[T], newValue: T) =
-  self.set(newValue)
-
-proc createSignal*[T](initialValue: T): SignalResponse[T] =
-  var signal = Signal[T](value: initialValue, nextId: 0)
-
-  proc get(): T =
-    signal.value
-
-  proc set(newValue: T) =
-    if newValue != signal.value:
-      signal.value = newValue
-
-  return SignalResponse[T](get:get, set:set)
+# Signal implementation has been deprecated and removed.
+# Use Presenter/ViewModel pattern instead for request-local, immutable view data.
+# See: examples/example/app/http/views/presenters/ for the recommended pattern.
+# See: examples/example/app/http/views/signals/DEPRECATION.md for migration guide.

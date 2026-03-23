@@ -1,13 +1,14 @@
+import std/asyncdispatch
 import ../../../../../../../src/basolato/view
-import ../../templates/api_view/api_view_template
-import ../../presenters/app_presenter
 import ../../layouts/app/app_layout
+import ../../presenters/app_presenter
+import ../../templates/api_view/api_view_template
 
 
-proc apiViewPage*():Component =
+proc apiViewPageView*(context: Context):Future[Component] {.async.} =
   const title = "API View"
   let appPresenter = AppPresenter.new()
   let appLayoutModel = appPresenter.invoke(title)
 
-  let apiViewTemplate = apiViewTemplate()
-  return appLayout(appLayoutModel, apiViewTemplate)
+  let apiViewBody = apiViewTemplate()
+  return appLayout(appLayoutModel, apiViewBody)

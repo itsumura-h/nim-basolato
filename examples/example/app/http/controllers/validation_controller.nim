@@ -4,18 +4,12 @@ import std/json
 import ../../../../../src/basolato/controller
 import ../../../../../src/basolato/request_validation
 # view
-import ../views/presenters/app_presenter
-import ../views/layouts/app/app_layout
 import ../views/pages/validation/validation_page
 
-proc index*(context:Context):Future[Response] {.async.} =
-  let page = validationPage().await
 
-  let title = "Validation view"
-  let appPresenter = AppPresenter.new()
-  let appLayoutModel = appPresenter.invoke(title)
-  let view = appLayout(appLayoutModel, page)
-  return render(view)
+proc validationPage*(context:Context):Future[Response] {.async.} =
+  let page = validationPageView(context).await
+  return render(page)
 
 proc store*(context:Context):Future[Response] {.async.} =
   let validation = RequestValidation.new(context)

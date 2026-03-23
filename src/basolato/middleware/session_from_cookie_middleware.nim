@@ -29,7 +29,7 @@ proc sessionFromCookie*(c:Context, p:Params):Future[Response] {.async.} =
     else:
       Session.new().await
 
-  c.setSession(sessionOpt.get())
+  await c.setSession(sessionOpt.get())
   # get expire time
   let expire =
     if (await c.session.isSome("csrf_expire")):
