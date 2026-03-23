@@ -2,6 +2,7 @@
 !*.*
 !*/
 !completions/bash/ducere
+!makefile
 
 # Created by https://www.gitignore.io/api/nim
 # Edit at https://www.gitignore.io/?templates=nim
