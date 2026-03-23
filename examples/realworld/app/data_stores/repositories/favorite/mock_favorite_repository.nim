@@ -1,5 +1,4 @@
 import std/asyncdispatch
-import std/options
 import ../../../models/aggregates/favorite/favorite_entity
 import ../../../models/aggregates/favorite/favorite_repository_interface
 

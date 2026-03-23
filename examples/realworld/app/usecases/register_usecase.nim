@@ -3,7 +3,6 @@ import std/options
 import ../errors
 import ../di_container
 import ../models/aggregates/user/user_repository_interface
-import ../models/aggregates/user/user_service
 import ../models/aggregates/user/user_entity
 import ../models/vo/user_id
 import ../models/vo/user_name

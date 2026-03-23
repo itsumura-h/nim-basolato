@@ -2,7 +2,6 @@ import std/asyncdispatch
 import basolato/controller
 import basolato/request_validation
 import ../views/pages/setting/setting_page
-import ../../models/aggregates/user/user_entity
 import ../../usecases/update_setting_usecase
 
 

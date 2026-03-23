@@ -8,5 +8,5 @@ proc new*(_:type MockUserArticleCountDao):MockUserArticleCountDao =
   return MockUserArticleCountDao()
 
 
-method invoke*(self:MockUserArticleCountDao, userId:int):Future[int] {.async.} =
+method invoke*(self:MockUserArticleCountDao, userId:int):Future[int] {.base, async.} =
   return 0

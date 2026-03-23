@@ -1,7 +1,4 @@
 import std/asyncdispatch
-import std/json
-import allographer/query_builder
-from ../../../../../config/database import rdb
 import ../../../../models/dto/article_list/your_feed_article_list_dao_interface
 import ../../../../models/dto/article_list/article_list_dto
 
@@ -16,5 +13,5 @@ method invoke*(
   self:MockYourFeedArticleListDao,
   offset:int,
   display:int,
-):Future[seq[ArticleDto]] {.async.} =
+):Future[seq[ArticleDto]] {.base, async.} =
   return @[]

@@ -4,9 +4,7 @@ import std/times
 import basolato/view
 import markdown
 import ../../../../models/dto/article_detail/article_detail_dao_interface
-import ../../../../models/dto/article_detail/article_detail_dto
 import ../../../../models/dto/user/user_dao_interface
-import ../../../../models/dto/user/user_dto
 import ../../../../di_container
 
 

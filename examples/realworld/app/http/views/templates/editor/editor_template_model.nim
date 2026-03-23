@@ -1,4 +1,3 @@
-import std/asyncdispatch
 import basolato/view
 
 type EditorTemplateModel* = object

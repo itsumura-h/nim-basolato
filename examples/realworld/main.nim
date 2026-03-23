@@ -1,6 +1,5 @@
 # framework
 import basolato
-import ./app/env
 # middleware
 import ./app/http/middlewares/session_middleware
 import ./app/http/middlewares/auth_middleware

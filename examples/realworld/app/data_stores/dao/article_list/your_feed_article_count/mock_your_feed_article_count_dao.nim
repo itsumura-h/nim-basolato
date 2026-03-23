@@ -8,5 +8,5 @@ proc new*(_:type MockYourFeedArticleCountDao):MockYourFeedArticleCountDao =
   return MockYourFeedArticleCountDao()
 
 
-method invoke*(self:MockYourFeedArticleCountDao):Future[int] {.async.} =
+method invoke*(self:MockYourFeedArticleCountDao):Future[int] {.base, async.} =
   return 100

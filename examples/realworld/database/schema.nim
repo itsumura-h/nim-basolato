@@ -1,5 +1,3 @@
-import std/json
-
 type UserTable* = object
   ## user
   id*: string

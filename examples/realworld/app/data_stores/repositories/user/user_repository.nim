@@ -8,7 +8,6 @@ import ../../../../database/schema
 import ../../../models/vo/user_id
 import ../../../models/vo/user_name
 import ../../../models/vo/email
-import ../../../models/vo/password
 import ../../../models/vo/hashed_password
 import ../../../models/vo/bio
 import ../../../models/vo/image

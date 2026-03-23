@@ -1,5 +1,4 @@
 import std/asyncdispatch
-import std/options
 import ../../../models/aggregates/follow/follow_entity
 import ../../../models/aggregates/follow/follow_repository_interface
 
