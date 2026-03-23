@@ -19,11 +19,6 @@ when defined(httpbeast) or defined(httpx):
 else:
   import ./core/libservers/std/request; export request
 
-when defined(httpbeast):
-  from httpbeast import send, forget
-else:
-  from httpx import send, forget
-
 
 type
   ReadyState* = enum
@@ -120,56 +115,31 @@ proc handshake*(ws: WebSocket, headers: HttpHeaders) {.async.} =
   ws.readyState = Open
 
 
-when defined(httpbeast) or defined(httpx):
-  proc newWebSocket*(req: Request): Future[WebSocket] {.async.} =
-    ## Creates a new socket from an httpbeast request.
-    try:
-      let headers = req.headers
+proc newWebSocket*(
+  req: Request,
+  protocol: string = ""
+): Future[WebSocket] {.async.} =
+  ## Creates a new socket from a request.
+  try:
+    if req.client.isNil:
+      raise newException(WebSocketHandshakeError, "Invalid socket for websocket handshake")
 
-      if not headers.hasKey("Sec-WebSocket-Version"):
-        req.send(Http404, "Not Found")
-        raise newException(WebSocketHandshakeError, "Not a valid websocket handshake.")
+    if not req.headers.hasKey("Sec-WebSocket-Version"):
+      raise newException(WebSocketHandshakeError, "Invalid WebSocket handshake")
 
-      var ws = WebSocket()
-      ws.masked = false
+    var ws = WebSocket()
+    ws.masked = false
+    ws.tcpSocket = req.client
+    ws.protocol = protocol
+    await ws.handshake(req.headers)
+    return ws
 
-      # Here is the magic:
-      req.forget() # Remove from HttpBeast event loop.
-      asyncdispatch.register(req.client.AsyncFD) # Add to async event loop.
-
-      ws.tcpSocket = newAsyncSocket(req.client.AsyncFD)
-      await ws.handshake(headers)
-      return ws
-
-    except ValueError, KeyError:
-      # Wrap all exceptions in a WebSocketCreationError so its easy to catch
-      raise newException(
-        WebSocketCreationError,
-        "Failed to create WebSocket from request: " & getCurrentExceptionMsg()
-      )
-else:
-  proc newWebSocket*(
-    req: Request,
-    protocol: string = ""
-  ): Future[WebSocket] {.async.} =
-    ## Creates a new socket from a request.
-    try:
-      if not req.headers.hasKey("Sec-WebSocket-Version"):
-        raise newException(WebSocketHandshakeError, "Invalid WebSocket handshake")
-
-      var ws = WebSocket()
-      ws.masked = false
-      ws.tcpSocket = req.client
-      ws.protocol = protocol
-      await ws.handshake(req.headers)
-      return ws
-
-    except ValueError, KeyError:
-      # Wrap all exceptions in a WebSocketCreationError so its easy to catch.
-      raise newException(
-        WebSocketCreationError,
-        "Failed to create WebSocket from request: " & getCurrentExceptionMsg()
-      )
+  except ValueError, KeyError:
+    # Wrap all exceptions in a WebSocketCreationError so its easy to catch.
+    raise newException(
+      WebSocketCreationError,
+      "Failed to create WebSocket from request: " & getCurrentExceptionMsg()
+    )
 
 
 proc newWebSocket*(

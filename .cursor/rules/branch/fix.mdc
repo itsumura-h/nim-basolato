@@ -5,75 +5,42 @@ alwaysApply: false
 fixブランチルール
 ===
 
+このブランチで実装することは以下の通りです。
+- `asynchttpserver` と `httpx` と `httpbeast` の `Request` 型差異を吸収するため、basolatoフレームワーク独自の `Request` 型を導入する。
+- basolato独自 `Request` 型の定義は `asynchttpserver.Request` と同一形状を基準にする。
+- 各HTTPバックエンドから basolato独自 `Request` 型へ値を詰め替える変換レイヤを用意し、上位レイヤは共通 `Request` のみを扱う構成に整理する。
+- 調査・設計結果に基づき、実装・検証までをこのブランチで完了させる。
+
 ## 進捗
-- [x] FrameworkにTurbo Stream対応を追加 (renderTurboStream関数)
-- [x] article action blocks用componentモデルを作成
-- [x] article action blocks用componentを作成 (follow/favorite shared render)
-- [x] Turbo Stream templateを作成
-- [x] article_template.nimを更新してDOM idを付与
-- [x] Controllerを変更してTurbo Stream responseを返す
-- [x] コンパイル確認
-- [x] follow / favorite の variant ごとに専用URLを分離し、profile / feed も Turbo Stream 更新へ統一
+- [x] 課題を整理し、ブランチの目的を明文化する
+- [x] `asynchttpserver.Request` の全フィールドと意味を確認する
+- [x] `httpx` 側から取得可能な対応値を棚卸しする
+- [x] `httpbeast` 側から取得可能な対応値を棚卸しする
+- [x] basolato独自 `Request` 型の定義場所と公開範囲を決める
+- [x] `asynchttpserver` から独自 `Request` への変換方針を決める
+- [x] `httpx` から独自 `Request` への変換方針を決める
+- [x] `httpbeast` から独自 `Request` への変換方針を決める
+- [x] 既存のルーティング・コントローラー・ミドルウェアへの影響範囲を整理する
+- [x] 不足情報や非互換項目があれば `調査結果・設計まとめ` に追記する
+
+## 参考資料
+- Nim標準ライブラリ `asynchttpserver` の `Request` 定義
+- 利用中の `httpx` 側 `Request` 相当型の定義とアクセスAPI
+- 利用中の `httpbeast` 側 `Request` 相当型の定義とアクセスAPI
+- basolato内のルーター、ミドルウェア、コントローラー呼び出し経路
+- https://nim-lang.org/docs/asynchttpserver.html
+- https://github.com/ringabout/httpx
+- https://github.com/dom96/httpbeast
 
 ## 調査結果・設計まとめ
-
-### article follow / favorite を Turbo Stream 化する方針
-- 対象は `examples/realworld/app/http/views/templates/article/article_template.nim` の follow button と favorite button とする
-- 現状は `POST` 後に `/article/{articleId}` へ redirect しており、記事詳細ページ全体を再描画している
-- これを Hotwire の **Turbo Streams** に置き換え、ページ全体ではなく action block 単位で差し替える
-
-### 採用する Hotwire 機能
-- 採用機能は **Turbo Streams** とする
-- 理由:
-  - article 詳細には follow / favorite が上部と下部に 2 か所ずつ存在する
-  - 1 回の `POST` で複数箇所を同時に更新したい
-  - Turbo Frame は単一領域更新には向くが、このケースは複数領域を同時更新できる Turbo Streams のほうが適切
-
-### 再描画単位
-- 差し替え対象は button 単体ではなく、button と counter と active 状態を含む **action block 全体** とする
-- 各差し替え対象に安定した DOM id を付与する
-- 例:
-  - `article-follow-action-banner-{articleId}`
-  - `article-follow-action-footer-{articleId}`
-  - `article-favorite-action-banner-{articleId}`
-  - `article-favorite-action-footer-{articleId}`
-- Turbo Stream の action は `replace` を基本とする
-
-### View の責務分割
-- `article_template` に follow / favorite の詳細な分岐を直接持たせ続けず、再描画対象を小さな template か pure component に切り出す
-- 上部・下部で UI の意味は同じなので、render 重複を避けるため shared render を用意する
-- project rule に従い、component に DB access や Context 依存を持ち込まない
-- 必要な状態は article template model 配下の値として解決してから view に渡す
-
-### Controller / Response 方針
-- `article_controller.nim` の `favorite` と `followFromArticle` は redirect を返さず Turbo Stream response を返す
-- 処理順は以下とする
-  1. usecase で follow / favorite の状態を更新する
-  2. article template model を再構築して最新状態を取得する
-  3. Turbo Stream template を描画して返す
-- response の content type は `text/vnd.turbo-stream.html` とする
-- response には少なくとも以下の置換を含める
-  - banner 側 follow block
-  - footer 側 follow block
-  - banner 側 favorite block
-  - footer 側 favorite block
-- 実装簡略化のため、follow 実行時も favorite block を含めて全 block を返してよい
-- favorite 実行時も follow block を含めて全 block を返してよい
-
-### variant 分割後の補足
-- follow は `article detail (counterあり)` と `profile (counterなし)` で URL と更新断片を分ける
-- favorite は `article detail (labelあり)` と `feed card (labelなし)` で URL と更新断片を分ける
-- Turbo Stream HTML を返す view 部品は controller 専用にせず、page 階層からも再利用できる component/template として置く
-
-### Form / Client 側の前提
-- 既存の `<form method="post">` は維持する
-- `@hotwired/turbo` は既に head で読み込まれている前提で、独自 JavaScript は追加しない
-- CSRF token の埋め込み方式も維持する
-
-### フォールバック
-- 非 Turbo request や通常 HTML request に対しては従来どおり redirect にフォールバックできるようにしておく余地はある
-- ただし fix ブランチでは、まず Turbo request を正として article detail 上の部分更新を成立させることを優先する
-
-### 横展開
-- この方式は comment 作成 / 削除など、article detail 内の他の部分更新にも横展開できる
-- そのため Turbo Stream response の render 方式は、今後共通化しやすい構成を意識する
+- 現状の課題は、HTTPサーバー実装ごとに `Request` 型が異なるため、フレームワーク上位層でバックエンド依存が漏れている可能性がある点である。
+- 解決方針は、basolato内部で利用する共通 `Request` 型を1つ定義し、各バックエンドは境界でその型へ変換してから後続処理へ渡す構成に統一することとする。
+- 共通 `Request` 型の形状は `asynchttpserver.Request` を正とし、既存コードとの親和性と移行コスト低減を優先する。
+- `httpx` および `httpbeast` に存在しない情報が `asynchttpserver.Request` に含まれる場合は、まず「欠損をどう埋めるか」を調査し、埋められない場合は互換対象の最小集合を明記したうえで設計を補正する。
+- 変換処理はHTTPバックエンド層に閉じ込め、controller / middleware / routing 以降では basolato独自 `Request` 以外を参照しない状態を目標とする。
+- このブランチでは、実装中に判明した非互換や代替表現を本節へ継続的に反映し、設計の一次情報として保守する。
+- `asynchttpserver.Request` の確認結果: `client(AsyncSocket)`, `reqMethod(HttpMethod)`, `headers(HttpHeaders)`, `protocol(tuple[orig,major,minor])`, `url(Uri)`, `hostname(string)`, `body(string)`。
+- `httpx/httpbeast` の棚卸し結果: `httpMethod()`, `path()`, `headers()`, `body()`, `ip()`, `client(SocketHandle)` を取得可能。`protocol` は直接取得できないため `HTTP/1.1` を補完値として採用した。
+- 実装方針を確定し、`src/basolato/core/libservers/request.nim` に共通 `Request` 型を新設。`std/request.nim` と `nostd/request.nim` に `RawRequest -> Request` の `toRequest` 変換を実装した。
+- サーバー境界でのみ生リクエストを扱い、`createResponse` 以降へは共通 `Request` を渡すよう `std/server.nim` と `nostd/server.nim` を更新した。
+- 既知の補正事項: `httpx/httpbeast` 側で `protocol` の実値を取得できないため、keep-alive判定に使う `protocol` は補完値依存となる。`Connection` ヘッダの評価は生リクエスト側 (`dealKeepAlive(RawRequest)`) で継続する。

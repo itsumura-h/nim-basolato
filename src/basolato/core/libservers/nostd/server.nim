@@ -27,7 +27,8 @@ else:
 proc serve*(seqRoutes:seq[Routes], settings:Settings) =
   let routes = Routes.merge(seqRoutes)
   
-  proc cd(req:Request):Future[void] {.gcsafe, async.}=
+  proc cd(rawReq: RawRequest):Future[void] {.gcsafe, async.}=
+    let req = rawReq.toRequest()
     var response = Response.new(HttpCode(0), "", newHttpHeaders())
 
     try:
@@ -110,11 +111,11 @@ proc serve*(seqRoutes:seq[Routes], settings:Settings) =
       response = Response.new(Http404, errorPage(Http404, ""), headers)
 
     when defined(httpbeast):
-      req.send(response.status, response.body, response.headers.format().toString())
+      rawReq.send(response.status, response.body, response.headers.format().toString())
     else:
-      req.send(response.status, response.body, some($response.body.len), response.headers.format().toString())
+      rawReq.send(response.status, response.body, some($response.body.len), response.headers.format().toString())
     # keep-alive
-    req.dealKeepAlive()
+    rawReq.dealKeepAlive()
 
   let HOST_ADDR = settings.host
   let PORT_NUM = settings.port

@@ -1,4 +1,4 @@
-import std/asynchttpserver
+import std/asynchttpserver except Request
 import std/asyncdispatch
 import std/asyncfile
 import std/httpcore
@@ -28,7 +28,8 @@ proc serveCore(arg:ServeCoreArg){.async.} =
   let publicRoot = getCurrentDir() / "public"
   let mimeTypes = newMimetypes()
 
-  proc cb(req: Request) {.async, gcsafe.} =
+  proc cb(rawReq: RawRequest) {.async, gcsafe.} =
+    let req = rawReq.toRequest()
     var response = Response.new(HttpCode(0), "", newHttpHeaders())
 
     try:
@@ -88,7 +89,7 @@ proc serveCore(arg:ServeCoreArg){.async.} =
       response = Response.new(Http404, errorPage(Http404, ""), headers)
 
     response.headers.setDefaultHeaders()
-    req.respond(response.status, response.body, response.headers.format()).await
+    rawReq.respond(response.status, response.body, response.headers.format()).await
 
 
   server.listen(Port(port), host)

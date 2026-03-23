@@ -467,17 +467,17 @@ proc createResponse*(
   pathParams:Params=nil
 ):Future[Response] {.async.} =
   ## run middleware -> run controller
-  {.cast(gcsafe).}: # fix: "which is a global using GC'ed memory" in server.nim
-    let params = req.params(pathParams)
-    let context = Context.new(req, params).await
-    setContext(context)
-    let response1 = runMiddleware(req, context, route).await
-    if httpMethod == HttpOptions:
-      return response1
-    if response1.status != HttpCode(0):
-      return response1
-    let response2 = runController(req, context, route, response1.headers).await
-    return response2
+  # {.cast(gcsafe).}: # fix: "which is a global using GC'ed memory" in server.nim
+  let params = req.params(pathParams)
+  let context = Context.new(req, params).await
+  setContext(context)
+  let response1 = runMiddleware(req, context, route).await
+  if httpMethod == HttpOptions:
+    return response1
+  if response1.status != HttpCode(0):
+    return response1
+  let response2 = runController(req, context, route, response1.headers).await
+  return response2
 
 
 # const errorStatusArray* = [505, 504, 503, 502, 501, 500, 451, 431, 429, 428, 426,

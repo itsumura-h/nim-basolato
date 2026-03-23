@@ -1,28 +1,17 @@
-import std/asynchttpserver
-export asynchttpserver
-import std/asyncnet
-import std/net
-import std/strutils
-import std/uri
+import std/asynchttpserver as asyncHttpServer
+import ../request as basolatoRequest
 
+export basolatoRequest
 
-func path*(request:Request):string =
-  ## "/aaa/bbb?key=val" => "/aaa/bbb"
-  ## 
-  return request.url.path
+type RawRequest* = asyncHttpServer.Request
 
-func httpMethod*(request:Request):HttpMethod =
-  return request.reqMethod
-
-proc dealKeepAlive*(req:Request) =
-  if (
-    req.protocol.major == 1 and
-    req.protocol.minor == 1 and
-    cmpIgnoreCase(req.headers.getOrDefault("Connection"), "close") == 0
-  ) or
-  (
-    req.protocol.major == 1 and
-    req.protocol.minor == 0 and
-    cmpIgnoreCase(req.headers.getOrDefault("Connection"), "keep-alive") != 0
-  ):
-    req.client.close()
+func toRequest*(rawRequest: RawRequest): basolatoRequest.Request =
+  return basolatoRequest.Request(
+    client: rawRequest.client,
+    reqMethod: rawRequest.reqMethod,
+    headers: rawRequest.headers,
+    protocol: rawRequest.protocol,
+    url: rawRequest.url,
+    hostname: rawRequest.hostname,
+    body: rawRequest.body,
+  )

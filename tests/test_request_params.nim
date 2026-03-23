@@ -9,9 +9,9 @@ import std/json
 import ../src/basolato/core/params
 
 when defined(httpbeast):
-  include ../src/basolato/core/libservers/nostd/request
+  import ../src/basolato/core/libservers/nostd/request
 else:
-  include ../src/basolato/core/libservers/std/request
+  import ../src/basolato/core/libservers/std/request
 
 block:
   let params = Params.new()
