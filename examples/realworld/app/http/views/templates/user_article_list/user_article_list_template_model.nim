@@ -35,7 +35,7 @@ proc new*(
   )
 
 
-proc buildArticleList(articleDtoList: seq[ArticleDto], loginUserId: string): seq[FeedArticleComponentModel] =
+proc buildArticleList(articleDtoList: seq[ArticleDto], loginUserId: string, csrfToken: CsrfToken): seq[FeedArticleComponentModel] =
   articleDtoList.map(
     proc(article: ArticleDto): FeedArticleComponentModel =
       let tagList = article.tagList.map(proc(tag: TagDto): string = tag.name)
@@ -50,6 +50,7 @@ proc buildArticleList(articleDtoList: seq[ArticleDto], loginUserId: string): seq
         authorImage = article.author.image,
         popularCount = article.popularUserIdList.len,
         isLoginUserLiked = isLoginUserLiked,
+        csrfToken = csrfToken,
         tagList = tagList,
       )
   )
@@ -67,12 +68,12 @@ proc new*(_: type UserArticleListTemplateModel, context: Context): Future[UserAr
   if isFavorite:
     let articleDtoList = di.userFavoriteArticleListDao.invoke(userId, offset, FEED_DISPLAY_COUNT).await
     let totalCount = di.userFavoriteArticleCountDao.invoke(userId).await
-    let articleList = buildArticleList(articleDtoList, loginUserId)
+    let articleList = buildArticleList(articleDtoList, loginUserId, context.csrfToken())
     let paginatorModel = PaginatorComponentModel.new(page, totalCount)
     return UserArticleListTemplateModel.new(isLogin, userId, articleList, paginatorModel, true)
   else:
     let articleDtoList = di.userArticleListDao.invoke(userId, offset, FEED_DISPLAY_COUNT).await
     let totalCount = di.userArticleCountDao.invoke(userId).await
-    let articleList = buildArticleList(articleDtoList, loginUserId)
+    let articleList = buildArticleList(articleDtoList, loginUserId, context.csrfToken())
     let paginatorModel = PaginatorComponentModel.new(page, totalCount)
     return UserArticleListTemplateModel.new(isLogin, userId, articleList, paginatorModel, false)

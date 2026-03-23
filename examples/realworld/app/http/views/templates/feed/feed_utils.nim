@@ -9,6 +9,7 @@ import ../../components/feed_article/feed_article_component_model
 proc buildArticleList*(
   articleDtoList: seq[ArticleDto],
   loginUserId: string,
+  csrfToken: CsrfToken,
 ): seq[FeedArticleComponentModel] =
   articleDtoList.map(
     proc(article: ArticleDto): FeedArticleComponentModel =
@@ -24,6 +25,7 @@ proc buildArticleList*(
         authorImage = article.author.image,
         popularCount = article.popularUserIdList.len,
         isLoginUserLiked = isLoginUserLiked,
+        csrfToken = csrfToken,
         tagList = tagList,
       )
   )

@@ -12,6 +12,7 @@ type FeedArticleComponentModel* = object
   authorImage*:string
   popularCount*:int
   isLoginUserLiked*:bool
+  csrfToken*: CsrfToken
   tagList*:seq[string]
 
 proc new*(
@@ -25,6 +26,7 @@ proc new*(
   authorImage:string,
   popularCount:int,
   isLoginUserLiked:bool,
+  csrfToken:CsrfToken,
   tagList:seq[string]
 ):FeedArticleComponentModel = 
   return FeedArticleComponentModel(
@@ -37,5 +39,6 @@ proc new*(
     authorImage:authorImage,
     popularCount:popularCount,
     isLoginUserLiked:isLoginUserLiked,
+    csrfToken:csrfToken,
     tagList:tagList
   )

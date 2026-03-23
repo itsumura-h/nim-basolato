@@ -25,7 +25,7 @@ proc new*(_: type TagFeedTemplateModel, context: Context): Future[TagFeedTemplat
     FEED_DISPLAY_COUNT,
   ).await
   let totalCount = di.tagFeedArticleCountDao.invoke(tagName).await
-  let articleList = buildArticleList(articleDtoList, feedContext.loginUserId)
+  let articleList = buildArticleList(articleDtoList, feedContext.loginUserId, context.csrfToken())
   let paginatorModel = PaginatorComponentModel.new(feedContext.page, totalCount)
   return TagFeedTemplateModel(
     isLogin: feedContext.isLogin,

@@ -1,6 +1,8 @@
 import std/asyncdispatch
 import basolato/controller
 import ../views/pages/profile/profile_page
+import ../views/templates/user_info/user_info_template
+import ../views/templates/user_info/user_info_template_model
 import ../../usecases/follow_usecase
 
 
@@ -21,4 +23,5 @@ proc followFromProfile*(context:Context):Future[Response] {.async.} =
   let usecase = FollowUsecase.new()
   await usecase.invoke(loginUserId, userId)
 
-  return redirect("/profile/" & userId)
+  let model = UserInfoTemplateModel.new(context).await
+  return renderTurboStream(userInfoFollowTurboStream(model))

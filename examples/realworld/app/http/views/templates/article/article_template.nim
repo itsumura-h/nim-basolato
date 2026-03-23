@@ -1,8 +1,23 @@
 import basolato/view
 import ./article_template_model
+import ../../components/article_action/article_action_component_model
+import ../../components/article_action/article_action_component
 
 
 proc articleTemplate*(model: ArticleTemplateModel): Component =
+  let actionModel = ArticleActionComponentModel.new(
+    articleId = model.articleId,
+    authorId = model.author.id,
+    authorName = model.author.name,
+    authorImage = model.author.image,
+    followerCount = model.author.followerCount,
+    isFollowed = model.author.isFollowed,
+    favoriteCount = model.article.favoriteCount,
+    isFavorited = model.article.isFavorited,
+    csrfToken = model.csrfToken,
+    isAuthor = model.isAuthor
+  )
+  let authorActions = articleAuthorActions(actionModel)
   tmpl"""
     <div class="container">
       <h1>$(model.article.title)</h1>
@@ -13,43 +28,14 @@ proc articleTemplate*(model: ArticleTemplateModel): Component =
           <a href="/profile/$(model.author.id)" class="author">$(model.author.name)</a>
           <span class="date">$(model.article.updatedAt)</span>
         </div>
-        <form action="/article/$(model.articleId)/follow/$(model.author.id)" method="post" style="display:inline">
-          $(model.csrfToken)
-          <button class="btn btn-sm btn-outline-secondary $if model.author.isFollowed{active}">
-            $if model.author.isFollowed{
-              <i class="ion-minus-round"></i>
-              &nbsp; Unfollow $(model.author.name)
-            }$else{
-              <i class="ion-plus-round"></i>
-              &nbsp; Follow $(model.author.name)
-            }
-            <span class="counter">($(model.author.followerCount))</span>
-          </button>
-        </form>
+        <span id="article-follow-action-banner-$(model.articleId)">
+          $(articleFollowAction(actionModel, "banner"))
+        </span>
         &nbsp;&nbsp;
-        <form action="/article/$(model.articleId)/favorite" method="post" style="display:inline">
-          $(model.csrfToken)
-          <button class="btn btn-sm btn-outline-primary $if model.article.isFavorited{active}">
-            <i class="ion-heart"></i>
-            $if model.article.isFavorited{
-              &nbsp; Unfavorite Post
-            }$else{
-              &nbsp; Favorite Post
-            }
-            <span class="counter">($(model.article.favoriteCount))</span>
-          </button>
-        </form>
-        $if model.isAuthor{
-          <a class="btn btn-sm btn-outline-secondary" href="/editor/$(model.articleId)">
-            <i class="ion-edit"></i> Edit Article
-          </a>
-          <form action="/article/$(model.articleId)/delete" method="post" style="display:inline">
-            $(model.csrfToken)
-            <button class="btn btn-sm btn-outline-danger">
-              <i class="ion-trash-a"></i> Delete Article
-            </button>
-          </form>
-        }
+        <span id="article-favorite-action-banner-$(model.articleId)">
+          $(articleFavoriteAction(actionModel, "banner"))
+        </span>
+        $(authorActions)
       </div>
     </div>
   </div>
@@ -81,42 +67,14 @@ proc articleTemplate*(model: ArticleTemplateModel): Component =
           <span class="date">$(model.article.updatedAt)</span>
         </div>
 
-        <form action="/article/$(model.articleId)/follow/$(model.author.id)" method="post" style="display:inline">
-          $(model.csrfToken)
-          <button class="btn btn-sm btn-outline-secondary $if model.author.isFollowed{active}">
-            $if model.author.isFollowed{
-              <i class="ion-minus-round"></i>
-              &nbsp; Unfollow $(model.author.name)
-            }$else{
-              <i class="ion-plus-round"></i>
-              &nbsp; Follow $(model.author.name)
-            }
-          </button>
-        </form>
+        <span id="article-follow-action-footer-$(model.articleId)">
+          $(articleFollowAction(actionModel, "footer"))
+        </span>
         &nbsp;
-        <form action="/article/$(model.articleId)/favorite" method="post" style="display:inline">
-          $(model.csrfToken)
-          <button class="btn btn-sm btn-outline-primary $if model.article.isFavorited{active}">
-            <i class="ion-heart"></i>
-            $if model.article.isFavorited{
-              &nbsp; Unfavorite Article
-            }$else{
-              &nbsp; Favorite Article
-            }
-            <span class="counter">($(model.article.favoriteCount))</span>
-          </button>
-        </form>
-        $if model.isAuthor{
-          <a class="btn btn-sm btn-outline-secondary" href="/editor/$(model.articleId)">
-            <i class="ion-edit"></i> Edit Article
-          </a>
-          <form action="/article/$(model.articleId)/delete" method="post" style="display:inline">
-            $(model.csrfToken)
-            <button class="btn btn-sm btn-outline-danger">
-              <i class="ion-trash-a"></i> Delete Article
-            </button>
-          </form>
-        }
+        <span id="article-favorite-action-footer-$(model.articleId)">
+          $(articleFavoriteAction(actionModel, "footer"))
+        </span>
+        $(authorActions)
       </div>
     </div>
 

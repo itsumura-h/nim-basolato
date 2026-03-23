@@ -5,6 +5,16 @@ alwaysApply: false
 fixブランチルール
 ===
 
+## 進捗
+- [x] FrameworkにTurbo Stream対応を追加 (renderTurboStream関数)
+- [x] article action blocks用componentモデルを作成
+- [x] article action blocks用componentを作成 (follow/favorite shared render)
+- [x] Turbo Stream templateを作成
+- [x] article_template.nimを更新してDOM idを付与
+- [x] Controllerを変更してTurbo Stream responseを返す
+- [x] コンパイル確認
+- [x] follow / favorite の variant ごとに専用URLを分離し、profile / feed も Turbo Stream 更新へ統一
+
 ## 調査結果・設計まとめ
 
 ### article follow / favorite を Turbo Stream 化する方針
@@ -49,6 +59,11 @@ fixブランチルール
   - footer 側 favorite block
 - 実装簡略化のため、follow 実行時も favorite block を含めて全 block を返してよい
 - favorite 実行時も follow block を含めて全 block を返してよい
+
+### variant 分割後の補足
+- follow は `article detail (counterあり)` と `profile (counterなし)` で URL と更新断片を分ける
+- favorite は `article detail (labelあり)` と `feed card (labelなし)` で URL と更新断片を分ける
+- Turbo Stream HTML を返す view 部品は controller 専用にせず、page 階層からも再利用できる component/template として置く
 
 ### Form / Client 側の前提
 - 既存の `<form method="post">` は維持する

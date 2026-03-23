@@ -23,7 +23,7 @@ proc new*(_: type YourFeedTemplateModel, context: Context): Future[YourFeedTempl
     FEED_DISPLAY_COUNT,
   ).await
   let totalCount = di.yourFeedArticleCountDao.invoke(feedContext.loginUserId).await
-  let articleList = buildArticleList(articleDtoList, feedContext.loginUserId)
+  let articleList = buildArticleList(articleDtoList, feedContext.loginUserId, context.csrfToken())
   let paginatorModel = PaginatorComponentModel.new(feedContext.page, totalCount)
   return YourFeedTemplateModel(
     isLogin: feedContext.isLogin,

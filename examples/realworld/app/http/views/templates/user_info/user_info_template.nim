@@ -2,6 +2,33 @@ import std/asyncdispatch
 import basolato/view
 import ./user_info_template_model
 
+proc userInfoFollowAction*(model: UserInfoTemplateModel): Component =
+  tmpl"""
+    <span id="profile-follow-action-$(model.id)">
+      <form action="/profile/$(model.id)/follow" method="post" style="display:inline">
+        $(model.csrfToken)
+        <button class="btn btn-sm btn-outline-secondary action-btn $if model.isFollowed{active}">
+          $if model.isFollowed{
+            <i class="ion-minus-round"></i>
+            &nbsp; Unfollow $(model.name)
+          }$else{
+            <i class="ion-plus-round"></i>
+            &nbsp; Follow $(model.name)
+          }
+        </button>
+      </form>
+    </span>
+  """
+
+proc userInfoFollowTurboStream*(model: UserInfoTemplateModel): Component =
+  tmpl"""
+    <turbo-stream action="replace" target="profile-follow-action-$(model.id)">
+      <template>
+        $(userInfoFollowAction(model))
+      </template>
+    </turbo-stream>
+  """
+
 
 proc userInfoTemplate*(model: UserInfoTemplateModel): Component =
   tmpl"""
@@ -20,18 +47,7 @@ proc userInfoTemplate*(model: UserInfoTemplateModel): Component =
                 &nbsp; Edit Profile Settings
               </a>
             }$else{
-              <form action="/profile/$(model.id)/follow" method="post" style="display:inline">
-                $(model.csrfToken)
-                <button class="btn btn-sm btn-outline-secondary action-btn $if model.isFollowed{active}">
-                  $if model.isFollowed{
-                    <i class="ion-minus-round"></i>
-                    &nbsp; Unfollow $(model.name)
-                  }$else{
-                    <i class="ion-plus-round"></i>
-                    &nbsp; Follow $(model.name)
-                  }
-                </button>
-              </form>
+              $(userInfoFollowAction(model))
             }
           </div>
         </div>
