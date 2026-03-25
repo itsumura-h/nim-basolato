@@ -22,7 +22,7 @@ static: # compile time
   putEnv("SESSION_TYPE", "file")
 const HOST = "http://127.0.0.1:8000"
 discard Settings.new(
-  sessionPath = "./tests/server/session.db",
+  sessionPath = "/application/tests/server/session.db",
 )
 
 suite("test response"):

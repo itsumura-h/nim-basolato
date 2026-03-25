@@ -1,13 +1,23 @@
 discard """
-  cmd: "nim c -d:test --putenv:SESSION_TYPE=redis --putenv:SESSION_PATH=redis:6379 $file"
+  cmd: "nim c -d:test $file"
 """
 
-# nim c -r -d:test --putenv:SESSION_TYPE=redis --putenv:SESSION_PATH=redis:6379 ./security/test_redis_session_db.nim
+# nim c -r -d:test tests/security/test_redis_session_db.nim
 
 import std/unittest
 import std/asyncdispatch
 import std/json
+import std/os
+import ../../src/basolato/settings
 import ../../src/basolato/core/security/session_db/redis_session_db
+
+static: # compile time
+  putEnv("SECRET_KEY", "test_secret_key")
+  putEnv("SESSION_TYPE", "redis")
+
+discard Settings.new(
+  sessionPath = "redis:6379",
+)
 
 var token:string
 
