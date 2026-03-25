@@ -144,24 +144,30 @@ Controller にビジネスロジックを過度に集中させず、再利用可
 [NFW-STRUCT-001][MUST][manual]
 `http/views` 配下の役割は以下のように分離する。
 - `layouts`: 複数ページで共有する外枠、head、共通レイアウト部品
-- `pages`: ルートまたは画面単位の固有コンテンツ。request-local な文脈（context）を受け取り、Template(context) を呼び出し、head・header・footer を含むフル HTML を構築する入口
+- `pages`: ルートまたは画面単位の固有コンテンツ。request-local な文脈（context）を受け取り、`XxxLayoutModel` と `XxxTemplateModel` を組み立て、head・header・footer を含むフル HTML を構築する入口
 - `components`: ページやレイアウトから再利用される部分ビュー
-- `templates`: URI 単位の body コンテンツや差し込み可能なテンプレート断片を表す。引数は context のみ。描画に専念し、共有状態の読み出しを持たない
+- `templates`: URI 単位の body コンテンツや差し込み可能なテンプレート断片を表す。引数は `XxxTemplateModel` のみ。描画に専念し、共有状態の読み出しを持たない
 - `signals`: Hotwire相当の部分更新やクライアント向けイベント表現を必要とする場合のみ扱う補助概念。サーバー描画の request-local データ保持手段としては採用しない
 
 [NFW-STRUCT-002][SHOULD][manual]
 依存方向は原則として `controller -> usecase -> model / query / repository` とし、View は Controller から context を受け取り、Template(context) で template model が自己構築する。
 
 [NFW-ARCH-004][MUST][manual]
-write-side の依存方向は原則として `controller -> usecase -> aggregate / vo -> repository` とし、read-side の依存方向は原則として `controller -> page -> template(context)`、template 内で `template model.new(context)` が必要な DAO を呼んで自己を組み立てる。
+write-side の依存方向は原則として `controller -> usecase -> aggregate / vo -> repository` とし、read-side の依存方向は原則として `controller -> page -> page view -> layout / template -> component`、`page view` や `template model.new(context)` が必要な DAO を呼んで描画用の値を組み立てる。
 
 ### 4.1 Viewアーキテクチャ
 
 [NFW-VIEW-002][MUST][manual]
-MPA の View は原則として `Page -> Template` の流れで構成する。Template の引数は context のみとする。
+MPA の View は原則として `Page -> PageView -> Layout -> Template -> Component` の流れで構成する。Template の引数は `XxxTemplateModel` のみとする。
 
 [NFW-VIEW-002][MUST][manual]
-`Page` は request-local な文脈（context）を受け取る入口であり、Template(context) を呼び出して body を取得し、レイアウトと組み合わせてフル HTML を組み立てる。
+`Page` は controller から呼び出される HTTP エントリポイントであり、`PageView` は request-local な文脈（context）を受け取って `LayoutModel` と `TemplateModel` を組み立て、レイアウトと組み合わせてフル HTML を組み立てる。
+
+[NFW-VIEW-002][MUST][manual]
+`GET` で呼ばれる controller は `XxxPage`、`http/views/pages` 配下の UI entrypoint は `XxxPageView` と命名する。
+
+[NFW-VIEW-002][MUST][manual]
+Layout / Template / Component のデータ保持型は `XxxLayoutModel` / `XxxTemplateModel` / `XxxComponentModel` とし、`ViewModel` は概念名に留めて識別子には使わない。
 
 [NFW-VIEW-002][MUST][manual]
 参照系の Page は controller から呼び出される View の entrypoint とし、`GET` で取得した request-local な文脈を起点に、head、header、footer を含むフル HTML を組み立てなければならない。
@@ -170,7 +176,7 @@ MPA の View は原則として `Page -> Template` の流れで構成する。Te
 Template 単位の read-side 組み立て責務は template model が持つ。template model は context と必要な DAO の結果から自己を組み立てる。
 
 [NFW-VIEW-004][SHOULD][manual]
-Template への引数は個別値の列挙より、Template は context のみを受け取り、内部で template model を構築して描画する。template model 内では必要に応じて `auth`、`form`、`flash`、`pageMeta` などのサブオブジェクトへ分割する。
+Template への引数は個別値の列挙より、`TemplateModel` を受け取って描画する。`TemplateModel` 内では必要に応じて `auth`、`form`、`flash`、`pageMeta` などのサブオブジェクトへ分割する。
 
 [NFW-VIEW-005][MUST][manual]
 `Page` はレイアウト適用と head、header、footer などの共通コンポーネントの組み立て、および子 Template の配置を担当する composition 層とし、DAO の実装や業務ロジックを持ち込んではならない。

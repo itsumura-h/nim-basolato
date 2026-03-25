@@ -18,13 +18,13 @@ proc new*(_:type NavbarLayoutModel, context:Context):Future[NavbarLayoutModel] {
   if isLogin:
     let userDao:IUserDao = di.userDao
     let userDto = userDao.getUserById(loginUserId).await
-    let navbarViewModel = NavbarLayoutModel(
-      isLogin:true,
+    let navbarLayoutModel = NavbarLayoutModel(
+      isLogin: true,
       userId:userDto.id,
       userName:userDto.name,
       image:userDto.image,
     )
-    return navbarViewModel
+    return navbarLayoutModel
   else:
-    let navbarViewModel = NavbarLayoutModel(isLogin:false, userId:"", userName:"", image:"")
-    return navbarViewModel
+    let navbarLayoutModel = NavbarLayoutModel(isLogin: false, userId: "", userName: "", image: "")
+    return navbarLayoutModel

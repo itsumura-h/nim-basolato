@@ -14,7 +14,7 @@ import ../../usecases/delete_comment_usecase
 import ../../usecases/delete_article_usecase
 
 
-proc show*(context:Context):Future[Response] {.async.} =
+proc articlePage*(context:Context):Future[Response] {.async.} =
   let page = articlePageView(context).await
   return render(page)
 
