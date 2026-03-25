@@ -951,9 +951,7 @@ let routes = @[
   .middleware(set_headers_middleware.setCorsHeaders)
 ]
 
-let settings = Settings.new(
-  sessionPath = getEnv("SESSION_PATH"),
-)
+let settings = Settings.new()
 
 serve(routes, settings)
 """
