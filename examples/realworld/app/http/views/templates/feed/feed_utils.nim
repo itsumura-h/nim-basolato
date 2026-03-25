@@ -1,7 +1,7 @@
 import std/asyncdispatch
 import std/sequtils
 import basolato/view
-import ../../../../consts
+import ../../../../../config/consts
 import ../../../../models/dto/article_list/article_list_dto
 import ../../components/feed_article/feed_article_component_model
 

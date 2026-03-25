@@ -1,6 +1,6 @@
 import std/asyncdispatch
 import basolato/view
-import ../../../../consts
+import ../../../../../config/consts
 import ../../../../di_container
 import ../../../../models/dto/article_list/your_feed_article_count_dao_interface
 import ../../../../models/dto/article_list/your_feed_article_list_dao_interface

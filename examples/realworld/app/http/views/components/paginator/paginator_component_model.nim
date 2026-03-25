@@ -1,5 +1,5 @@
 import std/math
-import ../../../../consts
+import ../../../../../config/consts
 
 type PaginatorComponentModel* = object
   hasPages*:bool
