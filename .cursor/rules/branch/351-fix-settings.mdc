@@ -1,0 +1,115 @@
+---
+description: 351-fix-settingsブランチでの開発時に読み込む
+alwaysApply: false
+---
+Settings定義への集約と`.env`出力整理
+===
+
+このブランチで実装することは以下の通りです。
+- Basolato本体が実行時に直接 `getEnv()` で読む設定をできる限り減らし、`Settings` に定義した値を参照する構造へ寄せる。
+- アプリケーション利用者が `Settings.new(...)` で主要設定を明示できるようにし、`main.nim` 側で設定の出どころが追いやすい設計へ整理する。
+- RDB 接続情報は Basolato 本体の責務から外し、`DB_DATABASE` / `DB_USER` / `DB_PASSWORD` / `DB_HOST` / `DB_PORT` / `DB_MAX_CONNECTION` / `DB_TIMEOUT` などを Basolato が感知・前提化しない状態へ寄せる。
+- `SECRET_KEY` は `Settings` へ移さず、環境変数として保持する。
+- session db への接続情報は `Settings` に持たせ、設定名は `SESSION_PATH` に統一する。
+- `SESSION_TYPE=file` のときは `SESSION_PATH` をファイルパスとして解釈し、`SESSION_TYPE=redis` のときは `host:port` として解釈する。
+- `ducere config` コマンドが生成する `.env` / `.env.example` の内容を新方針に合わせて更新し、Settings へ移した項目と残す項目の境界を揃える。
+- 今回は実装前に、どの設定を `Settings` へ移し、どの設定を `.env` に残し、どこまで Basolato 本体の責務から外すかをブランチルールで固定する。
+
+## 進捗
+- [x] プロジェクトルール・ブランチルール雛形を確認
+- [x] 現在ブランチに対応するルールファイルを新規作成
+- [x] `src/basolato/core/settings.nim` と `src/basolato/settings.nim` の現状を確認
+- [x] `ducere config` 相当の出力元である `src/basolato/cli/functions/make/config.nim` を確認
+- [x] `examples/new_project_template/.env.example` と `examples/new_project_template/main.nim` の現状を確認
+- [x] `Settings` に寄せる設定項目と `.env` に残す設定項目を確定
+- [x] Basolato 本体から RDB 接続設定への依存を除去する設計を確定
+- [x] `ducere config` の `.env` / `.env.example` 出力内容の更新方針を確定
+- [x] 実装
+- [x] examples 配下の他プロジェクトへ `.env` / `.env.example` / `config/database.nim` の整理を展開
+- [x] examples/benchmark 配下のサブディレクトリへ同様の整理を展開
+- [ ] tests / ドキュメントの整合確認
+
+## 参考資料
+- `.cursor/rules/project.mdc`
+- `.cursor/rules/branch.mdc`
+- `src/basolato/core/settings.nim`
+- `src/basolato/settings.nim`
+- `src/basolato/cli/functions/make/config.nim`
+- `src/basolato/core/response.nim`
+- `src/basolato/middleware.nim`
+- `src/basolato/middleware/session_from_cookie_middleware.nim`
+- `src/basolato/core/security/session_db/libs/json_file_db.nim`
+- `src/basolato/core/security/session_db/redis_session_db.nim`
+- `examples/new_project_template/.env.example`
+- `examples/new_project_template/main.nim`
+- `examples/example/.env.example`
+- `examples/example/main.nim`
+
+## 調査結果・設計まとめ
+
+### 現状整理
+- `src/basolato/core/settings.nim` は `.env` を読んで `putEnv` した上で、`SECRET_KEY`、`SESSION_DB_PATH`、`REDIS_HOST`、`REDIS_PORT`、`COOKIE_DOMAINS` をモジュールロード時に直接 `getEnv()` から解決している。
+- 一方で `Settings` 型が保持しているのは `host`、`port`、logging 系、session expiry 系、`locale` のみであり、実行時に重要な一部設定が `Settings` とグローバル定数/変数へ分散している。
+- `src/basolato/cli/functions/make/config.nim` と `examples/new_project_template/.env.example` は、Basolato 本体が直接読む前提で `SECRET_KEY`、session 関連、さらに RDB 接続情報まで `.env` に並べている。
+- session db についても `SESSION_DB_PATH`、`REDIS_HOST`、`REDIS_PORT` に分かれており、`SESSION_TYPE` ごとに参照項目が変わるため、利用側の初期化責務が散っている。
+- しかし RDB 接続情報の実利用は example 側の `config/database.nim` などアプリケーションコードにあり、Basolato 本体はそれらの値を使っていない。したがって RDB 接続設定はフレームワーク標準の必須設定としては扱わない方が要件に合う。
+
+### このブランチで固定したい責務分界
+- Basolato 本体が必要とする設定は `Settings` に集約する。
+- ただし `SECRET_KEY` は例外として環境変数に残し、`Settings` には持ち込まない。
+- `.env` は Basolato 本体の必須設定一覧ではなく、「アプリケーション側で必要なら利用する環境変数置き場」として扱う。
+- session db 接続情報は Basolato 本体の責務として扱うため、`Settings` に集約する。
+- session db 接続文字列は `SESSION_PATH` へ統一し、`file` と `redis` で値の意味だけを切り替える。
+- RDB 接続情報は Basolato 本体の `Settings` にも `.env` テンプレートの必須欄にも持ち込まず、DB を使う example / アプリケーション側が必要に応じて独自定義する前提にする。
+
+### `Settings` へ寄せる候補
+- 既存の `host`
+- 既存の `port`
+- 既存の `logToConsole`
+- 既存の `logToFile`
+- 既存の `errorLogToFile`
+- 既存の `logDir`
+- 既存の `sessionTime`
+- 既存の `sessionExpireOnClose`
+- 既存の `locale`
+- `sessionPath`
+- `cookieDomains`
+
+### `.env` から外す、または Basolato 標準テンプレートから外す候補
+- `DB_DATABASE`
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_HOST`
+- `DB_PORT`
+- `DB_MAX_CONNECTION`
+- `DB_TIMEOUT`
+
+理由:
+- これらはフレームワーク本体ではなく、利用アプリケーションや example の database layer が解釈する値だから。
+- 「Basolato では感知しない」という要件に合わせるなら、少なくとも `ducere config` が出す標準 `.env` では Basolato 必須項目のように見せない方がよい。
+
+### 実装方針メモ
+- `src/basolato/core/settings.nim` は「`.env` を読んでグローバル値を初期化するモジュール」から、「`Settings` の型定義と既定値を持つモジュール」へ寄せる。
+- `SECRET_KEY` は環境変数に残す。したがって今回の主対象は `SESSION_PATH*` に統合した session db 設定と、`COOKIE_DOMAINS*` などの runtime 設定を `Settings` 側へ寄せることにある。
+- `SECRET_KEY*` まで `Settings` に寄せる前提では設計しない。session や cookie まわりの参照経路だけを `Settings` 集約対象として整理する。
+- session db 接続先は `sessionDbPath` のような file 前提の名前ではなく、`sessionPath` に改める。
+- `sessionPath` の解釈ルールは以下で統一する。
+  - `SESSION_TYPE=file`: `SESSION_PATH` はファイルパス
+  - `SESSION_TYPE=redis`: `SESSION_PATH` は `host:port`
+- これにより `REDIS_HOST` / `REDIS_PORT` の分離をやめ、session db の接続情報は 1 項目で扱う。
+- ただし互換性の都合で移行段階が必要な場合は、一時的に `Settings` から派生する互換アクセサを置く案は許容する。
+- `SESSION_TYPE` と `USE_LIBSASS` は現状 `config.nims` 由来の compile-time / boot-time 設定であり、今回の主題は runtime 設定の整理なので、まずは対象外として扱う。ただし命名や読み出し場所の不整合が見つかった場合は併せて整理を検討する。
+
+### `ducere config` 出力の更新方針
+- `src/basolato/cli/functions/make/config.nim` が生成する `.env` / `.env.example` から RDB 接続情報を削除、または Basolato 標準設定ではないことが明確に分かる形へ変更する。
+- `Settings` に移した項目については、`main.nim` の `Settings.new(...)` で設定するサンプルと矛盾しないようにする。
+- `SECRET_KEY` は環境変数に残す前提で、`.env` テンプレートにも残す。
+- session db 接続情報を `.env` に残す場合は、`SESSION_DB_PATH` / `REDIS_HOST` / `REDIS_PORT` ではなく `SESSION_PATH` に統一する。
+- `ducere config` が出力する `.env` / `.env.example` でも、session db の接続設定は 1 項目で表現し、`SESSION_TYPE=file` ではファイルパス、`SESSION_TYPE=redis` では `host:port` を入れる説明に改める。
+
+### 注意点
+- `src/basolato/core/response.nim`、`src/basolato/middleware.nim`、`src/basolato/middleware/session_from_cookie_middleware.nim`、session db 関連は現在グローバル設定参照を前提にしているため、`Settings` 集約時に `Context` / `Response` / middleware へどう値を渡すかを先に決める必要がある。
+- `SESSION_PATH` を `host:port` 兼用にすると、redis 側では接続先文字列の parse 処理が必要になる。split 失敗時のエラー形式と既定値の置き方を揃える必要がある。
+- `COOKIE_DOMAINS` は現状 `COOKIE_DOMAIN` という別名キーを読んでおり不整合がある。今回の整理ではこの命名差異も解消対象として扱う。
+- test では `SECRET_KEY = "test_secret_key"` を compile-time 定数で上書きしているため、`Settings` 移行後もテスト初期化コストを増やさない設計が必要である。
+- 互換のため、移行期は `SESSION_DB_PATH` / `REDIS_HOST` / `REDIS_PORT` から `SESSION_PATH` へ寄せるフォールバックを残している。新規出力と新規コードは `SESSION_PATH` を基準にする。

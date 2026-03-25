@@ -798,16 +798,19 @@ proc run*(self:SigninUsecase, email, password:string):Future[JsonNode] {.async.}
 ```
 """
   template_config_database_nim = """
+import std/os
 import std/strutils
 import allographer/connection
 
 
 let rdb* = dbOpen(
   Sqlite3, # SQLite3 or MySQL or MariaDB or PostgreSQL or SurrealDB
-  "db.sqlite3",
+  getEnv("DB_URL"),
   maxConnections = 1,
   timeout = 30,
   shouldDisplayLog = true,
+  shouldOutputLogFile = false,
+  logDir = "./logs",
 )
 """
   template_database_develop_sh = """
@@ -922,6 +925,7 @@ proc main() {.async.} =
 main().waitFor()
 """
   template_main_nim = """
+import std/os
 # framework
 import basolato
 # middleware

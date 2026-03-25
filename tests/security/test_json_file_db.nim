@@ -1,8 +1,8 @@
 discard """
-  cmd: "nim c -d:test --putenv:SESSION_DB_PATH=./session.db $file"
+  cmd: "nim c -d:test --putenv:SESSION_PATH=./session.db $file"
 """
 
-# nim c -r -d:test --putenv:SESSION_DB_PATH=./session.db ./security/test_json_file_db.nim
+# nim c -r -d:test --putenv:SESSION_PATH=./session.db ./security/test_json_file_db.nim
 
 import std/unittest
 import std/asyncdispatch
@@ -16,31 +16,31 @@ import ../../src/basolato/core/security/random_string
 suite("json session db"):
   test("new"):
     # clear file
-    removeFile(SESSION_DB_PATH)
-    check fileExists(SESSION_DB_PATH) == false
+    removeFile(SESSION_PATH)
+    check fileExists(SESSION_PATH) == false
 
     var session = JsonFileDb.new().waitFor()
-    check fileExists(SESSION_DB_PATH)
-    var content = readFile(SESSION_DB_PATH)
+    check fileExists(SESSION_PATH)
+    var content = readFile(SESSION_PATH)
     check content.splitLines().len() == 2
 
     session = JsonFileDb.new().waitFor()
-    content = readFile(SESSION_DB_PATH)
+    content = readFile(SESSION_PATH)
     check content.splitLines().len() == 3
 
 
   test("new with empty string"):
     # clear file
-    removeFile(SESSION_DB_PATH)
-    check fileExists(SESSION_DB_PATH) == false
+    removeFile(SESSION_PATH)
+    check fileExists(SESSION_PATH) == false
 
     var session = JsonFileDb.new("").waitFor()
-    var content = readFile(SESSION_DB_PATH)
+    var content = readFile(SESSION_PATH)
     check content.splitLines().len() == 2
 
     let id = session.id
     session = JsonFileDb.new(session.id).waitFor()
-    content = readFile(SESSION_DB_PATH)
+    content = readFile(SESSION_PATH)
     check content.splitLines().len() == 2
     check session.id == id
 
@@ -53,7 +53,7 @@ suite("json session db"):
     check session.get("key2") == %"value2"
     session.sync().waitFor()
 
-    let content = readFile(SESSION_DB_PATH).splitLines()
+    let content = readFile(SESSION_PATH).splitLines()
     for row in content:
       let jsonRow = parseJson(row)
       if jsonRow["_id"].getStr() == id(session):
@@ -103,7 +103,7 @@ suite("json session db"):
     session = JsonFileDb.new(id).waitFor()
     session.destroy().waitFor()
 
-    let content = readFile(SESSION_DB_PATH).splitLines()
+    let content = readFile(SESSION_PATH).splitLines()
     for row in content[0..^2]:
       let jsonRow = parseJson(row)
       if jsonRow["_id"].getStr() == id:
@@ -113,8 +113,8 @@ suite("json session db"):
 
   test("search file not exists"):
     # clear file
-    removeFile(SESSION_DB_PATH)
-    check fileExists(SESSION_DB_PATH) == false
+    removeFile(SESSION_PATH)
+    check fileExists(SESSION_PATH) == false
 
     let sessionId = randStr(10)
     let session = JsonFileDb.search("session_id", sessionId).waitFor()

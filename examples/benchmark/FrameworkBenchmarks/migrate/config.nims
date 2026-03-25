@@ -1,15 +1,2 @@
 import os
-# DB Connection
 putEnv("DB_POSTGRES", $true)
-putEnv("DB_HOST", "postgreDb")
-putEnv("DB_PORT", "5432")
-# putEnv("DB_DRIVER", "mysql")
-# putEnv("DB_CONNECTION", "tfb-database-my:3306")
-putEnv("DB_USER", "user")
-putEnv("DB_PASSWORD", "pass")
-putEnv("DB_DATABASE", "database")
-putEnv("DB_MAX_CONNECTION", "95")
-putEnv("DB_TIMEOUT", "30")
-putEnv("LOG_IS_DISPLAY", $true)
-putEnv("LOG_IS_FILE", $false)
-putEnv("LOG_DIR", "")

@@ -31,20 +31,12 @@ for f in walkDir(getCurrentDir()):
     # Only test, set in compile time.
     const
       SECRET_KEY* = "test_secret_key"
-      SESSION_DB_PATH* = getEnv("SESSION_DB_PATH", "./session.db")
-      REDIS_HOST* = getEnv("REDIS_HOST", "127.0.0.1")
-      REDIS_PORT* = getEnv("REDIS_PORT", "6379").parseInt
-      COOKIE_DOMAINS* :seq[string]  = @[]
   else:
     let
       SECRET_KEY* = getEnv("SECRET_KEY")
-      SESSION_DB_PATH* = getEnv("SESSION_DB_PATH", "./session.db")
-      REDIS_HOST* = getEnv("REDIS_HOST", "127.0.0.1")
-      REDIS_PORT* = getEnv("REDIS_PORT", "6379").parseInt
-      COOKIE_DOMAINS* = getEnv("COOKIE_DOMAIN").split(",")
 
-    if SECRET_KEY.len == 0:
-      raise newException(Exception, "SECRET_KEY is not defined in environment variable")
+  if SECRET_KEY.len == 0:
+    raise newException(Exception, "SECRET_KEY is not defined in environment variable")
 
 
   # Defined in Settings.nim
@@ -57,6 +49,8 @@ for f in walkDir(getCurrentDir()):
     # Ssession Db
     SESSION_TIME*:int = 120  # default 120, minutes of 2 hours
     SESSION_EXPIRE_ON_CLOSE*:bool = false
+    SESSION_PATH*: string = getCurrentDir() / "session.db"
+    COOKIE_DOMAINS*: seq[string] = @[]
     # others
     LOCALE*:string = "en"
 
@@ -72,6 +66,8 @@ type Settings* = object
   # Session db
   sessionTime*:int
   sessionExpireOnClose*:bool
+  sessionPath*:string
+  cookieDomains*:seq[string]
   # other
   locale*:string
 
@@ -85,6 +81,8 @@ proc new*(
   logDir:string = "./logs",
   sessionTime:int = 120,
   sessionExpireOnClose:bool = false,
+  sessionPath:string = "./session.db",
+  cookieDomains:seq[string] = @[],
   locale:string = "en"
 ):Settings =
   ## Default values
@@ -96,6 +94,8 @@ proc new*(
   ## - `logDir:string = "./logs"`
   ## - `sessionTime:int = 120` default 120, minutes of 2 hours. If 0, session will not be expired(1 year).
   ## - `sessionExpireOnClose:bool = false`
+  ## - `sessionPath:string = "./session.db"`
+  ## - `cookieDomains:seq[string] = @[]`
   ## - `locale:string = "en"`
 
   LOG_TO_CONSOLE = logToConsole
@@ -104,6 +104,8 @@ proc new*(
   LOG_DIR = getCurrentDir() / logDir
   SESSION_TIME = sessionTime
   SESSION_EXPIRE_ON_CLOSE = sessionExpireOnClose
+  SESSION_PATH = sessionPath
+  COOKIE_DOMAINS = cookieDomains
   LOCALE = locale
 
   return Settings(
@@ -115,5 +117,7 @@ proc new*(
     logDir:logDir,
     sessionTime:sessionTime,
     sessionExpireOnClose:sessionExpireOnClose,
+    sessionPath:SESSION_PATH,
+    cookieDomains:COOKIE_DOMAINS,
     locale:locale,
   )

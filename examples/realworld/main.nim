@@ -67,11 +67,13 @@ let settings =
   when not defined(release):
     Settings.new(
       host = "0.0.0.0",
+      sessionPath = "redis:6379",
       sessionTime = 0,
     )
   else:
     Settings.new(
       host = "0.0.0.0",
+      sessionPath = "redis:6379",
     )
 
 serve(routes, settings)

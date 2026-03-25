@@ -16,9 +16,28 @@ type RedisSessionDb* = object
 
 var checkConn: AsyncRedis = nil
 
+
+proc parseSessionPath(): tuple[host: string, port: Port] =
+  let sessionPath = SESSION_PATH.strip()
+  let idx = sessionPath.rfind(':')
+  if sessionPath.len == 0 or idx <= 0 or idx >= sessionPath.len - 1:
+    raise newException(ValueError, "SESSION_PATH must be in host:port format when SESSION_TYPE=redis")
+
+  let host = sessionPath[0..<idx].strip()
+  let portStr = sessionPath[idx + 1 .. ^1].strip()
+  if host.len == 0:
+    raise newException(ValueError, "SESSION_PATH host is empty when SESSION_TYPE=redis")
+
+  try:
+    result = (host: host, port: Port(portStr.parseInt()))
+  except ValueError:
+    raise newException(ValueError, "SESSION_PATH port must be an integer: " & portStr)
+
+
 proc getCheckConn(): Future[AsyncRedis] {.async.} =
   if checkConn.isNil:
-    checkConn = openAsync(REDIS_HOST, Port(REDIS_PORT)).await
+    let sessionConfig = parseSessionPath()
+    checkConn = openAsync(sessionConfig.host, sessionConfig.port).await
   return checkConn
 
 proc checkSessionIdValid*(_:type RedisSessionDb, sessionId=""):Future[bool] {.async.} =
@@ -79,7 +98,15 @@ proc destroy(self:RedisSessionDb):Future[void] {.async.} =
   discard self.conn.del(@[self.id]).await
 
 
+proc sessionExpireSeconds(): int =
+  ## `SESSION_TIME == 0` は「無期限扱い」の互換として 1 年に寄せる。
+  if SESSION_TIME > 0:
+    return SESSION_TIME * 60
+  return 60 * 60 * 24 * 365
+
+
 proc new*(_:type RedisSessionDb, sessionId=""):Future[RedisSessionDb] {.async.} =
+  let sessionConfig = parseSessionPath()
   let id =
     if sessionId.len == 0:
       secureRandStr(100)
@@ -88,13 +115,13 @@ proc new*(_:type RedisSessionDb, sessionId=""):Future[RedisSessionDb] {.async.} 
     else:
       sessionId
 
-  let conn = openAsync(REDIS_HOST, Port(REDIS_PORT)).await
+  let conn = openAsync(sessionConfig.host, sessionConfig.port).await
   let sessionDb = RedisSessionDb(
     conn:conn,
     id:id,
   )
   sessionDb.setStr("session_id", id).await
-  discard conn.expire(id, SESSION_TIME * 60).await
+  discard conn.expire(id, sessionExpireSeconds()).await
   return sessionDb
 
 

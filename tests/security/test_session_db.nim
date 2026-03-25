@@ -1,10 +1,10 @@
 discard """
   cmd: "nim c -d:test $file"
-  matrix: "--putenv:SESSION_TYPE=file --putenv:SESSION_DB_PATH=./session.db; --putenv:SESSION_TYPE=redis --putenv:SESSION_DB_PATH=redis:6379"
+  matrix: "--putenv:SESSION_TYPE=file --putenv:SESSION_PATH=./session.db; --putenv:SESSION_TYPE=redis --putenv:SESSION_PATH=redis:6379"
 """
 
-# nim c -r -d:test --putenv:SESSION_TYPE=file --putenv:SESSION_DB_PATH=./session.db ./security/test_session_db.nim
-# nim c -r -d:test --putenv:SESSION_TYPE=redis --putenv:SESSION_DB_PATH=redis:6379 security/test_session_db.nim
+# nim c -r -d:test --putenv:SESSION_TYPE=file --putenv:SESSION_PATH=./session.db ./security/test_session_db.nim
+# nim c -r -d:test --putenv:SESSION_TYPE=redis --putenv:SESSION_PATH=redis:6379 security/test_session_db.nim
 
 import std/unittest
 import std/asyncdispatch

@@ -50,14 +50,6 @@ RUN chmod 111 startServer.sh
 
 # Secret
 ENV SECRET_KEY="pZWEVzA7h2FcKLgVM3ec5Eiik7eU9Ehpf0uLdYOZDgr0uZKIo5LdQE9sjIub3IDkUTrf3X2Jsh1Uw8b02GtAfWRn4C9NptfdSyoK"
-# DB Connection
-ENV DB_DATABASE="hello_world"
-ENV DB_USER="benchmarkdbuser"
-ENV DB_PASSWORD="benchmarkdbpass"
-ENV DB_HOST="tfb-database"
-ENV DB_PORT=5432
-ENV DB_MAX_CONNECTION=2000
-ENV DB_TIMEOUT=30
 # Logging
 ENV LOG_IS_DISPLAY=false
 ENV LOG_IS_FILE=false

@@ -72,6 +72,7 @@ let routes = @[
 
 let settings = Settings.new(
   host="0.0.0.0",
+  sessionPath = "./session.db",
   sessionTime = 0,
 )
 
