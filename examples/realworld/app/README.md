@@ -10,22 +10,23 @@ RealWorld app architecture
 
 ## View レイヤの基本パターン
 
-- **Controller → PageView → Layout → Template → Component** の順で依存します。Presenter は使いません。
-- **PageView は controller から呼ばれる描画入口**です。`XxxPageView*(context: Context): Future[Component]` の形で定義し、Layout と Template を合成してフル HTML を返します。
+- **Controller → Page → PageView → Layout → Template → Component** の順で依存します。Presenter は使いません。
+- **PageView は controller から呼ばれる描画入口**です。`XxxPageView*(context: Context): Future[Component]` の形で定義し、`XxxTemplateModel` と `XxxLayoutModel` を組み立ててフル HTML を返します。
 - **Layout / Template / Component の model 名は粒度に合わせる**ようにします。`XxxLayoutModel`、`XxxTemplateModel`、`XxxComponentModel` を使います。
-- **Template の引数は `Context` のみ**です。Template は内部で `XxxTemplateModel.new(context)` を呼び、template model が context と必要な DAO から自己を組み立てます。
+- **Template の引数は `XxxTemplateModel` のみ**です。Template は受け取った model をそのまま描画します。
 - Layout / Template / Component は `context()` や `signal` などの共有状態に依存せず、各 model を受け取って描画します。
 
-### Page
+### PageView
 
 - `proc XxxPageView*(context: Context): Future[Component]` という形で定義します。
-- `template(context).await` で body を取得し、`appLayout(context, title, body).await` で Layout と合成した `Component` を返します。Presenter は呼びません。
+- `let templateModel = await XxxTemplateModel.new(context)` で body 用の値を組み立て、`let body = xxxTemplate(templateModel)` で描画します。
+- `let layoutModel = await XxxLayoutModel.new(context, title, body)` で Layout 用の値を組み立て、`xxxLayout(layoutModel)` でフル HTML を返します。Presenter は呼びません。
 
 ### Template
 
-- **`proc xxxTemplate*(context: Context): Future[Component]`** という形で定義します。引数は context のみです。
-- 内部で `let model = await XxxTemplateModel.new(context)` を実行し、template model が context と DAO から自己を組み立てたうえで、その model を使って HTML を描画します。
-- データ取得の単位は Template です。必要な DAO の呼び出しと DTO→model の変換は、すべて対応する template model のコンストラクタに集約します。
+- **`proc xxxTemplate*(model: XxxTemplateModel): Component`** という形で定義します。
+- template model が context と DAO から自己を組み立てたうえで、その model を使って HTML を描画します。
+- データ取得の単位は template model です。必要な DAO の呼び出しと DTO→model の変換は、すべて対応する template model のコンストラクタに集約します。
 
 ### Layout Model / Template Model / Component Model
 

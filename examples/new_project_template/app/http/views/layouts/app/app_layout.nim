@@ -1,14 +1,15 @@
-import ../../../../../../../src/basolato/view
+import basolato/view
 import ../head/head_layout
 import ./app_layout_model
 
 
 proc appLayout*(appLayoutModel:AppLayoutModel, body:Component):Component =
-  tmpl"""    <!DOCTYPE html>
+  tmpl"""
+    <!DOCTYPE html>
     <html lang="en">
       $(headLayout(appLayoutModel.headLayoutModel))
-    <body>
-      $(body)
-    </body>
+      <body>
+        $(body)
+      </body>
     </html>
   """

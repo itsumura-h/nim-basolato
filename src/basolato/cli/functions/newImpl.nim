@@ -6,7 +6,6 @@ from make/utils import isDirExists
 
 
 type TemplateFile = tuple[path, content: string]
-const tripleQuote = "\"\"\""
 
 
 const templateDirs = [
@@ -198,9 +197,8 @@ import basolato/core/base
 import ../views/pages/welcome/welcome_page
 
 
-proc index*(context:Context):Future[Response] {.async.} =
-  let name = "Basolato " & BasolatoVersion
-  let page = welcomePage(name)
+proc welcomePage*(context:Context):Future[Response] {.async.} =
+  let page = welcomePageView(context).await
   return render(page)
 
 proc indexApi*(context:Context):Future[Response] {.async.} =
@@ -333,7 +331,7 @@ HTTP entrypoints that compose layouts and templates.
 
 **Responsibilities:**
 - Receive `Context`
-- Build page-level composition
+- Build page-level composition by assembling `LayoutModel` and `TemplateModel`
 - Return a full HTML response
 
 ### layouts/
@@ -348,7 +346,7 @@ Shared frame, head, header, footer, and other page chrome.
 Render HTML for one UI boundary.
 
 **Responsibilities:**
-- Accept `Context` or a `TemplateModel`
+- Accept a `TemplateModel`
 - Render HTML for one template boundary
 - Avoid direct access to global request state
 
@@ -400,36 +398,44 @@ type AppLayoutModel* = object
 proc new*(_:type AppLayoutModel, headLayoutModel:HeadLayoutModel):AppLayoutModel =
   return AppLayoutModel(headLayoutModel:headLayoutModel)
 """
-  template_http_views_layouts_app_app_layout_nim = """import ../../../../../../../src/basolato/view
+  template_http_views_layouts_app_app_layout_nim = """import basolato/view
 import ../head/head_layout
 import ./app_layout_model
 
 
 proc appLayout*(appLayoutModel:AppLayoutModel, body:Component):Component =
-  tmpl""" & tripleQuote & """
+  tmpl\"\"\"
     <!DOCTYPE html>
     <html lang="en">
       $(headLayout(appLayoutModel.headLayoutModel))
-    <body>
-      $(body)
-    </body>
+      <body>
+        $(body)
+      </body>
     </html>
-  """ & tripleQuote & """
+  \"\"\"
 """
   template_http_views_layouts_footer_footer_layout_nim = """import basolato/view
 
 
 proc footerLayout*():Component =
-  tmpl""" & tripleQuote & """
-    <footer>
-      <div class="container">
-        <a href="/" class="logo-font">conduit</a>
-        <span class="attribution">
-          An interactive learning project from <a href="https://thinkster.io">Thinkster</a>. Code & design licensed under MIT.
-        </span>
+  let style = styleTmpl(Css, \"\"\"
+    <style>
+      .footer {
+        background-color: gray;
+      }
+    </style>
+  \"\"\"")
+  
+  tmpl\"\"\"
+    $(style)
+    <footer class="$(style.element("footer"))">
+      <div>
+        <p>
+          &copy; 2026 Basolato. All rights reserved.
+        </p>
       </div>
     </footer>
-  """ & tripleQuote & """
+  \"\"\"
 """
   template_http_views_layouts_head_head_layout_model_nim = """type HeadLayoutModel* = object
   title*:string
@@ -437,40 +443,54 @@ proc footerLayout*():Component =
 proc new*(_:type HeadLayoutModel, title:string):HeadLayoutModel =
   return HeadLayoutModel(title:title)
 """
-  template_http_views_layouts_head_head_layout_nim = """import ../../../../../../../src/basolato/view
+  template_http_views_layouts_head_head_layout_nim = """import basolato/view
 import ./head_layout_model
 
 
 proc headLayout*(model:HeadLayoutModel):Component =
-  tmpl""" & tripleQuote & """
+  tmpl\"\"\"
     <head>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta charset="UTF-8">
       <title>$(model.title)</title>
-      <link rel="stylesheet" href="https://unpkg.com/mvp.css">
       <script type="module">
         import hotwiredTurbo from "https://cdn.skypack.dev/@hotwired/turbo@7";
       </script>
     </head>
-  """ & tripleQuote & """
+  \"\"\"
 """
   template_http_views_pages_welcome_welcome_page_nim = """import std/asyncdispatch
-import ../../../../../../../src/basolato/view
-import ../../presenters/welcome/welcome_page_viewmodel
+import basolato/view
+import basolato/core/base
+import ../../layouts/app/app_layout
+import ../../layouts/app/app_layout_model
+import ../../layouts/head/head_layout_model
 import ../../templates/welcome/welcome_template
+import ../../templates/welcome/welcome_template_model
 
 
 proc welcomePageView*(context: Context):Future[Component] {.async.} =
-  let vm = WelcomePageViewModel.new()
-  let page = welcomeTemplate(vm)
-  return page
+  discard context
+  let title = "Basolato " & BasolatoVersion
+  let templateModel = WelcomeTemplateModel.new(title)
+  let body = welcomeTemplate(templateModel)
+  let headLayoutModel = HeadLayoutModel.new(title)
+  let appLayoutModel = AppLayoutModel.new(headLayoutModel)
+  return appLayout(appLayoutModel, body)
 """
-  template_http_views_templates_welcome_welcome_template_nim = """import ../../../../../../../src/basolato/view
-import ../../presenters/welcome/welcome_page_viewmodel
+  template_http_views_templates_welcome_welcome_template_model_nim = """type WelcomeTemplateModel* = object
+  title*: string
 
 
-proc welcomeTemplate*(vm: WelcomePageViewModel): Component =
-  let style = styleTmpl(Css, """ & tripleQuote & """
+proc new*(_: type WelcomeTemplateModel, title: string): WelcomeTemplateModel =
+  return WelcomeTemplateModel(title: title)
+"""
+  template_http_views_templates_welcome_welcome_template_nim = """import basolato/view
+import ./welcome_template_model
+
+
+proc welcomeTemplate*(model: WelcomeTemplateModel): Component =
+  let style = styleTmpl(Css, \"\"\"
     <style>
       body {
         background-color: black;
@@ -498,60 +518,16 @@ proc welcomeTemplate*(vm: WelcomePageViewModel): Component =
         color: silver;
       }
 
-      .ulLink li {
-        margin: 8px;
-      }
-
-      .ulLink li a {
-        color: skyblue;
-      }
-
-      .architecture {
-        padding: 10px
-      }
-
-      .architecture h2 {
-        color: goldenrod;
-      }
-
-      .components {
-        display:flex;
-      }
-
-      .discription {
-        width: 50vw;
-      }
-
-      .discription h3 {
-        color: goldenrod;
-      }
-
-      .discription p {
-        color: white;
-      }
-
-      .sourceCode {
-        width: 50vw
-      }
-
-      .sourceCode p {
-        color: white;
-        margin-bottom: 0;
-      }
-
-      .sourceCode pre {
-        margin-top: 0;
-      }
     </style>
-  """ & tripleQuote & """)
+  \"\"\")
 
-  tmpl""" & tripleQuote & """
+  tmpl\"\"\"
     $(style)
     <link rel="stylesheet" href="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/styles/dracula.min.css">
     <script src="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/highlight.min.js"></script>
     <article>
       <section>
-        <h1 class="$(style.element("title"))">Nim $(vm.title) is successfully running!!!</h1>
+        <h1 class="$(style.element("title"))">Nim $(model.title) is successfully running!!!</h1>
         <div class="$(style.element("topImage"))">
           <img
             src="/basolato.svg"
@@ -581,7 +557,7 @@ proc welcomeTemplate*(vm: WelcomePageViewModel): Component =
         </div>
       </section>
     </article>
-  """ & tripleQuote & """
+  \"\"\"
 """
   template_models_README_md = """
 Domain Model
@@ -958,7 +934,7 @@ import ./app/http/controllers/welcome_controller
 let routes = @[
   Route.group("", @[
     Route.group("", @[
-      Route.get("/", welcome_controller.index),
+      Route.get("/", welcome_controller.welcomePage),
     ])
     .middleware(session_middleware.checkCsrfToken)
     .middleware(session_middleware.sessionFromCookie),
@@ -1240,7 +1216,7 @@ suite("sample"):
     check true
 """
 
-const templateFiles: array[44, TemplateFile] = [
+const templateFiles: array[45, TemplateFile] = [
   (".gitignore", template_gitignore),
   ("app/README.md", template_README_md),
   ("app/data_stores/dao/README.md", template_data_stores_dao_README_md),
@@ -1259,6 +1235,7 @@ const templateFiles: array[44, TemplateFile] = [
   ("app/http/views/layouts/head/head_layout_model.nim", template_http_views_layouts_head_head_layout_model_nim),
   ("app/http/views/layouts/head/head_layout.nim", template_http_views_layouts_head_head_layout_nim),
   ("app/http/views/pages/welcome/welcome_page.nim", template_http_views_pages_welcome_welcome_page_nim),
+  ("app/http/views/templates/welcome/welcome_template_model.nim", template_http_views_templates_welcome_welcome_template_model_nim),
   ("app/http/views/templates/welcome/welcome_template.nim", template_http_views_templates_welcome_welcome_template_nim),
   ("app/presenters/README.md", template_app_presenters_README_md),
   ("app/models/README.md", template_models_README_md),
@@ -1291,6 +1268,7 @@ proc normalized(content: string): string =
   if content.len == 0:
     return content
   result = content.strip(chars = {'\n'})
+  result = result.replace("\\\"\\\"\\\"", "\"\"\"")
   result.add('\n')
 
 

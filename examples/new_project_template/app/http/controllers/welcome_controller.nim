@@ -7,9 +7,8 @@ import basolato/core/base
 import ../views/pages/welcome/welcome_page
 
 
-proc index*(context:Context):Future[Response] {.async.} =
-  let name = "Basolato " & BasolatoVersion
-  let page = welcomePage(name)
+proc welcomePage*(context:Context):Future[Response] {.async.} =
+  let page = welcomePageView(context).await
   return render(page)
 
 proc indexApi*(context:Context):Future[Response] {.async.} =

@@ -1,10 +1,18 @@
 import std/asyncdispatch
-import ../../../../../../../src/basolato/view
-import ../../presenters/welcome/welcome_page_viewmodel
+import basolato/view
+import basolato/core/base
+import ../../layouts/app/app_layout
+import ../../layouts/app/app_layout_model
+import ../../layouts/head/head_layout_model
 import ../../templates/welcome/welcome_template
+import ../../templates/welcome/welcome_template_model
 
 
 proc welcomePageView*(context: Context):Future[Component] {.async.} =
-  let vm = WelcomePageViewModel.new()
-  let page = welcomeTemplate(vm)
-  return page
+  discard context
+  let title = "Basolato " & BasolatoVersion
+  let templateModel = WelcomeTemplateModel.new(title)
+  let body = welcomeTemplate(templateModel)
+  let headLayoutModel = HeadLayoutModel.new(title)
+  let appLayoutModel = AppLayoutModel.new(headLayoutModel)
+  return appLayout(appLayoutModel, body)

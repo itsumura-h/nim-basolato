@@ -1,9 +1,10 @@
-import ../../../../../../../src/basolato/view
-import ../../presenters/welcome/welcome_page_viewmodel
+import basolato/view
+import ./welcome_template_model
 
 
-proc welcomeTemplate*(vm: WelcomePageViewModel): Component =
-  let style = styleTmpl(Css, """    <style>
+proc welcomeTemplate*(model: WelcomeTemplateModel): Component =
+  let style = styleTmpl(Css, """
+    <style>
       body {
         background-color: black;
       }
@@ -30,59 +31,16 @@ proc welcomeTemplate*(vm: WelcomePageViewModel): Component =
         color: silver;
       }
 
-      .ulLink li {
-        margin: 8px;
-      }
-
-      .ulLink li a {
-        color: skyblue;
-      }
-
-      .architecture {
-        padding: 10px
-      }
-
-      .architecture h2 {
-        color: goldenrod;
-      }
-
-      .components {
-        display:flex;
-      }
-
-      .discription {
-        width: 50vw;
-      }
-
-      .discription h3 {
-        color: goldenrod;
-      }
-
-      .discription p {
-        color: white;
-      }
-
-      .sourceCode {
-        width: 50vw
-      }
-
-      .sourceCode p {
-        color: white;
-        margin-bottom: 0;
-      }
-
-      .sourceCode pre {
-        margin-top: 0;
-      }
     </style>
   """)
 
-  tmpl"""    $(style)
+  tmpl"""
+    $(style)
     <link rel="stylesheet" href="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/styles/dracula.min.css">
     <script src="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/highlight.min.js"></script>
     <article>
       <section>
-        <h1 class="$(style.element("title"))">Nim $(vm.title) is successfully running!!!</h1>
+        <h1 class="$(style.element("title"))">Nim $(model.title) is successfully running!!!</h1>
         <div class="$(style.element("topImage"))">
           <img
             src="/basolato.svg"

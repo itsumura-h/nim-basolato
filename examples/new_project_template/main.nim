@@ -10,7 +10,7 @@ import ./app/http/controllers/welcome_controller
 let routes = @[
   Route.group("", @[
     Route.group("", @[
-      Route.get("/", welcome_controller.index),
+      Route.get("/", welcome_controller.welcomePage),
     ])
     .middleware(session_middleware.checkCsrfToken)
     .middleware(session_middleware.sessionFromCookie),
@@ -23,6 +23,8 @@ let routes = @[
   .middleware(set_headers_middleware.setCorsHeaders)
 ]
 
-let settings = Settings.new()
+let settings = Settings.new(
+  host = "0.0.0.0"
+)
 
 serve(routes, settings)
