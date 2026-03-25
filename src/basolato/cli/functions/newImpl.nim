@@ -36,7 +36,8 @@ const templateDirs = [
   "config",
   "database",
   "database/migrations",
-  "database/migrations/data",
+  "database/migrations/default",
+  "database/migrations/test",
   "database/seeders",
   "database/seeders/data",
   "public",
@@ -844,65 +845,77 @@ let DB_URL* = requireEnv("DB_URL")
 """
   template_database_develop_sh = """
 # This file is executed from the root directory of the project.
-nim c -d:reset --threads:off ./database/migrations/migrate.nim
-nim c --threads:off ./database/seeders/develop
-
-./database/migrations/migrate
-./database/seeders/develop
+nim c -r -d:reset ./database/migrations/default/migrate.nim
+nim c -r ./database/seeders/develop.nim
 """
   template_database_staging_sh = """
 # This file is executed from the root directory of the project.
-nim c -d:reset --threads:off ./database/migrations/migrate.nim
-nim c --threads:off ./database/seeders/staging
-
-./database/migrations/migrate
-./database/seeders/staging
+nim c -r ./database/migrations/default/migrate.nim
+nim c -r ./database/seeders/staging.nim
 """
   template_database_production_sh = """
 # This file is executed from the root directory of the project.
-nim c -d:reset --threads:off ./database/migrations/migrate.nim
-nim c --threads:off ./database/seeders/production
-
-./database/migrations/migrate
-./database/seeders/production
+nim c -r ./database/migrations/default/migrate.nim
+nim c -r ./database/seeders/production.nim
 """
   template_database_migrations_README_md = """
 Migrations
 ===
 Migrations are Database table difinition.
 """
-  template_database_migrations_data_create_sample_table_nim = """
-import std/json
+  template_database_migrations_default_migrate_nim = """
+import std/asyncdispatch
 import allographer/schema_builder
 from ../../../config/database import rdb
+import ./migration_001_create_table
 
-proc createSampleTable*() =
-  rdb.create([
+
+proc main*() =
+  createTable(rdb).waitFor()
+
+
+main()
+createSchema(rdb).waitFor()
+"""
+  template_database_migrations_default_migration_001_create_table_nim = """
+import std/asyncdispatch
+import allographer/query_builder
+import allographer/schema_builder
+
+
+proc createTable*[T](rdb: T) {.async.} =
+  rdb.create(
     table("sample", [
       Column.increments("id"),
       Column.string("name"),
-    ])
-  ])
+    ]),
+  )
 """
-  template_database_migrations_migrate_nim = """
+  template_database_migrations_test_migrate_nim = """
 import std/asyncdispatch
-import allographer/schema_builder
-from ../../config/database import rdb
-import ./data/create_sample_table
+from ../../../config/database import rdb
+import ./migration_001_create_table
 
-proc main() =
-  createSampleTable()
+
+proc main*() =
+  createTable(rdb).waitFor()
+
 
 main()
-rdb.createSchema().waitFor()
 """
-  template_database_schema_nim = """
-import std/json
+  template_database_migrations_test_migration_001_create_table_nim = """
+import std/asyncdispatch
+import allographer/query_builder
+import allographer/schema_builder
 
-type SampleTable* = object
-  ## sample
-  id*: int
-  name*: string
+
+proc createTable*[T](rdb: T) {.async.} =
+  rdb.create(
+    table("sample", [
+      Column.increments("id"),
+      Column.string("name"),
+    ]),
+  )
 """
   template_database_seeders_README_md = """
 Seeders
@@ -928,28 +941,36 @@ proc sampleSeeder*() {.async.} =
 """
   template_database_seeders_develop_nim = """
 import std/asyncdispatch
+import ../../config/env
 import ./data/sample_seeder
 
 proc main() {.async.} =
-  sampleSeeder().await
+  if APP_ENV == AppEnvType.Develop or APP_ENV == AppEnvType.Test:
+    sampleSeeder().await
 
 main().waitFor()
 """
   template_database_seeders_production_nim = """
 import std/asyncdispatch
+import ../../config/env
+import ./data/sample_seeder
 
 
 proc main() {.async.} =
-  discard
+  if APP_ENV == AppEnvType.Production:
+    sampleSeeder().await
 
 main().waitFor()
 """
   template_database_seeders_staging_nim = """
 import std/asyncdispatch
+import ../../config/env
+import ./data/sample_seeder
 
 
 proc main() {.async.} =
-  discard
+  if APP_ENV == AppEnvType.Staging:
+    sampleSeeder().await
 
 main().waitFor()
 """
@@ -1249,7 +1270,7 @@ suite("sample"):
     check true
 """
 
-const templateFiles: array[46, TemplateFile] = [
+const templateFiles: array[47, TemplateFile] = [
   (".gitignore", template_gitignore),
   ("app/README.md", template_README_md),
   ("app/data_stores/dao/README.md", template_data_stores_dao_README_md),
@@ -1282,9 +1303,10 @@ const templateFiles: array[46, TemplateFile] = [
   ("database/staging.sh", template_database_staging_sh),
   ("database/production.sh", template_database_production_sh),
   ("database/migrations/README.md", template_database_migrations_README_md),
-  ("database/migrations/data/create_sample_table.nim", template_database_migrations_data_create_sample_table_nim),
-  ("database/migrations/migrate.nim", template_database_migrations_migrate_nim),
-  ("database/schema.nim", template_database_schema_nim),
+  ("database/migrations/default/migrate.nim", template_database_migrations_default_migrate_nim),
+  ("database/migrations/default/migration_001_create_table.nim", template_database_migrations_default_migration_001_create_table_nim),
+  ("database/migrations/test/migrate.nim", template_database_migrations_test_migrate_nim),
+  ("database/migrations/test/migration_001_create_table.nim", template_database_migrations_test_migration_001_create_table_nim),
   ("database/seeders/README.md", template_database_seeders_README_md),
   ("database/seeders/data/sample_seeder.nim", template_database_seeders_data_sample_seeder_nim),
   ("database/seeders/develop.nim", template_database_seeders_develop_nim),
@@ -1347,10 +1369,12 @@ task test, "run testament":
 
 
 proc writeEmptyPlaceholders(baseDir: string) =
-  setFilePermissions(
-    baseDir / "database/develop.sh",
-    {fpUserRead, fpUserWrite, fpUserExec, fpGroupRead, fpGroupExec, fpOthersRead, fpOthersExec}
-  )
+  for shFile in ["develop.sh", "staging.sh", "production.sh"]:
+    let shFilePath = baseDir / "database" / shFile
+    setFilePermissions(
+      shFilePath,
+      {fpUserRead, fpUserWrite, fpUserExec, fpGroupRead, fpGroupExec, fpOthersRead, fpOthersExec}
+    )
 
 
 proc create(dirPath, packageDir: string): int =

@@ -30,13 +30,13 @@ type ArticleTable* = object
   updated_at*: string
 
 
-type User_user_mapTable* = object
+type UserUserMapTable* = object
   ## user_user_map
   user_id*: string
   follower_id*: string
 
 
-type User_article_mapTable* = object
+type UserArticleMapTable* = object
   ## user_article_map
   user_id*: string
   article_id*: string
@@ -48,7 +48,7 @@ type TagTable* = object
   name*: string
 
 
-type Tag_article_mapTable* = object
+type TagArticleMapTable* = object
   ## tag_article_map
   tag_id*: string
   article_id*: string

@@ -1,2 +1,3 @@
-nim c -r -d:reset --threads:off ./database/migrations/default/migrate.nim
-nim c -r --threads:off ./database/seeders/seed.nim
+# This file is executed from the root directory of the project.
+nim c -r -d:reset ./database/migrations/default/migrate.nim
+nim c -r ./database/seeders/develop.nim

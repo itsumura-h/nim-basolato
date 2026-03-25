@@ -1,11 +1,8 @@
 import std/asyncdispatch
-import std/json
-import std/times
 import std/strutils
-import basolato/password
 import allographer/query_builder
 import faker
-import ../schema
+import ../../schema
 
 let fake = newFaker()
 

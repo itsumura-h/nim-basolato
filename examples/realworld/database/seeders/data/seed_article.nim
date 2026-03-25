@@ -5,10 +5,10 @@ import std/strutils
 import std/strformat
 import std/random
 import allographer/query_builder
-import ./lib/random_text
-import ../../app/models/vo/article_id
-import ../../app/models/vo/title
-import ../schema
+import ../lib/random_text
+import ../../schema
+import ../../../app/models/vo/article_id
+import ../../../app/models/vo/title
 
 randomize()
 

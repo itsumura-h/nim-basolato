@@ -1,14 +1,8 @@
 import std/asyncdispatch
-import std/json
-import std/times
 import std/strutils
-import basolato/password
+import std/random
 import allographer/query_builder
-import faker
-import ../schema
-
-
-let fake = newFaker()
+import ../../schema
 
 
 proc tagArticle*(rdb:PostgresConnections) {.async.} =

@@ -4,6 +4,7 @@ import std/strformat
 import allographer/query_builder
 from ../../../config/database import rdb
 
+
 proc sampleSeeder*() {.async.} =
   rdb.seeder("sample"):
     var data: seq[JsonNode]

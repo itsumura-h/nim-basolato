@@ -4,8 +4,8 @@ import std/times
 import std/strutils
 import allographer/query_builder
 import faker
-import ./lib/random_text
-import ../schema
+import ../lib/random_text
+import ../../schema
 
 type Comment = object
   body: CommentTable.body
