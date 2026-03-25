@@ -1,11 +1,12 @@
 discard """
-  cmd: "nim c -d:test --putenv:SESSION_TYPE=file --putenv:SESSION_PATH=./server/session.db $file"
+  cmd: "nim c -d:test $file"
 """
 
-# nim c -r -d:test --putenv:SESSION_TYPE=file --putenv:SESSION_PATH=./server/session.db test_response.nim
+# nim c -r -d:test test_response.nim
 
 import std/asyncdispatch
 import std/httpclient
+import std/os
 import std/strformat
 import std/strutils
 import std/json
@@ -16,8 +17,13 @@ import ../src/basolato/core/security/session as a
 import ../src/basolato/core/security/session_db as b
 import ../src/basolato/core/security/jwt
 
-
+static: # compile time
+  putEnv("SECRET_KEY", "test_secret_key")
+  putEnv("SESSION_TYPE", "file")
 const HOST = "http://127.0.0.1:8000"
+discard Settings.new(
+  sessionPath = "./tests/server/session.db",
+)
 
 suite("test response"):
   setup:
