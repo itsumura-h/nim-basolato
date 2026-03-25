@@ -4,9 +4,9 @@ import std/terminal
 import ./utils
 
 
-template createConfigCommon(target, CONFIG:untyped) =
+template createConfigCommon(baseDir, target, CONFIG:untyped) =
   block:
-    let targetPath = getCurrentDir() / target
+    let targetPath = baseDir / target
     if not isFileExists(targetPath):
       let f = open(targetPath, fmWrite)
       defer: f.close()
@@ -16,10 +16,10 @@ template createConfigCommon(target, CONFIG:untyped) =
       styledWriteLine(stdout, fgGreen, bgDefault, message, resetStyle)
 
 
-let currentDir = getCurrentDir()
+proc makeConfig*(baseDir = getCurrentDir()):int =
+  let currentDir = baseDir
 
-proc makeConfig*():int =
-  createConfigCommon("config.nims"):
+  createConfigCommon(baseDir, "config.nims"):
     &"""
 import std/os
 
@@ -31,7 +31,7 @@ putEnv("SESSION_TYPE", "file") # "file" or "redis"
 putEnv("LIBSASS", $false) # "true" or "false"
 """
 
-  createConfigCommon(".env"):
+  createConfigCommon(baseDir, ".env"):
     &"""
 # Secret
 SECRET_KEY="{randStr(100)}"
@@ -54,7 +54,7 @@ REDIS_PORT="6379"        # Redis port (when SESSION_TYPE=redis)
 COOKIE_DOMAINS="" # to specify multiple domains, "sample.com, sample.org"
 """
 
-  createConfigCommon(".env.example"):
+  createConfigCommon(baseDir, ".env.example"):
     &"""
 # Secret
 SECRET_KEY=""
