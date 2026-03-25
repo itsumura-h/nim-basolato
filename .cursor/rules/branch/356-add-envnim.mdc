@@ -1,0 +1,123 @@
+---
+description: 356-add-envnimブランチでの開発時に読み込む
+alwaysApply: false
+---
+環境変数の fail-fast 集約と `env.nim` 導入
+===
+
+このブランチで実装することは以下の通りです。
+- 環境変数を各所で直接 `getEnv()` している箇所を洗い出し、取得口を `env.nim` に集約する。
+- 必須の環境変数が未設定、または許容値から外れている場合は、アプリケーション起動直後に即座に停止する fail-fast な構成へ寄せる。
+- TypeScript 記事の「必要な環境変数の定義を 1 箇所に集約し、起動時に即時評価する」考え方を Nim の型・モジュール初期化・例外でどう表現するかを設計する。
+- `getEnv("NAME")` / `getEnv("NAME", "...")` をその場で呼ぶ実装を減らし、利用側は `env.nim` が公開する型付き API のみを参照する構造へ寄せる。
+- 今回は実装に進まず、対象範囲、責務分界、移行順序、Nim での実現方法をブランチルールとして固定する。
+
+## 進捗
+- [x] プロジェクトルール・ブランチルール雛形を確認
+- [x] 現在ブランチ名と対応するルールファイルを新規作成
+- [x] 参考記事を確認
+- [x] `getEnv()` 使用箇所の初期調査
+- [x] `env.nim` に集約する責務と公開 API 方針を整理
+- [x] Web アプリ側 `env.nim` の配置場所を `config/` 配下に確定
+- [x] `env.nim` の公開単位を確定
+- [x] 既存 `getEnv()` 呼び出しの移行優先順位を確定
+- [x] fail-fast の対象にする環境変数一覧を確定
+- [x] テスト方針と移行時の互換方針を確定
+- [x] 実装
+
+## 参考資料
+- `.cursor/rules/project.mdc`
+- `.cursor/rules/branch.mdc`
+- `https://raw.githubusercontent.com/itsumura-h/itsumura-h-zenn-contents/refs/heads/main/articles/42298ff36f7e4b.md`
+- `src/basolato/core/settings.nim`
+- `src/basolato/cli/functions/newImpl.nim`
+- `examples/realworld/app/env.nim`
+- `examples/realworld/app/consts.nim`
+- `examples/realworld/config/database.nim`
+
+## 調査結果・設計まとめ
+
+### 参考記事から持ち込む設計原則
+- 複雑性は「どの環境変数が、どの実行文脈で必須か」の定義表へ集約し、利用側では単純な参照だけを行う。
+- 必須項目の欠落検知は利用箇所まで遅延させず、モジュール読み込み直後または起動直後に失敗させる。
+- 利用側が `process.env` 相当を直接触る構造を避け、型付きの公開値だけを import して使う。
+- 不要な環境では既定値を返すという発想は維持できるが、本ブランチの主目的は「設定漏れを即座に止めること」なので、まずは必須項目の fail-fast を優先する。
+
+### 現状整理
+- 現在 `getEnv()` は少なくとも `src/basolato/core/settings.nim`、`src/basolato/cli/functions/newImpl.nim`、`examples/realworld/config/database.nim`、`examples/realworld/app/env.nim`、`examples/realworld/app/consts.nim` で使われている。
+- `getEnv("NAME")` をその場で呼ぶ実装は、未設定時にどこで落ちるかが利用箇所依存になり、起動時保証になっていない。
+- `getEnv("NAME", "default")` は簡便だが、「本来必須の値をデフォルトで握りつぶす」温床になりやすい。
+- `examples/realworld/app/env.nim` には既に `APP_ENV` を enum へ寄せる試みがある一方、`examples/realworld/app/consts.nim` では同じ値を文字列で再取得しており、環境変数アクセスが分散している。
+- `src/basolato/core/settings.nim` は `.env` 読み込みと runtime 設定保持を兼務しており、環境変数の検証責務と設定オブジェクト責務が混ざっている。
+
+### このブランチで固定したい責務分界
+- `.env` / OS 環境変数の読み出しと検証は `env.nim` に集約する。
+- `settings.nim` は「アプリケーションが明示的に渡す設定値」と「環境変数から導く値」を分離し、後者の直接読み出し責務を持たないように寄せる。
+- 利用側モジュールは `std/os.getEnv` を直接呼ばず、`env.nim` が公開する `APP_ENV`、`DB_URL`、`SECRET_KEY` のような値、または `requireXxxEnv()` / `parseXxxEnv()` 相当の限定 API を使う。
+- ブランチ全体のゴールは「環境変数の出入口を 1 箇所にすること」であり、「設定の保持先を全て `Settings` に移すこと」とは分けて扱う。
+- Web アプリケーション側の `env.nim` は `config/env.nim` に配置し、`config/database.nim` など設定モジュール群と同列で扱う。
+
+### Nim での実現方針
+- TypeScript 記事の即時実行関数に相当するものは、Nim ではモジュールトップレベルの `let` 初期化、または `proc` を即時評価して束縛する形で実現できる。
+- 例:
+
+```nim
+let APP_ENV* = block:
+  let raw = requireEnv("APP_ENV")
+  case raw
+  of "develop": AppEnv.Develop
+  of "staging": AppEnv.Staging
+  of "production": AppEnv.Production
+  else:
+    raise newException(ValueError, "APP_ENV must be develop|staging|production")
+```
+
+- これにより import 時点で値検証が走り、必須項目の欠落や不正値を即座に検知できる。
+- 文字列のまま使いたい値も、最低限 `requireEnv(name)` を経由して空文字・未設定を同じルールで拒否する。
+- 列挙可能な値は `enum` や専用 parser で型を絞り、単なる `string` のまま広げない。
+- 数値・真偽値・接続先などは `parseInt` / `parseBool` 相当の parse 処理を `env.nim` に閉じ込め、失敗時は例外で停止する。
+- Nim の `const` は環境依存値の置き場としては扱いづらいので、環境変数由来の公開値は原則 `let` を使う。
+
+### `env.nim` の公開形の候補
+- 候補 1: 値をそのまま公開する
+  - `let APP_ENV*`, `let DB_URL*`, `let SECRET_KEY*`
+  - 利用側は import するだけで済み、最も fail-fast になりやすい。
+- 候補 2: まとめオブジェクトで公開する
+  - `let ENV* = EnvConfig(...)`
+  - 集約度は高いが、既存コードの移行差分はやや大きい。
+- 本ブランチではまず候補 1 を第一候補とし、既存コードの import 差し替えで段階移行しやすい形を優先する。
+- Web アプリ側では公開モジュール名を `config/env.nim` に固定し、`app/env.nim` のようなアプリ層直下への配置は採らない。
+
+### 対象に含める `getEnv()` の優先順位
+- 優先度高:
+  - `src/basolato/core/settings.nim` の `SECRET_KEY` など、未設定時の影響が大きいもの
+  - `examples/realworld/config/database.nim` の `DB_URL`
+  - `examples/realworld/app/env.nim` / `examples/realworld/app/consts.nim` の `APP_ENV`
+- 優先度中:
+  - project template を生成する `src/basolato/cli/functions/newImpl.nim` 内の `DB_URL`
+- 優先度低:
+  - compile-time 設定やフレームワーク内部事情に強く依存する箇所。ただし runtime 設定と混在している場合は再分類する。
+
+### 実装時の具体方針メモ
+- `env.nim` には最低限、以下のような補助 API を置く想定で進める。
+  - `proc requireEnv(name: string): string`
+  - `proc optionalEnv(name: string, defaultValue: string): string`
+  - `proc parseEnumEnv[T](name: string, parser: proc(raw: string): T): T`
+- ただし「必須なのに default を置く」使い方を増やさないため、`optionalEnv` の用途は限定する。
+- Web アプリ側では `examples/realworld/config/env.nim` のように `config/` 配下へ置き、`config/database.nim` から `DB_URL` を参照する構成を基本線にする。
+- `APP_ENV` のように許容値が決まっているものは enum 化し、`consts.nim` に同じ情報を二重管理しない。
+- `DB_URL` のような単純文字列でも `env.nim` 経由にし、将来 `SERVICE_ENV` や接続先種別ごとの分岐が必要になっても追加先を 1 箇所に保つ。
+- `.env` 読み込みをどこで行うかは別途整理が必要だが、少なくとも「読み込んだ後の検証」は `env.nim` が責務を持つ。
+
+### 注意点
+- import 時に即時評価する設計は fail-fast には有効だが、テストで必要な環境変数を事前に `putEnv` していないと読み込み段階で落ちる。テスト初期化順序の整理が必要になる。
+- ライブラリ本体 (`src/basolato/...`) と Web アプリ (`examples/...`) では `env.nim` の配置を分けて考える。少なくとも Web アプリ側は `config/env.nim` に寄せ、フレームワーク固有の設定とアプリ固有の設定を 1 ファイルへ混ぜすぎない。
+- `getEnv("NAME", "develop")` のような既定値は開発体験を下げずに残したい場面もあるが、本当に既定値でよいのか、単に必須設定漏れを隠しているだけかを項目ごとに判断する。
+- `.env` を読む責務、`Settings` を組み立てる責務、`env.nim` で検証する責務の 3 つを混ぜない。
+
+### 実装結果
+- `src/basolato/core/env.nim` を追加し、`.env` 読み込みと `requireEnv` / `optionalEnv` / `parseBoolEnv` 系の入口を 1 箇所へ集約した。
+- `src/basolato/core/settings.nim` は `env.nim` 経由で設定値を受け取り、`SECRET_KEY` の fail-fast を維持する形に整理した。
+- `examples/realworld/config/env.nim` を追加し、`APP_ENV` を enum 化したうえで `DB_URL` / `SECRET_KEY` を集約した。
+- `examples/realworld/config/database.nim` と CLI テンプレートの `config/database.nim` を `env.nim` 参照へ移行した。
+- `tests/test_env.nim` を追加し、環境変数ヘルパの基本動作を確認した。

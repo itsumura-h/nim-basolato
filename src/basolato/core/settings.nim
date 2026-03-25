@@ -1,58 +1,36 @@
 import std/os
-import std/strutils
-import std/streams
-import std/parsecfg
+import ./env
 
 
 # Defined in config.nims
 const
-  SESSION_TYPE* = getEnv("SESSION_TYPE", "file")
-  USE_LIBSASS* = when existsEnv("USE_LIBSASS"): getEnv("USE_LIBSASS").parseBool else: false
+  SESSION_TYPE* = optionalEnv("SESSION_TYPE", "file")
+  USE_LIBSASS* = optionalBoolEnv("USE_LIBSASS", false)
+
+# Defined in runtime environment valiable
+when defined(test):
+  # Only test, set in compile time.
+  const
+    SECRET_KEY* = "test_secret_key"
+else:
+  let
+    SECRET_KEY* = requireEnv("SECRET_KEY")
 
 
-for f in walkDir(getCurrentDir()):
-  if f.path.split("/")[^1] == ".env":
-    let path = getCurrentDir() / ".env"
-    var f = newFileStream(path, fmRead)
-    echo("Basolato uses config file '", path, "'")
-    var p: CfgParser
-    open(p, f, path)
-    while true:
-      var e = next(p)
-      case e.kind
-      of cfgEof: break
-      of cfgKeyValuePair: putEnv(e.key, e.value)
-      else: discard
-    break
-
-{.cast(gcsafe).}:
-  # Defined in runtime environment valiable
-  when defined(test):
-    # Only test, set in compile time.
-    const
-      SECRET_KEY* = "test_secret_key"
-  else:
-    let
-      SECRET_KEY* = getEnv("SECRET_KEY")
-
-  if SECRET_KEY.len == 0:
-    raise newException(Exception, "SECRET_KEY is not defined in environment variable")
-
-
-  # Defined in Settings.nim
-  var
-    # Logging
-    LOG_TO_CONSOLE*:bool = true
-    LOG_TO_FILE*:bool = false
-    ERROR_LOG_TO_FILE*:bool = false
-    LOG_DIR*:string = "./logs"
-    # Ssession Db
-    SESSION_TIME*:int = 120  # default 120, minutes of 2 hours
-    SESSION_EXPIRE_ON_CLOSE*:bool = false
-    SESSION_PATH*: string = getCurrentDir() / "session.db"
-    COOKIE_DOMAINS*: seq[string] = @[]
-    # others
-    LOCALE*:string = "en"
+# Defined in Settings.nim
+var
+  # Logging
+  LOG_TO_CONSOLE*:bool = true
+  LOG_TO_FILE*:bool = false
+  ERROR_LOG_TO_FILE*:bool = false
+  LOG_DIR*:string = "./logs"
+  # Ssession Db
+  SESSION_TIME*:int = 120  # default 120, minutes of 2 hours
+  SESSION_EXPIRE_ON_CLOSE*:bool = false
+  SESSION_PATH*: string = getCurrentDir() / "session.db"
+  COOKIE_DOMAINS*: seq[string] = @[]
+  # others
+  LOCALE*:string = "en"
 
 
 type Settings* = object

@@ -798,20 +798,49 @@ proc run*(self:SigninUsecase, email, password:string):Future[JsonNode] {.async.}
 ```
 """
   template_config_database_nim = """
-import std/os
-import std/strutils
 import allographer/connection
+import ./env
 
 
 let rdb* = dbOpen(
   Sqlite3, # SQLite3 or MySQL or MariaDB or PostgreSQL or SurrealDB
-  getEnv("DB_URL"),
+  DB_URL,
   maxConnections = 1,
   timeout = 30,
   shouldDisplayLog = true,
   shouldOutputLogFile = false,
   logDir = "./logs",
 )
+"""
+  template_config_env_nim = """
+import std/strutils
+import basolato/core/env
+
+
+type AppEnvType* = enum
+  Test = "test",
+  Develop = "develop",
+  Staging = "staging",
+  Production = "production"
+
+
+func parseAppEnv*(raw: string): AppEnvType =
+  case raw.strip().toLowerAscii()
+  of "test":
+    AppEnvType.Test
+  of "develop":
+    AppEnvType.Develop
+  of "staging":
+    AppEnvType.Staging
+  of "production":
+    AppEnvType.Production
+  else:
+    raise newException(ValueError, "APP_ENV must be test|develop|staging|production")
+
+
+let APP_ENV* = parseAppEnv(optionalEnv("APP_ENV", "develop"))
+let SECRET_KEY* = requireEnv("SECRET_KEY")
+let DB_URL* = requireEnv("DB_URL")
 """
   template_database_develop_sh = """
 # This file is executed from the root directory of the project.
@@ -1220,7 +1249,7 @@ suite("sample"):
     check true
 """
 
-const templateFiles: array[45, TemplateFile] = [
+const templateFiles: array[46, TemplateFile] = [
   (".gitignore", template_gitignore),
   ("app/README.md", template_README_md),
   ("app/data_stores/dao/README.md", template_data_stores_dao_README_md),
@@ -1247,6 +1276,7 @@ const templateFiles: array[45, TemplateFile] = [
   ("app/models/dto/README.md", template_models_dto_README_md),
   ("app/models/vo/README.md", template_models_vo_README_md),
   ("app/usecases/README.md", template_usecases_README_md),
+  ("config/env.nim", template_config_env_nim),
   ("config/database.nim", template_config_database_nim),
   ("database/develop.sh", template_database_develop_sh),
   ("database/staging.sh", template_database_staging_sh),

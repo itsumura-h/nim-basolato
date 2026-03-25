@@ -1,6 +1,5 @@
-import std/os
-import std/strutils
 import allographer/connection
+import ./env
 
 let testRdb* = dbopen(
   SQLite3, # SQLite3 or MySQL or MariaDB or PostgreSQL
@@ -13,7 +12,7 @@ let testRdb* = dbopen(
 
 let rdb* = dbopen(
   PostgreSQL, # SQLite3 or MySQL or MariaDB or PostgreSQL
-  getEnv("DB_URL"),
+  DB_URL,
   maxConnections = 95,
   timeout = 30,
   shouldDisplayLog = true,
