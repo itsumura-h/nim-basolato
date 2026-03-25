@@ -12,7 +12,7 @@ const tripleQuote = "\"\"\""
 const templateDirs = [
   "app",
   "app/data_stores",
-  "app/data_stores/queries",
+  "app/data_stores/dao",
   "app/data_stores/repositories",
   "app/http",
   "app/http/controllers",
@@ -33,6 +33,7 @@ const templateDirs = [
   "app/models/dto",
   "app/models/vo",
   "app/usecases",
+  "app/presenters",
   "config",
   "database",
   "database/migrations",
@@ -50,8 +51,8 @@ const templateDirs = [
 ]
 
 
-const templateFiles: array[46, TemplateFile] = [
-  (".gitignore", """
+const
+  template_gitignore = """
 # Binaries
 *
 !*.*
@@ -72,8 +73,8 @@ lcov.info
 *.db
 *.db.*
 startServer.sh
-"""),
-  ("app/README.md", """
+"""
+  template_README_md = """
 Di Container
 ===
 Di Container provide repository implement of Interface. Passing the dependency of the Repository to the Service through the Di Container prevents the Service and Repository from becoming tightly coupled.
@@ -100,18 +101,18 @@ let di* = newDiContainer()
 ```
 
 In this example, `Repository Interface` call `UserRdbRepository` by resolving as `userRepository`.
-"""),
-  ("app/data_stores/queries/README.md", """
-Query Services
+"""
+  template_data_stores_dao_README_md = """
+DAO - Data Access Object
 ===
 
-The query service is used to retrieve data from the outside. It returns a JsonNode.
+The DAO is used to retrieve data from the outside. It returns a DTO.
 
-The query service exists in units of use cases and executes complex queries to the database across multiple aggregates.
+The DAO exists in units of use cases and executes complex queries to the database across multiple aggregates.
 
 Not only RDBs, but also external API access and NoSQL are implemented here.
-"""),
-  ("app/data_stores/repositories/README.md", """
+"""
+  template_data_stores_repositories_README_md = """
 Repositories
 ===
 Repository is a functions to instantiate and persisted `aggregate` model to access file or extrnal web API.  
@@ -157,8 +158,8 @@ implements UserRepository, IUserRepository:
   proc delete*(self:UserRdbRepository, user:User):Future[void] {.async.}
     await rdb.table("users").delete(user.id.get)
 ```
-"""),
-  ("app/di_container.nim", """
+"""
+  template_di_container_nim = """
 type DiContainer* = tuple
 
 proc newDiContainer():DiContainer =
@@ -166,8 +167,8 @@ proc newDiContainer():DiContainer =
   )
 
 let di* = newDiContainer()
-"""),
-  ("app/http/controllers/README.md", """
+"""
+  template_http_controllers_README_md = """
 Controllers
 ===
 Accepts input and converts it to commands for the model or view.
@@ -179,8 +180,8 @@ The duty of Controller is
 - To catch and handle exception
 - To order response object
 - To return response data
-"""),
-  ("app/http/controllers/welcome_controller.nim", """
+"""
+  template_http_controllers_welcome_controller_nim = """
 import std/asyncdispatch
 import std/json
 # framework
@@ -197,8 +198,8 @@ proc index*(context:Context):Future[Response] {.async.} =
 
 proc indexApi*(context:Context):Future[Response] {.async.} =
   return render(%*{"message": "Basolato " & BasolatoVersion})
-"""),
-  ("app/http/middlewares/README.md", """
+"""
+  template_http_middlewares_README_md = """
 Middleware
 ===
 This directory contains your application middleware.  
@@ -208,8 +209,8 @@ Middleware have to be this interface
 ```nim
 proc (c:Context, p:Params):Future[Response]
 ```
-"""),
-  ("app/http/middlewares/session_middleware.nim", """
+"""
+  template_http_middlewares_session_middleware_nim = """
 import std/asyncdispatch
 import basolato/middleware
 
@@ -233,8 +234,8 @@ proc sessionFromCookie*(c:Context):Future[Response] {.async.} =
     let cookies = createNewSessionHelper(c).await
     return next().setCookie(cookies)
     # return errorRedirect("/signin").setCookie(cookies)
-"""),
-  ("app/http/middlewares/set_headers_middleware.nim", """
+"""
+  template_http_middlewares_set_headers_middleware_nim = """
 import std/asyncdispatch
 import std/httpcore
 import basolato/middleware
@@ -284,33 +285,389 @@ proc setSecureHeaders*(c:Context):Future[Response] {.async.} =
     "Pragma": @["no-cache"],
   }.newHttpHeaders()
   return next(status=Http204, headers=headers)
-"""),
-  ("app/http/views/README.md", """
-Views
+"""
+  template_http_views_README_md = """Views
 ===
-This directory follows a `components / layouts / pages / templates` split.
 
-## layouts
-Shared wrappers and page chrome live here.
+All views are located inside this directory.
+Views are HTML files or Nim template views.
+
+## Architecture
+
+Basolato follows the **Page → Presenter → ViewModel → Template** pattern for request-local, immutable view data.
+
+```
+HTTP Request
+    ↓
+Page (pages/*.nim)
+    ↓ (extract HTTP context, prepare display data)
+Presenter (presenters/*.nim)
+    ↓ (convert domain/business data to view-friendly format)
+ViewModel (presenters/*_viewmodel.nim)
+    ↓ (immutable view model, passed to template)
+Template (templates/*.nim)
+    ↓ (render HTML using ViewModel)
+HTTP Response
+```
+
+## Directory Structure
+
+### pages/
+Entry points for HTTP routes. Responsibilities:
+- Extract request parameters and validation errors
+- Get session/authentication state
+- Call Presenter to build ViewModel
+- Pass ViewModel to Template
+
+**Example:**
+```nim
+proc loginPage*(): Future[Component] {.async.} =
+  let context = context()
+  let (params, errors) = context.getParamsWithErrorsList().await
+  let isLogin = context.isLogin().await
+  let name = context.session.get("name").await
+  
+  let vm = LoginPageViewModel.new(isLogin, name, params, errors)
+  return loginTemplate(vm)
+```
+
+### presenters/
+Convert business/domain data into view-friendly ViewModels.
+
+**Responsibilities:**
+- Transform raw HTTP/domain data into ViewModel
+- Prepare display-specific fields (e.g., formatted dates, computed flags)
+- Hide internal details; expose only what Template needs
+- Keep ViewModel immutable and request-local
+
+**Structure:**
+- `presenters/<page_name>/<page_name>_viewmodel.nim`: ViewModel definition
+- `presenters/<page_name>/<page_name>_presenter.nim`: Presenter logic (optional)
+
+**Example:**
+```nim
+# presenters/login/login_page_viewmodel.nim
+type LoginPageViewModel* = object
+  isLogin*: bool
+  name*: string
+  formParams*: Params
+  formErrors*: seq[string]
+```
+
+### templates/
+Render HTML using the provided ViewModel. **Do not** query context or session directly.
+
+**Responsibilities:**
+- Accept ViewModel as parameter
+- Render HTML based on ViewModel data
+- Use view helpers (csrfToken, old, etc.) via ViewModel or imported functions
+- Remain pure rendering logic with minimal business logic
+
+**Example:**
+```nim
+proc loginTemplate*(vm: LoginPageViewModel): Component =
+  let formParams = vm.formParams
+  let formErrors = vm.formErrors
+  let isLogin = vm.isLogin
+  
+  tmpl""" & tripleQuote & """
+    <form>
+      $if formErrors.len > 0{
+        <ul>
+          $for error in formErrors{
+            <li>$(error)</li>
+          }
+        </ul>
+      }
+      <input type="text" name="name" value="$(formParams.old("name"))">
+      <button type="submit">Login</button>
+    </form>
+  """ & tripleQuote & """
+```
+
+### layouts/
+Shared layout structure for multiple pages.
+
+**Responsibilities:**
+- Define page frame (head, body, common header/footer)
+- Provide layout models for consistent structure
+- Support nested layouts
+
+### components/
+Reusable UI components within pages.
+
+**Responsibilities:**
+- Encapsulate recurring UI patterns
+- Accept minimal input (use ViewModel for complex data)
+- Avoid stateful behavior
+
+## Guidelines
+
+### ViewModel Design
+
+- **Single responsibility**: One ViewModel per page/screen
+- **Immutable**: Treat ViewModels as read-only after creation
+- **Minimal**: Include only data needed for rendering
+- **Flat or light hierarchy**: Avoid deep nesting; use sub-objects for clarity (e.g., `auth`, `form`, `flash`)
+
+**Anti-pattern (too many arguments):**
+```nim
+proc template(title: string, errors: seq[string], userName: string, isLogin: bool, ...): Component
+```
+
+**Better pattern (single ViewModel):**
+```nim
+type PageViewModel = object
+  title*: string
+  errors*: seq[string]
+  auth*: AuthModel
+  form*: FormModel
+
+proc template(vm: PageViewModel): Component
+```
+
+### Data Flow
+
+1. **Page**: HTTP entry point, orchestrate data gathering
+2. **Presenter**: Transform domain data into display format
+3. **ViewModel**: Immutable container for view data
+4. **Template**: Pure rendering based on ViewModel
+
+**Don't:**
+- Call `context()` from Template
+- Mutate ViewModel after creation
+- Pass large domain objects directly to Template
+- Store request data in global state (signals)
+
+### Deprecation
+
+Signal-based state sharing is **deprecated**. See `signals/DEPRECATION.md` for migration guide.
+
+## layoutes
+This directory is used to locate files which are component parts.
 
 ## pages
-Page-level entry points live here and assemble templates into a complete view.
+This directory is used to locate files which are page's unique content.
+"""
+  template_http_views_components_README_md = """Components
+===
 
-## templates
-Reusable body fragments and render units live here.
+This directory contains small reusable UI fragments.
+Use components for markup that is shared across pages or templates and does not need to know about request-local state.
+"""
+  template_app_presenters_README_md = """
+Presenters
+==========
 
-## components
-Small pure UI pieces live here when a fragment needs to be shared across templates.
-"""),
-  ("app/http/views/components/README.md", "Components\n===\n\nThis directory contains small reusable UI fragments.\nUse components for markup that is shared across pages or templates and does not need to know about request-local state.\n"),
-  ("app/http/views/layouts/app/app_layout_model.nim", "import ../head/head_layout_model\n\n\ntype AppLayoutModel* = object\n  headLayoutModel*: HeadLayoutModel\n\n\nproc new*(_: type AppLayoutModel, pageTitle: string): AppLayoutModel =\n  let headLayoutModel = HeadLayoutModel.new(pageTitle)\n  return AppLayoutModel(headLayoutModel: headLayoutModel)\n"),
-  ("app/http/views/layouts/app/app_layout.nim", "import basolato/view\nimport ./app_layout_model\nimport ../head/head_layout\nimport ../footer/footer_layout\n\n\nproc appLayout*(model: AppLayoutModel, body: Component): Component =\n  tmpl" & tripleQuote & "\n    <!DOCTYPE html>\n    <html lang=\"en\">\n      $(headLayout(model.headLayoutModel))\n    <body>\n      $(body)\n      $(footerLayout())\n    </body>\n    </html>\n  " & tripleQuote & "\n"),
-  ("app/http/views/layouts/footer/footer_layout.nim", "import basolato/view\n\n\nproc footerLayout*(): Component =\n  let style = styleTmpl(Css, " & tripleQuote & "\n    <style>\n      .footer {\n        background-color: gray;\n        color: white;\n        padding: 8px;\n      }\n    </style>\n  " & tripleQuote & ")\n  \n  tmpl" & tripleQuote & "\n    $(style)\n    <footer class=\"$(style.element(\"footer\"))\">\n      <div>\n        <p>Basolato sample application</p>\n      </div>\n    </footer>\n  " & tripleQuote & "\n"),
-  ("app/http/views/layouts/head/head_layout_model.nim", "type HeadLayoutModel* = object\n  title*: string\n\n\nproc new*(_: type HeadLayoutModel, title: string): HeadLayoutModel =\n  return HeadLayoutModel(title: \"Basolato - \" & title)\n"),
-  ("app/http/views/layouts/head/head_layout.nim", "import basolato/view\nimport ./head_layout_model\n\n\nproc headLayout*(model: HeadLayoutModel): Component =\n  # https://html5doctor.com/html-5-reset-stylesheet/\n  let destyle = styleTmpl(Css, " & tripleQuote & "\n    <style>\n      html, body {\n          margin:0;\n          padding:0;\n          border:0;\n          outline:0;\n          font-size:100%;\n          vertical-align:baseline;\n          background:transparent;\n      }\n    </style>\n  " & tripleQuote & ")\n\n  tmpl" & tripleQuote & "\n    <head>\n      <meta charset=\"UTF-8\">\n      <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n      $(destyle)\n      <title>$(model.title)</title>\n    </head>\n  " & tripleQuote & "\n"),
-  ("app/http/views/pages/welcome/welcome_page.nim", "import basolato/view\nimport ../../layouts/app/app_layout\nimport ../../layouts/app/app_layout_model\nimport ../../layouts/head/head_layout_model\nimport ../../templates/welcome/welcome_template\n\n\nproc welcomePage*(name: string): Component =\n  let body = welcomeTemplate(name)\n  let appLayoutModel = AppLayoutModel.new(\"Welcome page\")\n  return appLayout(appLayoutModel, body)\n"),
-  ("app/http/views/templates/welcome/welcome_template.nim", "import basolato/view\n\n\nproc welcomeTemplate*(name: string): Component =\n  let style = styleTmpl(Css, " & tripleQuote & "\n    <style>\n      body {\n        background-color: black;\n      }\n\n      .title {\n        color: goldenrod;\n        text-align: center;\n      }\n\n      .topImage {\n        background-color: gray;\n        text-align: center;\n      }\n\n      .goldFont {\n        color: goldenrod;\n      }\n\n      .whiteFont {\n        color: silver;\n      }\n    </style>\n  " & tripleQuote & ")\n\n  tmpl" & tripleQuote & "\n    $(style)\n    <link rel=\"stylesheet\" href=\"http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/styles/dracula.min.css\">\n    <script src=\"http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/highlight.min.js\"></script>\n    <div>\n      <article>\n        <section>\n          <h1 class=\"$(style.element(\"title\"))\">Nim $(name) is successfully running!!!</h1>\n          <div class=\"$(style.element(\"topImage\"))\">\n            <img\n              src=\"/basolato.svg\"\n              alt=\"nim-logo\"\n              style=\"height: 40vh\"\n            >\n          </div>\n        </section>\n      </article>\n      <article>\n        <section>\n          <h2 class=\"$(style.element(\"goldFont\"))\">\n            Full-stack Web Framewrok for Nim\n          </h2>\n          <p class=\"$(style.element(\"whiteFont\"))\">\n            <i>—utilitas, firmitas et venustas (utility, strength and beauty)— by De architectura / Marcus Vitruvius Pollio</i>\n          </p>\n          <div class=\"$(style.element(\"whiteFont\"))\">\n            <ul>\n              <li>Easy syntax as Python thanks to Nim</li>\n              <li>Develop as easy as Ruby on Rails</li>\n              <li>Stably structure as Symfony(PHP)</li>\n              <li>Including easy query builder as Laravel(PHP)</li>\n              <li>Run fast and light as Go and Rust</li>\n              <li>This is the fastest full-stack web framework in the world</li>\n            </ul>\n          </div>\n        </section>\n      </article>\n    </div>\n  " & tripleQuote & "\n"),
-  ("app/models/README.md", """
+This directory contains helpers that transform request or business data into view-friendly models.
+
+## Responsibilities
+
+- Convert `Context`, DTOs, and small domain results into page or component view models
+- Keep transformation logic that would otherwise be duplicated in templates
+- Return immutable `ViewModel` or `ComponentModel` values
+- Stay request-local, side-effect free, and easy to test
+
+## Usage
+
+- Place page-specific presenters under `presenters/<page>/`
+- Define `new*` or `invoke*` as the entry point
+- Use presenters from pages or template-model construction code
+- Keep presenters free from DB access and HTML rendering
+"""
+  template_http_views_layouts_app_app_layout_model_nim = """import ../head/head_layout_model
+
+
+type AppLayoutModel* = object
+  headLayoutModel*:HeadLayoutModel
+
+proc new*(_:type AppLayoutModel, headLayoutModel:HeadLayoutModel):AppLayoutModel =
+  return AppLayoutModel(headLayoutModel:headLayoutModel)
+"""
+  template_http_views_layouts_app_app_layout_nim = """import ../../../../../../../src/basolato/view
+import ../head/head_layout
+import ./app_layout_model
+
+
+proc appLayout*(appLayoutModel:AppLayoutModel, body:Component):Component =
+  tmpl""" & tripleQuote & """
+    <!DOCTYPE html>
+    <html lang="en">
+      $(headLayout(appLayoutModel.headLayoutModel))
+    <body>
+      $(body)
+    </body>
+    </html>
+  """ & tripleQuote & """
+"""
+  template_http_views_layouts_footer_footer_layout_nim = """import basolato/view
+
+
+proc footerLayout*():Component =
+  tmpl""" & tripleQuote & """
+    <footer>
+      <div class="container">
+        <a href="/" class="logo-font">conduit</a>
+        <span class="attribution">
+          An interactive learning project from <a href="https://thinkster.io">Thinkster</a>. Code & design licensed under MIT.
+        </span>
+      </div>
+    </footer>
+  """ & tripleQuote & """
+"""
+  template_http_views_layouts_head_head_layout_model_nim = """type HeadLayoutModel* = object
+  title*:string
+
+proc new*(_:type HeadLayoutModel, title:string):HeadLayoutModel =
+  return HeadLayoutModel(title:title)
+"""
+  template_http_views_layouts_head_head_layout_nim = """import ../../../../../../../src/basolato/view
+import ./head_layout_model
+
+
+proc headLayout*(model:HeadLayoutModel):Component =
+  tmpl""" & tripleQuote & """
+    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta charset="UTF-8">
+      <title>$(model.title)</title>
+      <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+      <script type="module">
+        import hotwiredTurbo from "https://cdn.skypack.dev/@hotwired/turbo@7";
+      </script>
+    </head>
+  """ & tripleQuote & """
+"""
+  template_http_views_pages_welcome_welcome_page_nim = """import std/asyncdispatch
+import ../../../../../../../src/basolato/view
+import ../../presenters/welcome/welcome_page_viewmodel
+import ../../templates/welcome/welcome_template
+
+
+proc welcomePageView*(context: Context):Future[Component] {.async.} =
+  let vm = WelcomePageViewModel.new()
+  let page = welcomeTemplate(vm)
+  return page
+"""
+  template_http_views_templates_welcome_welcome_template_nim = """import ../../../../../../../src/basolato/view
+import ../../presenters/welcome/welcome_page_viewmodel
+
+
+proc welcomeTemplate*(vm: WelcomePageViewModel): Component =
+  let style = styleTmpl(Css, """ & tripleQuote & """
+    <style>
+      body {
+        background-color: black;
+      }
+
+      article {
+        margin: 16px;
+      }
+
+      .title {
+        color: goldenrod;
+        text-align: center;
+      }
+
+      .topImage {
+        background-color: gray;
+        text-align: center;
+      }
+
+      .goldFont {
+        color: goldenrod;
+      }
+
+      .whiteFont {
+        color: silver;
+      }
+
+      .ulLink li {
+        margin: 8px;
+      }
+
+      .ulLink li a {
+        color: skyblue;
+      }
+
+      .architecture {
+        padding: 10px
+      }
+
+      .architecture h2 {
+        color: goldenrod;
+      }
+
+      .components {
+        display:flex;
+      }
+
+      .discription {
+        width: 50vw;
+      }
+
+      .discription h3 {
+        color: goldenrod;
+      }
+
+      .discription p {
+        color: white;
+      }
+
+      .sourceCode {
+        width: 50vw
+      }
+
+      .sourceCode p {
+        color: white;
+        margin-bottom: 0;
+      }
+
+      .sourceCode pre {
+        margin-top: 0;
+      }
+    </style>
+  """ & tripleQuote & """)
+
+  tmpl""" & tripleQuote & """
+    $(style)
+    <link rel="stylesheet" href="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/styles/dracula.min.css">
+    <script src="http://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/highlight.min.js"></script>
+    <article>
+      <section>
+        <h1 class="$(style.element("title"))">Nim $(vm.title) is successfully running!!!</h1>
+        <div class="$(style.element("topImage"))">
+          <img
+            src="/basolato.svg"
+            alt="nim-logo"
+            style="height: 40vh"
+          >
+        </div>
+      </section>
+    </article>
+    <article>
+      <section>
+        <h2 class="$(style.element("goldFont"))">
+          Full-stack Web Framewrok for Nim
+        </h2>
+        <p class="$(style.element("whiteFont"))">
+          <i>—utilitas, firmitas et venustas (utility, strength and beauty)— by De architectura / Marcus Vitruvius Pollio</i>
+        </p>
+        <div class="$(style.element("whiteFont"))">
+          <ul>
+            <li>Easy syntax as Python thanks to Nim</li>
+            <li>Develop as easy as Ruby on Rails</li>
+            <li>Stably structure as Symfony(PHP)</li>
+            <li>Including easy query builder as Laravel(PHP)</li>
+            <li>Run fast and light as Go and Rust</li>
+            <li>This is the fastest full-stack web framework in the world</li>
+          </ul>
+        </div>
+      </section>
+    </article>
+  """ & tripleQuote & """
+"""
+  template_models_README_md = """
 Domain Model
 ===
 
@@ -381,8 +738,8 @@ type IUserRepository* = tuple
   save: proc(user:User):Future[void]
   delete: proc(user:User):Future[void]
 ```
-"""),
-  ("app/models/aggregates/README.md", """
+"""
+  template_models_aggregates_README_md = """
 Aggregates
 ===
 
@@ -421,9 +778,9 @@ An aggregate represents one business boundary and keeps the rules that must rema
 - View-oriented data
 - Request-local `Context`
 - JSON assembly
-"""),
-  ("app/models/dto/README.md", """
-DTO
+"""
+  template_models_dto_README_md = """
+DTO - Data Transfer Object
 ===
 
 This directory contains read-side data transfer types.
@@ -459,8 +816,8 @@ Each DTO defines the shape of data returned for a page, a list, a detail view, o
 - Domain rule validation
 - DB mutation logic
 - `Context`-dependent access
-"""),
-  ("app/models/vo/README.md", """
+"""
+  template_models_vo_README_md = """
 Value Objects
 ===
 
@@ -503,8 +860,8 @@ Use it to avoid passing raw `string` or `int` values around when the value carri
 - DTO
 - View-specific formatting
 - Request-local data
-"""),
-  ("app/usecases/README.md", """
+"""
+  template_usecases_README_md = """
 Usecases
 ===
 
@@ -547,8 +904,8 @@ proc run*(self:SigninUsecase, email, password:string):Future[JsonNode] {.async.}
   else:
     raise newException(Exception, errorMsg)
 ```
-"""),
-  ("config/database.nim", """
+"""
+  template_config_database_nim = """
 import std/strutils
 import allographer/connection
 
@@ -560,37 +917,37 @@ let rdb* = dbOpen(
   timeout = 30,
   shouldDisplayLog = true,
 )
-"""),
-  ("database/develop.sh", """
+"""
+  template_database_develop_sh = """
 # This file is executed from the root directory of the project.
 nim c -d:reset --threads:off ./database/migrations/migrate.nim
 nim c --threads:off ./database/seeders/develop
 
 ./database/migrations/migrate
 ./database/seeders/develop
-"""),
-  ("database/staging.sh", """
+"""
+  template_database_staging_sh = """
 # This file is executed from the root directory of the project.
 nim c -d:reset --threads:off ./database/migrations/migrate.nim
 nim c --threads:off ./database/seeders/staging
 
 ./database/migrations/migrate
 ./database/seeders/staging
-"""),
-  ("database/production.sh", """
+"""
+  template_database_production_sh = """
 # This file is executed from the root directory of the project.
 nim c -d:reset --threads:off ./database/migrations/migrate.nim
 nim c --threads:off ./database/seeders/production
 
 ./database/migrations/migrate
 ./database/seeders/production
-"""),
-  ("database/migrations/README.md", """
+"""
+  template_database_migrations_README_md = """
 Migrations
 ===
 Migrations are Database table difinition.
-"""),
-  ("database/migrations/data/create_sample_table.nim", """
+"""
+  template_database_migrations_data_create_sample_table_nim = """
 import std/json
 import allographer/schema_builder
 from ../../../config/database import rdb
@@ -602,8 +959,8 @@ proc createSampleTable*() =
       Column.string("name"),
     ])
   ])
-"""),
-  ("database/migrations/migrate.nim", """
+"""
+  template_database_migrations_migrate_nim = """
 import std/asyncdispatch
 import allographer/schema_builder
 from ../../config/database import rdb
@@ -614,21 +971,21 @@ proc main() =
 
 main()
 rdb.createSchema().waitFor()
-"""),
-  ("database/schema.nim", """
+"""
+  template_database_schema_nim = """
 import std/json
 
 type SampleTable* = object
   ## sample
   id*: int
   name*: string
-"""),
-  ("database/seeders/README.md", """
+"""
+  template_database_seeders_README_md = """
 Seeders
 ===
 Seeders is used to create default data of database.
-"""),
-  ("database/seeders/data/sample_seeder.nim", """
+"""
+  template_database_seeders_data_sample_seeder_nim = """
 import std/asyncdispatch
 import std/json
 import std/strformat
@@ -644,8 +1001,8 @@ proc sampleSeeder*() {.async.} =
         "name": &"sample{i}"
       })
     rdb.table("sample").insert(data).await
-"""),
-  ("database/seeders/develop.nim", """
+"""
+  template_database_seeders_develop_nim = """
 import std/asyncdispatch
 import ./data/sample_seeder
 
@@ -653,8 +1010,8 @@ proc main() {.async.} =
   sampleSeeder().await
 
 main().waitFor()
-"""),
-  ("database/seeders/production.nim", """
+"""
+  template_database_seeders_production_nim = """
 import std/asyncdispatch
 
 
@@ -662,8 +1019,8 @@ proc main() {.async.} =
   discard
 
 main().waitFor()
-"""),
-  ("database/seeders/staging.nim", """
+"""
+  template_database_seeders_staging_nim = """
 import std/asyncdispatch
 
 
@@ -671,8 +1028,8 @@ proc main() {.async.} =
   discard
 
 main().waitFor()
-"""),
-  ("main.nim", """
+"""
+  template_main_nim = """
 # framework
 import basolato
 # middleware
@@ -701,8 +1058,8 @@ let routes = @[
 let settings = Settings.new()
 
 serve(routes, settings)
-"""),
-  ("public/basolato.svg", """
+"""
+  template_public_basolato_svg = """
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
               "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
@@ -760,9 +1117,9 @@ serve(routes, settings)
              486.06,298.48 485.91,198.61 485.91,198.61
              485.91,198.61 250.55,63.70 250.55,63.70 Z" />
 </svg>
-"""),
-  ("public/favicon.ico", ""),
-  ("resources/lang/en/validation.json", """
+"""
+  template_public_favicon_ico = ""
+  template_resources_lang_en_validation_json = """
 {
   "accepted": "The :attribute must be accepted.",
   "after": "The :attribute must be a date after :date.",
@@ -859,8 +1216,8 @@ serve(routes, settings)
   "url": "The :attribute format is invalid.",
   "uuid": "The :attribute must be a valid UUID."
 }
-"""),
-  ("resources/lang/ja/validation.json", """
+"""
+  template_resources_lang_ja_validation_json = """
 {
   "accepted": ":attributeを承認してください。",
   "after": ":attributeには、:dateより後の日付を指定してください。",
@@ -958,19 +1315,61 @@ serve(routes, settings)
   "url": ":attributeに正しい形式を指定してください。",
   "uuid": ":attributeに有効なUUIDを指定してください。"
 }
-"""),
-  ("tests/test_sample.nim", """
+"""
+  template_tests_test_sample_nim = """
 import std/unittest
 
 suite("sample"):
   test("sample test"):
     check true
-"""),
-  ("database/db.sqlite3", ""),
-  ("session.db", ""),
-  ("public/favicon.ico", ""),
-]
+"""
 
+const templateFiles: array[44, TemplateFile] = [
+  (".gitignore", template_gitignore),
+  ("app/README.md", template_README_md),
+  ("app/data_stores/dao/README.md", template_data_stores_dao_README_md),
+  ("app/data_stores/repositories/README.md", template_data_stores_repositories_README_md),
+  ("app/di_container.nim", template_di_container_nim),
+  ("app/http/controllers/README.md", template_http_controllers_README_md),
+  ("app/http/controllers/welcome_controller.nim", template_http_controllers_welcome_controller_nim),
+  ("app/http/middlewares/README.md", template_http_middlewares_README_md),
+  ("app/http/middlewares/session_middleware.nim", template_http_middlewares_session_middleware_nim),
+  ("app/http/middlewares/set_headers_middleware.nim", template_http_middlewares_set_headers_middleware_nim),
+  ("app/http/views/README.md", template_http_views_README_md),
+  ("app/http/views/components/README.md", template_http_views_components_README_md),
+  ("app/http/views/layouts/app/app_layout_model.nim", template_http_views_layouts_app_app_layout_model_nim),
+  ("app/http/views/layouts/app/app_layout.nim", template_http_views_layouts_app_app_layout_nim),
+  ("app/http/views/layouts/footer/footer_layout.nim", template_http_views_layouts_footer_footer_layout_nim),
+  ("app/http/views/layouts/head/head_layout_model.nim", template_http_views_layouts_head_head_layout_model_nim),
+  ("app/http/views/layouts/head/head_layout.nim", template_http_views_layouts_head_head_layout_nim),
+  ("app/http/views/pages/welcome/welcome_page.nim", template_http_views_pages_welcome_welcome_page_nim),
+  ("app/http/views/templates/welcome/welcome_template.nim", template_http_views_templates_welcome_welcome_template_nim),
+  ("app/presenters/README.md", template_app_presenters_README_md),
+  ("app/models/README.md", template_models_README_md),
+  ("app/models/aggregates/README.md", template_models_aggregates_README_md),
+  ("app/models/dto/README.md", template_models_dto_README_md),
+  ("app/models/vo/README.md", template_models_vo_README_md),
+  ("app/usecases/README.md", template_usecases_README_md),
+  ("config/database.nim", template_config_database_nim),
+  ("database/develop.sh", template_database_develop_sh),
+  ("database/staging.sh", template_database_staging_sh),
+  ("database/production.sh", template_database_production_sh),
+  ("database/migrations/README.md", template_database_migrations_README_md),
+  ("database/migrations/data/create_sample_table.nim", template_database_migrations_data_create_sample_table_nim),
+  ("database/migrations/migrate.nim", template_database_migrations_migrate_nim),
+  ("database/schema.nim", template_database_schema_nim),
+  ("database/seeders/README.md", template_database_seeders_README_md),
+  ("database/seeders/data/sample_seeder.nim", template_database_seeders_data_sample_seeder_nim),
+  ("database/seeders/develop.nim", template_database_seeders_develop_nim),
+  ("database/seeders/production.nim", template_database_seeders_production_nim),
+  ("database/seeders/staging.nim", template_database_seeders_staging_nim),
+  ("main.nim", template_main_nim),
+  ("public/basolato.svg", template_public_basolato_svg),
+  ("public/favicon.ico", template_public_favicon_ico),
+  ("resources/lang/en/validation.json", template_resources_lang_en_validation_json),
+  ("resources/lang/ja/validation.json", template_resources_lang_ja_validation_json),
+  ("tests/test_sample.nim", template_tests_test_sample_nim),
+]
 
 proc normalized(content: string): string =
   if content.len == 0:
