@@ -1,4 +1,4 @@
-import random, json, os, strutils, asyncdispatch
+import random, json, asyncdispatch
 import allographer/connection
 import allographer/schema_builder
 import allographer/query_builder
@@ -6,16 +6,16 @@ randomize()
 
 let rdb* = dbopen(
   PostgreSQL, # SQLite3 or MySQL or MariaDB or PostgreSQL
-  getEnv("DB_DATABASE"),
-  getEnv("DB_USER"),
-  getEnv("DB_PASSWORD"),
-  getEnv("DB_HOST"),
-  getEnv("DB_PORT").parseInt,
-  getEnv("DB_MAX_CONNECTION").parseInt,
-  getEnv("DB_TIMEOUT").parseInt,
-  getEnv("LOG_IS_DISPLAY").parseBool,
-  getEnv("LOG_IS_FILE").parseBool,
-  getEnv("LOG_DIR"),
+  "database",
+  "user",
+  "pass",
+  "postgreDb",
+  5432,
+  95,
+  30,
+  true,
+  false,
+  "",
 )
 
 rdb.create(

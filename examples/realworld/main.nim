@@ -72,6 +72,7 @@ let settings =
   else:
     Settings.new(
       host = "0.0.0.0",
+      sessionPath = "./session.db",
     )
 
 serve(routes, settings)

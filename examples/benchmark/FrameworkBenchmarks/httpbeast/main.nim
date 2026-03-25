@@ -1,12 +1,12 @@
 import std/asyncdispatch
 import std/cgi
-import std/db_postgres
 import std/json
 import std/options
 import std/random
 import std/strutils
 import std/strtabs
 import std/uri
+import db_connector/db_postgres
 import httpbeast
 
 

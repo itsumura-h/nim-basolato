@@ -1,8 +1,8 @@
 discard """
-  cmd: "nim c -d:test --putenv:SESSION_TYPE=redis --putenv:REDIS_HOST=redis --putenv:REDIS_PORT=6379 $file"
+  cmd: "nim c -d:test --putenv:SESSION_TYPE=redis --putenv:SESSION_PATH=redis:6379 $file"
 """
 
-# nim c -r -d:test --putenv:SESSION_TYPE=redis --putenv:REDIS_HOST=redis --putenv:REDIS_PORT=6379 ./security/test_redis_session_db.nim
+# nim c -r -d:test --putenv:SESSION_TYPE=redis --putenv:SESSION_PATH=redis:6379 ./security/test_redis_session_db.nim
 
 import std/unittest
 import std/asyncdispatch

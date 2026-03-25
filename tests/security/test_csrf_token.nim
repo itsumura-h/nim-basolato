@@ -2,7 +2,7 @@ discard """
   cmd: "nim c -d:test $file"
 """
 
-# nim c -r -d:test --putenv:SESSION_TYPE=file --putenv:SESSION_DB_PATH=./session.db ./security/test_csrf_token.nim
+# nim c -r -d:test --putenv:SESSION_TYPE=file --putenv:SESSION_PATH=./session.db ./security/test_csrf_token.nim
 
 import std/unittest
 import std/strutils

@@ -15,13 +15,13 @@ type JsonFileDb* = ref object
 proc new*(_:type JsonFileDb):Future[JsonFileDb] {.async.}=
   let id = genOid()
   let newRow = %*{"_id": $id}
-  if not fileExists(SESSION_DB_PATH):
+  if not fileExists(SESSION_PATH):
     # create file if not exists
-    var file = openAsync(SESSION_DB_PATH, fmWrite)
+    var file = openAsync(SESSION_PATH, fmWrite)
     file.write($newRow & "\n").await
     file.close()
   else:
-    var file = openAsync(SESSION_DB_PATH, fmAppend)
+    var file = openAsync(SESSION_PATH, fmAppend)
     file.write($newRow & "\n").await
     file.close()
   return JsonFileDb(id: $id, row: newRow)
@@ -30,14 +30,14 @@ proc new*(_:type JsonFileDb):Future[JsonFileDb] {.async.}=
 proc new*(_:type JsonFileDb, id:string):Future[JsonFileDb] {.async.}=
   var file:AsyncFile
   defer: file.close()
-  if not fileExists(SESSION_DB_PATH):
+  if not fileExists(SESSION_PATH):
     let newId = genOid()
     let newRow = %*{"_id": $newId}
-    file = openAsync(SESSION_DB_PATH, fmWrite)
+    file = openAsync(SESSION_PATH, fmWrite)
     file.write($newRow & "\n").await
     return JsonFileDb(id: $newId, row: newRow)
   else:
-    file = openAsync(SESSION_DB_PATH, fmRead)
+    file = openAsync(SESSION_PATH, fmRead)
     var content = file.readAll().await.splitLines()
     for i, row in content:
       let jsonRow = row.parseJson()
@@ -46,7 +46,7 @@ proc new*(_:type JsonFileDb, id:string):Future[JsonFileDb] {.async.}=
     # not match
     let id = genOid()
     let newRow = %*{"_id": id}
-    file = openAsync(SESSION_DB_PATH, fmWrite)
+    file = openAsync(SESSION_PATH, fmWrite)
     file.write($newRow & "\n").await
     return JsonFileDb(id: $id, row: newRow)
 
@@ -54,14 +54,14 @@ proc new*(_:type JsonFileDb, id:string):Future[JsonFileDb] {.async.}=
 proc search*(_:type JsonFileDb, key, value:string):Future[JsonFileDb] {.async.} =
   var file:AsyncFile
   defer: file.close()
-  if not fileExists(SESSION_DB_PATH):
+  if not fileExists(SESSION_PATH):
     let newId = genOid()
     let newRow = %*{"_id": $newId, key: value}
-    file = openAsync(SESSION_DB_PATH, fmWrite)
+    file = openAsync(SESSION_PATH, fmWrite)
     file.write($newRow & "\n").await
     return JsonFileDb(id: $newId, row: newRow)
   else:
-    file = openAsync(SESSION_DB_PATH, fmRead)
+    file = openAsync(SESSION_PATH, fmRead)
     var content = file.readAll().await.splitLines()
     for i, row in content[0..^2]:
       let jsonRow = row.parseJson()
@@ -71,16 +71,16 @@ proc search*(_:type JsonFileDb, key, value:string):Future[JsonFileDb] {.async.} 
     # not match
     let id = genOid()
     let newRow = %*{"_id": $id}
-    file = openAsync(SESSION_DB_PATH, fmAppend)
+    file = openAsync(SESSION_PATH, fmAppend)
     file.write($newRow & "\n").await
     return JsonFileDb(id: $id, row: newRow)
 
 
 proc checkSessionIdValid*(_:type JsonFileDb, key, value:string):Future[bool] {.async.} =
-  if not fileExists(SESSION_DB_PATH):
+  if not fileExists(SESSION_PATH):
     return false
   
-  let file = openAsync(SESSION_DB_PATH, fmRead)
+  let file = openAsync(SESSION_PATH, fmRead)
   var content = file.readAll().await.splitLines()
   file.close()
   for i, row in content[0..^2]:
@@ -117,7 +117,7 @@ proc delete*(self:JsonFileDb, key:string) =
 
 proc destroy*(self:JsonFileDb) {.async.} =
   self.row = newJObject()
-  var file = openAsync(SESSION_DB_PATH, fmRead)
+  var file = openAsync(SESSION_PATH, fmRead)
   defer: file.close()
   var content = file.readAll().await.splitLines()
   var position = 0
@@ -127,12 +127,12 @@ proc destroy*(self:JsonFileDb) {.async.} =
       position = i
       break
   content.delete(position)
-  file = openAsync(SESSION_DB_PATH, fmWrite)
+  file = openAsync(SESSION_PATH, fmWrite)
   file.write(content.join("\n")).await
 
 
 proc sync*(self:JsonFileDb) {.async.} =
-  var file = openAsync(SESSION_DB_PATH, fmRead)
+  var file = openAsync(SESSION_PATH, fmRead)
   defer: file.close()
   var content = file.readAll().await.splitLines()
   var position = 0
@@ -142,5 +142,5 @@ proc sync*(self:JsonFileDb) {.async.} =
       position = i
       break
   content[position] = $self.row
-  file = openAsync(SESSION_DB_PATH, fmWrite)
+  file = openAsync(SESSION_PATH, fmWrite)
   file.write(content.join("\n")).await

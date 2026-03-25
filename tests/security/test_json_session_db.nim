@@ -1,8 +1,8 @@
 discard """
-  cmd: "nim c -d:test --putenv:SESSION_DB_PATH=./session.db $options $file"
+  cmd: "nim c -d:test --putenv:SESSION_PATH=./session.db $options $file"
 """
 
-# nim c -r -d:test --putenv:SESSION_DB_PATH=./session.db ./security/test_json_session_db.nim
+# nim c -r -d:test --putenv:SESSION_PATH=./session.db ./security/test_json_session_db.nim
 
 import std/unittest
 import std/asyncdispatch
@@ -11,8 +11,8 @@ import std/json
 import ../../src/basolato/core/settings
 import ../../src/basolato/core/security/session_db/json_session_db
 
-echo "SESSION_DB_PATH: ",SESSION_DB_PATH
-removeFile(SESSION_DB_PATH)
+echo "SESSION_PATH: ",SESSION_PATH
+removeFile(SESSION_PATH)
 
 suite("json session db"):
   var token:string

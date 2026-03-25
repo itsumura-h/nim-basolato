@@ -1,8 +1,8 @@
 discard """
-  cmd: "nim c -d:test --putenv:SESSION_TYPE=file --putenv:SESSION_DB_PATH=./server/session.db $file"
+  cmd: "nim c -d:test --putenv:SESSION_TYPE=file --putenv:SESSION_PATH=./server/session.db $file"
 """
 
-# nim c -r -d:test --putenv:SESSION_TYPE=file --putenv:SESSION_DB_PATH=./server/session.db test_response.nim
+# nim c -r -d:test --putenv:SESSION_TYPE=file --putenv:SESSION_PATH=./server/session.db test_response.nim
 
 import std/asyncdispatch
 import std/httpclient

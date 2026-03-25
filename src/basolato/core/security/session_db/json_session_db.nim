@@ -14,12 +14,17 @@ type JsonSessionDb* = object
   db:JsonFileDb
 
 
+proc ensureSessionPathParentDir() =
+  let parentDir = SESSION_PATH.parentDir()
+  if parentDir.len > 0 and parentDir != "." and not dirExists(parentDir):
+    createDir(parentDir)
+
+
 proc new*(_:type JsonSessionDb, sessionId=""):Future[JsonSessionDb] {.async.} =
   ## create JsonSessionDb
   ## 
   ## if sessionId is not exists, create new one
-  if not dirExists(SESSION_DB_PATH.parentDir()):
-    createDir(SESSION_DB_PATH.parentDir())
+  ensureSessionPathParentDir()
 
   let db = JsonFileDb.search("session_id", sessionId).await
   if sessionId.len == 0 or not db.hasKey("session_id"):
