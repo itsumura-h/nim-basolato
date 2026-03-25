@@ -103,8 +103,8 @@ proc getToken*(self:ContextSession):Future[string] {.async.} =
   return await self.sessionOpt.getToken()
 
 
-proc updateCsrfToken*(self:ContextSession) {.async.} =
-  await self.sessionOpt.updateCsrfToken()
+proc updateCsrfToken*(self:ContextSession):Future[string] {.async.} =
+  return await self.sessionOpt.updateCsrfToken()
 
 
 proc destroy*(self:ContextSession) {.async.} =
@@ -115,8 +115,10 @@ proc getToken*(self:Context):Future[string]{.async.} =
   return await self.session.getToken()
 
 
-proc updateCsrfToken*(self:Context) {.async.} =
-  await self.session.updateCsrfToken()
+proc updateCsrfToken*(self:Context):Future[string] {.async.} =
+  let csrfToken = await self.session.updateCsrfToken()
+  self.csrfToken = CsrfToken.new(csrfToken)
+  return csrfToken
 
 
 proc login*(self:Context){.async.} =

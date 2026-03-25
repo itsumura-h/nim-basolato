@@ -38,15 +38,24 @@ proc sessionFromCookie*(c:Context, p:Params):Future[Response] {.async.} =
       fromUnix(0)
   let current = now().toTime()
   if c.request.httpMethod == HttpGet and ( current > expire ):
-    await c.session.updateCsrfToken()
+    let csrfToken = await c.updateCsrfToken()
     let newExpire = createExpire()
     await c.session.set("csrf_expire", $newExpire)
-  else:
-    globalCsrfToken = await c.session.get("csrf_token")
+    let newSessionId = await c.session.getToken()
+    let newPayload = %*{
+      "session_id": newSessionId,
+      "csrf_token": csrfToken,
+      "iat": now().toTime().toUnix(),
+      "exp": (now() + initTimeInterval(minutes=SESSION_TIME)).toTime().toUnix(),
+    }
+    let newSession = Jwt.encode($newPayload, settings.SECRET_KEY)
+    cookies.set("session", newSession, expire=timeForward(SESSION_TIME, Minutes))
+    return next().setCookie(cookies)
 
   let newSessionId = await c.session.getToken()
   let newPayload = %*{
     "session_id": newSessionId,
+    "csrf_token": c.getCsrfToken(),
     "iat": now().toTime().toUnix(),
     "exp": (now() + initTimeInterval(minutes=SESSION_TIME)).toTime().toUnix(),
   }

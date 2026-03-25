@@ -42,10 +42,11 @@ suite("session db"):
 
   test("updateCsrfToken"):
     let session = Session.new(token).waitFor()
-    session.updateCsrfToken().waitFor()
-    let csrfToken = globalCsrfToken
-    session.updateCsrfToken().waitFor()
-    check csrfToken != globalCsrfToken
+    let csrfToken = session.updateCsrfToken().waitFor()
+    check csrfToken.len == 100
+    check session.get("csrf_token").waitFor() == csrfToken
+    let nextCsrfToken = session.updateCsrfToken().waitFor()
+    check csrfToken != nextCsrfToken
 
   test("delete"):
     let session = Session.new(token).waitFor()

@@ -97,24 +97,25 @@ proc sessionFromCookieHelper*(c:Context):Future[Cookies] {.async.} =
   let sessionOpt = Session.new(sessionId).await
   await c.setSession(sessionOpt.get())
   
-  if c.request.httpMethod == HttpGet:
-    await c.session.updateCsrfToken()
-  
-  c.setCsrfToken(globalCsrfToken)
+  let csrfToken =
+    if c.request.httpMethod == HttpGet:
+      await c.updateCsrfToken()
+    else:
+      c.getCsrfToken()
 
   let newSessionId = await c.session.getToken()
   let newPayload = 
     if SESSION_TIME > 0:
       %*{
         "session_id": newSessionId,
-        "csrf_token": globalCsrfToken,
+        "csrf_token": csrfToken,
         "iat": now().toTime().toUnix(),
         "exp": timeForward(SESSION_TIME, Minutes).toTime().toUnix(),
       }
     else:
       %*{
         "session_id": newSessionId,
-        "csrf_token": globalCsrfToken,
+        "csrf_token": csrfToken,
         "iat": now().toTime().toUnix(),
         "exp": timeForward(1, Years).toTime().toUnix(),
       }
@@ -132,23 +133,21 @@ proc createNewSessionHelper*(context:Context):Future[Cookies] {.async.} =
   let session = Session.new().await
   # セッションを context にセットしてからアップデート
   await context.setSession(session.get())
-  await context.session.updateCsrfToken()
-  context.setCsrfToken(globalCsrfToken)
-  echo "DEBUG middleware: Created new session with CSRF token: ", globalCsrfToken.len, " bytes"
+  let csrfToken = await context.updateCsrfToken()
   let newExpire = createExpire()
   await context.session.set("csrf_expire", $newExpire)
   let payload =
     if SESSION_TIME > 0:
       %*{
         "session_id": await context.session.getToken(),
-        "csrf_token": globalCsrfToken,
+        "csrf_token": csrfToken,
         "iat": now().toTime().toUnix(),
         "exp": timeForward(SESSION_TIME, Minutes).toTime().toUnix(),
       }
     else:
       %*{
         "session_id": await context.session.getToken(),
-        "csrf_token": globalCsrfToken,
+        "csrf_token": csrfToken,
         "iat": now().toTime().toUnix(),
         "exp": timeForward(1, Years).toTime().toUnix(),
       }

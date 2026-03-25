@@ -63,6 +63,7 @@ jwt
 - リクエストスコープのセキュリティコンテキスト
 - `Request`、`Params`、`Option[Session]` を内部保持する
 - `context.session` は `ContextSession` を返し、セッション値ストアへの低レベル操作（`get` `set` `isSome` `delete` `getToken` `updateCsrfToken` `destroy`）を提供する。利用者は `Option[Session]` を意識しない
+- `context.updateCsrfToken` はセッション上の CSRF トークンを再生成し、その値を Context にも保持する
 - `login` `logout` `isLogin` `setFlash` `getFlash` など、認証・フラッシュ・バリデーションエラー表示といった高レベル操作は `Context` 直下に残す
 - `globalContext` を通じたグローバル参照口も提供する
 
@@ -71,7 +72,7 @@ jwt
 - セッションオブジェクト本体
 - 実データ保存先は `SessionDb` に委譲し、自身は薄いラッパーとして動作する
 - `set/get/delete/destroy` などのセッション操作を提供する
-- CSRF 用のグローバルトークン `globalCsrfToken` を保持し、更新処理も担当する
+- CSRF トークンをセッション内で更新し、生成した値を呼び出し側へ返す
 
 ### `session_db.nim`
 
