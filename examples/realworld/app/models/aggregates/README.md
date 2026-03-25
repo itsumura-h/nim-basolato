@@ -1,25 +1,25 @@
 Aggregates
 ===
 
-This directory contains the **write-side domain models**.
-Each aggregate represents one business boundary and owns the rules that must stay consistent inside that boundary.
+This directory contains the write-side domain models.
+An aggregate represents one business boundary and keeps the rules that must remain consistent inside that boundary.
 
 ## Responsibilities
 
-- Represent business-meaningful state for one domain boundary
-- Enforce invariants, validation, and state transitions close to the model
+- Model business state for one boundary
+- Enforce invariants and state transitions close to the model
 - Keep construction logic such as IDs, timestamps, and defaults inside `new`
-- Separate persisted state from input-ready state when that improves clarity
-- Define the persistence boundary through repository interfaces
-- Move rules that do not belong inside the aggregate to a `service`
+- Separate persistence concerns from domain behavior
+- Expose repository interfaces for loading and saving
+- Move cross-aggregate coordination to a service when needed
 
 ## Implementation Guidelines
 
 - Use `vo` types for business values
-- Collect all values needed for creation into a dedicated input or draft type when the constructor would otherwise become too large
-- Initialize values such as `now().utc()`, UUIDs, and hashes inside `new`
-- Put the entity type in `*_entity.nim`
-- Put create/read/update contracts in `*_repository_interface.nim`
+- Gather creation inputs into a dedicated draft or parameter object when the constructor would otherwise become too large
+- Initialize generated values such as timestamps, IDs, and hashes inside `new`
+- Put entity definitions in `*_entity.nim`
+- Put repository contracts in `*_repository_interface.nim`
 - Put cross-aggregate rules in `*_service.nim` when needed
 - Keep file names aligned with the aggregate name
 
@@ -33,6 +33,6 @@ Each aggregate represents one business boundary and owns the rules that must sta
 
 - SQL
 - DAO
-- view-oriented data
-- request-local `Context`
+- View-oriented data
+- Request-local `Context`
 - JSON assembly

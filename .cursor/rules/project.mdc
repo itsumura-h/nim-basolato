@@ -164,6 +164,12 @@ MPA の View は原則として `Page -> Template` の流れで構成する。Te
 `Page` は request-local な文脈（context）を受け取る入口であり、Template(context) を呼び出して body を取得し、レイアウトと組み合わせてフル HTML を組み立てる。
 
 [NFW-VIEW-002][MUST][manual]
+`GET` で呼ばれる controller は `XxxPage`、`http/views/pages` 配下の UI entrypoint は `XxxPageView` と命名する。
+
+[NFW-VIEW-002][MUST][manual]
+Layout / Template / Component のデータ保持型は `XxxLayoutModel` / `XxxTemplateModel` / `XxxComponentModel` とし、`ViewModel` は概念名に留めて識別子には使わない。
+
+[NFW-VIEW-002][MUST][manual]
 参照系の Page は controller から呼び出される View の entrypoint とし、`GET` で取得した request-local な文脈を起点に、head、header、footer を含むフル HTML を組み立てなければならない。
 
 [NFW-VIEW-004][SHOULD][manual]

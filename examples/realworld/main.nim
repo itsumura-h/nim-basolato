@@ -29,7 +29,7 @@ let routes = @[
       Route.get("/your-feed", home_controller.homePage),
       Route.get("/tag/{tag:str}", home_controller.homePage),
 
-      Route.get("/article/{articleId:str}", article_controller.show),
+      Route.get("/article/{articleId:str}", article_controller.articlePage),
       
       Route.group("", @[
         Route.get("/editor", editor_controller.createPage),
@@ -49,8 +49,8 @@ let routes = @[
       ])
       .middleware(auth_middleware.loginRequired),
 
-      Route.get("/profile/{userId:str}", profile_controller.show),
-      Route.get("/profile/{userId:str}/favorite", profile_controller.favoriteShow),
+      Route.get("/profile/{userId:str}", profile_controller.profilePage),
+      Route.get("/profile/{userId:str}/favorite", profile_controller.favoritePage),
     ])
     .middleware(session_middleware.sessionFromCookie)
     .middleware(session_middleware.checkCsrfToken),

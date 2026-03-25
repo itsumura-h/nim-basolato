@@ -1,7 +1,7 @@
 import basolato/view
-import ./header_view_model
+import ./header_layout_model
 
-proc headerView*(viewModel:HeaderViewModel):Component =
+proc headerLayout*(layoutModel: HeaderLayoutModel): Component =
   tmpl"""
     <nav class="navbar navbar-light">
       <div class="container">
@@ -9,9 +9,9 @@ proc headerView*(viewModel:HeaderViewModel):Component =
         <ul class="nav navbar-nav pull-xs-right">
           <li class="nav-item">
             <!-- Add "active" class when you're on that page" -->
-            <a class="nav-link $if viewModel.pageUrl == "/"{active}" href="/">Home</a>
+            <a class="nav-link $if layoutModel.pageUrl == "/"{active}" href="/">Home</a>
           </li>
-          $if not viewModel.isLogin{
+          $if not layoutModel.isLogin{
             <li class="nav-item">
               <a class="nav-link" href="/login">Sign in</a>
             </li>

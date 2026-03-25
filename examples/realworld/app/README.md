@@ -10,9 +10,11 @@ RealWorld app architecture
 
 ## View レイヤの基本パターン
 
-- **Page → Template → Component** の順で依存します。Presenter は使いません。
+- **Controller → PageView → Layout → Template → Component** の順で依存します。Presenter は使いません。
+- **PageView は controller から呼ばれる描画入口**です。`XxxPageView*(context: Context): Future[Component]` の形で定義し、Layout と Template を合成してフル HTML を返します。
+- **Layout / Template / Component の model 名は粒度に合わせる**ようにします。`XxxLayoutModel`、`XxxTemplateModel`、`XxxComponentModel` を使います。
 - **Template の引数は `Context` のみ**です。Template は内部で `XxxTemplateModel.new(context)` を呼び、template model が context と必要な DAO から自己を組み立てます。
-- Template / Component は `context()` や `signal` などの共有状態に依存せず、Template は受け取った context から model を構築し、Component は model の一部（ComponentModel）だけを受け取って描画します。
+- Layout / Template / Component は `context()` や `signal` などの共有状態に依存せず、各 model を受け取って描画します。
 
 ### Page
 
@@ -25,8 +27,9 @@ RealWorld app architecture
 - 内部で `let model = await XxxTemplateModel.new(context)` を実行し、template model が context と DAO から自己を組み立てたうえで、その model を使って HTML を描画します。
 - データ取得の単位は Template です。必要な DAO の呼び出しと DTO→model の変換は、すべて対応する template model のコンストラクタに集約します。
 
-### Template Model
+### Layout Model / Template Model / Component Model
 
+- `proc new*(_: type XxxLayoutModel, context: Context): Future[XxxLayoutModel]` で、context と必要な DAO を使って自身を組み立てます。
 - `proc new*(_: type XxxTemplateModel, context: Context): Future[XxxTemplateModel]` で、context と必要な DAO を使って自身（および配下の component model）を組み立てます。
 - CSRF トークン、認証状態、flash、params などは context からここで解決し、model のフィールドとして Template に渡します。Template / Component は `Context` を直接参照しません。
 

@@ -171,15 +171,22 @@ let di* = newDiContainer()
   template_http_controllers_README_md = """
 Controllers
 ===
-Accepts input and converts it to commands for the model or view.
+Controllers receive requests and choose the response to return.
 
-The duty of Controller is
-- To receive request/URL paramator
-- validation check
-- To create Model instance and run it's method
-- To catch and handle exception
-- To order response object
-- To return response data
+## Naming
+
+- `GET` handlers that render HTML should be named `XxxPage`.
+- Those handlers should call `XxxPageView` in `http/views/pages`.
+- Action-style handlers for `POST`, `PUT`, `DELETE`, and similar routes may keep verb-oriented names.
+
+## Duties
+
+- Receive request and URL parameters
+- Perform validation checks
+- Create model instances or call usecases
+- Catch and handle exceptions
+- Select the response object
+- Return response data
 """
   template_http_controllers_welcome_controller_nim = """
 import std/asyncdispatch
@@ -289,165 +296,69 @@ proc setSecureHeaders*(c:Context):Future[Response] {.async.} =
   template_http_views_README_md = """Views
 ===
 
-All views are located inside this directory.
-Views are HTML files or Nim template views.
+All HTML rendering code lives in this directory.
 
 ## Architecture
 
-Basolato follows the **Page → Presenter → ViewModel → Template** pattern for request-local, immutable view data.
+Basolato uses the **Controller → Page → PageView → Layout → Template → Component** flow.
 
 ```
 HTTP Request
     ↓
-Page (pages/*.nim)
-    ↓ (extract HTTP context, prepare display data)
-Presenter (presenters/*.nim)
-    ↓ (convert domain/business data to view-friendly format)
-ViewModel (presenters/*_viewmodel.nim)
-    ↓ (immutable view model, passed to template)
-Template (templates/*.nim)
-    ↓ (render HTML using ViewModel)
+Controller
+    ↓
+Page (`XxxPage`)
+    ↓
+PageView (`pages/*.nim`)
+    ↓
+Layout (`layouts/*.nim`)
+    ↓
+Template (`templates/*.nim`)
+    ↓
+Component (`components/*.nim`)
 HTTP Response
 ```
+
+## Naming
+
+- `XxxPage` is the GET controller entrypoint name.
+- `XxxPageView` is the UI entrypoint under `pages/`.
+- `XxxLayoutModel`, `XxxTemplateModel`, and `XxxComponentModel` are the model names for each UI granularity.
+- `ViewModel` is a conceptual term only; do not use it as a symbol name.
 
 ## Directory Structure
 
 ### pages/
-Entry points for HTTP routes. Responsibilities:
-- Extract request parameters and validation errors
-- Get session/authentication state
-- Call Presenter to build ViewModel
-- Pass ViewModel to Template
-
-**Example:**
-```nim
-proc loginPage*(): Future[Component] {.async.} =
-  let context = context()
-  let (params, errors) = context.getParamsWithErrorsList().await
-  let isLogin = context.isLogin().await
-  let name = context.session.get("name").await
-  
-  let vm = LoginPageViewModel.new(isLogin, name, params, errors)
-  return loginTemplate(vm)
-```
-
-### presenters/
-Convert business/domain data into view-friendly ViewModels.
+HTTP entrypoints that compose layouts and templates.
 
 **Responsibilities:**
-- Transform raw HTTP/domain data into ViewModel
-- Prepare display-specific fields (e.g., formatted dates, computed flags)
-- Hide internal details; expose only what Template needs
-- Keep ViewModel immutable and request-local
-
-**Structure:**
-- `presenters/<page_name>/<page_name>_viewmodel.nim`: ViewModel definition
-- `presenters/<page_name>/<page_name>_presenter.nim`: Presenter logic (optional)
-
-**Example:**
-```nim
-# presenters/login/login_page_viewmodel.nim
-type LoginPageViewModel* = object
-  isLogin*: bool
-  name*: string
-  formParams*: Params
-  formErrors*: seq[string]
-```
-
-### templates/
-Render HTML using the provided ViewModel. **Do not** query context or session directly.
-
-**Responsibilities:**
-- Accept ViewModel as parameter
-- Render HTML based on ViewModel data
-- Use view helpers (csrfToken, old, etc.) via ViewModel or imported functions
-- Remain pure rendering logic with minimal business logic
-
-**Example:**
-```nim
-proc loginTemplate*(vm: LoginPageViewModel): Component =
-  let formParams = vm.formParams
-  let formErrors = vm.formErrors
-  let isLogin = vm.isLogin
-  
-  tmpl""" & tripleQuote & """
-    <form>
-      $if formErrors.len > 0{
-        <ul>
-          $for error in formErrors{
-            <li>$(error)</li>
-          }
-        </ul>
-      }
-      <input type="text" name="name" value="$(formParams.old("name"))">
-      <button type="submit">Login</button>
-    </form>
-  """ & tripleQuote & """
-```
+- Receive `Context`
+- Build page-level composition
+- Return a full HTML response
 
 ### layouts/
-Shared layout structure for multiple pages.
+Shared frame, head, header, footer, and other page chrome.
 
 **Responsibilities:**
-- Define page frame (head, body, common header/footer)
+- Define page frame
 - Provide layout models for consistent structure
 - Support nested layouts
 
+### templates/
+Render HTML for one UI boundary.
+
+**Responsibilities:**
+- Accept `Context` or a `TemplateModel`
+- Render HTML for one template boundary
+- Avoid direct access to global request state
+
 ### components/
-Reusable UI components within pages.
+Reusable UI fragments within pages or templates.
 
 **Responsibilities:**
 - Encapsulate recurring UI patterns
-- Accept minimal input (use ViewModel for complex data)
+- Accept minimal input, preferably a component model
 - Avoid stateful behavior
-
-## Guidelines
-
-### ViewModel Design
-
-- **Single responsibility**: One ViewModel per page/screen
-- **Immutable**: Treat ViewModels as read-only after creation
-- **Minimal**: Include only data needed for rendering
-- **Flat or light hierarchy**: Avoid deep nesting; use sub-objects for clarity (e.g., `auth`, `form`, `flash`)
-
-**Anti-pattern (too many arguments):**
-```nim
-proc template(title: string, errors: seq[string], userName: string, isLogin: bool, ...): Component
-```
-
-**Better pattern (single ViewModel):**
-```nim
-type PageViewModel = object
-  title*: string
-  errors*: seq[string]
-  auth*: AuthModel
-  form*: FormModel
-
-proc template(vm: PageViewModel): Component
-```
-
-### Data Flow
-
-1. **Page**: HTTP entry point, orchestrate data gathering
-2. **Presenter**: Transform domain data into display format
-3. **ViewModel**: Immutable container for view data
-4. **Template**: Pure rendering based on ViewModel
-
-**Don't:**
-- Call `context()` from Template
-- Mutate ViewModel after creation
-- Pass large domain objects directly to Template
-- Store request data in global state (signals)
-
-### Deprecation
-
-Signal-based state sharing is **deprecated**. See `signals/DEPRECATION.md` for migration guide.
-
-## layoutes
-This directory is used to locate files which are component parts.
-
-## pages
-This directory is used to locate files which are page's unique content.
 """
   template_http_views_components_README_md = """Components
 ===
@@ -459,13 +370,13 @@ Use components for markup that is shared across pages or templates and does not 
 Presenters
 ==========
 
-This directory contains helpers that transform request or business data into view-friendly models.
+This directory contains optional helpers that transform request or business data before it reaches page or view code.
 
 ## Responsibilities
 
-- Convert `Context`, DTOs, and small domain results into page or component view models
+- Convert `Context`, DTOs, and small domain results into `Page`, `LayoutModel`, `TemplateModel`, or `ComponentModel` friendly values
 - Keep transformation logic that would otherwise be duplicated in templates
-- Return immutable `ViewModel` or `ComponentModel` values
+- Return immutable model values named after the target UI granularity
 - Stay request-local, side-effect free, and easy to test
 
 ## Usage
@@ -474,6 +385,11 @@ This directory contains helpers that transform request or business data into vie
 - Define `new*` or `invoke*` as the entry point
 - Use presenters from pages or template-model construction code
 - Keep presenters free from DB access and HTML rendering
+
+## Naming
+
+- Do not use `ViewModel` in symbol names.
+- Prefer `Page`, `PageView`, `LayoutModel`, `TemplateModel`, and `ComponentModel`.
 """
   template_http_views_layouts_app_app_layout_model_nim = """import ../head/head_layout_model
 
@@ -790,7 +706,7 @@ Each DTO defines the shape of data returned for a page, a list, a detail view, o
 
 - Package results fetched from databases or external APIs into a UI-friendly shape
 - Represent retrieval results at the page or fragment level
-- Serve as the return type of read-side query objects and be passed to templates or presenters
+- Serve as the return type of read-side query objects and be passed to templates or the corresponding layout/template/component models
 - Keep the minimal transformation needed for display inside `new`
 - Stay focused on read-side composition and avoid business mutation rules
 

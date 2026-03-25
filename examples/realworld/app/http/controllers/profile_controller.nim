@@ -6,14 +6,14 @@ import ../views/templates/user_info/user_info_template_model
 import ../../usecases/follow_usecase
 
 
-proc show*(context:Context):Future[Response] {.async.} =
-  let view = profilePageView(context).await
-  return render(view)
+proc profilePage*(context:Context):Future[Response] {.async.} =
+  let page = profilePageView(context).await
+  return render(page)
 
 
-proc favoriteShow*(context:Context):Future[Response] {.async.} =
-  let view = profilePageView(context).await
-  return render(view)
+proc favoritePage*(context:Context):Future[Response] {.async.} =
+  let page = profilePageView(context).await
+  return render(page)
 
 
 proc followFromProfile*(context:Context):Future[Response] {.async.} =

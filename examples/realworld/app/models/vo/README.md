@@ -1,7 +1,7 @@
 Value Objects
 ===
 
-This directory contains **values with domain meaning**.
+This directory contains values with domain meaning.
 Use it to avoid passing raw `string` or `int` values around when the value carries business rules, identity, or intent.
 
 ## Responsibilities
@@ -39,4 +39,4 @@ Use it to avoid passing raw `string` or `int` values around when the value carri
 - DAO
 - DTO
 - View-specific formatting
-- request-local data
+- Request-local data

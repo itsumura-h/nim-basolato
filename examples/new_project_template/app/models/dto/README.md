@@ -8,7 +8,7 @@ Each DTO defines the shape of data returned for a page, a list, a detail view, o
 
 - Package results fetched from databases or external APIs into a UI-friendly shape
 - Represent retrieval results at the page or fragment level
-- Serve as the return type of read-side query objects and be passed to templates or presenters
+- Serve as the return type of read-side query objects and be passed to templates or the corresponding layout/template/component models
 - Keep the minimal transformation needed for display inside `new`
 - Stay focused on read-side composition and avoid business mutation rules
 
