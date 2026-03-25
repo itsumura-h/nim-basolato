@@ -98,6 +98,13 @@ proc destroy(self:RedisSessionDb):Future[void] {.async.} =
   discard self.conn.del(@[self.id]).await
 
 
+proc sessionExpireSeconds(): int =
+  ## `SESSION_TIME == 0` は「無期限扱い」の互換として 1 年に寄せる。
+  if SESSION_TIME > 0:
+    return SESSION_TIME * 60
+  return 60 * 60 * 24 * 365
+
+
 proc new*(_:type RedisSessionDb, sessionId=""):Future[RedisSessionDb] {.async.} =
   let sessionConfig = parseSessionPath()
   let id =
@@ -114,7 +121,7 @@ proc new*(_:type RedisSessionDb, sessionId=""):Future[RedisSessionDb] {.async.} 
     id:id,
   )
   sessionDb.setStr("session_id", id).await
-  discard conn.expire(id, SESSION_TIME * 60).await
+  discard conn.expire(id, sessionExpireSeconds()).await
   return sessionDb
 
 

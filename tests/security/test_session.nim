@@ -1,6 +1,6 @@
 discard """
   cmd: "nim c -d:test $file"
-  matrix: "--putenv:SESSION_TYPE=file --putenv:SESSION_PATH=./session.db; --putenv:SESSION_TYPE=redis --putenv:SESSION_PATH=redis:6379"
+  matrix: "--putenv:SESSION_TYPE=file --putenv:SESSION_PATH=./session.db; --putenv:SESSION_TYPE=redis --putenv:SESSION_PATH=redis:6379; --putenv:SESSION_TYPE=redis --putenv:SESSION_PATH=redis:6379 --putenv:SESSION_TIME=0"
 """
 
 # nim c -r -d:test --putenv:SESSION_TYPE=file --putenv:SESSION_PATH=./session.db ./security/test_session.nim
