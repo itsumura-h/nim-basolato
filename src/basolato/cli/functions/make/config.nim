@@ -26,17 +26,21 @@ putEnv("DB_SQLITE", $true) # "true" or "false"
 # putEnv("DB_MYSQL", $true) # "true" or "false"
 # putEnv("DB_MARIADB", $true) # "true" or "false"
 putEnv("SESSION_TYPE", "file") # "file" or "redis"
-putEnv("LIBSASS", $false) # "true" or "false"
+putEnv("USE_LIBSASS", $false) # "true" or "false"
 """
 
   createConfigCommon(baseDir, ".env"):
     &"""
 SECRET_KEY="{randStr(100)}"
+APP_ENV="develop"
+SERVICE_ENV="web-server"
 DB_URL="db.sqlite3"
 """
 
   createConfigCommon(baseDir, ".env.example"):
     &"""
 SECRET_KEY=""
+APP_ENV="develop"
+SERVICE_ENV="web-server"
 DB_URL="db.sqlite3"
 """

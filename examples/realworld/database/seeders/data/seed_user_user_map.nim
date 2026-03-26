@@ -3,7 +3,7 @@ import std/json
 import std/strutils
 import std/random
 import allographer/query_builder
-import ../schema
+import ../../schema
 
 type UserUserMap = object
   user_id: UserUserMapTable.user_id

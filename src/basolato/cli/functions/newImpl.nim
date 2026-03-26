@@ -36,7 +36,8 @@ const templateDirs = [
   "config",
   "database",
   "database/migrations",
-  "database/migrations/data",
+  "database/migrations/default",
+  "database/migrations/test",
   "database/seeders",
   "database/seeders/data",
   "public",
@@ -798,14 +799,13 @@ proc run*(self:SigninUsecase, email, password:string):Future[JsonNode] {.async.}
 ```
 """
   template_config_database_nim = """
-import std/os
-import std/strutils
 import allographer/connection
+import ./env
 
 
 let rdb* = dbOpen(
   Sqlite3, # SQLite3 or MySQL or MariaDB or PostgreSQL or SurrealDB
-  getEnv("DB_URL"),
+  DB_URL,
   maxConnections = 1,
   timeout = 30,
   shouldDisplayLog = true,
@@ -813,67 +813,147 @@ let rdb* = dbOpen(
   logDir = "./logs",
 )
 """
+  template_config_env_nim = """
+import std/strutils
+import basolato/core/env
+
+
+type AppEnvType* = enum
+  Test = "test",
+  Develop = "develop",
+  Staging = "staging",
+  Production = "production"
+
+func parseAppEnv*(raw: string): AppEnvType =
+  case raw.strip().toLowerAscii()
+  of "test":
+    AppEnvType.Test
+  of "develop":
+    AppEnvType.Develop
+  of "staging":
+    AppEnvType.Staging
+  of "production":
+    AppEnvType.Production
+  else:
+    raise newException(ValueError, "APP_ENV must be test|develop|staging|production")
+
+
+type ServiceEnvType* = enum
+  WebServer = "web-server"
+
+func parseServiceEnv*(raw: string): ServiceEnvType =
+  case raw.strip().toLowerAscii()
+  of "web-server":
+    ServiceEnvType.WebServer
+  else:
+    raise newException(ValueError, "SERVICE_ENV must be web-server")
+
+
+let APP_ENV* = parseAppEnv(optionalEnv("APP_ENV", "develop"))
+let SERVICE_ENV* = parseServiceEnv(optionalEnv("SERVICE_ENV", "web-server"))
+
+
+const defaultDbUrl = "postgresql://user:pass@postgreDb:5432/database"
+
+
+proc isRequiredEnv*(name: string): bool =
+  case SERVICE_ENV
+  of WebServer:
+    case APP_ENV
+    of Test:
+      name in ["DB_URL"]
+    of Develop, Staging, Production:
+      name in ["DB_URL", "SECRET_KEY"]
+
+
+proc envValue(name:string, defaultValue: string=""): string =
+  ## Return the environment variable if it is defined, otherwise return the default value.
+  ## 
+  ## If the environment variable is required, raise an error if it is not defined.
+  ## 
+  ## If the environment variable is optional, return the default value if it is not defined.
+  if isRequiredEnv(name):
+    requireEnv(name)
+  else:
+    optionalEnv(name, defaultValue)
+
+
+let SECRET_KEY* = envValue("SECRET_KEY")
+let DB_URL* = envValue("DB_URL")
+"""
   template_database_develop_sh = """
 # This file is executed from the root directory of the project.
-nim c -d:reset --threads:off ./database/migrations/migrate.nim
-nim c --threads:off ./database/seeders/develop
-
-./database/migrations/migrate
-./database/seeders/develop
+nim c -r -d:reset ./database/migrations/default/migrate.nim
+nim c -r ./database/seeders/develop.nim
 """
   template_database_staging_sh = """
 # This file is executed from the root directory of the project.
-nim c -d:reset --threads:off ./database/migrations/migrate.nim
-nim c --threads:off ./database/seeders/staging
-
-./database/migrations/migrate
-./database/seeders/staging
+nim c -r ./database/migrations/default/migrate.nim
+nim c -r ./database/seeders/staging.nim
 """
   template_database_production_sh = """
 # This file is executed from the root directory of the project.
-nim c -d:reset --threads:off ./database/migrations/migrate.nim
-nim c --threads:off ./database/seeders/production
-
-./database/migrations/migrate
-./database/seeders/production
+nim c -r ./database/migrations/default/migrate.nim
+nim c -r ./database/seeders/production.nim
 """
   template_database_migrations_README_md = """
 Migrations
 ===
 Migrations are Database table difinition.
 """
-  template_database_migrations_data_create_sample_table_nim = """
-import std/json
+  template_database_migrations_default_migrate_nim = """
+import std/asyncdispatch
 import allographer/schema_builder
 from ../../../config/database import rdb
+import ./migration_001_create_table
 
-proc createSampleTable*() =
-  rdb.create([
+
+proc main*() =
+  createTable(rdb).waitFor()
+
+
+main()
+createSchema(rdb).waitFor()
+"""
+  template_database_migrations_default_migration_001_create_table_nim = """
+import std/asyncdispatch
+import allographer/query_builder
+import allographer/schema_builder
+
+
+proc createTable*[T](rdb: T) {.async.} =
+  rdb.create(
     table("sample", [
       Column.increments("id"),
       Column.string("name"),
-    ])
-  ])
+    ]),
+  )
 """
-  template_database_migrations_migrate_nim = """
+  template_database_migrations_test_migrate_nim = """
 import std/asyncdispatch
-import allographer/schema_builder
-from ../../config/database import rdb
-import ./data/create_sample_table
+from ../../../config/database import rdb
+import ./migration_001_create_table
 
-proc main() =
-  createSampleTable()
+
+proc main*() =
+  createTable(rdb).waitFor()
+
 
 main()
-rdb.createSchema().waitFor()
 """
-  template_database_schema_nim = """
-import std/json
+  template_database_migrations_test_migration_001_create_table_nim = """
+import std/asyncdispatch
+import allographer/query_builder
+import allographer/schema_builder
 
-type SampleTable* = object
-  ## sample
-  id*: int
-  name*: string
+
+proc createTable*[T](rdb: T) {.async.} =
+  rdb.create(
+    table("sample", [
+      Column.increments("id"),
+      Column.string("name"),
+    ]),
+  )
 """
   template_database_seeders_README_md = """
 Seeders
@@ -899,28 +979,36 @@ proc sampleSeeder*() {.async.} =
 """
   template_database_seeders_develop_nim = """
 import std/asyncdispatch
+import ../../config/env
 import ./data/sample_seeder
 
 proc main() {.async.} =
-  sampleSeeder().await
+  if APP_ENV == AppEnvType.Develop or APP_ENV == AppEnvType.Test:
+    sampleSeeder().await
 
 main().waitFor()
 """
   template_database_seeders_production_nim = """
 import std/asyncdispatch
+import ../../config/env
+import ./data/sample_seeder
 
 
 proc main() {.async.} =
-  discard
+  if APP_ENV == AppEnvType.Production:
+    sampleSeeder().await
 
 main().waitFor()
 """
   template_database_seeders_staging_nim = """
 import std/asyncdispatch
+import ../../config/env
+import ./data/sample_seeder
 
 
 proc main() {.async.} =
-  discard
+  if APP_ENV == AppEnvType.Staging:
+    sampleSeeder().await
 
 main().waitFor()
 """
@@ -1220,7 +1308,7 @@ suite("sample"):
     check true
 """
 
-const templateFiles: array[45, TemplateFile] = [
+const templateFiles: array[47, TemplateFile] = [
   (".gitignore", template_gitignore),
   ("app/README.md", template_README_md),
   ("app/data_stores/dao/README.md", template_data_stores_dao_README_md),
@@ -1247,14 +1335,16 @@ const templateFiles: array[45, TemplateFile] = [
   ("app/models/dto/README.md", template_models_dto_README_md),
   ("app/models/vo/README.md", template_models_vo_README_md),
   ("app/usecases/README.md", template_usecases_README_md),
+  ("config/env.nim", template_config_env_nim),
   ("config/database.nim", template_config_database_nim),
   ("database/develop.sh", template_database_develop_sh),
   ("database/staging.sh", template_database_staging_sh),
   ("database/production.sh", template_database_production_sh),
   ("database/migrations/README.md", template_database_migrations_README_md),
-  ("database/migrations/data/create_sample_table.nim", template_database_migrations_data_create_sample_table_nim),
-  ("database/migrations/migrate.nim", template_database_migrations_migrate_nim),
-  ("database/schema.nim", template_database_schema_nim),
+  ("database/migrations/default/migrate.nim", template_database_migrations_default_migrate_nim),
+  ("database/migrations/default/migration_001_create_table.nim", template_database_migrations_default_migration_001_create_table_nim),
+  ("database/migrations/test/migrate.nim", template_database_migrations_test_migrate_nim),
+  ("database/migrations/test/migration_001_create_table.nim", template_database_migrations_test_migration_001_create_table_nim),
   ("database/seeders/README.md", template_database_seeders_README_md),
   ("database/seeders/data/sample_seeder.nim", template_database_seeders_data_sample_seeder_nim),
   ("database/seeders/develop.nim", template_database_seeders_develop_nim),
@@ -1317,10 +1407,12 @@ task test, "run testament":
 
 
 proc writeEmptyPlaceholders(baseDir: string) =
-  setFilePermissions(
-    baseDir / "database/develop.sh",
-    {fpUserRead, fpUserWrite, fpUserExec, fpGroupRead, fpGroupExec, fpOthersRead, fpOthersExec}
-  )
+  for shFile in ["develop.sh", "staging.sh", "production.sh"]:
+    let shFilePath = baseDir / "database" / shFile
+    setFilePermissions(
+      shFilePath,
+      {fpUserRead, fpUserWrite, fpUserExec, fpGroupRead, fpGroupExec, fpOthersRead, fpOthersExec}
+    )
 
 
 proc create(dirPath, packageDir: string): int =

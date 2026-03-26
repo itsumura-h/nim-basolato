@@ -186,6 +186,7 @@ ducere build
 
 - [ducere CLI tool](./documents/en/ducere.md)
 - [Settings](./documents/en/settings.md)
+- [Environment helpers](./documents/en/env.md)
 - [Routing](./documents/en/routing.md)
 - [Controller](./documents/en/controller.md)
 - [Request](./documents/en/request.md)
@@ -206,6 +207,7 @@ ducere build
 
 - [ducere CLI tool](./documents/ja/ducere.md)
 - [設定](./documents/ja/settings.md)
+- [環境変数ヘルパー](./documents/ja/env.md)
 - [ルーティング](./documents/ja/routing.md)
 - [コントローラー](./documents/ja/controller.md)
 - [リクエスト](./documents/ja/request.md)

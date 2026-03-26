@@ -3,7 +3,7 @@ import std/json
 import std/strutils
 import allographer/query_builder
 import faker
-import ../schema
+import ../../schema
 
 
 type Favorite = object

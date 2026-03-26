@@ -1,4 +1,4 @@
-import ./consts
+import ../config/env
 # ==================== write ====================
 import ./models/aggregates/user/user_repository_interface
 import ./data_stores/repositories/user/user_repository
@@ -96,7 +96,7 @@ type DiContainer* = object
   userFavoriteArticleCountDao*: IUserArticleCountDao
 
 proc new(_:type DiContainer):DiContainer =
-  if APP_ENV == "test":
+  if APP_ENV == AppEnvType.Test:
     return DiContainer(
       # ==================== write ====================
       userRepository: MockUserRepository.new(),

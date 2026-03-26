@@ -1,7 +1,7 @@
 import std/asyncdispatch
 import std/sequtils
 import basolato/view
-import ../../../../consts
+import ../../../../../config/consts
 import ../../../../di_container
 import ../../../../models/dto/article_list/user_article_list_dao_interface
 import ../../../../models/dto/article_list/user_article_count_dao_interface

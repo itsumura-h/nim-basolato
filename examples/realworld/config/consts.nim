@@ -1,0 +1,2 @@
+const
+  FEED_DISPLAY_COUNT* = 10

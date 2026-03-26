@@ -7,9 +7,9 @@ import std/random
 import basolato/password
 import allographer/query_builder
 import faker
-import ./lib/random_text
-import ../../app/models/vo/user_id
-import ../schema
+import ../lib/random_text
+import ../../../app/models/vo/user_id
+import ../../schema
 
 
 type User = object
