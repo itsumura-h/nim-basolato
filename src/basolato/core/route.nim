@@ -417,23 +417,6 @@ func middleware*(self:Routes, middleware: Controller):Routes =
   return self
 
 
-proc params(request:Request, pathParams:Params=nil):Params =
-  let params = Params.new()
-  if not pathParams.isNil:
-    for k, v in pathParams.pairs:
-      params[k] = v
-  for k, v in getQueryParams(request).pairs:
-    params[k] = v
-
-  if request.headers.hasKey("Content-Type") and request.headers["Content-Type"].split(";")[0] == "application/json":
-    for k, v in getJsonParams(request).pairs:
-      params[k] = v
-  else:
-    for k, v in getRequestParams(request).pairs:
-      params[k] = v
-  return params
-
-
 proc runMiddleware(req:Request, context:Context, route:Route):Future[Response] {.async.} =
   var
     headers = newHttpHeaders(true)
@@ -468,8 +451,7 @@ proc createResponse*(
 ):Future[Response] {.async.} =
   ## run middleware -> run controller
   # {.cast(gcsafe).}: # fix: "which is a global using GC'ed memory" in server.nim
-  let params = req.params(pathParams)
-  let context = Context.new(req, params).await
+  let context = Context.new(req, pathParams).await
   setContext(context)
   let response1 = runMiddleware(req, context, route).await
   if httpMethod == HttpOptions:

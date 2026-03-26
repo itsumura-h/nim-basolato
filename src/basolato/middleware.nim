@@ -40,12 +40,16 @@ proc checkCsrfTokenForMpaHelper*(context:Context) {.async.} =
   if not context.params.hasKey("csrf_token"):
     raise newException(CatchableError, "csrf token is missing")
   let tokenFromParam = context.params.getStr("csrf_token")
-  
-  let jwtToken = Cookies.new(context.request).get("session")
-  let (jwtDecoded, jwtValid) = Jwt.decode(jwtToken, SECRET_KEY)
-  if not jwtValid:
-    raise newException(CatchableError, "Invalid jwt token")
-  let tokenFromJwt = jwtDecoded["csrf_token"].getStr()
+
+  let tokenFromJwt =
+    if context.decodedSessionJwt.isSome:
+      context.decodedSessionJwt.get["csrf_token"].getStr()
+    else:
+      let jwtToken = Cookies.new(context.request).get("session")
+      let (jwtDecoded, jwtValid) = Jwt.decode(jwtToken, SECRET_KEY)
+      if not jwtValid:
+        raise newException(CatchableError, "Invalid jwt token")
+      jwtDecoded["csrf_token"].getStr()
   
   if tokenFromParam != tokenFromJwt:
     raise newException(CatchableError, "Invalid csrf token")
@@ -63,12 +67,16 @@ proc checkCsrfTokenForApi*(context: Context) {.async.} =
   let tokenFromHeader = context.request.headers["X-CSRF-TOKEN"].toString()
   if tokenFromHeader == "":
     raise newException(CatchableError, "csrf token is missing in request headers")
-  
-  let jwtToken = Cookies.new(context.request).get("session")
-  let (jwtDecoded, jwtValid) = Jwt.decode(jwtToken, SECRET_KEY)
-  if not jwtValid:
-    raise newException(CatchableError, "Invalid jwt token")
-  let tokenFromJwt = jwtDecoded["csrf_token"].getStr()
+
+  let tokenFromJwt =
+    if context.decodedSessionJwt.isSome:
+      context.decodedSessionJwt.get["csrf_token"].getStr()
+    else:
+      let jwtToken = Cookies.new(context.request).get("session")
+      let (jwtDecoded, jwtValid) = Jwt.decode(jwtToken, SECRET_KEY)
+      if not jwtValid:
+        raise newException(CatchableError, "Invalid jwt token")
+      jwtDecoded["csrf_token"].getStr()
   
   if tokenFromHeader != tokenFromJwt:
     raise newException(CatchableError, "Invalid csrf token")
@@ -96,7 +104,8 @@ proc sessionFromCookieHelper*(c:Context):Future[Cookies] {.async.} =
 
   let sessionOpt = Session.new(sessionId).await
   await c.setSession(sessionOpt.get())
-  
+  c.setDecodedSessionJwt(sessionDecoded)
+
   let csrfToken =
     if c.request.httpMethod == HttpGet:
       await c.updateCsrfToken()

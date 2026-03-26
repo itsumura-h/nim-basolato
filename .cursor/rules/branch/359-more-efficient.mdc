@@ -1,0 +1,187 @@
+---
+description: 359-more-efficientブランチでの開発時に読み込む
+alwaysApply: false
+---
+359-more-efficient ブランチ：リクエスト処理の効率化
+===
+
+このブランチで実装することは以下の通りです。
+- ファイルロガー（`echoLog` / `echoErrorMsg`）の毎回生成・close を廃止し、常駐型またはバッファリング型に変更する
+- `createResponse` で毎回行っている全パラメータの eager パースを lazy パースに変更する
+- `sessionFromCookieHelper` の JWT デコード・セッション検証・CSRF 更新を最適化し、`getFlash` / `getErrorsObject` / `getParams` が引き起こす `getRows()` 全件走査を削減する
+
+## 進捗
+- [x] logger: ファイルロガーを常駐グローバル化する（`echoLog` / `echoErrorMsg`）
+- [x] params: `Params` の lazy パース化（`createResponse` 内の eager パースを廃止）
+- [x] session: `getRows()` 全件走査を個別 `hGet` / `hExists` 呼び出しに置き換える
+- [x] session: `sessionFromCookieHelper` の二重 JWT デコードを排除する
+- [x] テスト・動作確認（`test_request_validation` / `test_request_params` / `test_session` / `test_logger` ほか）
+
+## 参考資料
+- `src/basolato/core/logger.nim` — `echoLog`, `echoErrorMsg`
+- `src/basolato/core/route.nim` — `params()`, `createResponse()`, `runController()`
+- `src/basolato/core/params.nim` — `getRequestParams()`, `getQueryParams()`, `getJsonParams()`
+- `src/basolato/middleware.nim` — `sessionFromCookieHelper()`
+- `src/basolato/core/security/context.nim` — `getFlash()`, `getErrorsObject()`, `hasFlash()`
+- `src/basolato/core/security/session_db/redis_session_db.nim` — `getRows()` (hGetAll)
+- `src/basolato/core/security/session_db/json_session_db.nim` — `getRows()`
+
+## 調査結果・設計まとめ
+
+### 問題 1: ファイルロガーの毎回生成
+
+**現状**
+`echoLog` / `echoErrorMsg` は呼ばれるたびに `newRollingFileLogger` を生成し、ログを書いて即 `close` / `flush` する。
+マルチスレッド・非同期サーバーではリクエストごとにファイルオープン/クローズが発生するため I/O コストが高い。
+
+```nim
+# src/basolato/core/logger.nim (現状)
+proc echoLog*(output: auto) =
+  if LOG_TO_FILE:
+    let fileLogger = newRollingFileLogger(path, ...)  # 毎回生成
+    defer: fileLogger.file.close()                    # 毎回 close
+    fileLogger.log(lvlDebug, $output)
+    flushFile(fileLogger.file)                        # 毎回 flush
+```
+
+**改善方針**
+- `let fileLogger = newRollingFileLogger(...)` をモジュールトップレベルで一度だけ生成し、グローバル定数として保持する
+- `{.cast(gcsafe).}` ブロックで GC 安全性を担保（既存の `consoleLogger` と同じパターン）
+- `defer: close()` を廃止し、`flushFile` だけ残す（またはバッファリングに任せて書き込みごとの flush を省略し、定期 flush に切り替える）
+- `echoErrorMsg` の `errorLogger` も同様に常駐化する
+
+```nim
+# 改善後イメージ
+let consoleLogger = newConsoleLogger()
+let fileLogger    = newRollingFileLogger(LOG_DIR / "log.log", mode=fmAppend, fmtStr=verboseFmtStr)
+let errorLogger   = newRollingFileLogger(LOG_DIR / "error.log", mode=fmAppend, fmtStr=verboseFmtStr)
+
+proc echoLog*(output: auto) =
+  {.cast(gcsafe).}:
+    if LOG_TO_CONSOLE: consoleLogger.log(lvlDebug, $output)
+    if LOG_TO_FILE:
+      fileLogger.log(lvlDebug, $output)
+      flushFile(fileLogger.file)  # 必要なら残す
+```
+
+**注意点**
+- `LOG_TO_FILE` が false のときに不要なファイル生成を避けるため、`when` または `if` で条件付き初期化が必要
+- Nim の `newRollingFileLogger` はモジュール初期化時にファイルを開くため、`LOG_DIR` が設定された後に評価されるよう `settings` の読み込み順序を確認すること
+- マルチスレッドの場合は `{.threadvar.}` またはロック検討が必要だが、asyncdispatch シングルスレッドモデルなら問題なし
+
+---
+
+### 問題 2: params の eager パース
+
+**現状**
+`createResponse` の冒頭で `req.params(pathParams)` を必ず実行し、query / body (form / JSON / multipart) を全件パースして `Params` テーブルに展開する。
+コントローラーがパラメータを一切使わない場合でも、この I/O とメモリ割り当てが発生する。
+
+```nim
+# src/basolato/core/route.nim
+proc createResponse*(...) {.async.} =
+  let params = req.params(pathParams)   # 無条件に全パース
+  let context = Context.new(req, params).await
+```
+
+**改善方針**
+- `Context` に `request` と `pathParams` を raw で持たせ、`context.params` アクセス時に初めてパースする lazy 方式に変更する
+- `Params` の実体を `Option[Params]` または `ref` ＋ `wasComputed` フラグで管理し、初回アクセスで計算・キャッシュする
+
+```nim
+# 改善後の Context 型イメージ
+type Context* = ref object
+  request: Request
+  pathParams: Params          # path params のみ（小さいので eager でよい）
+  cachedParams: Option[Params]  # lazy: 初回 params アクセスで計算
+  sessionOpt: Option[Session]
+  csrfToken: CsrfToken
+  flashParamsCache: Option[Params]
+  flashErrorsCache: Option[JsonNode]
+
+proc params*(self: Context): Params =
+  if self.cachedParams.isNone:
+    self.cachedParams = some(buildParams(self.request, self.pathParams))
+  return self.cachedParams.get()
+```
+
+- `buildParams` は現在の `params()` proc の中身を移植する
+- ミドルウェアが `context.params` を参照する場合はそこで初めてパースが走る（問題なし）
+- `createResponse` では `Context.new(req, pathParams)` に変更し、全パースを遅延させる
+
+---
+
+### 問題 3: セッション処理の `getRows()` 全件走査
+
+**現状**
+`getFlash` / `hasFlash` / `getErrorsObject` はいずれも `sessionOpt.get.db.getRows()` を呼び、セッションの全フィールドを一括取得してから `flash_*` プレフィックスをフィルタリングする。
+
+- Redis の場合: `hGetAll(sessionId)` = セッションの全フィールドを返す O(N) コマンド
+- JSON の場合: ファイル全体を読み込んで走査
+
+セッションに大量のキーが蓄積されると走査コストが増大し、さらに `getFlash`・`hasFlash`・`getErrorsObject` が別々に呼ばれるたびに再走査する。
+
+```nim
+# src/basolato/core/security/context.nim (現状)
+proc getFlash*(self:Context):Future[JsonNode] {.async.} =
+  let rows = await self.sessionOpt.get.db.getRows()  # 毎回全件取得
+  for key, val in rows.pairs:
+    if key[0..5] == "flash_": ...
+
+proc hasFlash*(self:Context, key:string):Future[bool] {.async.} =
+  let rows = await self.sessionOpt.get.db.getRows()  # 別途また全件取得
+  ...
+```
+
+**改善方針 A（セッションキャッシュ）**
+`getRows()` の結果を `Context` の `sessionCache: Option[JsonNode]` フィールドにキャッシュし、同一リクエスト内では再取得しない。
+書き込み (`set` / `delete`) 時はキャッシュを無効化（または反映）する。
+
+```nim
+type Context* = ref object
+  ...
+  sessionCache: Option[JsonNode]  # 追加: getRows() の結果をキャッシュ
+
+proc getSessionRows(self: Context): Future[JsonNode] {.async.} =
+  if self.sessionCache.isNone:
+    self.sessionCache = some(await self.sessionOpt.get.db.getRows())
+  return self.sessionCache.get()
+```
+
+**改善方針 B（個別キー取得に切り替え）**
+`flash_errors` / `flash_*` のように既知のキーを検索する場合は `hExists` + `hGet` に直接置き換え、`hGetAll` を呼ばない。
+Redisの場合 `hExists` は O(1)、`hGet` も O(1) なのでセッション規模に依存しない。
+
+```nim
+proc getErrorsObject*(self:Context):Future[JsonNode] {.async.} =
+  if self.flashErrorsCache.isSome:
+    return self.flashErrorsCache.get()
+  if self.sessionOpt.isSome:
+    # hGetAll → hGet("flash_errors") に変更
+    let val = await self.sessionOpt.get.db.getStr("flash_errors")
+    if val.len > 0:
+      let json = val.parseJson()
+      await self.sessionOpt.delete("flash_errors")
+      self.flashErrorsCache = some(json)
+      return json
+  let empty = newJObject()
+  self.flashErrorsCache = some(empty)
+  return empty
+```
+
+**改善方針 C（`sessionFromCookieHelper` の二重 JWT デコード排除）**
+現状、`checkCsrfTokenForMpaHelper` と `checkCsrfTokenForApi` はミドルウェアとして独立しており、それぞれ `Jwt.decode` を行う。
+`sessionFromCookieHelper` でも同じ JWT を再デコードしている。
+→ デコード結果を Context に一時保存し、CSRF ミドルウェアは Context から読み取る形に統一する。
+（ただし、CSRF チェックはセッションミドルウェアより後に実行される前提で設計する）
+
+**採用方針**
+- 方針 A（キャッシュ）と方針 B（個別キー取得）を組み合わせて実装する
+  - `getFlash`（全 flash キーを返す）は方針 A のキャッシュを活用
+  - `getErrorsObject` / `hasFlash` のような既知キー参照は方針 B で個別取得を優先
+- 方針 C の JWT デコード重複は別途 Context に `decodedJwt` キャッシュフィールドを追加して対応するが、スコープに応じて後回しにしてもよい
+  - 実装: `sessionJwtPayload` + `setDecodedSessionJwt` / `decodedSessionJwt`。`sessionFromCookieHelper` がデコード後にセットし、CSRF ヘルパーが再利用する。
+
+### 補足（lazy Params とテスト）
+
+- `Request()` の `headers` が nil のまま `context.params` を初めて触ると `httpcore.hasKey` で落ちるため、`buildRequestParams` / `getRequestParams` で `headers.isNil` をガードした。
