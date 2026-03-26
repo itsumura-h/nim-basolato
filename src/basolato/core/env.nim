@@ -38,6 +38,7 @@ block:
 
 
 template requireEnv*(name: string): string =
+  ## Raise an error if the environment variable is not defined.
   block:
     let value = getEnv(name).strip()
     if value.len == 0:
@@ -46,6 +47,7 @@ template requireEnv*(name: string): string =
 
 
 template optionalEnv*(name: string, defaultValue: string): string =
+  ## Return the environment variable if it is defined, otherwise return the default value.
   block:
     let value = getEnv(name, defaultValue).strip()
     if value.len == 0:

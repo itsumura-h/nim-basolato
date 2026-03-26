@@ -8,6 +8,7 @@ Table of Contents
 * [Environment helpers](#environment-helpers)
    * [Introduction](#introduction)
    * [What `env.nim` does](#what-envnim-does)
+   * [AppEnv and ServiceEnv](#appenv-and-serviceenv)
    * [Available helpers](#available-helpers)
    * [Typical usage](#typical-usage)
    * [Testing notes](#testing-notes)
@@ -31,6 +32,13 @@ It provides these responsibilities:
 - Raise immediately when a required value is missing or malformed
 
 Application-specific modules can then expose typed values on top of it, as shown in [`examples/realworld/config/env.nim`](../../examples/realworld/config/env.nim).
+
+## AppEnv and ServiceEnv
+In Basolato, the required environment variables are decided by the combination of `APP_ENV` and `SERVICE_ENV`.
+
+`SERVICE_ENV` defaults to `web-server`. In `realworld`, the `web-server` runtime requires `DB_URL` and `SECRET_KEY` in normal environments, while `APP_ENV=test` can skip those requirements.
+
+If you add another entrypoint later, extend the same matrix instead of scattering `getEnv(...)` checks across the app.
 
 ## Available helpers
 The current helper set is small on purpose:
@@ -61,6 +69,9 @@ type AppEnvType* = enum
   Staging = "staging"
   Production = "production"
 
+type ServiceEnvType* = enum
+  WebServer = "web-server"
+
 func parseAppEnv*(raw: string): AppEnvType =
   case raw.strip().toLowerAscii()
   of "test":
@@ -74,9 +85,33 @@ func parseAppEnv*(raw: string): AppEnvType =
   else:
     raise newException(ValueError, "APP_ENV must be test|develop|staging|production")
 
+func parseServiceEnv*(raw: string): ServiceEnvType =
+  case raw.strip().toLowerAscii()
+  of "web-server":
+    ServiceEnvType.WebServer
+  else:
+    raise newException(ValueError, "SERVICE_ENV must be web-server")
+
 let APP_ENV* = parseAppEnv(optionalEnv("APP_ENV", "develop"))
-let SECRET_KEY* = requireEnv("SECRET_KEY")
-let DB_URL* = requireEnv("DB_URL")
+let SERVICE_ENV* = parseServiceEnv(optionalEnv("SERVICE_ENV", "web-server"))
+
+proc isRequiredEnv*(name: string): bool =
+  case SERVICE_ENV
+  of WebServer:
+    case APP_ENV
+    of Test:
+      false
+    of Develop, Staging, Production:
+      name in ["DB_URL", "SECRET_KEY"]
+
+proc envValue(name, defaultValue: string): string =
+  if isRequiredEnv(name):
+    requireEnv(name)
+  else:
+    optionalEnv(name, defaultValue)
+
+let SECRET_KEY* = envValue("SECRET_KEY", "")
+let DB_URL* = envValue("DB_URL", "postgresql://user:pass@postgreDb:5432/database")
 ```
 
 Then consume those values from application code:
@@ -102,4 +137,5 @@ When moving existing code to `env.nim`, prefer this order:
 1. Move required values that should fail at startup, such as `SECRET_KEY` and `DB_URL`
 2. Replace direct `getEnv(...)` calls with imports from the config env module
 3. Add typed parsers only where the value domain is constrained
-4. Keep optional defaults only when the default is genuinely safe
+4. Centralize requiredness with `APP_ENV × SERVICE_ENV`
+5. Keep optional defaults only when the default is genuinely safe

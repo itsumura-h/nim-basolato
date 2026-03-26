@@ -8,6 +8,7 @@
 * [環境変数ヘルパー](#環境変数ヘルパー)
    * [イントロダクション](#イントロダクション)
    * [`env.nim` の役割](#envnim-の役割)
+   * [AppEnv と ServiceEnv](#appenv-と-serviceenv)
    * [利用できるヘルパー](#利用できるヘルパー)
    * [典型的な使い方](#典型的な使い方)
    * [テスト時の注意](#テスト時の注意)
@@ -31,6 +32,13 @@
 - 必須値が未設定、または不正な値なら即座に例外で停止する
 
 アプリ固有の型付き値は、[`examples/realworld/config/env.nim`](../../examples/realworld/config/env.nim) のように config 層で定義します。
+
+## AppEnv と ServiceEnv
+Basolato では、`APP_ENV` と `SERVICE_ENV` の組み合わせで「どの環境変数が必須か」を決めます。
+
+`SERVICE_ENV` の既定値は `web-server` です。`realworld` では、`web-server` の通常起動時に `DB_URL` と `SECRET_KEY` を必須にし、`APP_ENV=test` では必須にしない形にしています。
+
+必要になったら、`SERVICE_ENV` の種類を増やして同じ表に追加してください。`batch` や `worker` のような別エントリポイントが増えても、必須判定を 1 箇所に集約できます。
 
 ## 利用できるヘルパー
 ヘルパーは必要最小限にしています。
@@ -61,6 +69,9 @@ type AppEnvType* = enum
   Staging = "staging"
   Production = "production"
 
+type ServiceEnvType* = enum
+  WebServer = "web-server"
+
 func parseAppEnv*(raw: string): AppEnvType =
   case raw.strip().toLowerAscii()
   of "test":
@@ -74,9 +85,33 @@ func parseAppEnv*(raw: string): AppEnvType =
   else:
     raise newException(ValueError, "APP_ENV must be test|develop|staging|production")
 
+func parseServiceEnv*(raw: string): ServiceEnvType =
+  case raw.strip().toLowerAscii()
+  of "web-server":
+    ServiceEnvType.WebServer
+  else:
+    raise newException(ValueError, "SERVICE_ENV must be web-server")
+
 let APP_ENV* = parseAppEnv(optionalEnv("APP_ENV", "develop"))
-let SECRET_KEY* = requireEnv("SECRET_KEY")
-let DB_URL* = requireEnv("DB_URL")
+let SERVICE_ENV* = parseServiceEnv(optionalEnv("SERVICE_ENV", "web-server"))
+
+proc isRequiredEnv*(name: string): bool =
+  case SERVICE_ENV
+  of WebServer:
+    case APP_ENV
+    of Test:
+      false
+    of Develop, Staging, Production:
+      name in ["DB_URL", "SECRET_KEY"]
+
+proc envValue(name, defaultValue: string): string =
+  if isRequiredEnv(name):
+    requireEnv(name)
+  else:
+    optionalEnv(name, defaultValue)
+
+let SECRET_KEY* = envValue("SECRET_KEY", "")
+let DB_URL* = envValue("DB_URL", "postgresql://user:pass@postgreDb:5432/database")
 ```
 
 アプリケーション側では、その公開値だけを使います。
@@ -102,4 +137,5 @@ let rdb* = dbopen(PostgreSQL, DB_URL)
 1. `SECRET_KEY` や `DB_URL` のような起動時必須値から移す
 2. 直接の `getEnv(...)` を config 層の import に置き換える
 3. 値の取り得る範囲が狭いものだけ typed parser を追加する
-4. default を置く場合は、本当に安全な値だけに限定する
+4. 必須判定は `APP_ENV × SERVICE_ENV` で config 層に集約する
+5. default を置く場合は、本当に安全な値だけに限定する

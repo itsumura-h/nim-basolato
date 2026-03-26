@@ -32,11 +32,15 @@ putEnv("USE_LIBSASS", $false) # "true" or "false"
   createConfigCommon(baseDir, ".env"):
     &"""
 SECRET_KEY="{randStr(100)}"
+APP_ENV="develop"
+SERVICE_ENV="web-server"
 DB_URL="db.sqlite3"
 """
 
   createConfigCommon(baseDir, ".env.example"):
     &"""
 SECRET_KEY=""
+APP_ENV="develop"
+SERVICE_ENV="web-server"
 DB_URL="db.sqlite3"
 """
