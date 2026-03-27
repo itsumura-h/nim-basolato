@@ -4,6 +4,10 @@ import std/httpcore
 import std/times
 import std/strformat
 
+const kDateHeaderFormat = initTimeFormat("ddd, dd MMM YYYY HH:mm:ss 'GMT'")
+
+var cachedDateHeaderStr {.threadvar.}: string
+var cachedDateEpochSec {.threadvar.}: int64
 
 func toTitleCase(s: string): string =
   result = newString(len(s))
@@ -31,8 +35,11 @@ func newHttpHeaders*(
 
 proc setDefaultHeaders*(self:HttpHeaders) =
   self.add("Server", &"Basolato/Nim")
-  let formatter = initTimeFormat("ddd, dd MMM YYYY HH:mm:ss 'GMT'")
-  self.add("Date",  now().format(formatter))
+  let nowSec = getTime().toUnix()
+  if nowSec != cachedDateEpochSec:
+    cachedDateEpochSec = nowSec
+    cachedDateHeaderStr = getTime().utc.format(kDateHeaderFormat)
+  self.add("Date", cachedDateHeaderStr)
   self.add("Connection", "Keep-Alive")
 
 func `==`*(a, b:HttpHeaders):bool =

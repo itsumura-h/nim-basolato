@@ -14,7 +14,7 @@ type RedisSessionDb* = object
   conn:AsyncRedis
   id: string
 
-var checkConn: AsyncRedis = nil
+var redisConn: AsyncRedis = nil
 
 
 proc parseSessionPath(): tuple[host: string, port: Port] =
@@ -34,14 +34,21 @@ proc parseSessionPath(): tuple[host: string, port: Port] =
     raise newException(ValueError, "SESSION_PATH port must be an integer: " & portStr)
 
 
-proc getCheckConn(): Future[AsyncRedis] {.async.} =
-  if checkConn.isNil:
+proc getRedisConn(): Future[AsyncRedis] {.async.} =
+  if redisConn.isNil:
     let sessionConfig = parseSessionPath()
-    checkConn = openAsync(sessionConfig.host, sessionConfig.port).await
-  return checkConn
+    redisConn = openAsync(sessionConfig.host, sessionConfig.port).await
+  else:
+    try:
+      discard await redisConn.ping()
+    except Exception:
+      redisConn = nil
+      let sessionConfig = parseSessionPath()
+      redisConn = openAsync(sessionConfig.host, sessionConfig.port).await
+  return redisConn
 
 proc checkSessionIdValid*(_:type RedisSessionDb, sessionId=""):Future[bool] {.async.} =
-  let conn = await getCheckConn()
+  let conn = await getRedisConn()
   if conn.exists(sessionId).await:
     return true
   else:
@@ -106,7 +113,6 @@ proc sessionExpireSeconds(): int =
 
 
 proc new*(_:type RedisSessionDb, sessionId=""):Future[RedisSessionDb] {.async.} =
-  let sessionConfig = parseSessionPath()
   let id =
     if sessionId.len == 0:
       secureRandStr(100)
@@ -115,7 +121,7 @@ proc new*(_:type RedisSessionDb, sessionId=""):Future[RedisSessionDb] {.async.} 
     else:
       sessionId
 
-  let conn = openAsync(sessionConfig.host, sessionConfig.port).await
+  let conn = getRedisConn().await
   let sessionDb = RedisSessionDb(
     conn:conn,
     id:id,

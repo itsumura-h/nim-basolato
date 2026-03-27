@@ -6,182 +6,274 @@ alwaysApply: false
 ===
 
 このブランチで実装することは以下の通りです。
-- ファイルロガー（`echoLog` / `echoErrorMsg`）の毎回生成・close を廃止し、常駐型またはバッファリング型に変更する
-- `createResponse` で毎回行っている全パラメータの eager パースを lazy パースに変更する
-- `sessionFromCookieHelper` の JWT デコード・セッション検証・CSRF 更新を最適化し、`getFlash` / `getErrorsObject` / `getParams` が引き起こす `getRows()` 全件走査を削減する
+- `Date` ヘッダーの 1 秒キャッシュによるフォーマットコスト削減
+- ルートマッチング時のパス分割 seq アロケーション削減
+- Redis セッション接続の共有コネクション化
 
 ## 進捗
-- [x] logger: ファイルロガーを常駐グローバル化する（`echoLog` / `echoErrorMsg`）
-- [x] params: `Params` の lazy パース化（`createResponse` 内の eager パースを廃止）
-- [x] session: `getRows()` 全件走査を個別 `hGet` / `hExists` 呼び出しに置き換える
-- [x] session: `sessionFromCookieHelper` の二重 JWT デコードを排除する
-- [x] テスト・動作確認（`test_request_validation` / `test_request_params` / `test_session` / `test_logger` ほか）
+- [x] Date ヘッダーの 1 秒キャッシュ実装（`header.nim`）
+- [x] パスマッチング時の seq アロケーション削減（`route.nim`）
+- [x] Redis セッション接続のプール／共有コネクション化（`redis_session_db.nim`）
 
 ## 参考資料
-- `src/basolato/core/logger.nim` — `echoLog`, `echoErrorMsg`
-- `src/basolato/core/route.nim` — `params()`, `createResponse()`, `runController()`
-- `src/basolato/core/params.nim` — `getRequestParams()`, `getQueryParams()`, `getJsonParams()`
-- `src/basolato/middleware.nim` — `sessionFromCookieHelper()`
-- `src/basolato/core/security/context.nim` — `getFlash()`, `getErrorsObject()`, `hasFlash()`
-- `src/basolato/core/security/session_db/redis_session_db.nim` — `getRows()` (hGetAll)
-- `src/basolato/core/security/session_db/json_session_db.nim` — `getRows()`
+- `src/basolato/core/header.nim`
+- `src/basolato/core/libservers/std/server.nim`
+- `src/basolato/core/route.nim`
+- `src/basolato/core/security/session_db/redis_session_db.nim`
 
 ## 調査結果・設計まとめ
 
-### 問題 1: ファイルロガーの毎回生成
+### 1. Date ヘッダーの 1 秒キャッシュ
 
-**現状**
-`echoLog` / `echoErrorMsg` は呼ばれるたびに `newRollingFileLogger` を生成し、ログを書いて即 `close` / `flush` する。
-マルチスレッド・非同期サーバーではリクエストごとにファイルオープン/クローズが発生するため I/O コストが高い。
+#### 現状（問題）
 
-```nim
-# src/basolato/core/logger.nim (現状)
-proc echoLog*(output: auto) =
-  if LOG_TO_FILE:
-    let fileLogger = newRollingFileLogger(path, ...)  # 毎回生成
-    defer: fileLogger.file.close()                    # 毎回 close
-    fileLogger.log(lvlDebug, $output)
-    flushFile(fileLogger.file)                        # 毎回 flush
-```
-
-**改善方針**
-- `let fileLogger = newRollingFileLogger(...)` をモジュールトップレベルで一度だけ生成し、グローバル定数として保持する
-- `{.cast(gcsafe).}` ブロックで GC 安全性を担保（既存の `consoleLogger` と同じパターン）
-- `defer: close()` を廃止し、`flushFile` だけ残す（またはバッファリングに任せて書き込みごとの flush を省略し、定期 flush に切り替える）
-- `echoErrorMsg` の `errorLogger` も同様に常駐化する
+`header.nim` の `setDefaultHeaders()` は全レスポンスで毎回呼ばれる（`server.nim` line 91）。
+その内部で `now().format(formatter)` を実行しており、`initTimeFormat` の呼び出しと文字列フォーマットが全リクエストで発生する。
 
 ```nim
-# 改善後イメージ
-let consoleLogger = newConsoleLogger()
-let fileLogger    = newRollingFileLogger(LOG_DIR / "log.log", mode=fmAppend, fmtStr=verboseFmtStr)
-let errorLogger   = newRollingFileLogger(LOG_DIR / "error.log", mode=fmAppend, fmtStr=verboseFmtStr)
-
-proc echoLog*(output: auto) =
-  {.cast(gcsafe).}:
-    if LOG_TO_CONSOLE: consoleLogger.log(lvlDebug, $output)
-    if LOG_TO_FILE:
-      fileLogger.log(lvlDebug, $output)
-      flushFile(fileLogger.file)  # 必要なら残す
+# header.nim:32-36 現状
+proc setDefaultHeaders*(self:HttpHeaders) =
+  self.add("Server", &"Basolato/Nim")
+  let formatter = initTimeFormat("ddd, dd MMM YYYY HH:mm:ss 'GMT'")
+  self.add("Date",  now().format(formatter))
+  self.add("Connection", "Keep-Alive")
 ```
 
-**注意点**
-- `LOG_TO_FILE` が false のときに不要なファイル生成を避けるため、`when` または `if` で条件付き初期化が必要
-- Nim の `newRollingFileLogger` はモジュール初期化時にファイルを開くため、`LOG_DIR` が設定された後に評価されるよう `settings` の読み込み順序を確認すること
-- マルチスレッドの場合は `{.threadvar.}` またはロック検討が必要だが、asyncdispatch シングルスレッドモデルなら問題なし
+HTTP `Date` ヘッダーは RFC 7231 により 1 秒粒度の UTC 時刻を表す。
+同一秒内のリクエストはすべて同じ文字列になるため、キャッシュが有効。
+
+#### 設計方針
+
+- モジュールレベルの `var` に「前回フォーマット済み文字列」と「前回のエポック秒」を保持する。
+- `setDefaultHeaders()` 呼び出し時に現在エポック秒を取得し、前回と同じなら保持済み文字列をそのまま使う。
+- 異なる場合のみ `format()` を実行してキャッシュを更新する。
+- `initTimeFormat` の呼び出しもモジュール初期化時に一度だけ行う（定数化）。
+
+```nim
+# 設計イメージ（header.nim）
+const kDateFormatter = initTimeFormat("ddd, dd MMM YYYY HH:mm:ss 'GMT'")
+
+var cachedDateStr = ""
+var cachedEpochSec: int64 = 0
+
+proc setDefaultHeaders*(self: HttpHeaders) =
+  self.add("Server", "Basolato/Nim")
+  let nowSec = getTime().toUnix()
+  if nowSec != cachedEpochSec:
+    cachedEpochSec = nowSec
+    cachedDateStr = now().utc.format(kDateFormatter)
+  self.add("Date", cachedDateStr)
+  self.add("Connection", "Keep-Alive")
+```
+
+#### 留意点
+
+- `asynchttpserver` のリクエスト `cb` は `{.gcsafe.}` 制約があるため、GC 文字列を保持するプロセスグローバル `var` だと `setDefaultHeaders` が gcsafe にならずコンパイルに失敗する。**実装では `cachedDateHeaderStr` / `cachedDateEpochSec` を `{.threadvar.}` にした**（標準の単一スレッド async では 1 秒キャッシュの効果は同等。マルチスレッドではスレッドごとにキャッシュが持たれる）。
+- `now()` は localtime を返すため、HTTP Date は `getTime().utc.format(...)` で UTC に統一した。
 
 ---
 
-### 問題 2: params の eager パース
+### 2. パスマッチング時の seq アロケーション削減
 
-**現状**
-`createResponse` の冒頭で `req.params(pathParams)` を必ず実行し、query / body (form / JSON / multipart) を全件パースして `Params` テーブルに展開する。
-コントローラーがパラメータを一切使わない場合でも、この I/O とメモリ割り当てが発生する。
+#### 現状（問題）
 
-```nim
-# src/basolato/core/route.nim
-proc createResponse*(...) {.async.} =
-  let params = req.params(pathParams)   # 無条件に全パース
-  let context = Context.new(req, params).await
-```
-
-**改善方針**
-- `Context` に `request` と `pathParams` を raw で持たせ、`context.params` アクセス時に初めてパースする lazy 方式に変更する
-- `Params` の実体を `Option[Params]` または `ref` ＋ `wasComputed` フラグで管理し、初回アクセスで計算・キャッシュする
+`route.nim` の `match()` proc（line 256）は毎リクエストで `splitPathSegments(path)` を呼ぶ（line 266）。
+`splitPathSegments` は `seq[string]` を生成し、`split("/")` がさらに substring を生成する。
+これが `matchNode` の再帰ループに渡され、ループ全体で数個〜十数個のヒープアロケーションが発生する。
 
 ```nim
-# 改善後の Context 型イメージ
-type Context* = ref object
-  request: Request
-  pathParams: Params          # path params のみ（小さいので eager でよい）
-  cachedParams: Option[Params]  # lazy: 初回 params アクセスで計算
-  sessionOpt: Option[Session]
-  csrfToken: CsrfToken
-  flashParamsCache: Option[Params]
-  flashErrorsCache: Option[JsonNode]
+# route.nim:128-139 現状
+func splitPathSegments(path:string):seq[string] =
+  let pathWithoutQuery = path.split("?")[0]   # allocation
+  ...
+  return normalizedPath.split("/")            # allocation
 
-proc params*(self: Context): Params =
-  if self.cachedParams.isNone:
-    self.cachedParams = some(buildParams(self.request, self.pathParams))
-  return self.cachedParams.get()
+# route.nim:256-277 現状
+proc match(...):RouteMatch =
+  ...
+  let segments = splitPathSegments(path)      # 毎リクエスト allocation
+  if not matchNode(matcher.root, httpMethod, segments, 0, capturedValues, routeEntry):
 ```
 
-- `buildParams` は現在の `params()` proc の中身を移植する
-- ミドルウェアが `context.params` を参照する場合はそこで初めてパースが走る（問題なし）
-- `createResponse` では `Context.new(req, pathParams)` に変更し、全パースを遅延させる
+既にトライ木（`RouteMatcherNode`）による構造は実装済みであり、
+ルート登録時のパース（`addMatcherEntry`）は起動時の一度だけなので問題ない。
+マッチ時の `seq[string]` 生成のみが毎リクエストのオーバーヘッドとなっている。
+
+#### 設計方針
+
+`matchNode` のシグネチャを `segments: seq[string]` から `path: string, start: int` に変更し、
+文字列を一度だけ走査してセグメント境界を `'/'` のインデックスで特定する。
+substring を作らず、スライス比較（`path.toOpenArray(segStart, segEnd-1)`）でノードキーと照合する。
+
+```nim
+# 設計イメージ（route.nim）
+
+# セグメントを都度 index で走査するバージョン
+proc nextSegmentEnd(path: string, start: int): int =
+  # start から次の '/' または末尾 を返す
+  result = start
+  while result < path.len and path[result] != '/':
+    inc result
+
+proc matchNodeByIndex(
+  node: RouteMatcherNode,
+  httpMethod: HttpMethod,
+  path: string,         # 元の文字列（クエリ除き）
+  start: int,           # 現在走査中のオフセット（先頭 '/' は除いた位置）
+  capturedValues: var seq[string],
+  routeEntry: var RouteEntry,
+): bool =
+  let segEnd = nextSegmentEnd(path, start)
+  let atEnd = (start >= path.len)
+
+  if atEnd:
+    if node.entries.hasKey(httpMethod):
+      routeEntry = node.entries[httpMethod]
+      return true
+    return false
+
+  let segSlice = path.toOpenArray(start, segEnd - 1)
+
+  # 静的マッチ：substring を作らずに比較
+  for key, child in node.staticChildren:
+    if key == segSlice:
+      let nextStart = if segEnd < path.len: segEnd + 1 else: path.len
+      if matchNodeByIndex(child, httpMethod, path, nextStart, capturedValues, routeEntry):
+        return true
+      break
+
+  # 数値パラメータ
+  if not node.intChild.isNil and isNumericSlice(path, start, segEnd):
+    capturedValues.add(path[start..<segEnd])
+    let nextStart = if segEnd < path.len: segEnd + 1 else: path.len
+    if matchNodeByIndex(node.intChild, httpMethod, path, nextStart, capturedValues, routeEntry):
+      return true
+    capturedValues.setLen(capturedValues.len - 1)
+
+  # 文字列パラメータ
+  if not node.strChild.isNil and segEnd > start:
+    capturedValues.add(path[start..<segEnd])
+    let nextStart = if segEnd < path.len: segEnd + 1 else: path.len
+    if matchNodeByIndex(node.strChild, httpMethod, path, nextStart, capturedValues, routeEntry):
+      return true
+    capturedValues.setLen(capturedValues.len - 1)
+
+  return false
+
+proc match(matcher: RouteMatcher, httpMethod: HttpMethod, path: string): RouteMatch =
+  if matcher.isNil:
+    return RouteMatch(route: nil, pathParams: nil)
+
+  # クエリ文字列を除去（index 走査のみ、allocation なし）
+  var pathEnd = path.len
+  for i in 0..<path.len:
+    if path[i] == '?':
+      pathEnd = i
+      break
+
+  var routeEntry: RouteEntry
+  var capturedValues = newSeq[string]()
+  let start = if pathEnd > 0 and path[0] == '/': 1 else: 0
+
+  if pathEnd <= start:
+    # ルートパス "/"
+    if not matchNodeByIndex(matcher.root, httpMethod, path, path.len, capturedValues, routeEntry):
+      return RouteMatch(route: nil, pathParams: nil)
+  else:
+    let normalizedPath = path[0..<pathEnd]
+    if not matchNodeByIndex(matcher.root, httpMethod, normalizedPath, start, capturedValues, routeEntry):
+      return RouteMatch(route: nil, pathParams: nil)
+
+  ...
+```
+
+#### 留意点
+
+- `capturedValues.add(path[start..<segEnd])` はパラメータがある場合のみ発生する substring アロケーション（静的ルートでは完全ゼロ）。
+- `staticChildren` のテーブルキー比較で `toOpenArray` が使えるかは `TableRef[string, ...]` の `==` 演算子次第。
+  `string` への変換を一度行うほうが安全な場合は、静的ノード部分は現行ロジックを維持し、`split` だけ廃止する段階的アプローチも有効。
+- `isNumericSlice(path, start, segEnd)` は既存の `isNumericSegment(segment)` を index 版に書き直したもの。
 
 ---
 
-### 問題 3: セッション処理の `getRows()` 全件走査
+### 3. Redis セッション接続のプール／共有コネクション化
 
-**現状**
-`getFlash` / `hasFlash` / `getErrorsObject` はいずれも `sessionOpt.get.db.getRows()` を呼び、セッションの全フィールドを一括取得してから `flash_*` プレフィックスをフィルタリングする。
+#### 現状（問題）
 
-- Redis の場合: `hGetAll(sessionId)` = セッションの全フィールドを返す O(N) コマンド
-- JSON の場合: ファイル全体を読み込んで走査
-
-セッションに大量のキーが蓄積されると走査コストが増大し、さらに `getFlash`・`hasFlash`・`getErrorsObject` が別々に呼ばれるたびに再走査する。
+`redis_session_db.nim` の `new()` proc（line 108）は毎回 `openAsync()` でコネクションを新規に張る。
+セッション系リクエストが多いと、TCP コネクション確立コストが蓄積する。
 
 ```nim
-# src/basolato/core/security/context.nim (現状)
-proc getFlash*(self:Context):Future[JsonNode] {.async.} =
-  let rows = await self.sessionOpt.get.db.getRows()  # 毎回全件取得
-  for key, val in rows.pairs:
-    if key[0..5] == "flash_": ...
-
-proc hasFlash*(self:Context, key:string):Future[bool] {.async.} =
-  let rows = await self.sessionOpt.get.db.getRows()  # 別途また全件取得
+# redis_session_db.nim:108-125 現状
+proc new*(_:type RedisSessionDb, sessionId=""):Future[RedisSessionDb] {.async.} =
+  let sessionConfig = parseSessionPath()
   ...
+  let conn = openAsync(sessionConfig.host, sessionConfig.port).await  # 毎回接続
+  let sessionDb = RedisSessionDb(conn:conn, id:id)
+  sessionDb.setStr("session_id", id).await
+  discard conn.expire(id, sessionExpireSeconds()).await
+  return sessionDb
 ```
 
-**改善方針 A（セッションキャッシュ）**
-`getRows()` の結果を `Context` の `sessionCache: Option[JsonNode]` フィールドにキャッシュし、同一リクエスト内では再取得しない。
-書き込み (`set` / `delete`) 時はキャッシュを無効化（または反映）する。
+なお、当初は `checkSessionIdValid` 用と `new()` 用で遅延シングルトンを分けていたが、**同一ホストへの接続は 1 本（`redisConn` + `getRedisConn()`）に統一**した。`EXISTS` と `HSET` / `EXPIRE` は順次 `await` すれば 1 接続で足りる。
+
+#### 設計方針
+
+**シングルトン共有コネクション 1 本**を `checkSessionIdValid` と `RedisSessionDb.new()` の両方で使う。切断検知は `getRedisConn()` 内で `ping()` 失敗時に再接続。
 
 ```nim
-type Context* = ref object
-  ...
-  sessionCache: Option[JsonNode]  # 追加: getRows() の結果をキャッシュ
+# 実装イメージ（redis_session_db.nim）
 
-proc getSessionRows(self: Context): Future[JsonNode] {.async.} =
-  if self.sessionCache.isNone:
-    self.sessionCache = some(await self.sessionOpt.get.db.getRows())
-  return self.sessionCache.get()
+var redisConn: AsyncRedis = nil
+
+proc getRedisConn(): Future[AsyncRedis] {.async.} =
+  if redisConn.isNil:
+    let sessionConfig = parseSessionPath()
+    redisConn = openAsync(sessionConfig.host, sessionConfig.port).await
+  else:
+    try:
+      discard await redisConn.ping()
+    except Exception:
+      redisConn = nil
+      let sessionConfig = parseSessionPath()
+      redisConn = openAsync(sessionConfig.host, sessionConfig.port).await
+  return redisConn
+
+# checkSessionIdValid / new はどちらも getRedisConn().await を利用
 ```
 
-**改善方針 B（個別キー取得に切り替え）**
-`flash_errors` / `flash_*` のように既知のキーを検索する場合は `hExists` + `hGet` に直接置き換え、`hGetAll` を呼ばない。
-Redisの場合 `hExists` は O(1)、`hGet` も O(1) なのでセッション規模に依存しない。
+#### 将来的な接続プール化（オプション）
+
+QPS がさらに高い要件では、複数コネクションをラウンドロビンする軽量プールも検討できる。
 
 ```nim
-proc getErrorsObject*(self:Context):Future[JsonNode] {.async.} =
-  if self.flashErrorsCache.isSome:
-    return self.flashErrorsCache.get()
-  if self.sessionOpt.isSome:
-    # hGetAll → hGet("flash_errors") に変更
-    let val = await self.sessionOpt.get.db.getStr("flash_errors")
-    if val.len > 0:
-      let json = val.parseJson()
-      await self.sessionOpt.delete("flash_errors")
-      self.flashErrorsCache = some(json)
-      return json
-  let empty = newJObject()
-  self.flashErrorsCache = some(empty)
-  return empty
+# プール設計イメージ（必要に応じて採用）
+const POOL_SIZE = 4
+
+var connPool: array[POOL_SIZE, AsyncRedis]
+var poolIdx = 0
+
+proc getPooledConn(): Future[AsyncRedis] {.async.} =
+  let idx = poolIdx mod POOL_SIZE
+  poolIdx.inc
+  if connPool[idx].isNil:
+    let sessionConfig = parseSessionPath()
+    connPool[idx] = openAsync(sessionConfig.host, sessionConfig.port).await
+  return connPool[idx]
 ```
 
-**改善方針 C（`sessionFromCookieHelper` の二重 JWT デコード排除）**
-現状、`checkCsrfTokenForMpaHelper` と `checkCsrfTokenForApi` はミドルウェアとして独立しており、それぞれ `Jwt.decode` を行う。
-`sessionFromCookieHelper` でも同じ JWT を再デコードしている。
-→ デコード結果を Context に一時保存し、CSRF ミドルウェアは Context から読み取る形に統一する。
-（ただし、CSRF チェックはセッションミドルウェアより後に実行される前提で設計する）
+#### 留意点
 
-**採用方針**
-- 方針 A（キャッシュ）と方針 B（個別キー取得）を組み合わせて実装する
-  - `getFlash`（全 flash キーを返す）は方針 A のキャッシュを活用
-  - `getErrorsObject` / `hasFlash` のような既知キー参照は方針 B で個別取得を優先
-- 方針 C の JWT デコード重複は別途 Context に `decodedJwt` キャッシュフィールドを追加して対応するが、スコープに応じて後回しにしてもよい
-  - 実装: `sessionJwtPayload` + `setDecodedSessionJwt` / `decodedSessionJwt`。`sessionFromCookieHelper` がデコード後にセットし、CSRF ヘルパーが再利用する。
+- asyncdispatch はシングルスレッドなので共有コネクションへの競合は基本的に発生しない。
+  ただし Redis の pipeline/pipelining を使う場合は応答の順序管理が必要になる。
+- コネクション切断（`ECONNRESET` 等）時の再接続は `getRedisConn()` 内の `ping()` 失敗時にまとめて行う。
 
-### 補足（lazy Params とテスト）
+---
 
-- `Request()` の `headers` が nil のまま `context.params` を初めて触ると `httpcore.hasKey` で落ちるため、`buildRequestParams` / `getRequestParams` で `headers.isNil` をガードした。
+### 実装順序の推奨
+
+| 優先 | 対象 | 実装コスト | 効果 |
+|------|------|------------|------|
+| 高 | Date ヘッダーキャッシュ | 小（数行） | 全リクエストに効く |
+| 中 | Redis 共有コネクション | 小〜中 | セッション使用時に効く |
+| 中 | パスマッチング seq 廃止 | 中（関数書き換え） | ルート数が多いほど効く |

@@ -114,18 +114,41 @@ func new*(_:type Routes):Routes =
     matcherReady: false,
   )
 
-func isNumericSegment(segment:string):bool =
-  if segment.len == 0:
+func isNumericSlice(path: string, start, segEnd: int): bool =
+  ## Check if the slice of the path is numeric.
+  if segEnd <= start:
     return false
-  for c in segment:
-    if not c.isDigit:
+  var i = start
+  while i < segEnd:
+    if not path[i].isDigit:
       return false
+    inc i
   return true
 
-func isStringSegment(segment:string):bool =
-  return segment.len > 0 and not segment.isNumericSegment()
+func isStringSlice(path: string, start, segEnd: int): bool =
+  ## Check if the slice of the path is string.
+  segEnd > start and not isNumericSlice(path, start, segEnd)
+
+func segmentMatchesKey(path: string, start, segEnd: int, key: string): bool =
+  ## Check if the segment of the path matches the key.
+  let n = segEnd - start
+  if key.len != n:
+    return false
+  var i = 0
+  while i < n:
+    if path[start + i] != key[i]:
+      return false
+    inc i
+  return true
+
+func nextSegmentEnd(path: string, start, pathEnd: int): int =
+  ## Find the end of the next segment in the path.
+  result = start
+  while result < pathEnd and path[result] != '/':
+    inc result
 
 func splitPathSegments(path:string):seq[string] =
+  ## Split the path into segments.
   let pathWithoutQuery = path.split("?")[0]
   if pathWithoutQuery.len == 0 or pathWithoutQuery == "/":
     return @[]
@@ -143,6 +166,7 @@ func parseParamSegment(
   name:var string,
   typ:var RouteParamType
 ):bool =
+  ## Parse the segment of the path to get the name and type of the parameter.
   if segment.len < 5:
     return false
   if not segment.startsWith("{") or not segment.endsWith("}"):
@@ -219,35 +243,40 @@ proc parseMethodAndPath(
   return true
 
 proc matchNode(
-  node:RouteMatcherNode,
-  httpMethod:HttpMethod,
-  segments:seq[string],
-  index:int,
-  capturedValues:var seq[string],
-  routeEntry:var RouteEntry
-):bool =
-  if index == segments.len:
+  node: RouteMatcherNode,
+  httpMethod: HttpMethod,
+  path: string,
+  pathEnd: int,
+  pos: int,
+  capturedValues: var seq[string],
+  routeEntry: var RouteEntry
+): bool =
+  if pos >= pathEnd:
     if node.entries.hasKey(httpMethod):
       routeEntry = node.entries[httpMethod]
       return true
     return false
 
-  let segment = segments[index]
+  let segEnd = nextSegmentEnd(path, pos, pathEnd)
 
-  if node.staticChildren.hasKey(segment):
-    let staticNode = node.staticChildren[segment]
-    if matchNode(staticNode, httpMethod, segments, index + 1, capturedValues, routeEntry):
-      return true
+  for key, child in node.staticChildren.pairs:
+    if segmentMatchesKey(path, pos, segEnd, key):
+      let nextPos = if segEnd < pathEnd: segEnd + 1 else: pathEnd
+      if matchNode(child, httpMethod, path, pathEnd, nextPos, capturedValues, routeEntry):
+        return true
+      break
 
-  if not node.intChild.isNil and segment.isNumericSegment():
-    capturedValues.add(segment)
-    if matchNode(node.intChild, httpMethod, segments, index + 1, capturedValues, routeEntry):
+  if not node.intChild.isNil and isNumericSlice(path, pos, segEnd):
+    capturedValues.add(path[pos ..< segEnd])
+    let nextPos = if segEnd < pathEnd: segEnd + 1 else: pathEnd
+    if matchNode(node.intChild, httpMethod, path, pathEnd, nextPos, capturedValues, routeEntry):
       return true
     capturedValues.setLen(capturedValues.len - 1)
 
-  if not node.strChild.isNil and segment.isStringSegment():
-    capturedValues.add(segment)
-    if matchNode(node.strChild, httpMethod, segments, index + 1, capturedValues, routeEntry):
+  if not node.strChild.isNil and isStringSlice(path, pos, segEnd):
+    capturedValues.add(path[pos ..< segEnd])
+    let nextPos = if segEnd < pathEnd: segEnd + 1 else: pathEnd
+    if matchNode(node.strChild, httpMethod, path, pathEnd, nextPos, capturedValues, routeEntry):
       return true
     capturedValues.setLen(capturedValues.len - 1)
 
@@ -261,10 +290,19 @@ proc match(
   if matcher.isNil:
     return RouteMatch(route: nil, pathParams: nil)
 
+  var pathEnd = path.len
+  for i in 0 ..< path.len:
+    if path[i] == '?':
+      pathEnd = i
+      break
+
+  var start = 0
+  if pathEnd > 0 and path[0] == '/':
+    start = 1
+
   var routeEntry: RouteEntry
   var capturedValues = newSeq[string]()
-  let segments = splitPathSegments(path)
-  if not matchNode(matcher.root, httpMethod, segments, 0, capturedValues, routeEntry):
+  if not matchNode(matcher.root, httpMethod, path, pathEnd, start, capturedValues, routeEntry):
     return RouteMatch(route: nil, pathParams: nil)
 
   var pathParams: Params = nil
