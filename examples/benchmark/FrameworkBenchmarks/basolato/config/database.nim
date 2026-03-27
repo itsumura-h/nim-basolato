@@ -13,11 +13,7 @@ let maxConnections =
 
 let rdb* = dbopen(
   PostgreSQL, # SQLite3 or MySQL or MariaDB or PostgreSQL
-  "database",
-  "user",
-  "pass",
-  "postgreDb",
-  5432,
+  "postgresql://user:pass@postgreDb:5432/database",
   maxConnections,
   30,
   LOG_TO_CONSOLE,

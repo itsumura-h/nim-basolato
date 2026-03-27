@@ -23,6 +23,12 @@ when defined(httpbeast):
 else:
   from httpx import send, initSettings, run
 
+proc userAgent(req: Request): string =
+  let values = req.headers.values("User-Agent")
+  if values.len > 0:
+    return values[0]
+  return ""
+
 
 proc serve*(seqRoutes:seq[Routes], settings:Settings) =
   let routes = Routes.merge(seqRoutes)
@@ -64,7 +70,7 @@ proc serve*(seqRoutes:seq[Routes], settings:Settings) =
       let msg = getCurrentExceptionMsg()
       let status = Http500
       response = Response.new(status, errorPage(status, msg), headers)
-      let userAgent = req.headers["User-Agent"]
+      let userAgent = req.userAgent()
       echoErrorMsg(&"{$response.status}  {$req.httpMethod}  {req.path}  {req.hostname}  {userAgent}")
       echoErrorMsg(msg)
 
@@ -94,19 +100,19 @@ proc serve*(seqRoutes:seq[Routes], settings:Settings) =
     if response.status.is4xx:
       var headers = newHttpHeaders()
       headers["content-type"] = "text/html; charset=utf-8"
-      let userAgent = req.headers["User-Agent"]
+      let userAgent = req.userAgent()
       echoErrorMsg(&"{$response.status}  {$req.httpMethod}  {req.path}  {req.hostname}  {userAgent}")
       response = Response.new(response.status, errorPage(response.status, response.body), headers)
     elif response.status.is5xx:
       var headers = newHttpHeaders()
       headers["content-type"] = "text/html; charset=utf-8"
-      let userAgent = req.headers["User-Agent"]
+      let userAgent = req.userAgent()
       echoErrorMsg(&"{$response.status}  {$req.httpMethod}  {req.path}  {req.hostname}  {userAgent}")
       response = Response.new(response.status, errorPage(response.status, response.body), headers)
     elif response.status == HttpCode(0):
       var headers = newHttpHeaders()
       headers["content-type"] = "text/html; charset=utf-8"
-      let userAgent = req.headers["User-Agent"]
+      let userAgent = req.userAgent()
       echoErrorMsg(&"{$Http404}  {$req.httpMethod}  {req.path}  {req.hostname}  {userAgent}")
       response = Response.new(Http404, errorPage(Http404, ""), headers)
 
