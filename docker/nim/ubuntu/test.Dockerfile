@@ -7,7 +7,7 @@ RUN apt update
 RUN apt upgrade -y
 RUN apt install -y \
       # for build Nim
-      gcc \
+      build-essential \
       # for unzip tar.xz
       xz-utils \
       # for https

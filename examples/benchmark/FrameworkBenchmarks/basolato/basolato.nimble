@@ -3,19 +3,13 @@ version       = "0.1.0"
 author        = "Anonymous"
 description   = "A new awesome basolato package"
 license       = "MIT"
-srcDir        = "."
-bin           = @["main"]
-backend       = "c"
+# srcDir        = "."
+# bin           = @["main"]
+# backend       = "c"
 
 # Dependencies
 requires "nim >= 2.0.0"
-requires "https://github.com/itsumura-h/nim-basolato == 0.16.0"
-requires "allographer == 0.32.0"
-requires "interface_implements >= 0.2.2"
-requires "bcrypt >= 0.2.1"
-requires "cligen >= 1.5.9"
-requires "redis >= 0.3.0"
-requires "sass >= 0.1.0"
+requires "https://github.com/itsumura-h/nim-basolato#main"
 
 task test, "run testament":
   echo staticExec("testament p \"./tests/test_*.nim\"")

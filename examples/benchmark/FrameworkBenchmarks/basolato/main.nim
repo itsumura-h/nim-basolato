@@ -12,6 +12,7 @@ let routes = @[
   Route.get("/queries", benchmark_controller.query),
   Route.get("/fortunes", benchmark_controller.fortune),
   Route.get("/updates", benchmark_controller.update),
+  Route.get("/cached-queries", benchmark_controller.cachedQuery),
 ]
 
 let settings = Settings.new(

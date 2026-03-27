@@ -3,9 +3,14 @@
   "tests": [
     {
       "default": {
-        "port": 8080,
         "json_url": "/json",
         "plaintext_url": "/plaintext",
+        "db_url": "/db",
+        "query_url": "/queries?queries=",
+        "update_url": "/updates?queries=",
+        "fortune_url": "/fortunes",
+        "cached_query_url": "/cached-queries?count=",
+        "port": 8080,
         "approach": "Realistic",
         "classification": "Fullstack",
         "database": "postgres",

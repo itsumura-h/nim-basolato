@@ -4,6 +4,7 @@ import std/json
 import std/random
 import std/strutils
 import std/sequtils
+import std/tables
 # framework
 import basolato/controller
 # databse
@@ -16,7 +17,7 @@ import ../views/pages/fortune_scf_view
 
 
 const range1_10000 = 1..10000
-
+randomize()
 
 proc plaintext*(context:Context):Future[Response] {.async.} =
   return render("Hello, World!")
@@ -88,8 +89,31 @@ proc update*(context:Context):Future[Response] {.async.} =
     futures[i-1] = (
       proc():Future[void] {.async.} =
         discard rdb.table("World").findPlain(index).await
-        rdb.table("World").where("id", "=", index).update(%*{"randomNumber": number}).await
+        rdb.table("World").where("id", "=", index).update(%*{"randomnumber": number}).await
     )()
   all(futures).await
+
+  return render(%response)
+
+
+var cachedQueryCache = newTable[int, int]()
+for i in range1_10000:
+  cachedQueryCache[i] = rand(range1_10000)
+
+proc cachedQuery*(context:Context):Future[Response] {.async.} =
+  var countNum =
+    try:
+      context.params.getInt("count")
+    except:
+      1
+  if countNum < 1:
+    countNum = 1
+  elif countNum > 500:
+    countNum = 500
+
+  var response = newSeq[JsonNode](countNum)
+  for i in 1..countNum:
+    let key = rand(range1_10000)
+    response[i-1] = %*{"id": key, "randomNumber": cachedQueryCache[key]}
 
   return render(%response)

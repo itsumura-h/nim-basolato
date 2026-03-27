@@ -1407,9 +1407,7 @@ backend       = "c"
 
 # Dependencies
 requires "nim >= 2.0.0"
-requires "https://github.com/itsumura-h/nim-basolato >= 0.15.0"
-requires "allographer >= 0.32.0"
-requires "interface_implements >= 0.2.2"
+requires "https://github.com/itsumura-h/nim-basolato >= 0.16.0"
 requires "faker >= 0.14.0"
 
 task test, "run testament":

@@ -6,11 +6,16 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && \
     apt upgrade -y
 RUN apt install -y \
-        build-essential \
-        xz-utils \
-        ca-certificates \
-        curl \
-        git
+    # for build Nim
+    build-essential \
+    # for unzip tar.xz
+    xz-utils \
+    # for https
+    ca-certificates \
+    # for nim regex
+    libpcre3-dev \
+    curl \
+    git
 
 ARG VERSION="2.2.8"
 WORKDIR /root
@@ -25,8 +30,9 @@ ENV PATH $PATH:/root/.nimble/bin
 ADD ./ /basolato
 WORKDIR /basolato
 
-RUN nimble install -y
-RUN ducere build -a
+# Install dependencies only; avoid building this benchmark package via nimble.
+RUN nimble install -y -d
+RUN ducere build -a --httpbeast
 
 
 FROM ubuntu:24.04 AS runtime
@@ -37,9 +43,14 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && \
     apt upgrade -y
 RUN apt install -y \
-        xz-utils \
-        ca-certificates \
-        libpq-dev
+    # for build Nim
+    build-essential \
+    # for https
+    ca-certificates \
+    # for nim regex
+    libpcre3-dev \
+    # for postgres
+    libpq-dev
 
 WORKDIR /basolato
 COPY --from=build /basolato/main .
@@ -47,13 +58,8 @@ RUN chmod +x main
 COPY --from=build /basolato/startServer.sh .
 RUN chmod +x startServer.sh
 
-# Secret
 ENV SECRET_KEY="secret_key"
-# DB Connection
 ENV DB_URL="postgresql://benchmarkdbuser:benchmarkdbpass@tfb-database:5432/hello_world"
-ENV DB_MAX_CONNECTION=2000
-ENV DB_TIMEOUT=30
-
 
 EXPOSE 8080
 
