@@ -5,8 +5,6 @@ import basolato
 # controller
 import ./app/http/controllers/benchmark_controller
 
-let port = parseInt(getEnv("PORT", "8080"))
-
 let routes = @[
   Route.get("/plaintext", benchmark_controller.plainText),
   Route.get("/json", benchmark_controller.json),
@@ -18,7 +16,7 @@ let routes = @[
 
 let settings = Settings.new(
   host="0.0.0.0",
-  port=port,
+  port=8080,
   logToConsole=false,
 )
 
