@@ -1,8 +1,11 @@
+import std/os
+import std/strutils
 # framework
 import basolato
 # controller
 import ./app/http/controllers/benchmark_controller
 
+let port = parseInt(getEnv("PORT", "8080"))
 
 let routes = @[
   Route.get("/plaintext", benchmark_controller.plainText),
@@ -15,6 +18,7 @@ let routes = @[
 
 let settings = Settings.new(
   host="0.0.0.0",
+  port=port,
   logToConsole=false,
 )
 
