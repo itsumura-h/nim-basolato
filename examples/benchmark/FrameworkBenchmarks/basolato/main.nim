@@ -17,7 +17,7 @@ let routes = @[
 let settings = Settings.new(
   host="0.0.0.0",
   port=8080,
-  logToConsole=true,
+  logToConsole=false,
 )
 
 serve(routes, settings)
