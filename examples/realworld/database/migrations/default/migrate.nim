@@ -3,10 +3,8 @@ import allographer/schema_builder
 from ../../../config/database import rdb
 import ./migration_001_create_table
 
+proc main*() {.async.} =
+  createTable().await
 
-proc main*() =
-  createTable(rdb).waitFor()
-
-
-main()
+main().waitFor()
 createSchema(rdb).waitFor()

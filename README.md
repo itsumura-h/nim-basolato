@@ -148,10 +148,20 @@ The overall file structure is as follows:
 │   └── database.nim
 ├── config.nims
 ├── database
+│   ├── develop.sh
 │   ├── migrations
-│   │   └── migrate.nim
-│   └── seeders
-│       └── seed.nim
+│   │   ├── default
+│   │   │   └── migrate.nim
+│   │   └── test
+│   │       └── migrate.nim
+│   ├── production.sh
+│   ├── seeders
+│   │   ├── data
+│   │   │   └── sample_seeder.nim
+│   │   ├── develop.nim
+│   │   ├── production.nim
+│   │   └── staging.nim
+│   └── staging.sh
 ├── main.nim
 ├── public
 │   ├── basolato.svg

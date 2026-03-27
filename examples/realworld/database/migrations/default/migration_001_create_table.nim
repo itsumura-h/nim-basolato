@@ -1,9 +1,9 @@
 import std/asyncdispatch
-import allographer/query_builder
 import allographer/schema_builder
+from ../../../config/database import rdb
 
 
-proc createTable*(rdb:PostgresConnections) {.async.} =
+proc createTable*() {.async.} =
   rdb.create(
     table("user", [
       Column.string("id").unique(), # username

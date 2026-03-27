@@ -29,10 +29,10 @@ ducere make migration createUsersTable
 nim c -r migrations/migrate
 ```
 
-ducereコマンドを使うこともできます
-```sh
-ducere migrate
-```
+マイグレーションと seeder をまとめて実行したい場合は、`database/` 配下のシェルスクリプトを使います。
+- `./database/develop.sh`
+- `./database/staging.sh`
+- `./database/production.sh`
 
 ## サンプル
 

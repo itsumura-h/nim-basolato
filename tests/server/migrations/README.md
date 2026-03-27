@@ -1,3 +1,3 @@
 Migrations
 ===
-Migrations are Database table difinition and seeder.
+Migrations are database table definitions.
