@@ -88,7 +88,7 @@ proc update*(context:Context):Future[Response] {.async.} =
     futures[i-1] = (
       proc():Future[void] {.async.} =
         discard rdb.table("World").findPlain(index).await
-        rdb.table("World").where("id", "=", index).update(%*{"randomNumber": number}).await
+        rdb.table("World").where("id", "=", index).update(%*{"randomnumber": number}).await
     )()
   all(futures).await
 

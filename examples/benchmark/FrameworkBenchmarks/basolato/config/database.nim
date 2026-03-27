@@ -16,7 +16,7 @@ let rdb* = dbopen(
   url = "postgresql://user:pass@postgreDb:5432/database",
   maxConnections = maxConnections,
   timeout = 30,
-  shouldDisplayLog = false,
+  shouldDisplayLog = true,
   shouldOutputLogFile = false,
   logDir = "",
 )

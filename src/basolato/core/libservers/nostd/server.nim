@@ -33,7 +33,7 @@ proc userAgent(req: Request): string =
 proc serve*(seqRoutes:seq[Routes], settings:Settings) =
   let routes = Routes.merge(seqRoutes)
   
-  proc cd(rawReq: RawRequest):Future[void] {.gcsafe, async.}=
+  proc cd(rawReq: RawRequest):Future[void] {.async, gcsafe.}=
     let req = rawReq.toRequest()
     var response = Response.new(HttpCode(0), "", newHttpHeaders())
 
