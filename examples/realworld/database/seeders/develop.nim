@@ -1,4 +1,6 @@
 import std/asyncdispatch
+import std/json
+import std/options
 import ../../config/env
 from ../../config/database import rdb
 import ./data/seed_user
@@ -8,6 +10,7 @@ import ./data/seed_favorite
 import ./data/seed_tag
 import ./data/seed_tag_article
 import ./data/seed_user_user_map
+import allographer/query_builder
 
 
 proc main() =
@@ -19,5 +22,8 @@ proc main() =
     favorite(rdb).waitFor()
     tag(rdb).waitFor()
     tagArticle(rdb).waitFor()
+
+    echo rdb.table("user").first().waitFor().get()
+    echo rdb.table("article").first().waitFor().get()
 
 main()

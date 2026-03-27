@@ -16,26 +16,38 @@ else:
 
 type Context* = ref object
   request: Request
-  params: Params
+  pathParams: Params
+  cachedParams: Option[Params]
   sessionOpt: Option[Session]
   csrfToken: CsrfToken
   ## flash に保存された入力・エラーの読み出し結果をキャッシュする
   flashParamsCache: Option[Params]
   flashErrorsCache: Option[JsonNode]
+  ## `getFlash` 用: 同一リクエスト内の `getRows` 結果（書き込み時は無効化）
+  sessionRowsCache: Option[JsonNode]
+  ## `sessionFromCookieHelper` でデコード済みの JWT ペイロード（CSRF ミドルウェアで再利用）
+  sessionJwtPayload: Option[JsonNode]
 
 ## セッション値ストアへの低レベル操作を提供するアクセサ。
 ## 利用者は `Option[Session]` を意識せず `context.session.get(...)` 等を扱える。
 type ContextSession* = object
   sessionOpt: Option[Session]
 
-proc new*(_:type Context, request:Request, params:Params):Future[Context]{.async.} =
+proc invalidateSessionRowsCache(self: Context) =
+  self.sessionRowsCache = none(JsonNode)
+
+proc new*(_:type Context, request:Request, pathParams:Params=nil):Future[Context]{.async.} =
+  let pp = if pathParams.isNil: Params.new() else: pathParams
   return Context(
     request:request,
-    params:params,
+    pathParams: pp,
+    cachedParams: none(Params),
     sessionOpt:none(Session),
     csrfToken: CsrfToken.new(),
     flashParamsCache: none(Params),
-    flashErrorsCache: none(JsonNode)
+    flashErrorsCache: none(JsonNode),
+    sessionRowsCache: none(JsonNode),
+    sessionJwtPayload: none(JsonNode)
   )
 
 
@@ -43,8 +55,18 @@ proc request*(self:Context):Request =
   return self.request
 
 
-proc params*(self:Context):Params =
-  return self.params
+proc params*(self:Context): Params =
+  if self.cachedParams.isNone:
+    self.cachedParams = some(buildRequestParams(self.request, self.pathParams))
+  return self.cachedParams.get()
+
+
+proc setDecodedSessionJwt*(self: Context, payload: JsonNode) =
+  self.sessionJwtPayload = some(payload)
+
+
+proc decodedSessionJwt*(self: Context): Option[JsonNode] =
+  return self.sessionJwtPayload
 
 
 proc origin*(self:Context):string =
@@ -67,6 +89,8 @@ proc csrfToken*(self: Context): CsrfToken =
 
 proc setSession*(self:Context, session:Session) {.async.} =
   self.sessionOpt = session.some()
+  self.invalidateSessionRowsCache()
+  self.sessionJwtPayload = none(JsonNode)
   ## セッションに保存されている CSRF トークンを Context に取り込む
   if await self.sessionOpt.isSome("csrf_token"):
     let token = await self.sessionOpt.get("csrf_token")
@@ -161,6 +185,8 @@ proc get*(self:Context, key:string):Future[string] {.async.} =
 
 
 proc delete*(self:Context, key:string) {.async.} =
+  if key == "flash_params" or key == "flash_errors" or key.startsWith("flash_"):
+    self.invalidateSessionRowsCache()
   await self.session.delete(key)
 
 
@@ -169,34 +195,42 @@ proc destroy*(self:Context) {.async.} =
 
 
 proc setFlash*(self:Context, key, value:string) {.async.} =
+  self.invalidateSessionRowsCache()
   let key = "flash_" & key
   await self.sessionOpt.set(key, value)
 
 
 proc setFlash*(self:Context, key:string, value:JsonNode) {.async.} =
+  self.invalidateSessionRowsCache()
   let key = "flash_" & key
   await self.sessionOpt.set(key, value)
 
 
 proc hasFlash*(self:Context, key:string):Future[bool] {.async.} =
   if self.sessionOpt.isSome:
-    let rows = await self.sessionOpt.get.db.getRows()
-    let flashKey = "flash_" & key
-    for k, v in rows.pairs:
-      if k == flashKey:
-        return true
+    return await self.sessionOpt.isSome("flash_" & key)
   return false
 
 
 proc getFlash*(self:Context):Future[JsonNode] {.async.} =
   result = newJObject()
-  if self.sessionOpt.isSome:
-    let rows = await self.sessionOpt.get.db.getRows()
-    for key, val in rows.pairs:
-      if key.len >= 6 and key[0..5] == "flash_":
-        var newKey = key[6..^1]
-        result[newKey] = val
-        await self.sessionOpt.delete(key)
+  if not self.sessionOpt.isSome:
+    return
+  var rows: JsonNode
+  if self.sessionRowsCache.isSome:
+    rows = self.sessionRowsCache.get()
+  else:
+    rows = await self.sessionOpt.get.db.getRows()
+    self.sessionRowsCache = some(rows)
+  var keysToDelete: seq[string] = @[]
+  for key, val in rows.pairs:
+    if key.len >= 6 and key[0..5] == "flash_":
+      let newKey = key[6..^1]
+      result[newKey] = val
+      keysToDelete.add(key)
+  for key in keysToDelete:
+    await self.sessionOpt.delete(key)
+  self.invalidateSessionRowsCache()
 
 
 proc getErrorsObject*(self:Context):Future[JsonNode] {.async.} =
@@ -205,12 +239,12 @@ proc getErrorsObject*(self:Context):Future[JsonNode] {.async.} =
 
   result = newJObject()
   if self.sessionOpt.isSome:
-    let rows = self.sessionOpt.get.db.getRows().await
-    for key, val in rows.pairs:
-      if key == "flash_errors":
-        self.sessionOpt.delete(key).await
-        self.flashErrorsCache = some(val)
-        return val
+    if await self.sessionOpt.isSome("flash_errors"):
+      let val = await self.sessionOpt.get.db.getJson("flash_errors")
+      await self.sessionOpt.delete("flash_errors")
+      self.invalidateSessionRowsCache()
+      self.flashErrorsCache = some(val)
+      return val
 
   self.flashErrorsCache = some(result)
 
@@ -230,15 +264,15 @@ proc getParams*(self:Context):Future[Params] {.async.} =
 
   result = Params.new()
   if self.sessionOpt.isSome:
-    let rows = self.sessionOpt.get.db.getRows().await
-    for key, sessionParams in rows.pairs:
-      if key == "flash_params":
-        await self.sessionOpt.delete(key)
-        let params = Params.new()
-        for key, jsonParam in sessionParams.pairs:
-          params[key] = jsonParam.to(Param)
-        self.flashParamsCache = some(params)
-        return params
+    if await self.sessionOpt.isSome("flash_params"):
+      let sessionParams = await self.sessionOpt.get.db.getJson("flash_params")
+      await self.sessionOpt.delete("flash_params")
+      self.invalidateSessionRowsCache()
+      let params = Params.new()
+      for key, jsonParam in sessionParams.pairs:
+        params[key] = jsonParam.to(Param)
+      self.flashParamsCache = some(params)
+      return params
 
   self.flashParamsCache = some(result)
 

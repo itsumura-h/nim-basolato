@@ -152,7 +152,7 @@ type RequestValidation* = object
 func errors*(self:RequestValidation):ValidationErrors =
   return self.errors
 
-func new*(_:type RequestValidation, context:Context):RequestValidation =
+proc new*(_:type RequestValidation, context:Context):RequestValidation =
   return RequestValidation(
     params: context.params,
     errors: ValidationErrors.new()

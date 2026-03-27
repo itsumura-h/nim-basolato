@@ -241,6 +241,8 @@ func parseMPFD(contentType: string, body: string): MultiData =
 
 proc getRequestParams*(request:Request):Params =
   let params = Params.new()
+  if request.headers.isNil:
+    return params
   if request.headers.hasKey("content-type"):
     let contentType = request.headers["content-type"].toString
     if contentType.contains("multipart/form-data"):
@@ -268,6 +270,26 @@ proc getRequestParams*(request:Request):Params =
           else:
             params[row[0]] = Param(value: row[1])
   return params
+
+
+proc buildRequestParams*(request: Request, pathParams: Params = nil): Params =
+  ## path パラメータに query / body をマージした `Params`。`createResponse` では lazy に初回アクセスまで構築しない。
+  result = Params.new()
+  if not pathParams.isNil:
+    for k, v in pathParams.pairs:
+      result[k] = v
+  for k, v in getQueryParams(request).pairs:
+    result[k] = v
+
+  if request.headers.isNil:
+    return result
+
+  if request.headers.hasKey("Content-Type") and request.headers["Content-Type"].split(";")[0] == "application/json":
+    for k, v in getJsonParams(request).pairs:
+      result[k] = v
+  else:
+    for k, v in getRequestParams(request).pairs:
+      result[k] = v
 
 
 proc save*(params:Params, key, dir:string) =
