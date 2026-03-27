@@ -2,12 +2,10 @@ import std/asynchttpserver except Request
 import std/asyncdispatch
 import std/asyncfile
 import std/httpcore
-import std/options
 import std/os
 import std/re
 import std/strutils
 import std/strformat
-import std/times
 import std/mimetypes
 import ../../base
 import ../../settings

@@ -1,6 +1,6 @@
 import std/httpcore
 import ../view
-from ../base import BasolatoVersion
+import ../base
 
 proc originalErrorPage*(status:HttpCode, msg:string): Component =
   let status = $status

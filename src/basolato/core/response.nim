@@ -7,7 +7,6 @@ import ./settings
 import ./logger
 import ./security/context
 import ./security/cookie
-import ./security/session
 import ./templates
 
 
