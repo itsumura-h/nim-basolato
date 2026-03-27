@@ -2,7 +2,6 @@ import std/asyncdispatch
 import std/httpcore
 import std/json
 import std/macros
-import std/os
 import std/re
 import std/strformat
 import std/strutils
@@ -488,9 +487,7 @@ proc createResponse*(
   pathParams:Params=nil
 ):Future[Response] {.async.} =
   ## run middleware -> run controller
-  # {.cast(gcsafe).}: # fix: "which is a global using GC'ed memory" in server.nim
   let context = Context.new(req, pathParams).await
-  setContext(context)
   let response1 = runMiddleware(req, context, route).await
   if httpMethod == HttpOptions:
     return response1

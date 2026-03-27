@@ -20,7 +20,7 @@ proc new*(_: type GlobalFeedTemplateModel, context: Context): Future[GlobalFeedT
   let articleDtoList = di.globalFeedArticleListDao.invoke(feedContext.offset, FEED_DISPLAY_COUNT).await
   let totalCount = di.globalFeedArticleCountDao.invoke().await
   let articleList = buildArticleList(articleDtoList, feedContext.loginUserId, context.csrfToken())
-  let paginatorModel = PaginatorComponentModel.new(feedContext.page, totalCount)
+  let paginatorModel = PaginatorComponentModel.new(feedContext.page, totalCount, context.request.url.path)
   return GlobalFeedTemplateModel(
     isLogin: feedContext.isLogin,
     articleList: articleList,

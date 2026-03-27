@@ -2,12 +2,10 @@ import std/asynchttpserver except Request
 import std/asyncdispatch
 import std/asyncfile
 import std/httpcore
-import std/options
 import std/os
 import std/re
 import std/strutils
 import std/strformat
-import std/times
 import std/mimetypes
 import ../../base
 import ../../settings
@@ -21,6 +19,12 @@ import ./request
 
 
 type ServeCoreArg = tuple[routes:Routes, host:string, port:int]
+
+proc userAgent(req: Request): string =
+  let values = req.headers.values("User-Agent")
+  if values.len > 0:
+    return values[0]
+  return ""
 
 proc serveCore(arg:ServeCoreArg){.async.} =
   let (routes, host, port) = arg
@@ -71,20 +75,20 @@ proc serveCore(arg:ServeCoreArg){.async.} =
     if response.status.is4xx:
       var headers = newHttpHeaders()
       headers["content-type"] = "text/html; charset=utf-8"
-      let userAgent = req.headers["User-Agent"]
+      let userAgent = req.userAgent()
       echoErrorMsg(&"{$response.status}  {$req.httpMethod}  {req.path}  {req.hostname}  {userAgent}")
       response = Response.new(response.status, errorPage(response.status, response.body), headers)
     elif response.status.is5xx:
       var headers = newHttpHeaders()
       headers["content-type"] = "text/html; charset=utf-8"
-      let userAgent = req.headers["User-Agent"]
+      let userAgent = req.userAgent()
       echoErrorMsg(&"{$response.status}  {$req.httpMethod}  {req.path}  {req.hostname}  {userAgent}")
       echoErrorMsg(response.body)
       response = Response.new(response.status, errorPage(response.status, response.body), headers)
     elif response.status == HttpCode(0):
       var headers = newHttpHeaders()
       headers["content-type"] = "text/html; charset=utf-8"
-      let userAgent = req.headers["User-Agent"]
+      let userAgent = req.userAgent()
       echoErrorMsg(&"{$Http404}  {$req.httpMethod}  {req.path}  {req.hostname}  {userAgent}")
       response = Response.new(Http404, errorPage(Http404, ""), headers)
 

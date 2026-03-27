@@ -69,11 +69,11 @@ proc new*(_: type UserArticleListTemplateModel, context: Context): Future[UserAr
     let articleDtoList = di.userFavoriteArticleListDao.invoke(userId, offset, FEED_DISPLAY_COUNT).await
     let totalCount = di.userFavoriteArticleCountDao.invoke(userId).await
     let articleList = buildArticleList(articleDtoList, loginUserId, context.csrfToken())
-    let paginatorModel = PaginatorComponentModel.new(page, totalCount)
+    let paginatorModel = PaginatorComponentModel.new(page, totalCount, path)
     return UserArticleListTemplateModel.new(isLogin, userId, articleList, paginatorModel, true)
   else:
     let articleDtoList = di.userArticleListDao.invoke(userId, offset, FEED_DISPLAY_COUNT).await
     let totalCount = di.userArticleCountDao.invoke(userId).await
     let articleList = buildArticleList(articleDtoList, loginUserId, context.csrfToken())
-    let paginatorModel = PaginatorComponentModel.new(page, totalCount)
+    let paginatorModel = PaginatorComponentModel.new(page, totalCount, path)
     return UserArticleListTemplateModel.new(isLogin, userId, articleList, paginatorModel, false)

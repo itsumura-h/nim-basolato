@@ -1,9 +1,7 @@
-import std/asyncnet
 import std/cgi
 import std/httpcore
 import std/json
 import std/net
-import std/options
 import std/os
 import std/parseutils
 import std/strformat

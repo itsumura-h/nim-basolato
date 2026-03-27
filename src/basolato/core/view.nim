@@ -1,6 +1,5 @@
 import std/asyncdispatch; export asyncdispatch
 import std/cgi; export cgi
-import std/json
 import std/re; export re
 import std/strutils; export strutils
 import std/tables; export tables

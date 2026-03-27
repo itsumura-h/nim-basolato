@@ -309,11 +309,3 @@ proc getParamsWithErrorsList*(self:Context):Future[tuple[params:Params, errors:s
   return (params: params, errors:errors)
 
 
-# ==================== Global Context ====================
-var globalContext:Context
-
-proc setContext*(c:Context) =
-  globalContext = c
-
-proc context*():Context =
-  return globalContext

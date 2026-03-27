@@ -26,11 +26,37 @@ proc main() =
         const data = "Hello, World!"
         const headers = "Content-Type: text/plain"
         req.send(Http200, data, headers)
+
       of "/db":
         let i = rand(1..10000)
         let res = rdb.getRow(sql"""SELECT * FROM "World" WHERE id = ? LIMIT 1""", i)
         let response = %*{"id": res[0].parseInt, "randomNumber": res[1].parseInt}
         req.send(Http200, $response)
+
+      of "/queries":
+        let queryObj = readData(url.query)
+        var count = 1
+        try:
+            count = clamp(parseInt(queryObj["queries"]), 1, 500)
+        except KeyError, ValueError:
+            count = 1
+        except:
+            req.send(Http502, "Something is wrong")
+
+        let response = newJArray()
+        var futures = newSeq[Future[JsonNode]](count)
+        for n in 1..count:
+          let i = rand(1..10000)
+          futures[n-1] = (proc():Future[JsonNode] {.async.} =
+            let res = rdb.getRow(sql""" SELECT * FROM "World" WHERE id = ? LIMIT 1 """, i)
+            let res2 = %*{"id": res[0].parseInt, "randomNumber": res[1].parseInt}
+            return res2
+          )()
+        let res = await all(futures)
+        for item in res:
+          response.add(item)
+        req.send($response)
+
       of "/updates":
         let queryObj = readData(url.query)
         var count = 1
@@ -57,7 +83,7 @@ proc main() =
       else:
         req.send(Http404)
 
-  let settings = initSettings(port=Port(5000))
+  let settings = initSettings(port=Port(8000))
   run(onRequest, settings)
 
 main()
