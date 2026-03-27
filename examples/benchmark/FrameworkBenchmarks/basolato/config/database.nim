@@ -13,12 +13,10 @@ let maxConnections =
 
 let rdb* = dbopen(
   PostgreSQL, # SQLite3 or MySQL or MariaDB or PostgreSQL
-  "postgresql://user:pass@postgreDb:5432/database",
-  maxConnections,
-  30,
-  LOG_TO_CONSOLE,
-  LOG_TO_FILE,
-  LOG_DIR,
+  url = "postgresql://user:pass@postgreDb:5432/database",
+  maxConnections = maxConnections,
+  timeout = 30,
+  shouldDisplayLog = false,
+  shouldOutputLogFile = false,
+  logDir = "",
 )
-
-let stdRdb* = open("postgreDb", "user", "pass", "database")
