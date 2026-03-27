@@ -11,8 +11,7 @@ Table of Contents
       * [new](#new)
       * [serve](#serve)
       * [build](#build)
-      * [migrate](#migrate)
-      * [migrate](#migrate-1)
+      * [database scripts](#database-scripts)
       * [make](#make)
          * [config](#config)
          * [key](#key)
@@ -175,23 +174,17 @@ ducere build --optimize=speed
 > nim c --mm:markAndSweep -d:useRealtimeGC ... main
 ```
 
-### migrate
-```sh
-ducere migrate
-```
-This is a alias for `nim c -r migrations/migrate`
+### database scripts
+Use these scripts when you want to apply migrations and seeders together.
 
-### migrate
 ```sh
-ducere migrate --reset --seed
+./database/develop.sh
+./database/staging.sh
+./database/production.sh
 ```
-This is an alias for `nim c -r database/migrations/migrate`
-
-- options
-  - `--reset`
-   Drop tables and re-migrate.
-  - `--seed`
-   Execute `database/seeders/seed` after migration.
+`develop.sh` runs the development migration and seeder entrypoint.
+`staging.sh` runs the staging migration and seeder entrypoint.
+`production.sh` runs the production migration and seeder entrypoint.
 
 ### make
 Create new file

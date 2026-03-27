@@ -29,10 +29,10 @@ To run migration, run `migrate.nim`
 nim c -r migrations/migrate
 ```
 
-You can also use `ducere` command.
-```sh
-ducere migrate
-```
+When you want to apply migrations and seeders together, run one of the shell scripts in `database/` instead.
+- `./database/develop.sh`
+- `./database/staging.sh`
+- `./database/production.sh`
 
 ## Example
 mirations/migration20210410131239user.nim

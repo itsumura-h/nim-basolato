@@ -899,7 +899,13 @@ nim c -r ./database/seeders/production.nim
   template_database_migrations_README_md = """
 Migrations
 ===
-Migrations are Database table difinition.
+Migrations are database table definitions.
+
+When you want to apply migrations together with seeding, run one of the shell scripts in `database/`:
+
+- `./database/develop.sh`
+- `./database/staging.sh`
+- `./database/production.sh`
 """
   template_database_migrations_default_migrate_nim = """
 import std/asyncdispatch
@@ -908,20 +914,20 @@ from ../../../config/database import rdb
 import ./migration_001_create_table
 
 
-proc main*() =
-  createTable(rdb).waitFor()
+proc main*() {.async.} =
+  createTable().await
 
 
-main()
+main().waitFor()
 createSchema(rdb).waitFor()
 """
   template_database_migrations_default_migration_001_create_table_nim = """
 import std/asyncdispatch
 import allographer/query_builder
 import allographer/schema_builder
+from ../../../config/database import rdb
 
-
-proc createTable*[T](rdb: T) {.async.} =
+proc createTable*() {.async.} =
   rdb.create(
     table("sample", [
       Column.increments("id"),
@@ -931,23 +937,24 @@ proc createTable*[T](rdb: T) {.async.} =
 """
   template_database_migrations_test_migrate_nim = """
 import std/asyncdispatch
-from ../../../config/database import rdb
+from ../../../config/database import testRdb
 import ./migration_001_create_table
 
 
-proc main*() =
-  createTable(rdb).waitFor()
+proc main*() {.async.} =
+  createTable().await
 
 
-main()
+main().waitFor()
 """
   template_database_migrations_test_migration_001_create_table_nim = """
 import std/asyncdispatch
 import allographer/query_builder
 import allographer/schema_builder
+from ../../../config/database import testRdb
 
 
-proc createTable*[T](rdb: T) {.async.} =
+proc createTable*() {.async.} =
   rdb.create(
     table("sample", [
       Column.increments("id"),
@@ -958,7 +965,13 @@ proc createTable*[T](rdb: T) {.async.} =
   template_database_seeders_README_md = """
 Seeders
 ===
-Seeders is used to create default data of database.
+Seeders are used to create default data of database.
+
+Run them through the shell scripts in `database/`:
+
+- `./database/develop.sh`
+- `./database/staging.sh`
+- `./database/production.sh`
 """
   template_database_seeders_data_sample_seeder_nim = """
 import std/asyncdispatch

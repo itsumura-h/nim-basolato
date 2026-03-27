@@ -10,7 +10,7 @@ Ducereコマンド
       * [new](#new)
       * [serve](#serve)
       * [build](#build)
-      * [migrate](#migrate)
+      * [database scripts](#database-scripts)
       * [make](#make)
          * [config](#config)
          * [key](#key)
@@ -170,17 +170,18 @@ ducere build --optimize=speed
 > nim c --mm:markAndSweep -d:useRealtimeGC ... main
 ```
 
-### migrate
-```sh
-ducere migrate --reset --seed
-```
-これは`nim c -r database/migrations/migrate`のエイリアスです
+### database scripts
+マイグレーションと seeder をまとめて実行したいときは、`database/` 配下のシェルスクリプトを使います。
 
-- オプション
-  - `--reset`
-   テーブルを破棄してマイグレーションし直します
-  - `--seed`
-   マイグレーション実行後に`database/seeders/seed`を実行します
+```sh
+./database/develop.sh
+./database/staging.sh
+./database/production.sh
+```
+
+`develop.sh` は開発用のマイグレーションと seeder を実行します。  
+`staging.sh` は staging 用のマイグレーションと seeder を実行します。  
+`production.sh` は production 用のマイグレーションと seeder を実行します。
 
 
 ### make
