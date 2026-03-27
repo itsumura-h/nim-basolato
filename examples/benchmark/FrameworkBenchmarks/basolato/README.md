@@ -37,3 +37,33 @@ http://localhost:8080/updates?queries=1
 ### FORTUNES
 
 http://localhost:8080/fortunes
+
+```
+./tfb --mode verify --test basolato
+./tfb --mode verify --test basolato --type cached-query
+./tfb --mode benchmark --test basolato --type cached-query
+./tfb --mode benchmark --test basolato 
+```
+
+- nim
+  - basolato
+  - asynchttpserver
+- go
+  - beego
+  - echo
+  - gin
+- rust
+  - axum
+  - actix
+- php
+  - laravel
+- python
+  - django
+  - fastapi
+- ruby
+  - rails
+
+```
+./tfb --mode verify --test basolato gin echo axum actix laravel django fastapi rails
+./tfb --mode benchmark --test basolato gin echo axum actix laravel django fastapi rails
+```
