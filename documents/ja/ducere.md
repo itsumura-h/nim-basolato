@@ -170,6 +170,8 @@ ducere build --optimize=speed
 > nim c --mm:markAndSweep -d:useRealtimeGC ... main
 ```
 
+本番ビルドでは `-d:danger`・`-d:release`・`-d:ssl`・リンク時最適化（`-flto`）、`--threads:off` を付与します。標準の asynchttpserver 系スタックは現状 `--threads:on` ではコンパイルできないため、スレッド有効化は想定していません。スタックトレース用の `--stackTrace` / `--lineTrace` は実行速度とバイナリサイズ優先のため付けません。本番で詳細なスタックが必要な場合は `nim c` を直接実行し、必要なトレース用スイッチを追加してください。`-flto` はリンクに時間がかかりますが、同一ソースではバイナリサイズの削減に効きます（`examples/example` での比較では LTO なし ORC ビルドが数 MB 規模で肥大化）。
+
 ### database scripts
 マイグレーションと seeder をまとめて実行したいときは、`database/` 配下のシェルスクリプトを使います。
 

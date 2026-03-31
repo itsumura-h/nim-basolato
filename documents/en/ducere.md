@@ -174,6 +174,8 @@ ducere build --optimize=speed
 > nim c --mm:markAndSweep -d:useRealtimeGC ... main
 ```
 
+Production builds pass `-d:danger`, `-d:release`, `-d:ssl`, link-time optimization (`-flto`), and `--threads:off`. The default asynchttpserver-based stack does not compile with `--threads:on` today (GC-safety), so multi-threaded compilation is not supported there. `--stackTrace` / `--lineTrace` are omitted to favor runtime throughput and smaller binaries; invoke `nim c` yourself and add trace switches if you need rich production stack traces. `-flto` slows linking but usually shrinks the binary (without LTO, an ORC build of `examples/example` grew to several megabytes in our measurements).
+
 ### database scripts
 Use these scripts when you want to apply migrations and seeders together.
 

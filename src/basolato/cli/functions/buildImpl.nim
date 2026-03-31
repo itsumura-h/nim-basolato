@@ -52,8 +52,6 @@ proc build*(workers:uint=0, force=false, httpbeast=false, httpx=false, autoResta
     --passC:"-flto" \
     --passL:"-flto" \
     --panics:on \
-    --stackTrace \
-    --lineTrace \
     --out:{outputFileName} \
     main.nim
   """
@@ -88,16 +86,5 @@ echo "running {workers} {processes}"
 
 
 #[
-
---threads:off \
---threadAnalysis:off \
--d:ssl \
--d:release \
--d:danger \
---checks:off \
--d:useMalloc \
--d:useRealtimeGC \
---panics:on \
---gc:orc \
-
+  Historical reference only; production flags are assembled in proc build above.
 ]#
