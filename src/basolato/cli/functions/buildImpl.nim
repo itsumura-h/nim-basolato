@@ -34,7 +34,7 @@ proc build*(workers:uint=0, force=false, httpbeast=false, httpx=false, autoResta
     if optimize == "speed":
       "--mm:markAndSweep -d:useRealtimeGC"
     else:
-      "--mm:orc -d:useMalloc"
+      "--mm:orc"
 
   if args.len > 0:
     outputFileName = args[0]
