@@ -1,12 +1,9 @@
-import basolato/settings
-import db_connector/db_postgres
 import allographer/connection
 
-when defined(release):
-  import std/cpuinfo
 
 let maxConnections =
   when defined(release):
+    import std/cpuinfo
     (2000 div countProcessors()) - 2
   else:
     95
