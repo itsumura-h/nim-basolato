@@ -6,30 +6,51 @@ fixブランチルール
 ===
 
 このブランチで実装することは以下の通りです。
-- `ducere new` 実行時に、生成される新規プロジェクトが `examples/aaa` 配下と同じディレクトリ構造・ファイル構成になるように `src/basolato/cli/functions/newImpl.nim` を更新する
-- 新規プロジェクト生成時のテンプレート取得を Git リポジトリの clone / download に依存しない方針へ置き換える
-- 生成する `.nimble` ファイル名を CLI で渡された `packageDir` と同名にする
+- `ducere build` が生成する Nim ビルドコマンドの最適化方針を見直す。
+- 候補となる Nim ビルドオプションを実際にコンパイルし、サンプルコードを使ってビルド時間・実行速度・生成物サイズを計測する。
+- 計測結果を根拠に、`/application/src/basolato/cli/functions/buildImpl.nim` の本番ビルドオプションを更新する。
+- 調査で得た知見が既存ドキュメントとずれる場合は、関連ドキュメントの補足や更新要否も整理する。
 
 ## 進捗
-- [x] 現状調査: `examples/aaa` のディレクトリ構造と `src/basolato/cli/functions/newImpl.nim` の現在実装を確認した
-- [x] `examples/aaa` から新規生成時に必要な最小ファイル群と、そのまま複製してよいファイル群を整理する
-- [x] Git clone を廃止した場合のテンプレート同梱方法を決め、`newImpl.nim` の責務分割を設計する
-- [x] `packageDir` を `.nimble` のファイル名と内容へ一貫して反映する実装方針を確定する
-- [x] `newImpl.nim` を更新し、`examples/aaa` 相当の生成結果になることを確認する
-- [x] `examples/aaa` の走査依存を除去し、ディレクトリとファイル内容を定数化したテンプレート生成へ切り替えた
+- [x] 現在の `fix` ブランチ名とブランチルールファイルの対応を確認した。
+- [x] 現行の `/application/src/basolato/cli/functions/buildImpl.nim` における本番ビルドオプションを確認した。
+- [x] 計測対象とする Nim ビルドオプションの比較軸を確定する。
+- [x] ベンチマークに使うサンプルコードと計測手順を用意する（`examples/example`、`scripts/bench_ducere_build_opts.sh`）。
+- [x] 各ビルドオプションで複数回計測し、実行速度・ビルド時間・生成物サイズを比較する。
+- [x] 採用方針を決め、`/application/src/basolato/cli/functions/buildImpl.nim` に反映する。
+- [x] `ducere` ドキュメント（ja/en）に本番フラグの補足を追記した。
 
 ## 参考資料
-- `examples/aaa`
-- `src/basolato/cli/functions/newImpl.nim`
-- `.cursor/rules/project.mdc`
-- `.cursor/rules/branch.mdc`
+- `/application/src/basolato/cli/functions/buildImpl.nim`
+- `/application/src/basolato/cli/functions/serveImpl.nim`
+- `/application/documents/ja/ducere.md`
+- `/application/documents/en/ducere.md`
+- `/application/runTest.sh`
+- `/application/examples/benchmark/FrameworkBenchmarks/basolato/config/database.nim`
+- `/application/examples/benchmark/web-frameworks/basolato/config.yaml`
+- `/application/scripts/bench_ducere_build_opts.sh`
 
 ## 調査結果・設計まとめ
-- 現在の `src/basolato/cli/functions/newImpl.nim` は `https://github.com/itsumura-h/nim-basolato-templates` を `git clone` し、`tmp/0.16` 配下の一部ディレクトリだけを移動する実装になっている
-- この実装では `examples/aaa` に存在する `.env.example`、`app/README.md`、各種 `README.md`、`database/schema.nim`、`database/seeders`、`tests/test_sample.nim` などの初期ファイル群と完全には一致しない
-- ユーザー要件として、今後は外部 Git リポジトリからテンプレートを取得せず、リポジトリ内に存在する雛形を元に新規プロジェクトを生成する必要がある
-- 生成対象の正は `examples/aaa` とし、`aaa.nimble` のようにサンプル固有名を含むファイルは `packageDir.nimble` に置き換える前提で扱う
-- 実装時は、サンプル固有値が残るファイルの有無を洗い出し、単純コピーで済むファイルと `packageDir` などの値を差し替えるファイルを分離して設計する
-- `config.nims`、`.env`、`.env.example` はテンプレート複製ではなく `makeConfig(baseDir)` で生成し、それ以外のファイルは `examples/aaa` からローカル複製する方針にした
-- `templateRoot` はカレントディレクトリ基準ではなく `currentSourcePath()` から上位へ探索して解決し、nimble install 後もパッケージ内の雛形を参照できるようにした
-- 現在の最終方針は、`examples/aaa` を実行時に読むのではなく、`newImpl.nim` 内にディレクトリ一覧とファイル内容の文字列定数を持ち、CLI がディレクトリを作成してから各テンプレートを書き出す方式にすること
+- 現状の本番ビルドでは `--threads:off`、`-d:ssl`、`-d:danger`、`-d:release`、`--parallelBuild:0`、`--passC:\"-flto\"`、`--passL:\"-flto\"`、`--panics:on` を付与している（2026-03 更新: `--stackTrace` / `--lineTrace` は計測の結果、本番から外す）。
+- `optimize=speed` は `--mm:markAndSweep -d:useRealtimeGC`、`optimize=memory` は `--mm:orc -d:useMalloc` を選ぶ実装のまま（CLI 互換維持）。
+- **コンパイル＋バイナリ（`examples/example`、`nim c -f` を3回の wall 時間平均、Nim 2.2.8 / Linux amd64）**
+
+| variant | avg compile (s) | bytes |
+|---------|-----------------|-------|
+| mem_danger_lto | 49.19 | 2380200 |
+| speed_danger_lto | 48.43 | 2080824 |
+| mem_danger_no_lto | 23.48 | 4848968 |
+| speed_danger_no_lto | 17.03 | 2492344 |
+| mem_nodanger_lto | 54.62 | 2654936 |
+| speed_nodanger_lto | 51.74 | 2245248 |
+
+- **`-flto`**: リンクは遅延するが、特に ORC ではバイナリが極端に肥大化しやすいため本番では継続採用。
+- **`-d:danger`**: 同一 GC 設定内でコンパイル時間・サイズが有利な傾向。本番では継続採用。
+- **`--threads:on`**: 標準サーバ（`server.nim`）は `Async` の GC-safety エラーでビルド不能。`--threads:off` を維持。
+- **実行速度（`wrk -t2 -c20`、`/sample/fib/12`、markAndSweep 本番相当ビルド）**: `--stackTrace`/`--lineTrace` ありで約 1500 req/s、なしで約 2280 req/s（同一マシン・短時間計測）。本番からトレース用スイッチを外す判断とした。
+- **memory vs speed GC**: 同一エンドポイントでは markAndSweep+useRealtimeGC が orc+useMalloc より桁違いに高スループット（計測時は数百 vs 千台 req/s オーダー）。CPU 負荷が高い処理では `optimize=speed` を推奨。メモリ制約環境では `memory` の意味は維持。
+- 採用判断は「ビルドが通ること」を前提に、次の優先順位で行う。
+- 実行速度
+- 安定性と互換性
+- 生成バイナリサイズ
+- 実装更新時は、CLI 引数 `optimize=speed|memory` の既存インターフェースを壊さない方針を第一候補とする。互換性を壊す場合は、理由をブランチルールに追記してから着手する。

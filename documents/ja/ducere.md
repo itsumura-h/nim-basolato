@@ -102,7 +102,6 @@ Options:
   --httpbeast        bool    false     set httpbeast
   --httpx            bool    false     set httpx
   -a, --autoRestart  bool    false     set autoRestart
-  -o=, --optimize=   string  "memory"  memory|speed
 ```
 何もオプションを付けない場合、8000番ポートを使い、シングルスレッド・マルチプロセスで起動します。  
 ビルドすると`startServer.sh`というシェルスクリプトが作られるので、これを実行することでサーバーを起動します。
@@ -159,16 +158,7 @@ ducere build --httpbeast
 ducere build --httpx
 ```
 
-optimizeオプションにはmemoryかspeedを選択することができます。  
-もしmemoryを選んだ時には `ORC` が使われ、メモリ消費が少なくなります。speedを選んだ時には `markAndSweep` が使われ、スループットがより多くなるようになります。
-
-```sh
-ducere build --optimize=memory
-> nim c --mm:orc -d:useMalloc ... main
-
-ducere build --optimize=speed
-> nim c --mm:markAndSweep -d:useRealtimeGC ... main
-```
+本番ビルドでは `-d:danger`・`-d:release`・`-d:ssl`・リンク時最適化（`-flto`）、`--mm:orc`、`--threads:off` を付与します。メモリ管理方式は `ORC`に統一されており、メモリ効率と安定性のバランスが取れた設定となっています。標準の asynchttpserver 系スタックは現状 `--threads:on` ではコンパイルできないため、スレッド有効化は想定していません。スタックトレース用の `--stackTrace` / `--lineTrace` は実行速度とバイナリサイズ優先のため付けません。本番で詳細なスタックが必要な場合は `nim c` を直接実行し、必要なトレース用スイッチを追加してください。`-flto` はリンクに時間がかかりますが、同一ソースではバイナリサイズの削減に効きます（`examples/example` での比較では LTO なし ORC ビルドが数 MB 規模で肥大化）。
 
 ### database scripts
 マイグレーションと seeder をまとめて実行したいときは、`database/` 配下のシェルスクリプトを使います。

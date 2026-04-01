@@ -2,7 +2,6 @@ import std/os
 import std/osproc
 import std/strformat
 import std/strutils
-from std/tables import toTable
 
 
 proc jsBuild() =
@@ -19,22 +18,13 @@ proc jsBuild() =
         quit(QuitFailure)
 
 
-const BUILD_HELP* = {
-  "optimize": "memory|speed"
-}.toTable()
-
-proc build*(workers:uint=0, force=false, httpbeast=false, httpx=false, autoRestart=false, optimize="memory", args:seq[string]) =
+proc build*(workers:uint=0, force=false, httpbeast=false, httpx=false, autoRestart=false, args:seq[string]) =
   ## Build for production.
   jsBuild()
   var outputFileName = "main"
   let fStr = if force: "-f" else: ""
   let serverStr = if httpbeast: "-d:httpbeast" elif httpx: "-d:httpx" else: ""
   let workers = if workers == 0: countProcessors().uint else: workers
-  let optimize =
-    if optimize == "speed":
-      "--mm:markAndSweep -d:useRealtimeGC"
-    else:
-      "--mm:orc -d:useMalloc"
 
   if args.len > 0:
     outputFileName = args[0]
@@ -43,7 +33,7 @@ proc build*(workers:uint=0, force=false, httpbeast=false, httpx=false, autoResta
     nim c \
     {fStr} \
     {serverStr} \
-    {optimize} \
+    --mm:orc \
     --threads:off \
     -d:ssl \
     -d:danger \
@@ -52,8 +42,6 @@ proc build*(workers:uint=0, force=false, httpbeast=false, httpx=false, autoResta
     --passC:"-flto" \
     --passL:"-flto" \
     --panics:on \
-    --stackTrace \
-    --lineTrace \
     --out:{outputFileName} \
     main.nim
   """
@@ -88,16 +76,5 @@ echo "running {workers} {processes}"
 
 
 #[
-
---threads:off \
---threadAnalysis:off \
--d:ssl \
--d:release \
--d:danger \
---checks:off \
--d:useMalloc \
--d:useRealtimeGC \
---panics:on \
---gc:orc \
-
+  Historical reference only; production flags are assembled in proc build above.
 ]#

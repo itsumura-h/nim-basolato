@@ -7,4 +7,4 @@ import ./functions/buildImpl
 when isMainModule:
   import cligen
   clCfg.version = BasolatoVersion
-  dispatchMulti([newImpl.new], [make], [serve], [build, help=BUILD_HELP])
+  dispatchMulti([newImpl.new], [make], [serve], [build])
