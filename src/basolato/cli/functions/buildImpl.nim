@@ -2,7 +2,6 @@ import std/os
 import std/osproc
 import std/strformat
 import std/strutils
-from std/tables import toTable
 
 
 proc jsBuild() =

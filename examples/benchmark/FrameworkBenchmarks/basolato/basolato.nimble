@@ -9,7 +9,7 @@ license       = "MIT"
 
 # Dependencies
 requires "nim >= 2.0.0"
-requires "https://github.com/itsumura-h/nim-basolato#main"
+requires "https://github.com/itsumura-h/nim-basolato#fix"
 
 task test, "run testament":
   echo staticExec("testament p \"./tests/test_*.nim\"")
