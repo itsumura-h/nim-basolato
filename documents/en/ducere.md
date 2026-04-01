@@ -106,7 +106,6 @@ Options:
   --httpbeast        bool    false     set httpbeast
   --httpx            bool    false     set httpx
   -a, --autoRestart  bool    false     set autoRestart
-  -o=, --optimize=   string  "memory"  memory|speed
 ```
 By default, it will be compiled to run port 8000 with single-thread and multi-process settings.  
 When you build application, shell script file named `startServer.sh` is generated. Run this file to start server.
@@ -163,18 +162,7 @@ ducere build --httpbeast
 ducere build --httpx
 ```
 
-You can choose optimize option for memory or speed.  
-If memory is selected, `ORC` is used for less memory consumption. If speed is selected, markAndSweep is used for more throughput.
-
-```sh
-ducere build --optimize=memory
-> nim c --mm:orc -d:useMalloc ... main
-
-ducere build --optimize=speed
-> nim c --mm:markAndSweep -d:useRealtimeGC ... main
-```
-
-Production builds pass `-d:danger`, `-d:release`, `-d:ssl`, link-time optimization (`-flto`), and `--threads:off`. The default asynchttpserver-based stack does not compile with `--threads:on` today (GC-safety), so multi-threaded compilation is not supported there. `--stackTrace` / `--lineTrace` are omitted to favor runtime throughput and smaller binaries; invoke `nim c` yourself and add trace switches if you need rich production stack traces. `-flto` slows linking but usually shrinks the binary (without LTO, an ORC build of `examples/example` grew to several megabytes in our measurements).
+Production builds pass `-d:danger`, `-d:release`, `-d:ssl`, link-time optimization (`-flto`), `--mm:orc`, and `--threads:off`. The memory management strategy is unified to `ORC`, providing a well-balanced configuration for memory efficiency and stability. The default asynchttpserver-based stack does not compile with `--threads:on` today (GC-safety), so multi-threaded compilation is not supported. `--stackTrace` / `--lineTrace` are omitted to favor runtime throughput and smaller binaries; invoke `nim c` yourself and add trace switches if you need rich production stack traces. `-flto` slows linking but usually shrinks the binary (without LTO, an ORC build of `examples/example` grew to several megabytes in our measurements).
 
 ### database scripts
 Use these scripts when you want to apply migrations and seeders together.
