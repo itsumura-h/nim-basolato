@@ -238,7 +238,8 @@ ducere build
 ## Benchmark
 
 TechEmpower Benchmark results:  
-[FrameworkBenchmarks](https://itsumura-h.github.io/FrameworkBenchmarks/)
+<!-- [FrameworkBenchmarks](https://itsumura-h.github.io/FrameworkBenchmarks/) -->
+<a href="https://itsumura-h.github.io/FrameworkBenchmarks/" target="_blank">FrameworkBenchmarks</a>
 
 
 ## Roadmap
