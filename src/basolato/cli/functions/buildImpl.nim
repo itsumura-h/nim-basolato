@@ -18,13 +18,12 @@ proc jsBuild() =
         quit(QuitFailure)
 
 
-proc build*(workers:uint=0, force=false, httpbeast=false, httpx=false, autoRestart=false, malloc=false, args:seq[string]) =
+proc build*(workers:uint=0, force=false, httpbeast=false, httpx=false, autoRestart=false, args:seq[string]) =
   ## Build for production.
   jsBuild()
   var outputFileName = "main"
   let fStr = if force: "-f" else: ""
   let serverStr = if httpbeast: "-d:httpbeast" elif httpx: "-d:httpx" else: ""
-  let mallocStr = if malloc: "-d:useMalloc" else: ""
   let workers = if workers == 0: countProcessors().uint else: workers
 
   if args.len > 0:
@@ -34,7 +33,6 @@ proc build*(workers:uint=0, force=false, httpbeast=false, httpx=false, autoResta
     nim c \
     {fStr} \
     {serverStr} \
-    {mallocStr} \
     --mm:orc \
     --threads:off \
     -d:ssl \
