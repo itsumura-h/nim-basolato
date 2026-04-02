@@ -11,3 +11,9 @@ diff:
 reinstall:
 	-nimble uninstall basolato -iy
 	nimble install -y
+
+clean:
+	rm -f ~/.nimble/nimbledata2.json
+	rm -fr ~/.nimble/pkgs2/*
+	rm -fr ~/.nimble/pkgcache/*
+	nimble install -y -d

@@ -5,52 +5,85 @@ alwaysApply: false
 fixブランチルール
 ===
 
-このブランチで実装することは以下の通りです。
-- `ducere build` が生成する Nim ビルドコマンドの最適化方針を見直す。
-- 候補となる Nim ビルドオプションを実際にコンパイルし、サンプルコードを使ってビルド時間・実行速度・生成物サイズを計測する。
-- 計測結果を根拠に、`/application/src/basolato/cli/functions/buildImpl.nim` の本番ビルドオプションを更新する。
-- 調査で得た知見が既存ドキュメントとずれる場合は、関連ドキュメントの補足や更新要否も整理する。
+このブランチで整理・実装することは以下の通りです。
+- FrameworkBenchmarks の PostgreSQL シナリオで、DB 接続時に `basolato` の性能が大きく低下する要因を切り分ける。
+- `updates` シナリオの verify fail / 実行失敗要因を、`basolato` 本体・`allographer`・ベンチマーク実装の3層に分けて整理する。
+- 改善案を「即効性が高いもの」と「中長期で効くもの」に分けて記録し、実装順序を判断できる状態にする。
 
 ## 進捗
-- [x] 現在の `fix` ブランチ名とブランチルールファイルの対応を確認した。
-- [x] 現行の `/application/src/basolato/cli/functions/buildImpl.nim` における本番ビルドオプションを確認した。
-- [x] 計測対象とする Nim ビルドオプションの比較軸を確定する。
-- [x] ベンチマークに使うサンプルコードと計測手順を用意する（`examples/example`、`scripts/bench_ducere_build_opts.sh`）。
-- [x] 各ビルドオプションで複数回計測し、実行速度・ビルド時間・生成物サイズを比較する。
-- [x] 採用方針を決め、`/application/src/basolato/cli/functions/buildImpl.nim` に反映する。
-- [x] `ducere` ドキュメント（ja/en）に本番フラグの補足を追記した。
+- [x] `basolato` ベンチマーク実装（`examples/benchmark/FrameworkBenchmarks/basolato`）の DB / query / update / fortune 経路を確認した。
+- [x] `allographer` の PostgreSQL 実装（接続プール、`findPlain`、`update`、prepared statement、non-blocking wait）を確認した。
+- [x] TechEmpower FrameworkBenchmarks の `update` verify 条件を確認し、`rows updated` / `executed queries` / 実更新確認が失敗要因になりうることを整理した。
+- [x] 改善案を `basolato` 本体改善、`allographer` 改善、ベンチマーク測定コード改善の3分類で整理した。
+- [x] `prepared_benchmark_controller.nim` の `query` で、非同期クロージャがループ変数を参照して範囲外アクセスしうる問題（SIGSEGV）を修正した。
+- [ ] `basolato` 側の `updates` を bulk update 化し、verify fail が解消するか確認する。
+- [ ] `allographer` 側の silent failure と prepared statement 再利用性を改善する。
+- [ ] ベンチマークコードを steady-state を測れる形へ寄せ、変更前後の比較を取る。
 
 ## 参考資料
-- `/application/src/basolato/cli/functions/buildImpl.nim`
-- `/application/src/basolato/cli/functions/serveImpl.nim`
-- `/application/documents/ja/ducere.md`
-- `/application/documents/en/ducere.md`
-- `/application/runTest.sh`
+- `/application/examples/benchmark/FrameworkBenchmarks/basolato/app/http/controllers/benchmark_controller.nim`
 - `/application/examples/benchmark/FrameworkBenchmarks/basolato/config/database.nim`
-- `/application/examples/benchmark/web-frameworks/basolato/config.yaml`
-- `/application/scripts/bench_ducere_build_opts.sh`
+- `/allographer/src/allographer/query_builder/models/postgres/postgres_exec.nim`
+- `/allographer/src/allographer/query_builder/models/postgres/postgres_open.nim`
+- `/allographer/src/allographer/query_builder/models/postgres/postgres_query.nim`
+- `/allographer/src/allographer/query_builder/libs/postgres/postgres_impl.nim`
+- `/allographer/documents/rdb/postgres_efficiency_report.md`
+- `/allographer/.cursor/rules/branch/333-prepared-statement.mdc`
+- `https://itsumura-h.github.io/FrameworkBenchmarks/`
+- `https://raw.githubusercontent.com/TechEmpower/FrameworkBenchmarks/master/toolset/test_types/update/update.py`
+- `https://raw.githubusercontent.com/TechEmpower/FrameworkBenchmarks/master/toolset/test_types/verifications.py`
 
 ## 調査結果・設計まとめ
-- 現状の本番ビルドでは `--threads:off`、`-d:ssl`、`-d:danger`、`-d:release`、`--parallelBuild:0`、`--passC:\"-flto\"`、`--passL:\"-flto\"`、`--panics:on` を付与している（2026-03 更新: `--stackTrace` / `--lineTrace` は計測の結果、本番から外す）。
-- `optimize=speed` は `--mm:markAndSweep -d:useRealtimeGC`、`optimize=memory` は `--mm:orc -d:useMalloc` を選ぶ実装のまま（CLI 互換維持）。
-- **コンパイル＋バイナリ（`examples/example`、`nim c -f` を3回の wall 時間平均、Nim 2.2.8 / Linux amd64）**
 
-| variant | avg compile (s) | bytes |
-|---------|-----------------|-------|
-| mem_danger_lto | 49.19 | 2380200 |
-| speed_danger_lto | 48.43 | 2080824 |
-| mem_danger_no_lto | 23.48 | 4848968 |
-| speed_danger_no_lto | 17.03 | 2492344 |
-| mem_nodanger_lto | 54.62 | 2654936 |
-| speed_nodanger_lto | 51.74 | 2245248 |
+### 1. basolato自体の改善
 
-- **`-flto`**: リンクは遅延するが、特に ORC ではバイナリが極端に肥大化しやすいため本番では継続採用。
-- **`-d:danger`**: 同一 GC 設定内でコンパイル時間・サイズが有利な傾向。本番では継続採用。
-- **`--threads:on`**: 標準サーバ（`server.nim`）は `Async` の GC-safety エラーでビルド不能。`--threads:off` を維持。
-- **実行速度（`wrk -t2 -c20`、`/sample/fib/12`、markAndSweep 本番相当ビルド）**: `--stackTrace`/`--lineTrace` ありで約 1500 req/s、なしで約 2280 req/s（同一マシン・短時間計測）。本番からトレース用スイッチを外す判断とした。
-- **memory vs speed GC**: 同一エンドポイントでは markAndSweep+useRealtimeGC が orc+useMalloc より桁違いに高スループット（計測時は数百 vs 千台 req/s オーダー）。CPU 負荷が高い処理では `optimize=speed` を推奨。メモリ制約環境では `memory` の意味は維持。
-- 採用判断は「ビルドが通ること」を前提に、次の優先順位で行う。
-- 実行速度
-- 安定性と互換性
-- 生成バイナリサイズ
-- 実装更新時は、CLI 引数 `optimize=speed|memory` の既存インターフェースを壊さない方針を第一候補とする。互換性を壊す場合は、理由をブランチルールに追記してから着手する。
+- `updates` だけが 1 リクエスト内で `countNum` 本の `Future` を生成して `all(futures).await` している。`queries` は直列なのに、`updates` だけ内部 fan-out しているため、HTTP の同時接続数に加えて DB アクセスの同時実行数まで増幅している。
+- 現状の `updates` は 1 件ごとに `SELECT + UPDATE` を個別実行している。TechEmpower の verify では「実際に更新された件数」と「クエリ数・更新行数」が見られるため、素直に 500 件分の個別更新を投げると接続待ちと DB 負荷が重くなりやすい。
+- `db` / `queries` は毎回 `rdb.table("World").findPlain(...)` を通っており、同一 SQL を高頻度で繰り返すのに prepared statement を使っていない。
+- `maxConnections` の決め方が強すぎる。`(2000 div countProcessors()) - 2` は CPU 数が少ない環境で数百接続になりうるが、単一プロセスの async サーバでその数を使うと PostgreSQL 側の context switch と待機列が増えやすい。
+
+改善方針:
+- `updates` は「個別 SELECT を維持しつつ、UPDATE は 1 文の bulk update」に変える。候補は `UPDATE ... FROM (VALUES ...)` か `CASE WHEN id = ... THEN ... END`。
+- `db` / `queries` / `fortune` はモジュールスコープで prepared statement を初期化し、リクエストごとに SQL 文字列組み立てと prepare をしない。
+- `updates` のレスポンス生成用データは先に集め、DB 更新は `id` でソートした配列から bulk update を組み立てる。verify 上は JSON 順序は必須ではないが、更新 SQL は安定した順序にした方が観測しやすい。
+- `maxConnections` はまず `32` または `64` に固定して計測し、そこから上げ下げする。接続数を増やすより、1 接続あたりの仕事量を増やす方が今回の構成には合う可能性が高い。
+
+### 2. allographer自体の改善
+
+- `getFreeConn` がタイムアウトすると `errorConnectionNum` を返すが、その後の `getRowPlain` / `exec` / `getAllRows` は例外ではなくそのまま `return` している。結果として、更新できていなくてもアプリ側では成功レスポンスを返せてしまう。
+- prepared statement は接続ごとに lazy prepare されるが、プール単位の cache がない。高頻度 SQL が複数接続に散ると、prepare の局所性が弱い。
+- `close()` は使った接続全てに `DEALLOCATE` を送る実装なので、短寿命の prepared statement を多用すると warm 状態を毎回捨てる。
+- DML 実行時の列型取得は現在は table 単位 cache になっているが、bulk update 用の raw SQL / prepared SQL を多用する場合は、そもそも query builder を通さない高速経路の価値が高い。
+
+改善方針:
+- `errorConnectionNum` に到達したときは no-op ではなく `DbError` を投げる。silent failure は benchmark だけでなく通常アプリでも危険。
+- `Connections` に SQL 単位の prepared cache を持たせ、同一 SQL の physical prepare を接続ごとに 1 回へ寄せる。
+- `close()` は論理 close に寄せ、物理 `DEALLOCATE` は明示 API に分離する。steady-state の benchmark では prepared state を維持できるようにする。
+- 接続固定 API、あるいは transaction / prepared context を足し、同一 logical operation の複数クエリを同じ接続に寄せられるようにする。
+- bulk update 用に `raw(...).exec()` だけでなく、prepared raw SQL を再利用できる経路を整える。今回のベンチマーク用途では query builder の汎用性よりも固定 SQL の再利用性が効く。
+
+### 3. benchmark_controller.nim のベンチマーク測定コード自体の改善
+
+- 現状のコントローラ実装は「フレームワークの素の書き方」に近いが、TechEmpower のような固定シナリオでは、一般用途向けの書き方をそのまま当てると不利になる。
+- `updates` の内部並列は steady-state の測定というより、アプリ側で追加のキューイングとプール競合を作る測定になっている。
+- `db` / `queries` / `fortune` / `updates` の全てで、レスポンス形成に不要なオブジェクト生成や JSON 変換の回数をまだ削れる。
+
+改善方針:
+- `benchmark_controller.nim` は「ベンチマーク専用実装」と割り切り、固定 SQL + prepared statement + 最小変換で書く。
+- `db` は prepared `SELECT id, randomnumber FROM World WHERE id = ?` を 1 回作って再利用する。
+- `queries` は `countNum` 回のランダム ID を集め、prepared `SELECT` を直列で回す。リクエスト内で DB fan-out はしない。
+- `fortune` も prepared `SELECT id, message FROM Fortune ORDER BY message ASC` を使う。
+- `updates` は次の順で行う。
+- ランダム `(id, randomNumber)` を `countNum` 件作る。
+- verify 用の query count を満たすために、各 id について個別 `SELECT` を行う。
+- 取得後の更新値配列から 1 文の bulk update SQL を組み立てて実行する。
+- JSON レスポンスは事前に確保した配列へ埋める。
+- ベンチマーク用コードは `basolato` の一般的な DX を示す場所ではなく、TFB の測定コードとして最短経路を優先する。汎用 API の使い勝手改善と benchmark 用特殊化は分けて評価する。
+
+### 実装優先順位
+
+1. `benchmark_controller.nim` の `updates` を bulk update 化して verify fail を解消する。
+2. `db` / `queries` / `fortune` を prepared statement 化し、HTTP あたりの SQL 構築コストを下げる。
+3. `config/database.nim` の `maxConnections` を保守的な値へ調整し、再計測する。
+4. `allographer` の silent failure を例外化する。
+5. `allographer` の prepared cache / logical close / 接続固定 API を設計どおり進める。

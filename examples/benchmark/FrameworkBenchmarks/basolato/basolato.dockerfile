@@ -32,7 +32,7 @@ WORKDIR /basolato
 
 # Install dependencies only; avoid building this benchmark package via nimble.
 RUN nimble install -y -d
-RUN ducere build -o:speed -a --httpbeast
+RUN ducere build -a --httpbeast
 
 
 FROM ubuntu:24.04 AS runtime
