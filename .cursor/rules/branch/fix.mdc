@@ -15,6 +15,7 @@ fixブランチルール
 - [x] `allographer` の PostgreSQL 実装（接続プール、`findPlain`、`update`、prepared statement、non-blocking wait）を確認した。
 - [x] TechEmpower FrameworkBenchmarks の `update` verify 条件を確認し、`rows updated` / `executed queries` / 実更新確認が失敗要因になりうることを整理した。
 - [x] 改善案を `basolato` 本体改善、`allographer` 改善、ベンチマーク測定コード改善の3分類で整理した。
+- [x] `prepared_benchmark_controller.nim` の `query` で、非同期クロージャがループ変数を参照して範囲外アクセスしうる問題（SIGSEGV）を修正した。
 - [ ] `basolato` 側の `updates` を bulk update 化し、verify fail が解消するか確認する。
 - [ ] `allographer` 側の silent failure と prepared statement 再利用性を改善する。
 - [ ] ベンチマークコードを steady-state を測れる形へ寄せ、変更前後の比較を取る。

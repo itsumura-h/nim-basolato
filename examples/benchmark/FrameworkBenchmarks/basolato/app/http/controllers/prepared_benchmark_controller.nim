@@ -71,10 +71,10 @@ proc query*(context:Context):Future[Response] {.async.} =
   for i in 0..<countNum:
     let id = rand(range1_10000)
     futures[i] = (
-      proc():Future[void] {.async.} =
+      proc(index: int, id: int):Future[void] {.async.} =
         let row = fetchWorldRow(id).await
-        response[i] = %*{"id": row[0].parseInt, "randomNumber": row[1].parseInt}
-    )()
+        response[index] = %*{"id": row[0].parseInt, "randomNumber": row[1].parseInt}
+    )(i, id)
 
   all(futures).await
 
