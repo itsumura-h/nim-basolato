@@ -16,9 +16,11 @@ fixブランチルール
 - [x] TechEmpower FrameworkBenchmarks の `update` verify 条件を確認し、`rows updated` / `executed queries` / 実更新確認が失敗要因になりうることを整理した。
 - [x] 改善案を `basolato` 本体改善、`allographer` 改善、ベンチマーク測定コード改善の3分類で整理した。
 - [x] `prepared_benchmark_controller.nim` の `query` で、非同期クロージャがループ変数を参照して範囲外アクセスしうる問題（SIGSEGV）を修正した。
-- [ ] `basolato` 側の `updates` を bulk update 化し、verify fail が解消するか確認する。
+- [x] `basolato` 側の `updates` を bulk update 化し、`query` / `fortune` / `db` を同一接続上の prepared statement 実行に寄せた。
+- [x] ベンチマークコードを steady-state を測れる形へ寄せ、`updates2` を比較用の個別更新経路として残した。
+- [x] `basolato` の PostgreSQL 接続数を保守的な値へ調整した。
 - [ ] `allographer` 側の silent failure と prepared statement 再利用性を改善する。
-- [ ] ベンチマークコードを steady-state を測れる形へ寄せ、変更前後の比較を取る。
+- [ ] 変更前後の実測値を取り、`updates` と `updates2` の差を比較する。
 
 ## 参考資料
 - `/application/examples/benchmark/FrameworkBenchmarks/basolato/app/http/controllers/benchmark_controller.nim`
@@ -79,6 +81,94 @@ fixブランチルール
 - 取得後の更新値配列から 1 文の bulk update SQL を組み立てて実行する。
 - JSON レスポンスは事前に確保した配列へ埋める。
 - ベンチマーク用コードは `basolato` の一般的な DX を示す場所ではなく、TFB の測定コードとして最短経路を優先する。汎用 API の使い勝手改善と benchmark 用特殊化は分けて評価する。
+
+### 4. `update` 改善の実装設計図
+
+目的:
+- `updates` の 1 リクエスト内 fan-out をやめ、接続プール競合を減らす。
+- `SELECT` と `UPDATE` を同一 connection に寄せ、prepared statement の warm 状態を最大限再利用する。
+- `UPDATE` の round trip 数を `countNum` 回から 1 回へ減らす。
+
+採用方針:
+- 1 リクエストにつき `rdb.withConn` を 1 回だけ呼び、その connection 上で `countNum` 件の `SELECT` を直列実行する。
+- `SELECT` は verify 条件を満たすため維持する。
+- `UPDATE` は individual update をやめ、`UPDATE "World" AS w SET randomnumber = v.randomnumber FROM (VALUES ...) AS v(id, randomnumber) WHERE w.id = v.id` の 1 文にまとめる。
+- レスポンス JSON は DB 実行とは分離して先に配列へ格納し、DB 成功後にそのまま返す。
+
+`update` の目標フロー:
+1. `countNum` を読む。
+2. `(id, randomNumber)` の組を `countNum` 件生成する。
+3. JSON レスポンス配列を同時に埋める。
+4. `rdb.withConn` で connection を 1 本確保する。
+5. その context 上で `worldByIdStmt.firstPlain(ctx, ...)` を `countNum` 回直列実行する。
+6. bulk update SQL と引数列を組み立てる。
+7. 同じ context 上で bulk update を 1 回だけ実行する。
+8. connection 返却後、JSON を返す。
+
+補助データ構造:
+- `type WorldUpdateRow = object`
+- `id: int`
+- `randomNumber: int`
+- `updates: seq[WorldUpdateRow]` を `countNum` サイズで事前確保する。
+- bulk update SQL 構築用に `seq[string]` または `seq[PreparedParam]` を作る。
+
+SQL 構築方針:
+- 候補 1: `VALUES ($1, $2), ($3, $4), ...` を含む raw SQL を毎回組み立てる。
+- 候補 2: `CASE WHEN id = ... THEN ... END` を組み立てる。
+- 第一候補は `UPDATE ... FROM (VALUES ...)` とする。
+理由:
+- PostgreSQL で素直で速く、`id` と `randomnumber` のペアをそのまま渡せる。
+- `CASE WHEN` より SQL が単純で、更新対象一覧との対応が追いやすい。
+
+allographer 側の利用方針:
+- 既存の `worldByIdStmt` はそのまま利用する。
+- bulk update は query builder を通さず raw SQL 実行を優先する。
+- bulk update も prepared statement 化できるなら理想だが、`countNum` に応じてプレースホルダ数が毎回変わるため、まずは raw SQL 実行を採用する。
+- 将来的には「可変長 VALUES を binding できる prepared raw SQL API」があると望ましい。
+
+`withConn` の使い方:
+- 現在の `update` は 1 件ごとに `withConn` を呼んでいるが、改善版では request 単位で 1 回だけ呼ぶ。
+- `update2` 型の「stmt ごとに connection を取り直す」経路は benchmark では使わない。
+- `queries` も同じ思想で、必要なら request 単位の `withConn` + 直列 `SELECT` に寄せる。
+
+期待する効果:
+- `getFreeConn` / `returnConn` の回数が大幅に減る。
+- request 内 DB fan-out がなくなり、HTTP concurrency と DB concurrency の二重増幅を防げる。
+- prepared statement の接続局所性が上がる。
+- `UPDATE` 往復回数が 1 回になり、PostgreSQL 側の parse/bind/execute 負荷も減る。
+
+副作用と注意点:
+- request 内部の並列性は落ちるが、もともと `updates` は DB 待ち主体なので、接続競合減少の効果が勝つ可能性が高い。
+- bulk update SQL が長くなるため、`countNum = 500` でも問題ない長さかを確認する。
+- duplicate id が発生しうるので、verify への影響を確認する。
+- `SELECT` 結果そのものはレスポンスに使わなくても、verify 上必要な「実際に read した事実」を崩さないように維持する。
+
+実装ステップ:
+1. `benchmark_controller.nim` に `WorldUpdateRow` と bulk update SQL 組み立て helper を追加する。
+2. `update` を「request 単位で `withConn` 1 回」に書き換える。
+3. `update2` は比較用として残すか、意図がわかるコメントをつける。
+4. `queries` についても内部 fan-out をやめる候補として別途比較する。
+5. 実測して、現行 `update` / 改善版 `update` / `update2` の差を確認する。
+
+### 実装結果
+
+- `update` は `withConn` で 1 接続に固定し、`SELECT` を直列実行したうえで、`WITH ... DISTINCT ON` の bulk update を 1 回だけ投げる実装に変更した。
+- `update2` は比較用の個別更新経路として、同じ `withConn` 上で `SELECT + UPDATE` を直列実行する形に変更した。
+- `db` / `query` / `fortune` も `withConn` 上の prepared statement 実行へ寄せ、リクエスト内の接続移動をなくした。
+- `maxConnections` は release 時に 64、debug 時に 16 へ引き下げた。
+
+計測観点:
+- RPS
+- latency
+- PostgreSQL の active connection 数
+- pool timeout の有無
+- verify pass / fail
+- `countNum=1, 20, 100, 500` での劣化カーブ
+
+判断基準:
+- `countNum` が大きいケースで改善版が安定して速いなら採用する。
+- `countNum=1` だけ微差で遅くても、TFB 全体スコアで勝つなら許容する。
+- verify 安定性を落とす変更は採用しない。
 
 ### 実装優先順位
 

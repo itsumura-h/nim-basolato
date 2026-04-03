@@ -1,5 +1,5 @@
 exec:
-	docker compose up -d
+	docker compose start
 	docker compose exec app-ubuntu bash
 
 stop:
