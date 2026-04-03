@@ -18,13 +18,13 @@
         "language": "Nim",
         "flavor": "None",
         "orm": "Full",
-        "platform": "asynchttpserver",
+        "platform": "httpbeast",
         "webserver": "None",
         "os": "Linux",
         "database_os": "Linux",
         "display_name": "Basolato",
         "notes": "",
-        "versus": "httpbeast, prologue"
+        "versus": "jester, prologue"
       }
     }
   ]

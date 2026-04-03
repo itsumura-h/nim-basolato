@@ -1,10 +1,10 @@
-FROM ubuntu:24.04 AS build
+FROM ubuntu:24.04
 
 # prevent timezone dialogue
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt update && \
-    apt upgrade -y
+RUN apt update
+RUN apt upgrade -y
 RUN apt install -y \
     # for build Nim
     build-essential \
@@ -15,7 +15,9 @@ RUN apt install -y \
     # for nim regex
     libpcre3-dev \
     curl \
-    git
+    git \
+    # for postgres
+    libpq-dev
 
 ARG VERSION="2.2.8"
 WORKDIR /root
@@ -34,32 +36,10 @@ WORKDIR /basolato
 RUN nimble install -y -d
 RUN ducere build -a --httpbeast
 
-
-FROM ubuntu:24.04 AS runtime
-
-# prevent timezone dialogue
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt update && \
-    apt upgrade -y
-RUN apt install -y \
-    # for build Nim
-    build-essential \
-    # for https
-    ca-certificates \
-    # for nim regex
-    libpcre3-dev \
-    # for postgres
-    libpq-dev
-
-WORKDIR /basolato
-COPY --from=build /basolato/main .
 RUN chmod +x main
-COPY --from=build /basolato/startServer.sh .
 RUN chmod +x startServer.sh
 
 ENV SECRET_KEY="secret_key"
-ENV DB_URL="postgresql://benchmarkdbuser:benchmarkdbpass@tfb-database:5432/hello_world"
 
 EXPOSE 8080
 
