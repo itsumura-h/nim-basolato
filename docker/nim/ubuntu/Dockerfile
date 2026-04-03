@@ -14,11 +14,13 @@ RUN apt install -y \
       ca-certificates \
       # for nim regex
       libpcre3-dev \
-      # for benchmark test
-      wrk \
       vim \
       curl \
       git \
+      # for benchmark test
+      wrk \
+      # make command
+      make \
       sqlite3 \
       libpq-dev \
       libmariadb-dev \
