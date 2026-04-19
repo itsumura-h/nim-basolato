@@ -5,6 +5,11 @@ exec:
 stop:
 	docker compose stop
 
+main:
+	git switch main
+	git pull
+	git pull -p
+
 diff:
 	git diff --cached > .diff
 
