@@ -21,6 +21,14 @@ else:
 
 type Controller* = proc(context:Context):Future[Response] {.async.}
 
+## Actions can optionally receive `Params` directly along with `Context`.
+## Nim 2.2 resolves proc overloads more strictly, so we wrap this signature into `Controller`.
+type ControllerWithParams* = proc(c: Context, p: Params): Future[Response] {.async.}
+
+proc toController*(action: ControllerWithParams): Controller =
+  return proc(ctx: Context): Future[Response] {.async.} =
+    return await action(ctx, ctx.params)
+
 type Middleware* = object
   action: Controller
 
@@ -425,6 +433,33 @@ func connect*(
   action:Controller
 ):Routes =
   add(HttpConnect, path, action)
+
+func get*(_: type Route, path: string, action: ControllerWithParams): Routes =
+  add(HttpGet, path, toController(action))
+
+func post*(_: type Route, path: string, action: ControllerWithParams): Routes =
+  add(HttpPost, path, toController(action))
+
+func put*(_: type Route, path: string, action: ControllerWithParams): Routes =
+  add(HttpPut, path, toController(action))
+
+func patch*(_: type Route, path: string, action: ControllerWithParams): Routes =
+  add(HttpPatch, path, toController(action))
+
+func delete*(_: type Route, path: string, action: ControllerWithParams): Routes =
+  add(HttpDelete, path, toController(action))
+
+func head*(_: type Route, path: string, action: ControllerWithParams): Routes =
+  add(HttpHead, path, toController(action))
+
+func options*(_: type Route, path: string, action: ControllerWithParams): Routes =
+  add(HttpOptions, path, toController(action))
+
+func trace*(_: type Route, path: string, action: ControllerWithParams): Routes =
+  add(HttpTrace, path, toController(action))
+
+func connect*(_: type Route, path: string, action: ControllerWithParams): Routes =
+  add(HttpConnect, path, toController(action))
 
 func group*(_:type Route, path:string, seqRoutes:seq[Routes]):Routes =
   let routes = Routes.new()

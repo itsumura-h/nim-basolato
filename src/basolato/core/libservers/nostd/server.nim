@@ -52,7 +52,10 @@ proc serve*(seqRoutes:seq[Routes], settings:Settings) =
         # check path match with controller routing → run middleware → run controller
         let routeMatch = routes.matchRoute(req.httpMethod, req.path)
         if not routeMatch.route.isNil:
-          response = createResponse(req, routeMatch.route, req.httpMethod, routeMatch.pathParams).await
+          # Nim 2.2+: asyncmacro reports createResponse as not GC-safe inside this {.gcsafe.} callback,
+          # though routing runs on httpbeast's worker thread model. See issue #375.
+          {.cast(gcsafe).}:
+            response = createResponse(req, routeMatch.route, req.httpMethod, routeMatch.pathParams).await
 
         if req.httpMethod == HttpHead:
           response.setBody("")
