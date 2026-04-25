@@ -14,6 +14,9 @@ import ../src/basolato/core/security/context
 proc ok(_:Context):Future[Response] {.async.} =
   return render("ok")
 
+proc okWithParams(_:Context, _:Params):Future[Response] {.async.} =
+  return render("ok")
+
 suite("route matcher"):
   test("static route match"):
     let routes = Routes.merge(@[
@@ -108,3 +111,12 @@ suite("route matcher"):
     let dynamicMatched = routes.matchRoute(HttpGet, "/api/users/101")
     check not dynamicMatched.route.isNil
     check dynamicMatched.pathParams.getStr("id") == "101"
+
+  test("controller with params signature can be registered"):
+    let routes = Routes.merge(@[
+      Route.get("/users/{id:int}", okWithParams),
+    ])
+
+    let matched = routes.matchRoute(HttpGet, "/users/5")
+    check not matched.route.isNil
+    check matched.pathParams.getStr("id") == "5"
