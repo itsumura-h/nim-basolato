@@ -9,9 +9,26 @@ import ../core/security/session
 import ../core/security/cookie
 import ../core/security/jwt
 import ../core/settings
-import ../core/logger
-import ../core/settings
 import ../middleware
+
+
+const jwtAlg = "HS256"
+
+
+proc parseJwtAlgorithm(jwtAlg: string): JwtAlgorithm =
+  case jwtAlg.toUpperAscii()
+  of "HS256":
+    jwtHS256
+  of "ES256":
+    jwtES256
+  of "EDDSA":
+    jwtEdDSA
+  of "RS256":
+    jwtRS256
+  of "PS256":
+    jwtPS256
+  else:
+    raise newException(ValueError, "unsupported JWT algorithm: " & jwtAlg)
 
 
 proc createExpire():int =
@@ -20,7 +37,14 @@ proc createExpire():int =
 proc sessionFromCookie*(c:Context, p:Params):Future[Response] {.async.} =
   var cookies = Cookies.new(c.request)
   let sessionPayload = cookies.get("session")
-  let (sessionDecoded, valid) = Jwt.decode(sessionPayload, settings.SECRET_KEY)
+  let algorithm = parseJwtAlgorithm(jwtAlg)
+  let sessionKey = Jwt.secretKey(algorithm, settings.SECRET_KEY)
+  let valid = Jwt.verify(algorithm, Jwt.publicKey(sessionKey), sessionPayload)
+  let sessionDecoded =
+    if valid:
+      Jwt.decode(sessionPayload)
+    else:
+      newJObject()
   
   let sessionOpt = 
     if valid:
@@ -48,7 +72,7 @@ proc sessionFromCookie*(c:Context, p:Params):Future[Response] {.async.} =
       "iat": now().toTime().toUnix(),
       "exp": (now() + initTimeInterval(minutes=SESSION_TIME)).toTime().toUnix(),
     }
-    let newSession = Jwt.encode($newPayload, settings.SECRET_KEY)
+    let newSession = Jwt.sign(algorithm, newPayload, sessionKey)
     cookies.set("session", newSession, expire=timeForward(SESSION_TIME, Minutes))
     return next().setCookie(cookies)
 
@@ -59,6 +83,6 @@ proc sessionFromCookie*(c:Context, p:Params):Future[Response] {.async.} =
     "iat": now().toTime().toUnix(),
     "exp": (now() + initTimeInterval(minutes=SESSION_TIME)).toTime().toUnix(),
   }
-  let newSession = Jwt.encode($newPayload, settings.SECRET_KEY)
+  let newSession = Jwt.sign(algorithm, newPayload, sessionKey)
   cookies.set("session", newSession, expire=timeForward(SESSION_TIME, Minutes))
   return next().setCookie(cookies)

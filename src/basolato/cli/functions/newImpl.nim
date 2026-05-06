@@ -221,9 +221,11 @@ import std/asyncdispatch
 import basolato/middleware
 
 
+const jwtAlg = "HS256"
+
 proc checkCsrfToken*(c:Context):Future[Response] {.async.} =
   try:
-    checkCsrfTokenForMpaHelper(c).await
+    checkCsrfTokenForMpaHelper(c, jwtAlg).await
     return next()
   except:
     # Define your own error handling logic here
@@ -233,11 +235,11 @@ proc checkCsrfToken*(c:Context):Future[Response] {.async.} =
 
 proc sessionFromCookie*(c:Context):Future[Response] {.async.} =
   try:
-    let cookies = sessionFromCookieHelper(c).await
+    let cookies = sessionFromCookieHelper(c, jwtAlg).await
     return next().setCookie(cookies)
   except:
     # Define your own error handling logic here
-    let cookies = createNewSessionHelper(c).await
+    let cookies = createNewSessionHelper(c, jwtAlg).await
     return next().setCookie(cookies)
     # return errorRedirect("/signin").setCookie(cookies)
 """

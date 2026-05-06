@@ -1,0 +1,191 @@
+---
+description: 378-nimcrypto-070-breakブランチでの開発時に読み込む
+alwaysApply: false
+---
+JWT暗号ライブラリ移行設計
+===
+
+このブランチで実装することは以下の通りです。
+- `src/basolato/core/security/jwt.nim` で使っている JWT 署名・検証用の暗号ライブラリを `nimcrypto` から `rustcrypto` に変更する。
+- `basolato.nimble` の依存関係から `nimcrypto == 0.6.0` を外し、`nim-rustcrypto` を利用する依存定義へ置き換える。
+- JWT の公開 API は変更してよい。`nim-rustcrypto` の `rustcrypto/jwt` high-level API に近い形へ寄せ、`payload: string` / `(JsonNode, bool)` 前提の旧 API から脱却する。
+- Basolato 内部のセッション Cookie 用 JWT 呼び出しも、新しい API に合わせて更新する。
+- 現行の `HS256` / `HS384` / `HS512` 中心の見せ方は見直し、`nim-rustcrypto` が high-level JWT helper として提供するアルゴリズムを公開面の基準にする。
+- `alg: none` 拒否、署名不一致時に成功扱いしないこと、セキュリティ安全側デフォルトは維持する。
+- このファイルは実装前の設計書として扱い、実装中に前提が違うと判明した場合は `調査結果・設計まとめ` を更新する。
+
+## 進捗
+- [x] プロジェクトルール・ブランチルール雛形を確認
+- [x] 現在ブランチに対応するルールファイルの有無を確認
+- [x] 現行 `jwt.nim` の公開 API と nimcrypto 利用箇所を確認
+- [x] JWT 利用箇所と既存テストを確認
+- [x] `nim-rustcrypto` の README / JWT / HMAC ドキュメントを確認
+- [x] 実装方針と設計方針を記録
+- [x] 公開 API 変更を許容する前提へ設計方針を更新
+- [x] `rustcrypto` の実パッケージ導入方法をローカルで検証
+- [x] 新しい JWT 公開 API を確定
+- [x] `HS384` / `HS512` を削除するか、別レイヤで拡張対象にするかを確定
+- [x] `jwt.nim` の実装差し替え
+- [x] セッション Cookie / middleware / response の JWT 呼び出しを新 API に更新
+- [x] `basolato.nimble` の依存関係更新
+- [x] JWT テストを新 API 前提へ更新
+- [x] `tests/security/test_jwt.nim` の回帰確認
+- [ ] セッション関連テストの回帰確認
+- [x] `src/basolato/core/security/README.md` の依存関係説明を更新
+- [x] `checkCsrfTokenForMpaHelper` / session helper に JWT アルゴリズム引数を追加
+- [x] 例・テンプレート側で JWT アルゴリズムを明示定数で渡す形へ更新
+- [x] `jwtAlg` を文字列（`"HS256"` / `"ES256"` など）で受け取り、helper 内で `JwtAlgorithm` へ変換する形へ更新
+
+## 参考資料
+- `.cursor/rules/project.mdc`
+- `.cursor/rules/branch.mdc`
+- `src/basolato/core/security/jwt.nim`
+- `src/basolato/core/security/README.md`
+- `basolato.nimble`
+- `tests/security/test_jwt.nim`
+- `src/basolato/middleware/session_from_cookie_middleware.nim`
+- `src/basolato/middleware.nim`
+- `tests/test_middleware.nim`
+- `tests/test_response.nim`
+- https://github.com/itsumura-h/nim-rustcrypto
+- https://raw.githubusercontent.com/itsumura-h/nim-rustcrypto/main/docs/jwt-json-web-tokens.md
+- https://raw.githubusercontent.com/itsumura-h/nim-rustcrypto/main/docs/hmac.md
+- https://raw.githubusercontent.com/itsumura-h/nim-rustcrypto/main/src/nim-rustcrypto/rustcrypto.nimble
+- https://raw.githubusercontent.com/itsumura-h/nim-rustcrypto/main/src/nim-rustcrypto/src/rustcrypto/jwt.nim
+- https://raw.githubusercontent.com/itsumura-h/nim-rustcrypto/main/src/nim-rustcrypto/src/rustcrypto/algorithm/hmac.nim
+
+## 調査結果・設計まとめ
+
+### 実装結果更新
+- Basolato のデフォルト JWT 署名方式は `HS256` とし、`src/basolato/core/security/jwt.nim` の `DefaultJwtAlgorithm` も `jwtHS256` に戻した。
+- `src/basolato/core/security/jwt.nim` は `rustcrypto/jwt` を re-export し、`Jwt.sign(payload, seed)` / `Jwt.verify(token, seed)` の seed ベース既定動作は HS256 になる。
+- セッション Cookie 用途では既存の `SECRET_KEY` 文字列からアルゴリズムごとの JWK を生成する `Jwt.secretKey(jwtAlg, seed)` / `Jwt.signingKey(seed)` / `Jwt.verificationKey(seed)` を Basolato 側 helper として追加した。`ES256` は明示指定時の opt-in として残し、`publicKey(secretKey)` が `x` / `y` を要求する EC JWK も扱えるようにした。
+- `checkCsrfTokenForMpaHelper` / `checkCsrfTokenForApi` / `sessionFromCookieHelper` / `createNewSessionHelper` は `jwtAlg` を文字列で受け取り、helper 内で `JwtAlgorithm` へ変換して `Jwt.secretKey(...)` / `Jwt.sign(...)` / `Jwt.verify(...)` を使うようにした。呼び出し側は `"HS256"` を既定として、必要なときに `"ES256"` などへ差し替える形にしている。
+- セッション内部の JWT 呼び出しは `Jwt.sign(jwtAlg, payload, Jwt.secretKey(jwtAlg, settings.SECRET_KEY))` と `Jwt.verify(jwtAlg, ...)` / `Jwt.decode(token)` に更新した。`jwtAlg` の既定値は `HS256` で、`verify` 失敗時は安全側で新規セッションへフォールバックする。
+- 公開面は `rustcrypto/jwt` の `Jwt.sign(jwtHS256, payload, key)` / `Jwt.verify(jwtHS256, publicKey, token)` / `Jwt.decode(token)` を主 API とし、`ES256` は明示指定の拡張先として残した。旧 `Jwt.encode` と `Jwt.decode(token, secretKey)` は削除対象とした。
+- `basolato.nimble` は `nimcrypto == 0.6.0` を削除し、`nim-rustcrypto` の GitHub subdir 依存を追加した。一方で Basolato 本体および生成 nimble の最小 Nim version は `2.0.0` に戻した。
+- `nim-rustcrypto` の要件は `nim >= 2.2.10` なので、Basolato の `nim >= 2.0.0` を維持したままではローカルでの完全な導入確認が通らない可能性がある。Nim 要件を戻したことで、このブランチでは依存導入の最終確認は保留事項として扱う。
+- `nim c -d:test tests/security/test_jwt.nim` は `rustcrypto FFI static archive is not available` で停止した。subdir インストール後の `nimble fetchRustFfi` は nimble task 内の `src/rustcrypto/tools/...` パスが解決できず失敗し、実パッケージ配下で `nim r rustcrypto/tools/fetch_rustcrypto_ffi.nim` を直接実行すると `cargo: not found` で停止した。コンパイル完了には Rust toolchain か prebuilt archive の取得導線が必要である。
+- `rg "nimcrypto|hmacSizeBlock"` で実装コード上の旧依存が消えていることを確認対象にする。ブランチ設計書内の過去調査記録としての文字列は残る。
+
+### 現状整理
+- `src/basolato/core/security/jwt.nim` は `import nimcrypto; export hmacSizeBlock` を行い、`sha256.hmac` / `sha384.hmac` / `sha512.hmac` で JWT の HMAC 署名を生成している。
+- `JwtAlgorithm` enum には `ES*` / `HS*` / `PS*` / `RS*` / `none` が並んでいるが、実装済みの署名生成は `HS256` / `HS384` / `HS512` のみである。
+- `decode` は `alg: none` / `None` / `NONE` を明示拒否し、`HS256` / `HS384` / `HS512` 以外は未対応として扱う。
+- `tests/security/test_jwt.nim` では `alg none` 拒否、`HS256` encode/decode、署名不一致時 false、`hs256` がデフォルトであることを確認している。
+- フレームワーク内部ではセッション Cookie の payload に対して `Jwt.encode($payload, settings.SECRET_KEY)` と `Jwt.decode(token, settings.SECRET_KEY)` を使っている。公開 API 変更を許容するため、これらの呼び出し側も新 API へ移行対象に含める。
+- `src/basolato/core/security/README.md` の依存関係説明には `jwt -> nimcrypto` と書かれているため、実装時には `jwt -> rustcrypto` へ更新する必要がある。
+
+### `nim-rustcrypto` 調査結果
+- `nim-rustcrypto` は RustCrypto を小さな Rust FFI static library 経由で Nim から使う binding である。
+- README では SHA-256、HMAC、JWT helper、RSA、ECDSA、Ed25519 などが提供対象として記載されている。
+- 導入方法は `.nimble` に `requires "https://github.com/itsumura-h/nim-rustcrypto?subdir=src/nim-rustcrypto"` を追加する形式で案内されている。
+- `src/nim-rustcrypto/rustcrypto.nimble` の要件は `nim >= 2.2.10` である。Basolato は現在 `nim >= 2.0.0` のため、ここは互換性上の重要な確認点になる。
+- `rustcrypto/jwt` の high-level API は `Jwt.sign(jwtHS256, payload, secretKey)`、`Jwt.verify(jwtHS256, Jwt.publicKey(secretKey), token)`、`Jwt.decode(token)` の形である。
+- `rustcrypto/jwt` は選択アルゴリズムとして `HS256` / `ES256` / `EdDSA` / `RS256` / `PS256` を扱う。現行 Basolato が enum として持つ `HS384` / `HS512` は high-level JWT helper の対象には含まれていない。
+- `rustcrypto/algorithm/hmac` は `hmacSha256(key, message): HmacSha256Mac` と `hmacSha256Hex` を提供しているが、調査時点の公開ドキュメントでは HMAC-SHA384 / HMAC-SHA512 は確認できない。
+- `rustcrypto/jwt` は `alg: none` を `ValueError` として拒否する設計になっている。
+
+### 採用方針
+- 第一方針は「Basolato の JWT 公開 API を `nim-rustcrypto` の `rustcrypto/jwt` high-level API に寄せる」こととする。
+- 旧 API の `Jwt.encode(payload: string, secretKey: string, algorithm = hs256): string` と `Jwt.decode(token, secretKey): (JsonNode, bool)` は維持必須としない。
+- 新 API は `JsonNode` payload、明示的な algorithm、JWK ベースの key を扱える形を主軸にする。
+- JWT の base64url 生成、署名入力生成、署名検証は Basolato 側で再実装せず、可能な限り `rustcrypto/jwt` に委譲する。
+- Basolato 側の `jwt.nim` は `rustcrypto/jwt` を再 export する薄い互換・命名レイヤ、またはフレームワーク向け helper に責務を縮小する。
+- セッション Cookie 用途では `HS256` を標準とし、`settings.SECRET_KEY` から `Jwt.secretKey(settings.SECRET_KEY)` を作って `Jwt.sign(jwtHS256, payload, secretKey)` / `Jwt.verify(jwtHS256, Jwt.publicKey(secretKey), token)` / `Jwt.decode(token)` を使う形へ寄せる。
+- 旧 API を残す場合でも deprecated な移行補助に留め、主 API とテストは新 API を基準にする。
+
+### 新しい公開 API 設計案
+- `rustcrypto/jwt` の型と proc をそのまま公開する案を第一候補にする。
+- 具体的には `JwtAlgorithm` を `jwtHS256` / `jwtES256` / `jwtEdDSA` / `jwtRS256` / `jwtPS256` へ寄せる。
+- `Jwk` を公開し、秘密鍵・公開鍵の受け渡しを `string secretKey` ではなく key object で表現する。
+- 署名は `Jwt.sign(algorithm, payload: JsonNode, secretKey: Jwk): string` を主 API にする。
+- 検証は `Jwt.verify(algorithm, publicKey: Jwk, token: string): bool` を主 API にする。
+- payload の取り出しは `Jwt.decode(token: string): JsonNode` を主 API にする。署名検証と decode を一体化した `(JsonNode, bool)` API は主 API にしない。
+- HMAC 用の簡易 helper として、必要なら `Jwt.secretKey(secret: string): Jwk` と `Jwt.publicKey(secretKey: Jwk): Jwk` を公開する。
+- Basolato 独自の enum 名 `hs256` などは廃止または deprecated とし、`rustcrypto/jwt` と同じ `jwtHS256` 形式へ統一する。
+
+想定する利用例:
+
+```nim
+import std/json
+import basolato/core/security/jwt
+
+let payload = %*{"sub": "user123"}
+let secretKey = Jwt.secretKey(settings.SECRET_KEY)
+let token = Jwt.sign(jwtHS256, payload, secretKey)
+
+if Jwt.verify(jwtHS256, Jwt.publicKey(secretKey), token):
+  let decoded = Jwt.decode(token)
+```
+
+### セッション Cookie 移行設計
+- 現行の `Jwt.encode($newPayload, settings.SECRET_KEY)` は `let secretKey = Jwt.secretKey(settings.SECRET_KEY); Jwt.sign(jwtHS256, newPayload, secretKey)` へ移行する。
+- 現行の `let (sessionDecoded, valid) = Jwt.decode(sessionPayload, settings.SECRET_KEY)` は `Jwt.verify(...)` を先に実行し、true の場合だけ `Jwt.decode(sessionPayload)` する形へ移行する。
+- 検証失敗時は現行と同じく新規 session を作る。
+- payload は `JsonNode` のまま渡し、`$newPayload` した文字列を API 境界にしない。
+- これにより、JWT の JSON 取り扱いと署名処理を `rustcrypto/jwt` 側に寄せ、Basolato 側の独自実装を減らす。
+
+### `HS384` / `HS512` の扱い
+- `nim-rustcrypto` の公開 docs と確認できたソースでは HMAC-SHA256 のみが提供されている。
+- 公開 API 変更を許容するため、`HS384` / `HS512` の互換維持は必須としない。
+- このブランチでは `rustcrypto/jwt` が high-level helper として提供する `HS256` を HMAC 系の公式対応とする。
+- `HS384` / `HS512` は旧 `JwtAlgorithm` enum とともに削除または deprecated とする。
+- 将来 `nim-rustcrypto` 側に HMAC-SHA384 / HMAC-SHA512 と JWT helper が追加された場合に、改めて公式対応へ戻す。
+- `nimcrypto` を残して `HS384` / `HS512` だけフォールバックする案は、このブランチの目的と矛盾するため採用しない。
+
+### `rustcrypto/jwt` high-level API を採用する理由
+- 公開 API 変更を許容するなら、Basolato 側で JWT compact serialization と HMAC 署名を独自実装し続ける理由は薄い。
+- `rustcrypto/jwt` は `alg: none` 拒否、JWK、複数署名方式をまとめて扱うため、セキュリティ基盤として責務が明確である。
+- `JsonNode` payload を受ける API に寄せることで、呼び出し側で `$payload` した JSON 文字列を渡す曖昧さをなくせる。
+- `verify` と `decode` を分離することで、検証していない token の payload を読める危険な使い方をレビューで見つけやすくなる。
+- 将来的に API 認証で `RS256` / `PS256` / `ES256` / `EdDSA` を扱う余地ができる。
+
+### 依存関係設計
+- `basolato.nimble` は `requires "nimcrypto == 0.6.0"` を削除し、`requires "https://github.com/itsumura-h/nim-rustcrypto?subdir=src/nim-rustcrypto"` を追加する。
+- ただし `nim-rustcrypto` が `nim >= 2.2.10` を要求しているため、Basolato の `requires "nim >= 2.0.0"` を維持できるかを実装前に検証する。
+- Basolato が Nim 2.0.x サポートを維持する必要がある場合、`nim-rustcrypto` 側の最小 Nim version 緩和が可能かを確認する。
+- FFI static archive の取得またはビルド手順が CI / ローカル install で問題なく動くかを確認する。`nim-rustcrypto` には `fetchRustFfi` / `buildRustFfiLocal` task がある。
+- GitHub Release にある prebuilt static archive を使うのか、利用者環境で Rust toolchain を要求するのかを明確にする。フレームワーク利用者の DX と CI 安定性を考えると、prebuilt 利用の導線を優先する。
+
+### エラー処理方針
+- `Jwt.sign` は入力不正、key 種別不一致、FFI エラーを `ValueError` として呼び出し側へ伝える。
+- `Jwt.verify` は署名不一致や alg 不一致では `false` を返し、token 形式が壊れている場合や key 種別が不正な場合は `ValueError` を許容する。
+- `Jwt.decode` は署名検証を行わず payload を読む API として扱う。利用箇所では必ず `verify` 後に呼ぶことを原則にする。
+- `alg: none` は `rustcrypto/jwt` の挙動に合わせて `ValueError` または verify false とし、成功扱いにはしない。
+- セッション Cookie の middleware では token 不正をユーザー入力由来として扱い、例外でリクエストを落とさず、新規 session 作成へフォールバックする。
+
+### テスト方針
+- `tests/security/test_jwt.nim` は新 API 前提に書き換える。
+- `Jwt.sign(jwtHS256, payload, secretKey)` で作成した token を `Jwt.verify(jwtHS256, Jwt.publicKey(secretKey), token)` で検証できることを確認する。
+- `Jwt.decode(token)` で payload を取り出せることを確認する。
+- `alg none` / `None` / `NONE` が成功扱いにならないことを確認する。
+- 署名不一致時に `Jwt.verify` が `false` になることを確認する。
+- 旧 `Jwt.encode` / `Jwt.decode(token, secretKey)` を削除する場合は、旧 API 前提のテストを削除または新 API に置き換える。
+- セッション Cookie 経路として `tests/test_middleware.nim` と `tests/test_response.nim` を確認する。
+- `HS384` / `HS512` を削除または未対応化する場合は、公開 enum から消えていること、または未対応であることが明確に分かるテストへ寄せる。
+- `nimcrypto` import が残っていないことを `rg "nimcrypto|hmacSizeBlock"` で確認する。
+
+### 実装手順案
+- 第1段階: `nim-rustcrypto` をローカルで導入し、`import rustcrypto/jwt` が Basolato から解決できることを確認する。
+- 第2段階: `src/basolato/core/security/jwt.nim` を `rustcrypto/jwt` の薄い公開レイヤへ変更する。独自 base64url / HMAC 実装は削除する。
+- 第3段階: 新しい公開 API を `Jwt.sign` / `Jwt.verify` / `Jwt.decode` / `Jwt.secretKey` / `Jwt.publicKey` 中心に確定する。
+- 第4段階: セッション Cookie と middleware の呼び出しを `verify` 後 `decode` の流れへ更新する。
+- 第5段階: `basolato.nimble` から `nimcrypto` を削除し、`nim-rustcrypto` 依存を追加する。
+- 第6段階: `src/basolato/core/security/README.md` の依存関係説明を更新する。
+- 第7段階: JWT / middleware / response 系テストを新 API 前提で実行し、セッション経路の回帰を確認する。
+
+### 採用しない方針
+- `nimcrypto` と `rustcrypto` を併用する移行は採用しない。目的が `nimcrypto` からの移行であり、依存を残すと `nimcrypto 0.7.0` 系の破壊的変更回避にならないため。
+- 旧 `Jwt.encode` / `Jwt.decode(token, secretKey)` API を主 API として維持する方針は採用しない。公開 API 変更を許容し、`rustcrypto/jwt` に寄せる。
+- Basolato 側で JWT compact serialization と HMAC 署名を再実装する方針は採用しない。暗号処理と JWT 組み立ては `rustcrypto/jwt` へ委譲する。
+- `alg: none` を許可する互換モードは採用しない。プロジェクトルール `NFW-SEC-001` の安全側デフォルトに反するため。
+- JWT claim validation、`exp` / `aud` / `iss` の検証追加はこのブランチでは扱わない。`nim-rustcrypto` docs でも claim validation は out of scope とされており、今回の目的は暗号バックエンド差し替えである。
+
+### 未決事項
+- `nim-rustcrypto` の `nim >= 2.2.10` 要件を Basolato が受け入れるか。
+- 新 API を `rustcrypto/jwt` の完全再 export にするか、Basolato 名の薄い wrapper にするか。
+- `HS384` / `HS512` を完全削除するか、deprecated enum として一時的に残すか。
+- FFI static archive の取得を `nimble install` 時に自動化できるか。
+- Linux / macOS / Windows のサポート範囲を Basolato としてどこまで保証するか。
+- `export hmacSizeBlock` を利用している外部ユーザーがいる可能性をどう扱うか。リポジトリ内利用は検出されていないため、内部的には削除候補だが、公開 API と見なすなら breaking change として記録する。

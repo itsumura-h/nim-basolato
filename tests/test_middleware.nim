@@ -30,7 +30,7 @@ proc loadCsrfToken():string =
   let response = client.get(&"{HOST}/csrf/test_routing")
   check response.code == Http200
   jwtToken = response.headers["Set-Cookie"].split(";")[0].split("=")[1]
-  let (decoded, _) = Jwt.decode(jwtToken, SECRET_KEY)
+  let (decoded, _) = Jwt.verifyAndDecode(jwtToken, SECRET_KEY)
   tokenInJwt = decoded["csrf_token"].getStr()
 
   let html = response.body().parseHtml()
