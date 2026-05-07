@@ -31,7 +31,7 @@ suite("test response"):
     var response = client.get(&"{HOST}/csrf/test_routing")
     check response.code == Http200
     let jwtToken = response.headers["Set-Cookie"].split(";")[0].split("=")[1]
-    let (decoded, _) = Jwt.decode(jwtToken, SECRET_KEY)
+    let (decoded, _) = Jwt.verifyAndDecode(jwtToken, SECRET_KEY)
     let sessionId = decoded["session_id"].getStr()
     client.headers = newHttpHeaders({
       "Cookie": &"session={jwtToken}",
