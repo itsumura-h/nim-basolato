@@ -16,10 +16,12 @@ diff:
 reinstall:
 	-nimble uninstall basolato -iy
 	nimble install -y
+	nimble install markdown
 
 clean:
 	-nimble uninstall basolato -iy
 	rm -f ~/.nimble/nimbledata2.json
 	rm -fr ~/.nimble/pkgs2/*
 	rm -fr ~/.nimble/pkgcache/*
-	nimble install -y -d
+	nimble install -y
+	nimble install markdown

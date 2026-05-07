@@ -1,11 +1,11 @@
-import bcrypt
+import rustcrypto/algorithm/bcrypt
 
 
-func genHashedPassword*(val:string):string =
-  let salt = genSalt(10)
-  return val.hash(salt)
+proc genHashedPassword*(val:string):string =
+  return Bcrypt.hashPassword(val)
 
-func isMatchPassword*(input, hashedPassword:string):bool =
-  let salt = hashedPassword[0..28]
-  let hashedInput = input.hash(salt)
-  return compare(hashedInput, hashedPassword)
+proc isMatchPassword*(input, hashedPassword:string):bool =
+  try:
+    return Bcrypt.verifyPassword(input, hashedPassword)
+  except ValueError:
+    return false
