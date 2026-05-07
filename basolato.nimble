@@ -23,6 +23,7 @@ requires "bcrypt >= 0.2.1"
 requires "cligen >= 1.5.9"
 requires "redis >= 0.3.0"
 requires "sass >= 0.1.0"
+requires "regex >= 0.26.3"
 requires "https://github.com/itsumura-h/nim-rustcrypto?subdir=src/nim-rustcrypto"
 requires "checksums >= 0.1.0"
 

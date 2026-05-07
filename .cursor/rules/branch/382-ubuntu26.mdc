@@ -19,14 +19,14 @@ Ubuntu 26.04 対応: std/re から nim-regex への移行設計
 - [x] `nim-regex` の公開 API、依存関係、制約を確認
 - [x] Ubuntu / Debian 側の PCRE1 廃止背景を確認
 - [x] 実装方針と設計方針を記録
-- [ ] `basolato.nimble` に `regex` 依存を追加
-- [ ] Basolato 内部の `std/re` import を `regex` へ置き換え
-- [ ] validation の `Regex` 型を `nim-regex` 前提へ移行
-- [ ] view / serve / server の正規表現呼び出しを `nim-regex` 前提へ移行
-- [ ] テストコードとドキュメントの正規表現サンプルを新 API 前提へ更新
-- [ ] Dockerfile / README / benchmark 設定から `libpcre3-dev` 前提を削除
+- [x] `basolato.nimble` に `regex` 依存を追加
+- [x] Basolato 内部の `std/re` import を `regex` へ置き換え
+- [x] validation の `Regex` 型を `nim-regex` 前提へ移行
+- [x] view / serve / server の正規表現呼び出しを `nim-regex` 前提へ移行
+- [x] テストコードとドキュメントの正規表現サンプルを新 API 前提へ更新
+- [x] Dockerfile / README / benchmark 設定から `libpcre3-dev` 前提を削除
 - [ ] Ubuntu 26.04 コンテナでビルド・テスト確認
-- [ ] `rg "std/re|libpcre3|libpcre.so.3|pcre-dev"` で旧依存が残っていないことを確認
+- [x] `rg "std/re|libpcre3|libpcre.so.3|pcre-dev"` で旧依存が残っていないことを確認
 
 ## 参考資料
 - `.cursor/rules/project.mdc`
@@ -186,6 +186,11 @@ v.notRegex("base", re2"\d+")
 - `libpcre2-dev` を入れて `std/re` を使い続ける方針は採用しない。Nim の `std/re` は PCRE1 binding であり、PCRE2 を入れても `libpcre.so.3` 問題は解決しない。
 - Basolato 側で `std/re` と `regex` の二重対応を持つ方針は採用しない。公開 API が曖昧になり、Ubuntu 26.04 での依存削除確認も難しくなる。
 - PCRE 互換性を優先して backreference 等を再実装する方針は採用しない。`nim-regex` の線形時間保証と安全側の設計を優先する。
+
+### 実装後の補足
+- `view.nim` は `regex` をそのまま export し、利用側は `re2"..."` と `Regex2` を直接使う構成にした。
+- `serveImpl.nim` のホットリロード対象判定は正規表現ではなく `endsWith` に置き換え、依存をさらに減らした。
+- `validation.nim` の公開 `regex/notRegex` は全文一致ではなく部分一致の期待があったため、`contains` ベースに合わせた。内部の `array` / `password` / `domain` / `url` / `uuid` は全文一致の `match` のまま維持している。
 
 ### 未決事項
 - `regex >= 0.26.3` の下限で固定するか、より古い Nimble package でも十分か。

@@ -1,11 +1,11 @@
 import std/asyncdispatch
 import std/os
 import std/json
-import std/re
 import std/tables
 import std/strformat
 import std/strutils
 import std/unicode
+import regex
 import ./core/settings
 import ./core/logger
 import ./core/security/context
@@ -975,7 +975,7 @@ proc `notIn`*(self:RequestValidation, key:string, list:openArray[string], attrib
         .replace(":attribute", attribute)
       self.errors.add(key, message)
 
-proc notRegex*(self:RequestValidation, key:string, reg:Regex, attribute="") =
+proc notRegex*(self:RequestValidation, key:string, reg:Regex2, attribute="") =
   let attribute = setAttribute(key, attribute)
   if self.params.hasKey(key) and hasMessage("not_regex"):
     let value = self.params.getStr(key)
@@ -1021,7 +1021,7 @@ proc password*(self:RequestValidation, keys:openArray[string]) =
   for key in keys:
     self.password(key)
 
-proc regex*(self:RequestValidation, key:string, reg:Regex, attribute="") =
+proc regex*(self:RequestValidation, key:string, reg:Regex2, attribute="") =
   let attribute = setAttribute(key, attribute)
   if self.params.hasKey(key) and hasMessage("regex"):
     let value = self.params.getStr(key)

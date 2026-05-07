@@ -12,9 +12,6 @@ RUN apt update && \
       xz-utils \
       # for https
       ca-certificates \
-      # for nim regex
-      # libpcre3-dev \
-      libpcre2-dev \
       vim \
       curl \
       git \

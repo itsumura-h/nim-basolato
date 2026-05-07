@@ -31,8 +31,6 @@ RUN apt install -y \
       xz-utils \
       # for https
       ca-certificates \
-      # for nim regex
-      libpcre3-dev \
       vim \
       curl \
       git \
