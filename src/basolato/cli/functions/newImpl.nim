@@ -221,6 +221,7 @@ import std/asyncdispatch
 import basolato/middleware
 
 
+# "HS256", "ES256", "EDDSA", "RS256", "PS256"
 const jwtAlg = "HS256"
 
 proc checkCsrfToken*(c:Context):Future[Response] {.async.} =

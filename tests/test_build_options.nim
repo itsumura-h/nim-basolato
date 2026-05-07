@@ -10,35 +10,32 @@ import std/strformat
 import std/unittest
 
 
-proc checkServerBuild(label, defineFlag: string) =
+proc checkServerBuild(label, defineFlag: string):int =
   let
     serverDir = currentSourcePath().parentDir() / "server"
-    outputPath = getTempDir() / &"basolato-server-build-{label}-{getCurrentProcessId()}"
     command = &"ducere build {defineFlag}"
 
-  try:
-    let (output, exitCode) = execCmdEx(
-      command,
-      options = {poStdErrToStdOut, poUsePath},
-      workingDir = serverDir,
-    )
+  let (output, exitCode) = execCmdEx(
+    command,
+    options = {poStdErrToStdOut, poUsePath},
+    workingDir = serverDir,
+  )
+
+  if exitCode != 0:
     echo output
 
-    if exitCode != 0:
-      echo output
-
-    check exitCode == 0
-  finally:
-    if fileExists(outputPath):
-      removeFile(outputPath)
+  return exitCode
 
 
 suite("server build options"):
   test("asynchttpserver build"):
-    checkServerBuild("asynchttpserver", "")
+    let exitCode = checkServerBuild("asynchttpserver", "")
+    check exitCode == 0
 
   test("httpx build"):
-    checkServerBuild("httpx", "--httpx")
+    let exitCode = checkServerBuild("httpx", "--httpx")
+    check exitCode == 0
 
   test("httpbeast build"):
-    checkServerBuild("httpbeast", "--httpbeast")
+    let exitCode = checkServerBuild("httpbeast", "--httpbeast")
+    check exitCode == 0
