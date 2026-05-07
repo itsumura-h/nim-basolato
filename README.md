@@ -13,41 +13,50 @@ An asynchronous multiprocessing full-stack web framework for Nim, based on [asyn
 
 :warning: This project is under heavy development. It's not yet production-ready. :warning:
 
-The only supported OS are Alpine, Debian, and Ubuntu. 
+The only supported OS are Alpine, Debian, and Ubuntu.
+The Docker example below assumes Ubuntu 26.04.
 
 ```dockerfile
-FROM ubuntu:22.04
+FROM ubuntu:26.04
 
 # prevent timezone dialogue
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt update --fix-missing && \
-    apt upgrade -y
-RUN apt install -y --fix-missing \
-        gcc \
-        g++ \
-        xz-utils \
-        ca-certificates \
-        curl \
-        git \
-        sqlite3 \
-        libpq-dev \
-        libmariadb-dev \
-        libsass-dev
+RUN apt update
+RUN apt upgrade -y
+RUN apt install -y \
+      # for build Nim and make
+      build-essential \
+      # for unzip tar.xz
+      xz-utils \
+      # for https
+      ca-certificates \
+      # for nim regex
+      libpcre3-dev \
+      vim \
+      curl \
+      git \
+      # for benchmark test
+      wrk \
+      # for database
+      sqlite3 \
+      libpq-dev \
+      libmariadb-dev \
+      libsass-dev
 
-ARG VERSION="2.0.0"
+ARG NIM_VERSION="2.2.0"
 WORKDIR /root
 RUN curl https://nim-lang.org/choosenim/init.sh -o init.sh
 RUN sh init.sh -y
 RUN rm -f init.sh
 ENV PATH $PATH:/root/.nimble/bin
-RUN choosenim ${VERSION}
+RUN choosenim ${NIM_VERSION}
 
 ENV PATH $PATH:/root/.nimble/bin
-WORKDIR /root/project
+WORKDIR /application
 COPY ./basolato.nimble .
 RUN nimble install -y -d
-RUN git config --global --add safe.directory /root/project
+RUN git config --global --add safe.directory /application
 ```
 
 
@@ -155,14 +164,12 @@ The overall file structure is as follows:
 │   │   │   └── migrate.nim
 │   │   └── test
 │   │       └── migrate.nim
-│   ├── production.sh
-│   ├── seeders
-│   │   ├── data
-│   │   │   └── sample_seeder.nim
-│   │   ├── develop.nim
-│   │   ├── production.nim
-│   │   └── staging.nim
-│   └── staging.sh
+│   └── seeders
+│   　   ├── data
+│   　   │   └── sample_seeder.nim
+│   　   ├── develop.nim
+│   　   ├── production.nim
+│   　   └── staging.nim
 ├── main.nim
 ├── public
 │   ├── basolato.svg

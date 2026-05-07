@@ -1,11 +1,11 @@
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 # prevent timezone dialogue
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt update
-RUN apt upgrade -y
-RUN apt install -y \
+RUN apt update && \
+    apt upgrade -y && \
+    apt install -y \
       # for build Nim and make
       build-essential \
       # for unzip tar.xz
@@ -13,14 +13,14 @@ RUN apt install -y \
       # for https
       ca-certificates \
       # for nim regex
-      libpcre3-dev \
+      # libpcre3-dev \
+      libpcre2-dev \
       vim \
       curl \
       git \
       # for benchmark test
       wrk \
-      # make command
-      make \
+      # for database
       sqlite3 \
       libpq-dev \
       libmariadb-dev \
@@ -42,9 +42,6 @@ RUN tar zxf nimlangserver.tar.gz
 RUN rm -f nimlangserver.tar.gz
 RUN mv nimlangserver /root/.nimble/bin/
 
-WORKDIR /application
-COPY ./basolato.nimble .
-RUN nimble install -y -d
 
 RUN git config --global --add safe.directory /application
 

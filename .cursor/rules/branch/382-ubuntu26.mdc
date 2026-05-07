@@ -1,0 +1,195 @@
+---
+description: 382-ubuntu26ブランチでの開発時に読み込む
+alwaysApply: false
+---
+Ubuntu 26.04 対応: std/re から nim-regex への移行設計
+===
+
+このブランチで実装することは以下の通りです。
+- `std/re` および PCRE1 (`libpcre.so.3` / `libpcre3-dev`) への依存を削除し、Ubuntu 26.04 環境で追加の PCRE1 互換パッケージなしにビルド・テストできるようにする。
+- 正規表現エンジンは `std/re` の代替として `regex` (`https://github.com/nitely/nim-regex`) を採用する。
+- アプリケーション利用者が使う validation API と view helper の使い勝手は、可能な範囲で維持する。ただし `std/re.Regex` 型そのものとの互換維持は目的に含めない。
+- Docker / README / benchmark Dockerfile などに残る `libpcre3-dev` 前提の記述を Ubuntu 26.04 対応後の依存関係へ更新する。
+- このファイルは実装前の設計書として扱う。実装中に前提が違うと判明した場合は `調査結果・設計まとめ` を更新する。
+
+## 進捗
+- [x] プロジェクトルール・ブランチルール雛形を確認
+- [x] 現在ブランチ `382-ubuntu26` に対応する既存ブランチルールがないことを確認
+- [x] `std/re` / `libpcre3-dev` / `libpcre2-dev` / `regex` の利用箇所を洗い出し
+- [x] `nim-regex` の公開 API、依存関係、制約を確認
+- [x] Ubuntu / Debian 側の PCRE1 廃止背景を確認
+- [x] 実装方針と設計方針を記録
+- [ ] `basolato.nimble` に `regex` 依存を追加
+- [ ] Basolato 内部の `std/re` import を `regex` へ置き換え
+- [ ] validation の `Regex` 型を `nim-regex` 前提へ移行
+- [ ] view / serve / server の正規表現呼び出しを `nim-regex` 前提へ移行
+- [ ] テストコードとドキュメントの正規表現サンプルを新 API 前提へ更新
+- [ ] Dockerfile / README / benchmark 設定から `libpcre3-dev` 前提を削除
+- [ ] Ubuntu 26.04 コンテナでビルド・テスト確認
+- [ ] `rg "std/re|libpcre3|libpcre.so.3|pcre-dev"` で旧依存が残っていないことを確認
+
+## 参考資料
+- `.cursor/rules/project.mdc`
+- `.cursor/rules/branch.mdc`
+- `basolato.nimble`
+- `README.md`
+- `docker/nim/ubuntu/Dockerfile`
+- `docker/nim/ubuntu/test.Dockerfile`
+- `docker/nim/alpine/Dockerfile`
+- `examples/benchmark/FrameworkBenchmarks/basolato/basolato.dockerfile`
+- `examples/benchmark/web-frameworks/basolato/config.yaml`
+- `src/basolato/core/validation.nim`
+- `src/basolato/request_validation.nim`
+- `src/basolato/cli/functions/serveImpl.nim`
+- `src/basolato/core/route.nim`
+- `src/basolato/core/view.nim`
+- `src/basolato/core/libservers/std/server.nim`
+- `src/basolato/core/libservers/nostd/server.nim`
+- `tests/test_validation.nim`
+- `tests/test_request_validation.nim`
+- `https://github.com/nitely/nim-regex`
+- `https://nitely.github.io/nim-regex/regex.html`
+- `https://raw.githubusercontent.com/nitely/nim-regex/master/regex.nimble`
+- `https://nim-lang.org/docs/re.html`
+- `https://nim-lang.org/docs/pcre.html`
+- `https://bugs-devel.debian.org/cgi-bin/bugreport.cgi?bug=1071691`
+- `https://documentation.ubuntu.com/release-notes/26.04/summary-for-lts-users/`
+
+## 調査結果・設計まとめ
+
+### 背景
+- Nim の `std/re` は PCRE1 に依存する。Nim の `std/pcre` ドキュメントでも deprecated と表示されている。
+- Debian では `nim` が obsolete な PCRE1 (`libpcre3`) に依存していることが bug として扱われ、PCRE1 は end of life で削除方向と説明されている。
+- Ubuntu 26.04 では `libpcre.so.3` 前提の構成を避ける必要がある。Basolato の Ubuntu 26.04 Dockerfile はすでに `libpcre3-dev` をコメントアウトし `libpcre2-dev` を入れているが、アプリケーションコードが `std/re` を import している限り根本解決にならない。
+- `nim-regex` は Pure Nim の正規表現エンジンで、README では `nimble install regex`、Nim `>= 1.6.0`、`unicodedb >= 0.13.2` が要件として示されている。Basolato の Nim `>= 2.0.0` 要件とは衝突しない。
+- `nim-regex` は線形時間マッチングを保証し、ユーザー入力由来の文字列にも扱いやすい。一方で PCRE と完全互換ではなく、線形時間保証を保てない機能、代表例として backreference は対象外である。
+
+### 現行利用箇所
+- `src/basolato/core/validation.nim`
+  - `array` / `domain` / `password` / `url` / `uuid` などの内部 validation で `re"..."` と `match` / `find` を使っている。
+  - 公開 API として `regex*(self: Validation, value: string, reg: Regex)` と `notRegex*(..., reg: Regex)` を持つ。
+- `src/basolato/request_validation.nim`
+  - `std/re` を import し、`include core/validation` により validation 実装を取り込む。
+  - 公開 API として `regex*(self: RequestValidation, key: string, reg: Regex, ...)` と `notRegex*(..., reg: Regex, ...)` を持つ。
+- `src/basolato/core/view.nim`
+  - `std/re; export re` により view 利用者へ `re` を再 export している。
+  - CSS/SCSS style helper で `replace` / `findAll` を使っている。
+- `src/basolato/cli/functions/serveImpl.nim`
+  - hot reload 対象ファイル判定で `f.find(re"(\.nim|\.nims|\.html)$") > -1` を使っている。
+- `src/basolato/core/libservers/std/server.nim` / `src/basolato/core/libservers/nostd/server.nim`
+  - async traceback の整形で `replace(re"Async traceback:[.\s\S]*")` を使っている。
+- `src/basolato/core/route.nim`
+  - import は残っているが、現行確認範囲では実利用が見当たらない。不要 import として削除候補。
+- `tests/test_validation.nim` / `tests/test_request_validation.nim`
+  - `std/re` の `re"\d"` / `re"\w"` を validation API に渡している。新 API に合わせてテスト更新が必要。
+- Docker / README / benchmark 周辺
+  - `README.md` と複数 Dockerfile に `# for nim regex` コメントと `libpcre3-dev` が残っている。
+  - Alpine 側は `pcre`、benchmark config は `pcre-dev` を入れている。`std/re` を使わない構成では削除対象。
+
+### 採用方針
+- Basolato 内部では `import std/re` を全面禁止し、`import regex` を使う。
+- 正規表現 literal は新規実装では `re2"..."` を標準にする。これは `nim-regex` の現行推奨 API で、compile-time で正規表現を検査できる。
+- `nim-regex` の deprecated old API (`re"..."` / `Regex`) は、互換用に一時的に使う可能性はあるが、内部の標準実装にはしない。
+- `basolato.nimble` に `requires "regex >= 0.26.3"` を追加する。GitHub URL 依存ではなく Nimble package 名を使い、利用者の依存解決を単純にする。
+- PCRE2 (`libpcre2-dev`) は `std/re` の代替にはならないため、このブランチの目的に対する本命依存にはしない。別ライブラリが必要としない限り Docker から削除する。
+- `std/re.Regex` を public API の型として受け続ける方針は採用しない。受け続けるには `std/re` import が必要になり、PCRE1 依存削除と矛盾するため。
+
+### 公開 API 設計
+- validation の正規表現引数は `regex.Regex2` を主 API に変更する。
+- 利用例は以下を標準とする。
+
+```nim
+import regex
+import basolato/core/validation
+
+let v = Validation.new()
+doAssert v.regex("abc", re2"\w+")
+doAssert v.notRegex("abc", re2"\d+")
+```
+
+- `RequestValidation` 側も同様に `Regex2` を受ける。
+
+```nim
+import regex
+import basolato/request_validation
+
+v.regex("base", re2"\w+")
+v.notRegex("base", re2"\d+")
+```
+
+- `src/basolato/core/view.nim` は `regex` を export する。これにより view から `re2"..."` と `Regex2` を使えるようにする。
+- 旧 `re"..."` を使ったユーザーコードは breaking change として扱う。ただし `nim-regex` 自体が deprecated old API として `re` / `Regex` を持つため、移行期に必要なら Basolato 側で `regex` の export によって `re` を参照できる可能性はある。実装時には deprecated warning の扱いを確認し、警告がノイズになる場合はドキュメントでは案内しない。
+- `std/re.Regex` と `regex.Regex2` は別型であるため、`import std/re` して作った `re"\d"` を Basolato の validation API に渡す互換は切る。
+
+### 内部実装設計
+- `src/basolato/core/validation.nim`
+  - `import std/re` を `import regex` に変更する。
+  - 内部正規表現は `re2"..."` に変更する。
+  - `proc regex(value: string, reg: Regex2): bool = value.match(reg)` とする。
+  - `proc notRegex(value: string, reg: Regex2): bool = not value.match(reg)` とする。
+  - `array` / `password` / `domain` / `url` / `uuid` の既存パターンが `nim-regex` で compile-time compile できることを確認する。
+  - もし既存パターンの一部が非対応だった場合は、PCRE 固有表現を維持するのではなく通常の Nim ロジックへ分解する。特に lookaround や複雑な文字クラスで詰まった場合、validation では明示的な文字走査の方を優先する。
+- `src/basolato/request_validation.nim`
+  - `import std/re` を `import regex` に変更する。
+  - `regex*` / `notRegex*` の引数型を `Regex2` に変更する。
+- `src/basolato/core/view.nim`
+  - `import std/re; export re` を `import regex; export regex` に変更する。
+  - CSS style helper は `re2` と `Regex2` API に寄せる。
+  - `replace` の挙動差、特に `$1` 置換、`findAll` の戻り型、match slice の扱いを確認する。
+- `src/basolato/cli/functions/serveImpl.nim`
+  - `std/re` を `regex` に変更し、対象ファイル判定は `f.find(re2"(\.nim|\.nims|\.html)$", m)` または `f.contains(re2"(\.nim|\.nims|\.html)$")` へ置き換える。
+  - 単純な拡張子判定なので、正規表現ではなく `endsWith` の通常ロジックへ置き換える案も許容する。正規表現依存削減の観点では `endsWith` が第一候補。
+- `src/basolato/core/libservers/*/server.nim`
+  - traceback の削除は `regex.replace` へ置き換える。
+  - パターンは `re2"Async traceback:[.\s\S]*"` で動作確認する。必要なら `regexDotAll` flag を使った `re2"Async traceback:.*"` に変更する。
+- `src/basolato/core/route.nim`
+  - `std/re` が未使用であれば削除する。
+
+### 正規表現互換性の確認観点
+- `nim-regex` の `match` は文字列全体一致として扱われる。現行 `std/re` の `value.match(reg)` と期待が揃うか、validation テストで確認する。
+- `find` は `std/re` と戻り値・index 表現が異なる可能性があるため、`find > -1` のような使い方はそのまま移植しない。
+- `findAll` は `RegexMatch2` を返すため、文字列として使う箇所では `s[m.boundaries]` のように明示的に切り出す。
+- `replace` は置換文字列の capture 展開として `$N` をサポートするが、現行利用箇所は capture 置換を使っていない。単純置換として動作確認する。
+- `\pL` / `\pN` / `\w` / `\d` / `\s` など Unicode 系 class は `nim-regex` がサポートしている。`regexArbitraryBytes` は通常 validation では使わない。
+- backreference など PCRE 固有の非線形機能は使わない。将来ユーザー入力で正規表現を受ける場合も ReDoS を避けるため `nim-regex` の線形時間保証に収まる機能へ制限する。
+
+### Docker / ドキュメント設計
+- Ubuntu 26.04 向け Dockerfile から `libpcre3-dev` のコメント残骸と `libpcre2-dev` を削除する。PCRE2 を別用途で使っていないなら不要。
+- Ubuntu test Dockerfile は 24.04 / Nim 2.0.0 のままなので、ブランチ目的に合わせるなら Ubuntu 26.04 / Nim 2.2.x に更新するか、少なくとも `libpcre3-dev` を削除する。
+- Alpine Dockerfile と benchmark 設定の `pcre` / `pcre-dev` も、`std/re` 由来のためだけなら削除する。
+- README の Docker example から `libpcre3-dev` を削除し、`# for nim regex` コメントも削除する。`nim-regex` は Nimble 依存であり OS package 依存ではないため、OS package として説明しない。
+
+### テスト方針
+- `tests/test_validation.nim`
+  - `import std/re` を `import regex` に変更し、`re"\d"` / `re"\w"` を `re2"\d"` / `re2"\w"` に変更する。
+  - `array` / `domain` / `email` / `password` / `url` / `uuid` の既存テストをすべて通す。
+- `tests/test_request_validation.nim`
+  - `RequestValidation.regex` / `notRegex` の API 変更に合わせて `Regex2` を渡す。
+- 追加確認
+  - `nim c -r -d:testing tests/test_validation.nim`
+  - `nim c -r -d:testing tests/test_request_validation.nim`
+  - `nimble test` 相当の既存テスト導線があれば実行する。
+  - Ubuntu 26.04 コンテナ内で `ldd` または実行時エラー確認を行い、`libpcre.so.3` ロード失敗が起きないことを確認する。
+  - `rg "import std/re|std/re|libpcre3|libpcre.so.3|pcre-dev|# for nim regex"` を実行し、意図しない残存がないことを確認する。
+
+### 実装手順案
+- 第1段階: `basolato.nimble` に `regex >= 0.26.3` を追加し、依存解決できることを確認する。
+- 第2段階: `src/basolato/core/validation.nim` と `src/basolato/request_validation.nim` を `Regex2` / `re2` 前提へ移行する。
+- 第3段階: validation テストを新 API 前提へ更新し、正規表現パターン互換性を確認する。
+- 第4段階: `view.nim` / `serveImpl.nim` / `server.nim` の内部利用箇所を移行する。単純な拡張子判定は正規表現ではなく文字列処理へ置き換える。
+- 第5段階: 未使用 `std/re` import を削除する。
+- 第6段階: Dockerfile / README / benchmark 設定から PCRE1/PCRE2 前提を削除する。
+- 第7段階: Ubuntu 26.04 コンテナでビルド・テストを実行し、`libpcre.so.3` 非依存を確認する。
+
+### 採用しない方針
+- `libpcre3-dev` を Ubuntu 26.04 に別経路で入れる回避策は採用しない。deprecated 依存を延命するだけで、ブランチ目的と矛盾する。
+- `libpcre2-dev` を入れて `std/re` を使い続ける方針は採用しない。Nim の `std/re` は PCRE1 binding であり、PCRE2 を入れても `libpcre.so.3` 問題は解決しない。
+- Basolato 側で `std/re` と `regex` の二重対応を持つ方針は採用しない。公開 API が曖昧になり、Ubuntu 26.04 での依存削除確認も難しくなる。
+- PCRE 互換性を優先して backreference 等を再実装する方針は採用しない。`nim-regex` の線形時間保証と安全側の設計を優先する。
+
+### 未決事項
+- `regex >= 0.26.3` の下限で固定するか、より古い Nimble package でも十分か。
+- `src/basolato/core/view.nim` で `export regex` するか、Basolato 独自の `core/regex` 薄い wrapper を作って export 境界を安定させるか。
+- 旧 `re"..."` 互換を一時的に案内するか、最初から `re2"..."` のみに寄せるか。
+- `RequestValidation.regex` / `Validation.regex` の breaking change を README / validation docs にどの粒度で記録するか。
+- Ubuntu test Dockerfile を 26.04 に上げるか、互換テストとして 24.04 のまま残すか。
