@@ -22,27 +22,24 @@ FROM ubuntu:26.04
 # prevent timezone dialogue
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt update
-RUN apt upgrade -y
-RUN apt install -y \
+RUN apt update && \
+    apt upgrade -y && \
+    apt install -y \
       # for build Nim and make
       build-essential \
       # for unzip tar.xz
       xz-utils \
       # for https
       ca-certificates \
-      vim \
       curl \
       git \
-      # for benchmark test
-      wrk \
       # for database
       sqlite3 \
       libpq-dev \
       libmariadb-dev \
       libsass-dev
 
-ARG NIM_VERSION="2.2.0"
+ARG NIM_VERSION="2.2.10"
 WORKDIR /root
 RUN curl https://nim-lang.org/choosenim/init.sh -o init.sh
 RUN sh init.sh -y
