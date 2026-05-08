@@ -1,10 +1,10 @@
 import std/json
-import std/re
 import std/tables
 import std/strformat
 import std/strutils
 import std/unicode
 import std/times
+import regex
 
 
 type Validation* = object
@@ -68,7 +68,7 @@ proc alphaNum*(self:Validation, value:string):bool =
 
 
 proc array*(value:string):bool =
-  return value.match(re"^(?=.*\w,)(?!.*(=|\{|\})).*$")
+  return value.match(re2"^(?=.*\w,)(?!.*(=|\{|\})).*$")
 
 proc array*(self:Validation, value:string):bool =
   return array(value)
@@ -215,16 +215,16 @@ proc distinctArr*(self:Validation, values:openArray[string]):bool =
 proc domain(value:string):bool =
   try:
     block:
-      # let fqdn = re"^(([a-z0-9]{1,2}|[a-z0-9][a-z0-9-]{0,61}[a-z0-9])\.)*([a-z0-9]{1,2}|[a-z0-9][a-z0-9-]{0,61}?[a-z0-9])$"
-      let fqdn = re"^(([a-zA-Z0-9]{1,2}|[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9])\.)*([a-zA-Z0-9]{1,2}|[a-zA-Z0-9][a-zA-Z0-9-]{0,61}?[a-zA-Z0-9])$"
-      let addr4 = re"(([01]?[0-9]{1,2}|2(?:[0-4]?[0-9]|5[0-5]))\.){3}([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))"
-      let addr4Start = re"^(([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))\.){3}([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))$"
+      # let fqdn = re2"^(([a-z0-9]{1,2}|[a-z0-9][a-z0-9-]{0,61}[a-z0-9])\.)*([a-z0-9]{1,2}|[a-z0-9][a-z0-9-]{0,61}?[a-z0-9])$"
+      let fqdn = re2"^(([a-zA-Z0-9]{1,2}|[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9])\.)*([a-zA-Z0-9]{1,2}|[a-zA-Z0-9][a-zA-Z0-9-]{0,61}?[a-zA-Z0-9])$"
+      let addr4 = re2"(([01]?[0-9]{1,2}|2(?:[0-4]?[0-9]|5[0-5]))\.){3}([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))"
+      let addr4Start = re2"^(([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))\.){3}([01]?[0-9]{1,2}|2([0-4]?[0-9]|5[0-5]))$"
       if value.len == 0 or value.len > 255:
         raise newException(Exception, "domain part is missing")
       if not value.startsWith("["):
         if not (not value.match(addr4) and value.match(fqdn)):
           raise newException(Exception, "invalid domain format")
-        elif value.find(re"\.[0-9]$|^[0-9]+$") > -1:
+        elif value.contains(re2"\.[0-9]$|^[0-9]+$"):
           raise newException(Exception, "the last label of domain should not number")
         else:
           break
@@ -554,10 +554,10 @@ proc `notIn`*(self:Validation, value:string, list:openArray[string]):bool =
   return `notIn`(value, list)
 
 
-proc notRegex(value:string, reg:Regex):bool =
-  return not value.match(reg)
+proc notRegex(value:string, reg:Regex2):bool =
+  return not value.contains(reg)
 
-proc notRegex*(self:Validation, value:string, reg:Regex):bool =
+proc notRegex*(self:Validation, value:string, reg:Regex2):bool =
   return notRegex(value, reg)
 
 
@@ -574,15 +574,15 @@ proc numeric*(self:Validation, value:string):bool =
   return numeric(value)
 
 proc password(value:string):bool =
-  return value.match(re"^(?=.*?[a-z])(?=.*?[A-Z])(?=.*?\d)[a-zA-Z\d]{8,100}$")
+  return value.match(re2"^(?=.*?[a-z])(?=.*?[A-Z])(?=.*?\d)[a-zA-Z\d]{8,100}$")
 
 proc password*(self:Validation, value:string):bool =
   password(value)
 
-proc regex(value:string, reg:Regex):bool =
-  return value.match(reg)
+proc regex(value:string, reg:Regex2):bool =
+  return value.contains(reg)
 
-proc regex*(self:Validation, value:string, reg:Regex):bool =
+proc regex*(self:Validation, value:string, reg:Regex2):bool =
   return regex(value, reg)
 
 
@@ -655,7 +655,7 @@ proc url(value:string):bool =
       return false
 
     let path = value.split("://")[1].split("/")[1..^1].join("/")
-    let reg = re"^(?:[\pL\pN\-._\~!$&\'()*+,;=:@\/?]|%[0-9A-Fa-f]{2})*$"
+    let reg = re2"^(?:[\pL\pN\-._\~!$&\'()*+,;=:@\/?]|%[0-9A-Fa-f]{2})*$"
     if not path.match(reg):
       return false
     return true
@@ -667,7 +667,7 @@ proc url*(self:Validation, value:string):bool =
 
 
 proc uuid(value:string):bool =
-  let reg = re"^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$"
+  let reg = re2"^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$"
   return value.match(reg)
 
 proc uuid*(self:Validation, value:string):bool =

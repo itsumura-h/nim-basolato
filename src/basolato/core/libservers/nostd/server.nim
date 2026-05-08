@@ -3,11 +3,11 @@ import std/asyncfile
 import std/httpcore
 import std/options
 import std/os
-import std/re
 import std/strutils
 import std/strformat
 import std/times
 import std/mimetypes
+import regex
 import ../../base
 import ../../settings
 import ../../error_page
@@ -60,7 +60,7 @@ proc serve*(seqRoutes:seq[Routes], settings:Settings) =
       var headers = newHttpHeaders()
       headers["content-type"] = "text/html; charset=utf-8"
       var msg = getCurrentExceptionMsg()
-      msg = msg.replace(re"Async traceback:[.\s\S]*")
+      msg = msg.replace(re2"Async traceback:[.\s\S]*", "")
       response = Response.new(Http200, ddPage(msg), headers)
     except ErrorHttpParse:
       var headers = newHttpHeaders()
@@ -80,7 +80,7 @@ proc serve*(seqRoutes:seq[Routes], settings:Settings) =
     #   let exception = getCurrentException()
     #   if exception.name == "DD".cstring:
     #     var msg = exception.msg
-    #     msg = msg.replace(re"Async traceback:[.\s\S]*")
+    #     msg = msg.replace(re2"Async traceback:[.\s\S]*", "")
     #     response = Response.new(Http200, ddPage(msg), headers)
     #   elif exception.name == "ErrorAuthRedirect".cstring:
     #     headers["location"] = exception.msg

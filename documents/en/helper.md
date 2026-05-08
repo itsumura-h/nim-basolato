@@ -42,8 +42,8 @@ dd(a, "abc", request.repr)
 
 ## password
 
-Basolato has its own useful password library. It uses `bcrypt` package inside.  
-https://github.com/runvnc/bcryptnim
+Basolato has its own useful password library. It uses `nim-rustcrypto`'s `rustcrypto/algorithm/bcrypt` backend inside.  
+https://github.com/itsumura-h/nim-rustcrypto
 
 ### API
 ```nim

@@ -1,6 +1,5 @@
 import std/os
 import std/osproc
-import std/re
 import std/strutils
 import std/strformat
 import std/tables
@@ -72,7 +71,7 @@ proc serve*(port=8000, force=false, httpbeast=false, httpx=false) =
   while true:
     sleep sleepTime * 1000
     for f in walkDirRec(currentDir, {pcFile}):
-      if f.find(re"(\.nim|\.nims|\.html)$") > -1:
+      if f.endsWith(".nim") or f.endsWith(".nims") or f.endsWith(".html"):
         var fileHash: string
         try:
           fileHash = readFile(f).getMD5()

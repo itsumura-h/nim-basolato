@@ -7,7 +7,7 @@ license       = "MIT"
 bin           = @["main"]
 backend       = "c"
 # Dependencies
-requires "nim >= 2.0.2"
+requires "nim >= 2.2.0"
 # requires "https://github.com/itsumura-h/nim-basolato == 0.15.0"
 requires "https://github.com/itsumura-h/nim-basolato#head"
 # requires "allographer == 0.30.0"

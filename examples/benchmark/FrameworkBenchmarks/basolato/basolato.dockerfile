@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 # prevent timezone dialogue
 ENV DEBIAN_FRONTEND=noninteractive
@@ -12,8 +12,6 @@ RUN apt install -y \
     xz-utils \
     # for https
     ca-certificates \
-    # for nim regex
-    libpcre3-dev \
     curl \
     git \
     # for postgres

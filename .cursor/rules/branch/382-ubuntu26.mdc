@@ -1,0 +1,311 @@
+---
+description: 382-ubuntu26ブランチでの開発時に読み込む
+alwaysApply: false
+---
+Ubuntu 26.04 対応: C依存ライブラリ削除設計
+===
+
+このブランチで実装することは以下の通りです。
+- `std/re` および PCRE1 (`libpcre.so.3` / `libpcre3-dev`) への依存を削除し、Ubuntu 26.04 環境で追加の PCRE1 互換パッケージなしにビルド・テストできるようにする。
+- 正規表現エンジンは `std/re` の代替として `regex` (`https://github.com/nitely/nim-regex`) を採用する。
+- アプリケーション利用者が使う validation API と view helper の使い勝手は、可能な範囲で維持する。ただし `std/re.Regex` 型そのものとの互換維持は目的に含めない。
+- Docker / README / benchmark Dockerfile などに残る `libpcre3-dev` 前提の記述を Ubuntu 26.04 対応後の依存関係へ更新する。
+- `bcrypt` (`https://github.com/runvnc/bcryptnim`) は C ライブラリに依存するため削除し、パスワードハッシュは `nim-rustcrypto` の `rustcrypto/algorithm/bcrypt` に置き換える。
+- `basolato/password` の既存公開 API (`genHashedPassword` / `isMatchPassword`) は、利用者影響を抑えるため原則維持する。内部実装のみ `Bcrypt.hashPassword` / `Bcrypt.verifyPassword` へ差し替える。
+- このファイルは実装前の設計書として扱う。実装中に前提が違うと判明した場合は `調査結果・設計まとめ` を更新する。
+
+## 進捗
+- [x] プロジェクトルール・ブランチルール雛形を確認
+- [x] 現在ブランチ `382-ubuntu26` に対応する既存ブランチルールがないことを確認
+- [x] `std/re` / `libpcre3-dev` / `libpcre2-dev` / `regex` の利用箇所を洗い出し
+- [x] `nim-regex` の公開 API、依存関係、制約を確認
+- [x] Ubuntu / Debian 側の PCRE1 廃止背景を確認
+- [x] 実装方針と設計方針を記録
+- [x] `basolato.nimble` に `regex` 依存を追加
+- [x] Basolato 内部の `std/re` import を `regex` へ置き換え
+- [x] validation の `Regex` 型を `nim-regex` 前提へ移行
+- [x] view / serve / server の正規表現呼び出しを `nim-regex` 前提へ移行
+- [x] テストコードとドキュメントの正規表現サンプルを新 API 前提へ更新
+- [x] Dockerfile / README / benchmark 設定から `libpcre3-dev` 前提を削除
+- [x] `rg "std/re|libpcre3|libpcre.so.3|pcre-dev"` で旧依存が残っていないことを確認
+- [x] `bcrypt` の利用箇所を洗い出し
+- [x] `nim-rustcrypto` の bcrypt ドキュメントを確認
+- [x] `bcrypt` 依存削除の実装方針と設計方針を記録
+- [x] `basolato.nimble` から `bcrypt >= 0.2.1` を削除
+- [x] `rustcrypto` のバージョンを0.1.1に更新
+- [x] `src/basolato/password.nim` を `rustcrypto/algorithm/bcrypt` へ置き換え
+- [x] tests / examples / benchmark の nimble から直接 `bcrypt` 依存を削除
+- [x] README / documents の `bcryptnim` 説明を `nim-rustcrypto` bcrypt 前提へ更新
+- [x] `rg "import bcrypt|requires \"bcrypt|bcryptnim|runvnc/bcrypt"` で旧依存が残っていないことを確認
+- [x] Ubuntu 26.04 コンテナでビルド・テスト確認
+
+## 参考資料
+- `.cursor/rules/project.mdc`
+- `.cursor/rules/branch.mdc`
+- `basolato.nimble`
+- `README.md`
+- `docker/nim/ubuntu/Dockerfile`
+- `docker/nim/ubuntu/test.Dockerfile`
+- `docker/nim/alpine/Dockerfile`
+- `examples/benchmark/FrameworkBenchmarks/basolato/basolato.dockerfile`
+- `examples/benchmark/web-frameworks/basolato/config.yaml`
+- `src/basolato/core/validation.nim`
+- `src/basolato/request_validation.nim`
+- `src/basolato/cli/functions/serveImpl.nim`
+- `src/basolato/core/route.nim`
+- `src/basolato/core/view.nim`
+- `src/basolato/core/libservers/std/server.nim`
+- `src/basolato/core/libservers/nostd/server.nim`
+- `tests/test_validation.nim`
+- `tests/test_request_validation.nim`
+- `src/basolato/password.nim`
+- `documents/ja/helper.md`
+- `documents/en/helper.md`
+- `tests/server/server.nimble`
+- `examples/benchmark/web-frameworks/basolato/basolato.nimble`
+- `https://github.com/nitely/nim-regex`
+- `https://nitely.github.io/nim-regex/regex.html`
+- `https://raw.githubusercontent.com/nitely/nim-regex/master/regex.nimble`
+- `https://raw.githubusercontent.com/itsumura-h/nim-rustcrypto/refs/heads/main/docs/bcrypt.md`
+- `https://nim-lang.org/docs/re.html`
+- `https://nim-lang.org/docs/pcre.html`
+- `https://bugs-devel.debian.org/cgi-bin/bugreport.cgi?bug=1071691`
+- `https://documentation.ubuntu.com/release-notes/26.04/summary-for-lts-users/`
+
+## 調査結果・設計まとめ
+
+### 背景
+- Nim の `std/re` は PCRE1 に依存する。Nim の `std/pcre` ドキュメントでも deprecated と表示されている。
+- Debian では `nim` が obsolete な PCRE1 (`libpcre3`) に依存していることが bug として扱われ、PCRE1 は end of life で削除方向と説明されている。
+- Ubuntu 26.04 では `libpcre.so.3` 前提の構成を避ける必要がある。Basolato の Ubuntu 26.04 Dockerfile はすでに `libpcre3-dev` をコメントアウトし `libpcre2-dev` を入れているが、アプリケーションコードが `std/re` を import している限り根本解決にならない。
+- `nim-regex` は Pure Nim の正規表現エンジンで、README では `nimble install regex`、Nim `>= 1.6.0`、`unicodedb >= 0.13.2` が要件として示されている。Basolato の Nim `>= 2.0.0` 要件とは衝突しない。
+- `nim-regex` は線形時間マッチングを保証し、ユーザー入力由来の文字列にも扱いやすい。一方で PCRE と完全互換ではなく、線形時間保証を保てない機能、代表例として backreference は対象外である。
+
+### 現行利用箇所
+- `src/basolato/core/validation.nim`
+  - `array` / `domain` / `password` / `url` / `uuid` などの内部 validation で `re"..."` と `match` / `find` を使っている。
+  - 公開 API として `regex*(self: Validation, value: string, reg: Regex)` と `notRegex*(..., reg: Regex)` を持つ。
+- `src/basolato/request_validation.nim`
+  - `std/re` を import し、`include core/validation` により validation 実装を取り込む。
+  - 公開 API として `regex*(self: RequestValidation, key: string, reg: Regex, ...)` と `notRegex*(..., reg: Regex, ...)` を持つ。
+- `src/basolato/core/view.nim`
+  - `std/re; export re` により view 利用者へ `re` を再 export している。
+  - CSS/SCSS style helper で `replace` / `findAll` を使っている。
+- `src/basolato/cli/functions/serveImpl.nim`
+  - hot reload 対象ファイル判定で `f.find(re"(\.nim|\.nims|\.html)$") > -1` を使っている。
+- `src/basolato/core/libservers/std/server.nim` / `src/basolato/core/libservers/nostd/server.nim`
+  - async traceback の整形で `replace(re"Async traceback:[.\s\S]*")` を使っている。
+- `src/basolato/core/route.nim`
+  - import は残っているが、現行確認範囲では実利用が見当たらない。不要 import として削除候補。
+- `tests/test_validation.nim` / `tests/test_request_validation.nim`
+  - `std/re` の `re"\d"` / `re"\w"` を validation API に渡している。新 API に合わせてテスト更新が必要。
+- Docker / README / benchmark 周辺
+  - `README.md` と複数 Dockerfile に `# for nim regex` コメントと `libpcre3-dev` が残っている。
+  - Alpine 側は `pcre`、benchmark config は `pcre-dev` を入れている。`std/re` を使わない構成では削除対象。
+
+### 採用方針
+- Basolato 内部では `import std/re` を全面禁止し、`import regex` を使う。
+- 正規表現 literal は新規実装では `re2"..."` を標準にする。これは `nim-regex` の現行推奨 API で、compile-time で正規表現を検査できる。
+- `nim-regex` の deprecated old API (`re"..."` / `Regex`) は、互換用に一時的に使う可能性はあるが、内部の標準実装にはしない。
+- `basolato.nimble` に `requires "regex >= 0.26.3"` を追加する。GitHub URL 依存ではなく Nimble package 名を使い、利用者の依存解決を単純にする。
+- PCRE2 (`libpcre2-dev`) は `std/re` の代替にはならないため、このブランチの目的に対する本命依存にはしない。別ライブラリが必要としない限り Docker から削除する。
+- `std/re.Regex` を public API の型として受け続ける方針は採用しない。受け続けるには `std/re` import が必要になり、PCRE1 依存削除と矛盾するため。
+
+### 公開 API 設計
+- validation の正規表現引数は `regex.Regex2` を主 API に変更する。
+- 利用例は以下を標準とする。
+
+```nim
+import regex
+import basolato/core/validation
+
+let v = Validation.new()
+doAssert v.regex("abc", re2"\w+")
+doAssert v.notRegex("abc", re2"\d+")
+```
+
+- `RequestValidation` 側も同様に `Regex2` を受ける。
+
+```nim
+import regex
+import basolato/request_validation
+
+v.regex("base", re2"\w+")
+v.notRegex("base", re2"\d+")
+```
+
+- `src/basolato/core/view.nim` は `regex` を export する。これにより view から `re2"..."` と `Regex2` を使えるようにする。
+- 旧 `re"..."` を使ったユーザーコードは breaking change として扱う。ただし `nim-regex` 自体が deprecated old API として `re` / `Regex` を持つため、移行期に必要なら Basolato 側で `regex` の export によって `re` を参照できる可能性はある。実装時には deprecated warning の扱いを確認し、警告がノイズになる場合はドキュメントでは案内しない。
+- `std/re.Regex` と `regex.Regex2` は別型であるため、`import std/re` して作った `re"\d"` を Basolato の validation API に渡す互換は切る。
+
+### 内部実装設計
+- `src/basolato/core/validation.nim`
+  - `import std/re` を `import regex` に変更する。
+  - 内部正規表現は `re2"..."` に変更する。
+  - `proc regex(value: string, reg: Regex2): bool = value.match(reg)` とする。
+  - `proc notRegex(value: string, reg: Regex2): bool = not value.match(reg)` とする。
+  - `array` / `password` / `domain` / `url` / `uuid` の既存パターンが `nim-regex` で compile-time compile できることを確認する。
+  - もし既存パターンの一部が非対応だった場合は、PCRE 固有表現を維持するのではなく通常の Nim ロジックへ分解する。特に lookaround や複雑な文字クラスで詰まった場合、validation では明示的な文字走査の方を優先する。
+- `src/basolato/request_validation.nim`
+  - `import std/re` を `import regex` に変更する。
+  - `regex*` / `notRegex*` の引数型を `Regex2` に変更する。
+- `src/basolato/core/view.nim`
+  - `import std/re; export re` を `import regex; export regex` に変更する。
+  - CSS style helper は `re2` と `Regex2` API に寄せる。
+  - `replace` の挙動差、特に `$1` 置換、`findAll` の戻り型、match slice の扱いを確認する。
+- `src/basolato/cli/functions/serveImpl.nim`
+  - `std/re` を `regex` に変更し、対象ファイル判定は `f.find(re2"(\.nim|\.nims|\.html)$", m)` または `f.contains(re2"(\.nim|\.nims|\.html)$")` へ置き換える。
+  - 単純な拡張子判定なので、正規表現ではなく `endsWith` の通常ロジックへ置き換える案も許容する。正規表現依存削減の観点では `endsWith` が第一候補。
+- `src/basolato/core/libservers/*/server.nim`
+  - traceback の削除は `regex.replace` へ置き換える。
+  - パターンは `re2"Async traceback:[.\s\S]*"` で動作確認する。必要なら `regexDotAll` flag を使った `re2"Async traceback:.*"` に変更する。
+- `src/basolato/core/route.nim`
+  - `std/re` が未使用であれば削除する。
+
+### 正規表現互換性の確認観点
+- `nim-regex` の `match` は文字列全体一致として扱われる。現行 `std/re` の `value.match(reg)` と期待が揃うか、validation テストで確認する。
+- `find` は `std/re` と戻り値・index 表現が異なる可能性があるため、`find > -1` のような使い方はそのまま移植しない。
+- `findAll` は `RegexMatch2` を返すため、文字列として使う箇所では `s[m.boundaries]` のように明示的に切り出す。
+- `replace` は置換文字列の capture 展開として `$N` をサポートするが、現行利用箇所は capture 置換を使っていない。単純置換として動作確認する。
+- `\pL` / `\pN` / `\w` / `\d` / `\s` など Unicode 系 class は `nim-regex` がサポートしている。`regexArbitraryBytes` は通常 validation では使わない。
+- backreference など PCRE 固有の非線形機能は使わない。将来ユーザー入力で正規表現を受ける場合も ReDoS を避けるため `nim-regex` の線形時間保証に収まる機能へ制限する。
+
+### Docker / ドキュメント設計
+- Ubuntu 26.04 向け Dockerfile から `libpcre3-dev` のコメント残骸と `libpcre2-dev` を削除する。PCRE2 を別用途で使っていないなら不要。
+- Ubuntu test Dockerfile は 24.04 / Nim 2.0.0 のままなので、ブランチ目的に合わせるなら Ubuntu 26.04 / Nim 2.2.x に更新するか、少なくとも `libpcre3-dev` を削除する。
+- Alpine Dockerfile と benchmark 設定の `pcre` / `pcre-dev` も、`std/re` 由来のためだけなら削除する。
+- README の Docker example から `libpcre3-dev` を削除し、`# for nim regex` コメントも削除する。`nim-regex` は Nimble 依存であり OS package 依存ではないため、OS package として説明しない。
+
+### テスト方針
+- `tests/test_validation.nim`
+  - `import std/re` を `import regex` に変更し、`re"\d"` / `re"\w"` を `re2"\d"` / `re2"\w"` に変更する。
+  - `array` / `domain` / `email` / `password` / `url` / `uuid` の既存テストをすべて通す。
+- `tests/test_request_validation.nim`
+  - `RequestValidation.regex` / `notRegex` の API 変更に合わせて `Regex2` を渡す。
+- 追加確認
+  - `nim c -r -d:testing tests/test_validation.nim`
+  - `nim c -r -d:testing tests/test_request_validation.nim`
+  - `nimble test` 相当の既存テスト導線があれば実行する。
+  - Ubuntu 26.04 コンテナ内で `ldd` または実行時エラー確認を行い、`libpcre.so.3` ロード失敗が起きないことを確認する。
+  - `rg "import std/re|std/re|libpcre3|libpcre.so.3|pcre-dev|# for nim regex"` を実行し、意図しない残存がないことを確認する。
+
+### 実装手順案
+- 第1段階: `basolato.nimble` に `regex >= 0.26.3` を追加し、依存解決できることを確認する。
+- 第2段階: `src/basolato/core/validation.nim` と `src/basolato/request_validation.nim` を `Regex2` / `re2` 前提へ移行する。
+- 第3段階: validation テストを新 API 前提へ更新し、正規表現パターン互換性を確認する。
+- 第4段階: `view.nim` / `serveImpl.nim` / `server.nim` の内部利用箇所を移行する。単純な拡張子判定は正規表現ではなく文字列処理へ置き換える。
+- 第5段階: 未使用 `std/re` import を削除する。
+- 第6段階: Dockerfile / README / benchmark 設定から PCRE1/PCRE2 前提を削除する。
+- 第7段階: Ubuntu 26.04 コンテナでビルド・テストを実行し、`libpcre.so.3` 非依存を確認する。
+
+### 採用しない方針
+- `libpcre3-dev` を Ubuntu 26.04 に別経路で入れる回避策は採用しない。deprecated 依存を延命するだけで、ブランチ目的と矛盾する。
+- `libpcre2-dev` を入れて `std/re` を使い続ける方針は採用しない。Nim の `std/re` は PCRE1 binding であり、PCRE2 を入れても `libpcre.so.3` 問題は解決しない。
+- Basolato 側で `std/re` と `regex` の二重対応を持つ方針は採用しない。公開 API が曖昧になり、Ubuntu 26.04 での依存削除確認も難しくなる。
+- PCRE 互換性を優先して backreference 等を再実装する方針は採用しない。`nim-regex` の線形時間保証と安全側の設計を優先する。
+
+### 実装後の補足
+- `view.nim` は `regex` をそのまま export し、利用側は `re2"..."` と `Regex2` を直接使う構成にした。
+- `serveImpl.nim` のホットリロード対象判定は正規表現ではなく `endsWith` に置き換え、依存をさらに減らした。
+- `validation.nim` の公開 `regex/notRegex` は全文一致ではなく部分一致の期待があったため、`contains` ベースに合わせた。内部の `array` / `password` / `domain` / `url` / `uuid` は全文一致の `match` のまま維持している。
+
+### bcrypt C依存削除の背景
+- 現行の `bcrypt` package (`bcryptnim`) は C ライブラリに依存するため、Ubuntu 26.04 対応ブランチの「OS 側のレガシー C 依存を減らす」目的に対して追加のリスクになる。
+- Basolato はすでに JWT で `nim-rustcrypto` を導入しているため、パスワードハッシュも同じ暗号バックエンド系列へ寄せ、依存関係と保守境界を単純化する。
+- 指定資料の `rustcrypto/algorithm/bcrypt` は Rust `bcrypt` package を Rust FFI 経由で利用し、bcrypt Modular Crypt Format (`$2b$12$...`) を返す。PHC string ではない。
+- `Bcrypt.hashPassword("user-password")` のデフォルト cost は 12。明示 cost は bcrypt の範囲である 4..31 を受ける。
+- `Bcrypt.verifyPassword("user-password", hash)` は不一致で `false` を返し、不正な bcrypt hash format では `ValueError` を送出する。
+- `Bcrypt.validateHash(hash)`、`Bcrypt.cost(hash)`、`Bcrypt.needsRehash(hash, targetCost)` により hash format、cost、再ハッシュ要否を検査できる。
+- 新規 hash は `$2b$` 形式で出力される。bcrypt で切り捨てられる長さの password は `ValueError` として拒否される。
+
+### bcrypt 現行利用箇所
+- `src/basolato/password.nim`
+  - `import bcrypt` を行い、`genSalt(10)` と `val.hash(salt)` で hash を生成している。
+  - `isMatchPassword` は `hashedPassword[0..28]` から salt 部分を切り出し、入力値を再 hash して `compare` している。
+  - salt 文字列長や hash format を手動で仮定しているため、hash format の検証と例外処理が弱い。
+- `basolato.nimble`
+  - `requires "bcrypt >= 0.2.1"` が残っている。
+  - `nim-rustcrypto` は既に GitHub subdir 依存として追加済み。
+- `README.md`
+  - framework dependency として `bcryptnim` を案内している。
+- `documents/ja/helper.md` / `documents/en/helper.md`
+  - `basolato/password` が内部で `bcrypt` package を使う説明と `bcryptnim` URL が残っている。
+- `tests/server/server.nimble` / `examples/benchmark/web-frameworks/basolato/basolato.nimble`
+  - 直接 `requires "bcrypt >= 0.2.1"` が残っている。
+- `examples/realworld` などのアプリケーションコード
+  - `basolato/password` 経由で `genHashedPassword` / `isMatchPassword` を利用しており、内部実装を差し替えれば利用側の変更は原則不要。
+
+### bcrypt 採用方針
+- Basolato 内部では `import bcrypt` を禁止し、`import rustcrypto/algorithm/bcrypt` を使う。
+- `basolato.nimble` から `requires "bcrypt >= 0.2.1"` を削除し、既存の `nim-rustcrypto` 依存に一本化する。
+- 既存の `basolato/password` 公開 API は原則維持する。
+  - `genHashedPassword*(val: string): string`
+  - `isMatchPassword*(input, hashedPassword: string): bool`
+- 新規 hash の cost は `rustcrypto/algorithm/bcrypt` のデフォルトである 12 を採用する。旧実装の cost 10 から上がるが、安全側の既定値として受け入れる。
+- cost をアプリケーション側で明示したい需要に備え、追加 API として `genHashedPassword*(val: string, cost: int): string` を設ける案を第一候補にする。ただし既存 API の挙動差を最小化したい場合は、最初の実装では追加 API を見送り、設計書に将来拡張として残す。
+- `isMatchPassword` は不正 format の `ValueError` を外へ漏らさず `false` を返す。ログイン認証 API としては「一致しない」と同じ扱いにし、hash format の詳細を利用者や攻撃者に返さない。
+- 既存 DB に保存済みの `$2a$` / `$2b$` 系 bcrypt hash は、`Bcrypt.verifyPassword` で検証できるかを実装時に確認する。検証できる場合は既存 hash の一括移行は不要。
+- `Bcrypt.needsRehash(hash, 12)` が true になる既存 hash は、ログイン成功後の再ハッシュ候補として扱う。ただしこのブランチでは Basolato の低レベル helper 移行を主目的とし、アプリケーション側の自動再ハッシュ機構までは実装対象にしない。
+
+### bcrypt 内部実装設計
+- `src/basolato/password.nim`
+  - `import bcrypt` を `import rustcrypto/algorithm/bcrypt` に置き換える。
+  - `genHashedPassword*(val: string): string = Bcrypt.hashPassword(val)` とする。
+  - 明示 cost を採用する場合は `genHashedPassword*(val: string, cost: int): string = Bcrypt.hashPassword(val, cost)` を追加する。
+  - `isMatchPassword*(input, hashedPassword: string): bool` は `Bcrypt.verifyPassword(input, hashedPassword)` を呼ぶ。
+  - `ValueError` は `false` に丸める。password 長が bcrypt の制限を超える場合の `hashPassword` 側 `ValueError` は、登録・更新処理に入力不正として伝えるため、`genHashedPassword` では原則握りつぶさない。
+  - 旧実装の `hashedPassword[0..28]` による salt 切り出しと `compare` は削除する。hash format の解析と constant-time 比較は `rustcrypto` 側へ委譲する。
+- `basolato.nimble`
+  - `requires "bcrypt >= 0.2.1"` を削除する。
+  - `requires "https://github.com/itsumura-h/nim-rustcrypto?subdir=src/nim-rustcrypto"` は維持する。
+  - `nim-rustcrypto` の `nim >= 2.2.10` 要件と Basolato の `nim >= 2.0.0` 要件の不整合は、JWT 移行時と同じ未決事項として扱う。
+- `tests/server/server.nimble` / `examples/benchmark/web-frameworks/basolato/basolato.nimble`
+  - `bcrypt` を直接 import していない場合は `requires "bcrypt >= 0.2.1"` を削除する。
+  - `basolato/password` 経由で十分な構成にする。
+- `README.md` / `documents/*/helper.md`
+  - `bcryptnim` へのリンクを削除し、`basolato/password` は `nim-rustcrypto` の bcrypt backend を使う説明へ更新する。
+  - 利用者向け API サンプルは現行の `genHashedPassword` / `isMatchPassword` のまま維持する。
+
+### bcrypt 互換性の確認観点
+- 旧 `bcryptnim` が生成した既存 hash を `Bcrypt.verifyPassword` で検証できるか確認する。
+- `$2b$` 形式の新規 hash が `isMatchPassword` で true / false を正しく返すことを確認する。
+- 不正 hash 文字列、空文字 hash、短すぎる hash を渡した場合、`isMatchPassword` が例外を漏らさず false を返すことを確認する。
+- password が bcrypt の 72 byte 制限を超え、`Bcrypt.hashPassword` が `ValueError` を送出する場合の挙動をテストする。登録・更新時には呼び出し側で validation error として扱う余地を残す。
+- cost 12 の hash 生成時間がテストや benchmark に過度な影響を出す場合、テスト専用に明示 cost 4 を使える追加 API を採用するか検討する。ただし本番既定値は 12 から下げない。
+- `Bcrypt.needsRehash(hash, 12)` が旧 cost 10 の hash に対して true になることを確認する。
+
+### bcrypt テスト方針
+- `tests/test_password.nim` が存在しない場合は追加する。
+- `genHashedPassword("Password!")` が `$2b$` 形式の bcrypt hash を返すことを確認する。
+- 同じ password を hash 化しても salt により異なる hash になることを確認する。
+- `isMatchPassword("Password!", hash)` が true、`isMatchPassword("WrongPassword", hash)` が false になることを確認する。
+- 不正 hash format を渡しても false になり、例外が外へ出ないことを確認する。
+- 可能であれば旧 `bcryptnim` 形式の固定 hash fixture を用意し、既存ユーザーのログイン互換性を確認する。
+- `nim c -r tests/test_password.nim`、または既存の `nimble test` 導線に組み込んで確認する。
+- `rg "import bcrypt|requires \"bcrypt|bcryptnim|runvnc/bcrypt"` を実行し、設計書や過去ブランチルール以外に旧依存が残らないことを確認する。
+
+### bcrypt 実装手順案
+- 第1段階: `src/basolato/password.nim` の公開 API と旧 hash format の実例を確認する。
+- 第2段階: `password.nim` を `rustcrypto/algorithm/bcrypt` へ置き換え、既存 API を維持する。
+- 第3段階: `tests/test_password.nim` を追加し、hash 生成、照合、不正 hash、必要なら旧 hash fixture の互換性を確認する。
+- 第4段階: `basolato.nimble`、`tests/server/server.nimble`、`examples/benchmark/web-frameworks/basolato/basolato.nimble` から `bcrypt` 依存を削除する。
+- 第5段階: README と helper docs から `bcryptnim` の説明を削除し、`nim-rustcrypto` bcrypt backend の説明へ更新する。
+- 第6段階: `rg "import bcrypt|requires \"bcrypt|bcryptnim|runvnc/bcrypt"` で旧依存残存を確認する。
+- 第7段階: Ubuntu 26.04 コンテナで password helper を含むテストを実行し、C bcrypt library への依存が残っていないことを確認する。
+
+### bcrypt で採用しない方針
+- `bcryptnim` を残したまま `nim-rustcrypto` と二重対応する方針は採用しない。C 依存削除という目的が曖昧になり、利用者環境でどちらが使われるかも分かりにくくなる。
+- `hashedPassword[0..28]` のように bcrypt hash 文字列を Basolato 側で手動解析する方針は採用しない。format 判定、cost 判定、比較処理は `rustcrypto` 側へ委譲する。
+- 旧 cost 10 を互換性のために新規 hash の既定値として維持する方針は採用しない。新規生成は `nim-rustcrypto` の安全側デフォルト cost 12 に寄せる。
+- bcrypt 以外の password hash 方式へ同時に移行する方針は採用しない。このブランチでは既存 hash 互換性と C 依存削除を優先する。
+
+### 未決事項
+- `regex >= 0.26.3` の下限で固定するか、より古い Nimble package でも十分か。
+- `src/basolato/core/view.nim` で `export regex` するか、Basolato 独自の `core/regex` 薄い wrapper を作って export 境界を安定させるか。
+- 旧 `re"..."` 互換を一時的に案内するか、最初から `re2"..."` のみに寄せるか。
+- `RequestValidation.regex` / `Validation.regex` の breaking change を README / validation docs にどの粒度で記録するか。
+- Ubuntu test Dockerfile を 26.04 に上げるか、互換テストとして 24.04 のまま残すか。
+- `genHashedPassword` に cost 指定 overload を追加するか、既存 API のみ維持するか。
+- 旧 `bcryptnim` hash fixture をどこに保持するか。fixture を作る場合、旧 package が不要な固定文字列としてテストへ埋め込む。
+- `Bcrypt.needsRehash` を Basolato の公開 helper として露出するか、アプリケーション側が `rustcrypto/algorithm/bcrypt` を直接使う想定にするか。
+- password helper の `ValueError` 方針を `isMatchPassword` は false、`genHashedPassword` は例外伝播で確定してよいか。
