@@ -5,7 +5,7 @@ discard """
 
 import std/unittest
 import std/times
-import ../src/basolato/core/libservers/std/request
+import regex
 include ../src/basolato/request_validation
 
 
@@ -280,8 +280,8 @@ suite("Validation"):
 
   test("notRegex"):
     let v = Validation.new()
-    check v.notRegex("abc", re"\d")
-    check v.notRegex("abc", re"\w") == false
+    check v.notRegex("abc", re2"\d")
+    check v.notRegex("abc", re2"\w") == false
 
   test("numeric"):
     let v = Validation.new()
@@ -290,8 +290,8 @@ suite("Validation"):
 
   test("regex"):
     let v = Validation.new()
-    check v.regex("abc", re"\w")
-    check v.regex("abc", re"\d") == false
+    check v.regex("abc", re2"\w")
+    check v.regex("abc", re2"\d") == false
 
   test("required"):
     let v = Validation.new()

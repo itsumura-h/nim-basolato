@@ -3,10 +3,10 @@ import std/asyncdispatch
 import std/asyncfile
 import std/httpcore
 import std/os
-import std/re
 import std/strutils
 import std/strformat
 import std/mimetypes
+import regex
 import ../../base
 import ../../settings
 import ../../error_page
@@ -63,7 +63,7 @@ proc serveCore(arg:ServeCoreArg){.async.} =
       var headers = newHttpHeaders()
       headers["content-type"] = "text/html; charset=utf-8"
       var msg = getCurrentExceptionMsg()
-      msg = msg.replace(re"Async traceback:[.\s\S]*")
+      msg = msg.replace(re2"Async traceback:[.\s\S]*", "")
       response = Response.new(Http200, ddPage(msg), headers)
     except ErrorHttpParse:
       var headers = newHttpHeaders()

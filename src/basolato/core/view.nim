@@ -1,8 +1,8 @@
 import std/asyncdispatch; export asyncdispatch
 import std/cgi; export cgi
-import std/re; export re
 import std/strutils; export strutils
 import std/tables; export tables
+import regex; export regex
 import ./settings
 import ./security/context; export context
 import ./security/csrf_token; export csrf_token, escapeHtmlAttr
@@ -71,8 +71,8 @@ when USE_LIBSASS:
     var css =
       if typ == Scss:
         var bodyTmp = body
-        bodyTmp = bodyTmp.replace(re"\s+<style>")
-        bodyTmp = bodyTmp.replace(re"<\/style>\s+")
+        bodyTmp = bodyTmp.replace(re2"\s+<style>", "")
+        bodyTmp = bodyTmp.replace(re2"<\/style>\s+", "")
         bodyTmp = compile(bodyTmp)
         "<style>\n" & bodyTmp & "</style>"
       else:
@@ -86,8 +86,8 @@ when USE_LIBSASS:
     for i, row in cssLines.pairs:
       if row.contains(".") and not row.contains(";"):
         var rowStr = row
-        for match in row.findAll(re"\.[\d\w\-]+"):
-          rowStr = rowStr.replace(match, match & saffix)
+        for match in row.findAll(re2"\.[\d\w\-]+"):
+          rowStr = rowStr.replace(row[match.boundaries], row[match.boundaries] & saffix)
         arr[i] = rowStr
       else:
         arr[i] = row
@@ -105,8 +105,8 @@ else:
     for i, row in cssLines.pairs:
       if row.contains(".") and not row.contains(";"):
         var rowStr = row
-        for match in row.findAll(re"\.[\d\w\-]+"):
-          rowStr = rowStr.replace(match, match & saffix)
+        for match in row.findAll(re2"\.[\d\w\-]+"):
+          rowStr = rowStr.replace(row[match.boundaries], row[match.boundaries] & saffix)
         arr[i] = rowStr
       else:
         arr[i] = row

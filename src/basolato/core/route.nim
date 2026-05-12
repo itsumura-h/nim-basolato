@@ -2,7 +2,6 @@ import std/asyncdispatch
 import std/httpcore
 import std/json
 import std/macros
-import std/re
 import std/strformat
 import std/strutils
 import std/tables

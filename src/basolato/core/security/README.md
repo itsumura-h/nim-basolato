@@ -47,8 +47,7 @@ cookie
   -> settings
 
 jwt
-  -> logger
-  -> nimcrypto
+  -> rustcrypto
 ```
 
 補足:
@@ -128,8 +127,8 @@ jwt
 
 ### `jwt.nim`
 
-- JWT の encode / decode を担当する
-- 現状は HMAC 系アルゴリズムを中心に扱う
+- JWT の署名・検証・decode を担当する
+- 署名方式は `rustcrypto/jwt` の ES256 をデフォルトとして扱う
 - セッションベース認証とは独立した、API 認証向けの別系統ユーティリティである
 
 ### `random_string.nim`

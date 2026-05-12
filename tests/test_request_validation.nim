@@ -8,7 +8,7 @@ import std/asyncdispatch
 import std/times
 import std/tables
 import std/strutils
-import std/re
+import regex
 import ../src/basolato/core/libservers/std/request
 import ../src/basolato/request_validation
 import ../src/basolato/core/security/context
@@ -839,9 +839,9 @@ suite("request validation"):
     let request = Request()
     let context = Context.new(request, p).waitFor()
     let v = RequestValidation.new(context)
-    v.notRegex("base", re"\d")
+    v.notRegex("base", re2"\d")
     check v.hasErrors == false
-    v.notRegex("base", re"\w")
+    v.notRegex("base", re2"\w")
     check v.hasErrors
     check v.errors["base"][0] == "The base format is invalid."
 
@@ -878,9 +878,9 @@ suite("request validation"):
     let request = Request()
     let context = Context.new(request, p).waitFor()
     let v = RequestValidation.new(context)
-    v.regex("base", re"\w")
+    v.regex("base", re2"\w")
     check v.hasErrors == false
-    v.regex("base", re"\d")
+    v.regex("base", re2"\d")
     check v.hasErrors
     check v.errors["base"][0] == "The base format is invalid."
 

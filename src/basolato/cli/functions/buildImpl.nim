@@ -46,7 +46,10 @@ proc build*(workers:uint=0, force=false, httpbeast=false, httpx=false, autoResta
     main.nim
   """
   echo cmd
-  discard execCmd(cmd)
+  let exitCode = execCmd(cmd)
+  if exitCode != 0:
+    echo "Build failed"
+    quit(QuitFailure)
 
   var mainContent = ""
   if autoRestart:
