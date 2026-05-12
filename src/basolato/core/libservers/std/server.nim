@@ -53,7 +53,9 @@ proc serveCore(arg:ServeCoreArg){.async.} =
         # check path match with controller routing → run middleware → run controller
         let routeMatch = routes.matchRoute(req.httpMethod, req.path)
         if not routeMatch.route.isNil:
-          response = createResponse(req, routeMatch.route, req.httpMethod, routeMatch.pathParams).await
+          # Nim 2.2+: same GC-safety note as nostd/server.nim (issue #375).
+          {.cast(gcsafe).}:
+            response = createResponse(req, routeMatch.route, req.httpMethod, routeMatch.pathParams).await
 
         if req.httpMethod == HttpHead:
           response.setBody("")
